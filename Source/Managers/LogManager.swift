@@ -8,9 +8,9 @@ import Foundation
 
 public class LogManager: McuManager {
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Log Constants
-    //*******************************************************************************************
+    //**************************************************************************
 
     let ID_READ =         UInt8(0)
     let ID_CLEAR =        UInt8(1)
@@ -19,33 +19,34 @@ public class LogManager: McuManager {
     let ID_LEVEL_LIST =   UInt8(4)
     let ID_LOGS_LIST =    UInt8(5)
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Initializers
-    //*******************************************************************************************
+    //**************************************************************************
 
     init(transporter: McuMgrTransport) {
         super.init(group: .logs, transporter: transporter)
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Log Commands
-    //*******************************************************************************************
+    //**************************************************************************
 
     /// Show logs from a device.
     ///
-    /// Logs will be shown from the log name provided, or all if none. Additionally, logs will
-    /// only be shown from past the minIndex and minTimestamp if provided. The minimum timestamp
-    /// will only be accounted for if the minIndex is also provided.
+    /// Logs will be shown from the log name provided, or all if none.
+    /// Additionally, logs will only be shown from past the minIndex and
+    /// minTimestamp if provided. The minimum timestamp will only be accounted
+    /// for if the minIndex is also provided.
     ///
-    /// This method will only provide a portion of the logs, and return the next index to pull
-    /// the logs from. Therefore, in order to pull all of the logs from the device, you may have
-    /// to call this method multiple times.
+    /// This method will only provide a portion of the logs, and return the next
+    /// index to pull the logs from. Therefore, in order to pull all of the logs
+    /// from the device, you may have to call this method multiple times.
     ///
     /// - parameter log: The name of the log to read from
-    /// - parameter minIndex: The optional minimum index to pull logs from. If not provided, the
-    ///                       device will read the oldest log.
-    /// - parameter minTimestamp: The minimum timestamp to pull logs from. This parameter is
-    ///                           only used if a minIndex is also provided.
+    /// - parameter minIndex: The optional minimum index to pull logs from. If
+    ///   not provided, the device will read the oldest log.
+    /// - parameter minTimestamp: The minimum timestamp to pull logs from. This
+    ///   parameter is only used if a minIndex is also provided.
     /// - parameter callback: The response callback
     func show(log: String? = nil, minIndex: UInt? = nil, minTimestamp: Date? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         var payload: [String:CBOR] = [:]

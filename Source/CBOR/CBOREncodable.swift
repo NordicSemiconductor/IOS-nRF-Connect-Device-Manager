@@ -10,7 +10,8 @@ public protocol CBOREncodable {
 
 extension CBOR: CBOREncodable {
     
-    /// Encodes a wrapped CBOR value. CBOR.half (Float16) is not supported and encodes as `undefined`.
+    /// Encodes a wrapped CBOR value. CBOR.half (Float16) is not supported and
+    /// encodes as `undefined`.
     public func encode() -> [UInt8] {
         switch self {
         case let .unsignedInt(ui): return ui.encode()

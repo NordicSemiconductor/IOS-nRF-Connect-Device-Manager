@@ -8,24 +8,24 @@ import Foundation
 
 public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugStringConvertible {
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Value Mapping
-    //*******************************************************************************************
+    //**************************************************************************
     
     /// Every McuMgrResponse will contain a return code value. If the original response packet
     /// does not contain a "rc", the success value of 0 is assumed.
     public var rc: UInt = 0
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Response Properties
-    //*******************************************************************************************
+    //**************************************************************************
 
-    /// The transport scheme used by the transporter. This is used to determine how to parse the
-    /// raw packet.
+    /// The transport scheme used by the transporter. This is used to determine
+    /// how to parse the raw packet.
     public var scheme: McuMgrScheme!
     
-    /// The response's raw packet data. For CoAP transport schemes, this will include the CoAP
-    /// header.
+    /// The response's raw packet data. For CoAP transport schemes, this will
+    /// include the CoAP header.
     public var data: Data?
     
     /// The 8-byte McuMgrHeader included in the response
@@ -37,12 +37,12 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
     /// The raw McuMgrResponse payload
     public var payloadData: Data?
     
-    /// The repsponse's return code obtained from the payload. If no return code is explicitly
-    /// stated, OK (0) is assumed.
+    /// The repsponse's return code obtained from the payload. If no return code
+    /// is explicitly stated, OK (0) is assumed.
     public var returnCode: McuMgrReturnCode! = .ok
     
-    /// The CoAP Response code for CoAP based transport schemes. For non-CoAP transport schemes
-    /// this value will always be 0
+    /// The CoAP Response code for CoAP based transport schemes. For non-CoAP
+    /// transport schemes this value will always be 0
     public var coapCode: Int = 0
     
     /// String representation of the response.
@@ -55,9 +55,9 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
         return "Header: \(self.header!), Payload: \(payload?.description ?? "nil")"
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Initializers
-    //*******************************************************************************************
+    //**************************************************************************
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
@@ -66,24 +66,24 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
         }
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Functions
-    //*******************************************************************************************
+    //**************************************************************************
     
     public func isSuccess() -> Bool {
         return returnCode.isSuccess()
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Static Builders
-    //*******************************************************************************************
+    //**************************************************************************
     
     /// Build an McuMgrResponse.
     ///
-    /// This method will parse the raw packet data according to the transport scheme to obtain
-    /// the header, payload, and return code. After getting the CBOR payload. An object of type
-    /// <T> will be initialized which will map the CBOR payload values to the values in the
-    /// object.
+    /// This method will parse the raw packet data according to the transport
+    /// scheme to obtain the header, payload, and return code. After getting the
+    /// CBOR payload. An object of type <T> will be initialized which will map
+    /// the CBOR payload values to the values in the object.
     ///
     /// - parameter scheme: the transport scheme of the transporter
     /// - parameter data: The response's raw packet data
@@ -103,8 +103,9 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
         var payload: CBOR?
         var header: McuMgrHeader?
         
-        // Get the header and payload based on the transport scheme. CoAP schemes put the header
-        // in the CBOR payload while standard schemes prepend the header to the CBOR payload.
+        // Get the header and payload based on the transport scheme. CoAP
+        // schemes put the header in the CBOR payload while standard schemes
+        // prepend the header to the CBOR payload.
         if scheme.isCoap() {
             guard let coapPayload = coapPayload else {
                 throw McuMgrResponseParseError.invalidDataSize
@@ -131,7 +132,8 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
             }
         }
         
-        // Init the response with the CBOR payload. This will also map the CBOR values to object values
+        // Init the response with the CBOR payload. This will also map the CBOR
+        // values to object values
         let response = try T(cbor: payload)
         
         // Set remaining properties
@@ -148,10 +150,10 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
     
     /// Build an McuMgrResponse for standard transport schemes (i.e. non-CoAP).
     ///
-    /// This method will parse the raw packet data according to the transport scheme to obtain
-    /// the header, payload, and return code. After getting the CBOR payload. An object of type
-    /// <T> will be initialized which will map the CBOR payload values to the values in the
-    /// object.
+    /// This method will parse the raw packet data according to the transport
+    /// scheme to obtain the header, payload, and return code. After getting the
+    /// CBOR payload, An object of type <T> will be initialized which will map
+    /// the CBOR payload values to the values in the object.
     ///
     /// - parameter scheme: the transport scheme of the transporter
     /// - parameter data: The response's raw packet data
@@ -161,12 +163,13 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
         return try buildResponse(scheme: scheme, data: data, coapPayload: nil, coapCode: 0)
     }
     
-    /// Build a McuMgrResponse for CoAP transport schemes to return to the McuManager
+    /// Build a McuMgrResponse for CoAP transport schemes to return to the
+    /// McuManager
     ///
-    /// This method will parse the raw packet data according to the transport scheme to obtain
-    /// the header, payload, and return code. After getting the CBOR payload. An object of type
-    /// <T> will be initialized which will map the CBOR payload values to the values in the
-    /// object.
+    /// This method will parse the raw packet data according to the transport
+    /// scheme to obtain the header, payload, and return code. After getting the
+    /// CBOR payload, An object of type <T> will be initialized which will map
+    /// the CBOR payload values to the values in the object.
     ///
     /// - parameter scheme: The transport scheme of the transporter
     /// - parameter data: The response's raw packet data
@@ -179,9 +182,9 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
         return try buildResponse(scheme: scheme, data: data, coapPayload: coapPayload, coapCode: (codeClass * 100 + codeDetail))
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Utilities
-    //*******************************************************************************************
+    //**************************************************************************
     
     /// Gets the expected length of the entire respose from the length field in the
     /// McuMgrHeader. The return value includes the 8-byte McuMgr header.
@@ -202,18 +205,18 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
     }
 }
 
-//***********************************************************************************************
+//******************************************************************************
 // MARK: Errors
-//***********************************************************************************************
+//******************************************************************************
 
 public enum McuMgrResponseParseError: Error {
     case invalidDataSize
     case invalidPayload
 }
 
-//***********************************************************************************************
+//******************************************************************************
 // MARK: Default Responses
-//***********************************************************************************************
+//******************************************************************************
 
 public class McuMgrEchoResponse: McuMgrResponse {
     
@@ -278,14 +281,14 @@ public class McuMgrTaskStatResponse: McuMgrResponse {
 
 
 
-//***********************************************************************************************
+//******************************************************************************
 // MARK: Image Responses
-//***********************************************************************************************
+//******************************************************************************
 
 public class McuMgrImageStateResponse: McuMgrResponse {
     
-    /// The image slots on the device. This may contain one or two values, depending on whether
-    /// there is an image loaded in slot 1
+    /// The image slots on the device. This may contain one or two values,
+    /// depending on whether there is an image loaded in slot 1
     public var images: [ImageSlot]?
     /// Whether the bootloader is configured to use a split image setup
     public var splitStatus: UInt?
@@ -311,8 +314,8 @@ public class McuMgrImageStateResponse: McuMgrResponse {
         public var bootable: Bool!
         /// Pending flag. A pending image will be booted into on reset.
         public var pending: Bool!
-        /// Confired flag. A confirmed image will always be booted into (unless another image is
-        /// pending.
+        /// Confired flag. A confirmed image will always be booted into (unless
+        /// another image is pending.
         public var confirmed: Bool!
         /// Active flag. Set if the image in this slot is active
         public var active: Bool!
@@ -344,14 +347,14 @@ public class McuMgrUploadResponse: McuMgrResponse {
     }
 }
 
-//***********************************************************************************************
+//******************************************************************************
 // MARK: Logs Responses
-//***********************************************************************************************
+//******************************************************************************
 
-//***********************************************************************************************
+//******************************************************************************
 // MARK: Stats Responses
-//***********************************************************************************************
+//******************************************************************************
 
-//***********************************************************************************************
+//******************************************************************************
 // MARK: Config Responses
-//***********************************************************************************************
+//******************************************************************************

@@ -47,7 +47,8 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Add self as a delegate to the BleCentralManager to receive connection state callbacks
+        // Add self as a delegate to the BleCentralManager to receive connection
+        // state callbacks
         BleCentralManager.getInstance().addDelegate(self)
     }
 
@@ -56,12 +57,12 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Button Actions
-    //*******************************************************************************************
+    //**************************************************************************
     
-    /// Looks up the device name in the Text Field from BleCentralManager's list of scanned
-    /// peripherals. If found, the device is
+    /// Looks up the device name in the Text Field from BleCentralManager's list
+    /// of scanned peripherals. If found, the device is connected to and setup
     @IBAction func findDevice(_ sender: Any) {
         guard let name = findDeviceName.text else {
             return
@@ -118,12 +119,13 @@ class ViewController: UIViewController {
         })
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Peripheral Actions
-    //*******************************************************************************************
+    //**************************************************************************
     
-    /// Setup a peripheral by connecting to it and initializing the McuManagers for the device.
-    /// This function also updates the Device info UI and calls getImageState().
+    /// Setup a peripheral by connecting to it and initializing the McuManagers
+    /// for the device. This function also updates the Device info UI and calls
+    /// getImageState().
     ///
     /// parameter peripheral: the peripheral to setup
     func setupPeripheral(_ peripheral: CBPeripheral?) {
@@ -152,7 +154,8 @@ class ViewController: UIViewController {
     
     /// Get the connected peripheral's image state.
     func getImageState() {
-        // Call the list command from the Image command group with an inline callback
+        // Call the list command from the Image command group with an inline
+        // callback
         peripheral?.getImageManager().list(callback: { [unowned self] (response: McuMgrImageStateResponse?, error: Error?) in
             if let error = error {
                 print(error)
@@ -170,9 +173,9 @@ class ViewController: UIViewController {
 }
 
 
-//*******************************************************************************************
+//******************************************************************************
 // MARK: Document Picker Delegates
-//*******************************************************************************************
+//******************************************************************************
 
 /// Presents the document picker menu
 extension ViewController: UIDocumentMenuDelegate {
@@ -213,9 +216,9 @@ extension ViewController: UIDocumentPickerDelegate {
     }
 }
 
-//*******************************************************************************************
+//******************************************************************************
 // MARK: FimrwareUpgradeDelegate
-//*******************************************************************************************
+//******************************************************************************
 
 extension ViewController: FirmwareUpgradeDelegate {
     func didStart(manager: FirmwareUpgradeManager) {
@@ -257,9 +260,9 @@ extension ViewController: FirmwareUpgradeDelegate {
     }
 }
 
-//*******************************************************************************************
+//******************************************************************************
 // MARK: CBCentralManagerDelegate
-//*******************************************************************************************
+//******************************************************************************
 
 extension ViewController: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
@@ -276,9 +279,9 @@ extension ViewController: CBCentralManagerDelegate {
     }
 }
 
-//*******************************************************************************************
+//******************************************************************************
 // MARK: UI Update Functions
-//*******************************************************************************************
+//******************************************************************************
 
 extension ViewController {
 

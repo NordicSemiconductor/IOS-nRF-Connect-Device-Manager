@@ -7,8 +7,8 @@
 let isBigEndian = Int(bigEndian: 42) == 42
 
 /*
- Takes a value breaks it into bytes. assumes necessity to reverse for endianness if needed
- This function has only been tested with UInt_s, Floats and Doubles
+ Takes a value breaks it into bytes. assumes necessity to reverse for endianness
+ if needed This function has only been tested with UInt_s, Floats and Doubles
  T must be a simple type. It cannot be a collection type.
  */
 func rawBytes<T>(of x: T) -> [UInt8] {
@@ -29,9 +29,11 @@ extension CBOR {
     }
 
 
-    /// Encodes an array as either a CBOR array type or a CBOR bytestring type, depending on `asByteString`.
-    /// NOTE: when `asByteString` is true and T = UInt8, the array is interpreted in network byte order
-    /// Arrays with values of all other types will have their bytes reversed if the system is little endian.
+    /// Encodes an array as either a CBOR array type or a CBOR bytestring type,
+    /// depending on `asByteString`. NOTE: when `asByteString` is true and
+    /// T = UInt8, the array is interpreted in network byte order Arrays with
+    /// values of all other types will have their bytes reversed if the system
+    /// is little endian.
     public static func encode<T: CBOREncodable>(_ array: [T], asByteString: Bool = false) -> [UInt8] {
         if asByteString {
             let length = array.count

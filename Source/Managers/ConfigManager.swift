@@ -8,24 +8,24 @@ import Foundation
 
 public class ConfigManager: McuManager {
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Constants
-    //*******************************************************************************************
+    //**************************************************************************
 
     // Newt Manager config ids
     let ID_CONFIG = UInt8(0)
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Initializers
-    //*******************************************************************************************
+    //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
         super.init(group: .config, transporter: transporter)
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Commands
-    //*******************************************************************************************
+    //**************************************************************************
 
     /// Read a system configuration variable from a device.
     ///
@@ -38,8 +38,8 @@ public class ConfigManager: McuManager {
 
     /// Write a system configuration variable on a device.
     ///
-    /// - parameter name: The name of the system configuration variable to write
-    /// - parameter value: The value of the system configuration variable to write
+    /// - parameter name: The name of the sys config variable to write
+    /// - parameter value: The value of the sys config variable to write
     /// - parameter callback: The response callback
     public func write(name: String, value: String, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(name),

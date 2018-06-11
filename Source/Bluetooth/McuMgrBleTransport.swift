@@ -28,14 +28,15 @@ public class McuMgrBleTransport: NSObject {
     // Used to store fragmented response data
     private var responseData: Data?
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Singleton
-    //*******************************************************************************************
+    //**************************************************************************
     
     private static var transporters = [CBPeripheral:McuMgrBleTransport]()
     private static let lock = NSObject()
     
-    /// Get the shared isntance of the McuMgrBleTransporter for a given peripheral
+    /// Get the shared isntance of the McuMgrBleTransporter for a given
+    /// peripheral
     public static func getInstance(_ forPeripheral: CBPeripheral) -> McuMgrBleTransport {
         objc_sync_enter(McuMgrBleTransport.lock)
         var transporter = McuMgrBleTransport.transporters[forPeripheral]
@@ -59,9 +60,9 @@ public class McuMgrBleTransport: NSObject {
     }
 }
 
-//*******************************************************************************************
+//******************************************************************************
 // MARK: McuMgrTransport
-//*******************************************************************************************
+//******************************************************************************
 
 extension McuMgrBleTransport: McuMgrTransport {
     public func getScheme() -> McuMgrScheme {
@@ -99,9 +100,10 @@ extension McuMgrBleTransport: McuMgrTransport {
             lock.close()
             
             if self.peripheral.state == .disconnected {
-                // If the peripheral is disconnected, begin the setup process by connecting to the device.
-                // Once the characteristic's notification is enabled, the semaphore will be signalled
-                // and the request can be sent.
+                // If the peripheral is disconnected, begin the setup process by
+                // connecting to the device. Once the characteristic's
+                // notification is enabled, the semaphore will be signalled and
+                // the request can be sent.
                 bleCentralManager.connectPeripheral(peripheral)
             }
             
@@ -171,9 +173,9 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
 }
 
-//*******************************************************************************************
+//******************************************************************************
 // MARK: Central Manager Delegate
-//*******************************************************************************************
+//******************************************************************************
 
 extension McuMgrBleTransport: CBCentralManagerDelegate {
     
@@ -212,9 +214,9 @@ extension McuMgrBleTransport: CBCentralManagerDelegate {
     }
 }
 
-//*******************************************************************************************
+//******************************************************************************
 // MARK: Peripheral Delegate
-//*******************************************************************************************
+//******************************************************************************
 
 extension McuMgrBleTransport: CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
@@ -280,8 +282,8 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         // Set the smp characteristic
         smpCharacteristic = characteristic
         
-        // The SMP Service and characateristic have now been discovered and set up.
-        // Signal the dispatch semaphore to continue to send the request
+        // The SMP Service and characateristic have now been discovered and set
+        // up. Signal the dispatch semaphore to continue to send the request
         lock.open()
     }
     
@@ -300,9 +302,10 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         // Get the expected length from the response data.
         let expectedLength: Int
         if responseData == nil {
-            // If we do not have any current response data, this is the initial packet in a
-            // potentially fragmented response. Get the expected length of the full response
-            // and initialize the responseData with the expected capacity.
+            // If we do not have any current response data, this is the initial
+            // packet in a potentially fragmented response. Get the expected
+            // length of the full response and initialize the responseData with
+            // the expected capacity.
             guard let len = McuMgrResponse.getExpectedLength(scheme: getScheme(), responseData: data) else {
                 lock.open(McuMgrError.badResponse)
                 return

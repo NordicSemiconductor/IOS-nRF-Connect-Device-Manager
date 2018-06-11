@@ -8,9 +8,9 @@ import Foundation
 
 public class DefaultManager: McuManager {
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Constants
-    //*******************************************************************************************
+    //**************************************************************************
 
     // Newt Manager config ids
     let ID_ECHO =           UInt8(0)
@@ -20,17 +20,17 @@ public class DefaultManager: McuManager {
     let ID_DATETIME_STR =   UInt8(4)
     let ID_RESET =          UInt8(5)
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Initializers
-    //*******************************************************************************************
+    //**************************************************************************
 
     init(transporter: McuMgrTransport) {
         super.init(group: .default, transporter: transporter)
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Commands
-    //*******************************************************************************************
+    //**************************************************************************
 
     /// Echo a string to the device.
     ///
@@ -75,10 +75,11 @@ public class DefaultManager: McuManager {
     
     /// Set the date and time on the device.
     ///
-    /// - parameter date: The date and time to set the device's clock to. If this parameter is
-    ///                   left out, the device will be set to the current date and time.
-    /// - parameter timeZone: The time zone for the given date. If left out, the timezone will
-    ///                       be set to the iOS system time zone.
+    /// - parameter date: The date and time to set the device's clock to. If
+    ///   this parameter is left out, the device will be set to the current date
+    ///   and time.
+    /// - parameter timeZone: The time zone for the given date. If left out, the
+    ///   timezone will be set to the iOS system time zone.
     /// - parameter callback: The response callback
     func writeDatetime(date: Date = Date(), timeZone: TimeZone? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["datetime": CBOR.utf8String(McuManager.dateToString(date: date, timeZone: timeZone))]

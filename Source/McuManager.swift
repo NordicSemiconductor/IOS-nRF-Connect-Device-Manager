@@ -9,9 +9,9 @@ import CoreBluetooth
 
 public class McuManager {
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Mcu Manager Constants
-    //*******************************************************************************************
+    //**************************************************************************
     
     /// Mcu Manager CoAP Resource URI
     public static let COAP_PATH = "/omgr"
@@ -19,28 +19,29 @@ public class McuManager {
     /// Header Key for CoAP Payloads
     public static let HEADER_KEY = "_h"
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Properties
-    //*******************************************************************************************
+    //**************************************************************************
 
     /// Handles transporting Mcu Manager commands
     public var transporter: McuMgrTransport!
     
-    /// The command group used for in the header of commands sent using this Mcu Manager
+    /// The command group used for in the header of commands sent using this Mcu
+    /// Manager
     public var group: McuMgrGroup!
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Initializers
-    //*******************************************************************************************
+    //**************************************************************************
 
     public init(group: McuMgrGroup, transporter: McuMgrTransport) {
         self.group = group
         self.transporter = transporter
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Send Commands
-    //*******************************************************************************************
+    //**************************************************************************
 
     public func send<T: McuMgrResponse>(op: McuMgrOperation, commandId: UInt8, payload: [String:CBOR]?, callback: @escaping McuMgrCallback<T>) {
         send(op: op, flags: 0, group: group, sequenceNumber: 0, commandId: commandId, payload: payload, callback: callback)
@@ -55,9 +56,9 @@ public class McuManager {
         transporter.send(data: data, callback: callback)
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Build Request Packet
-    //*******************************************************************************************
+    //**************************************************************************
     
     /// Build a McuManager request packet based on the transporter scheme.
     ///
@@ -86,7 +87,8 @@ public class McuManager {
         
         // Build the packet based on scheme
         if transporter.getScheme().isCoap() {
-            // CoAP transport schemes puts the header as a key-value pair in the payload
+            // CoAP transport schemes puts the header as a key-value pair in the
+            // payload
             if payload[McuManager.HEADER_KEY] == nil {
                 payload.updateValue(CBOR.byteString(header), forKey: McuManager.HEADER_KEY)
             }
@@ -100,19 +102,18 @@ public class McuManager {
         }
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Utilities
-    //*******************************************************************************************
+    //**************************************************************************
 
-    /// Converts a date and optional timezone to a string which Mcu Manager on the device can
-    /// use.
+    /// Converts a date and optional timezone to a string which Mcu Manager on
+    /// the device can use.
     ///
     /// The date format used is: "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
     ///
     /// - parameter date: The date
-    /// - parameter timeZone: Optional timezone for the given date. If left out or nil, the
-    ///                       timzone will be set to the
-    ///                       system time zone.
+    /// - parameter timeZone: Optional timezone for the given date. If left out
+    ///   or nil, the timzone will be set to the system time zone.
     ///
     /// - returns: The datetime string
     public static func dateToString(date: Date, timeZone: TimeZone? = nil) -> String {
@@ -129,8 +130,8 @@ public typealias McuMgrCallback<T: McuMgrResponse> = (T?, Error?) -> Void
 
 /// The defined groups for Mcu Manager commands.
 ///
-/// Each group has its own manager class which contains the specific subcommands and functions.
-/// The default are contained within the McuManager class.
+/// Each group has its own manager class which contains the specific subcommands
+/// and functions. The default are contained within the McuManager class.
 public enum McuMgrGroup: UInt16 {
     /// Default command group (DefaultManager).
     case `default`  = 0
@@ -150,13 +151,12 @@ public enum McuMgrGroup: UInt16 {
     case run        = 7
     /// File System command group (FileSystemManager).
     case fs         = 8
-    /// Per user command group. Users can define custom McuManager groups which have a value
-    /// greater than 64.
+    /// Per user command group.
     case peruser    = 64
 }
 
-/// The mcu manager operation defines whether the packet sent is a read/write and
-/// request/response.
+/// The mcu manager operation defines whether the packet sent is a read/write
+/// and request/response.
 public enum McuMgrOperation: UInt8 {
     case read           = 0
     case readResponse   = 1
@@ -166,7 +166,8 @@ public enum McuMgrOperation: UInt8 {
 
 /// Return codes for Mcu Manager responses.
 ///
-/// Each Mcu Manager response will contain a "rc" key with one of these return codes.
+/// Each Mcu Manager response will contain a "rc" key with one of these return
+/// codes.
 public enum McuMgrReturnCode: UInt, Error {
     case ok         = 0
     case unknown    = 1

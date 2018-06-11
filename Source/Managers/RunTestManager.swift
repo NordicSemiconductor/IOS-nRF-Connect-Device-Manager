@@ -8,30 +8,32 @@ import Foundation
 
 public class RunTestManager: McuManager {
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Run Constants
-    //*******************************************************************************************
+    //**************************************************************************
 
     let ID_TEST = UInt8(0)
     let ID_LIST = UInt8(1)
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Initializers
-    //*******************************************************************************************
+    //**************************************************************************
 
     init(transporter: McuMgrTransport) {
         super.init(group: .run, transporter: transporter)
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Run Commands
-    //*******************************************************************************************
+    //**************************************************************************
 
     /// Run tests on a device.
     ///
-    /// The device will run the test specified in the 'name' or all tests if not specified.
+    /// The device will run the test specified in the 'name' or all tests if not
+    /// specified.
     ///
-    /// - parameter name: The name of the test to run. If left out, all tests will be run.
+    /// - parameter name: The name of the test to run. If left out, all tests
+    ///   will be run.
     /// - parameter token: The optional token to returned in the response.
     /// - parameter callback: The response callback
     func test(name: String? = nil, token: String? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {

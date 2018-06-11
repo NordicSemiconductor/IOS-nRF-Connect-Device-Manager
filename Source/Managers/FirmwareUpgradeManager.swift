@@ -23,9 +23,9 @@ public class FirmwareUpgradeManager {
     
     private var resetPoller: DispatchQueue
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Initializer
-    //*******************************************************************************************
+    //**************************************************************************
     
     public    init(transporter: McuMgrTransport, imageData: Data, delegate: FirmwareUpgradeDelegate) throws {
         self.transporter = transporter
@@ -38,9 +38,9 @@ public class FirmwareUpgradeManager {
         self.resetPoller = DispatchQueue(label: "FirmwareUpgradeResetPoller")
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Control Functions
-    //*******************************************************************************************
+    //**************************************************************************
     
     /// Start the firmware upgrade.
     public func start() {
@@ -103,9 +103,9 @@ public class FirmwareUpgradeManager {
         objc_sync_exit(self)
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Firmware Upgrade State Machine
-    //*******************************************************************************************
+    //**************************************************************************
     
     private func currentState() {
         objc_sync_enter(self)
@@ -171,9 +171,9 @@ public class FirmwareUpgradeManager {
         objc_sync_exit(self)
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: McuMgrCallbacks
-    //*******************************************************************************************
+    //**************************************************************************
     
     private lazy var imageListCallback: McuMgrCallback<McuMgrImageStateResponse> =
     { [unowned self] (response: McuMgrImageStateResponse?, error: Error?) in
@@ -224,8 +224,8 @@ public class FirmwareUpgradeManager {
     
     /// Callback for the RESET state
     ///
-    /// This callback will fail the upgrade on error. On success, the reset poller will be
-    /// started after a 3 second delay
+    /// This callback will fail the upgrade on error. On success, the reset
+    /// poller will be started after a 3 second delay
     private lazy var resetCallback: McuMgrCallback<McuMgrResponse> =
     { [unowned self] (response: McuMgrResponse?, error: Error?) in
         if let error = error {
@@ -271,7 +271,8 @@ public class FirmwareUpgradeManager {
     
     /// Callback for the CONFIRM state
     ///
-    /// This callback will fail the upload on error or move to the next state on success
+    /// This callback will fail the upload on error or move to the next state on
+    /// success
     private lazy var confirmCallback: McuMgrCallback<McuMgrImageStateResponse> =
     { [unowned self] (response: McuMgrImageStateResponse?, error: Error?) in
         if let error = error {
@@ -311,9 +312,9 @@ public class FirmwareUpgradeManager {
     
 }
 
-//*******************************************************************************************
+//******************************************************************************
 // MARK: ImageUploadDelegate
-//*******************************************************************************************
+//******************************************************************************
 
 extension FirmwareUpgradeManager: ImageUploadDelegate {
     public func didProgressChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
@@ -331,9 +332,9 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     }
 }
 
-//*******************************************************************************************
+//******************************************************************************
 // MARK: FirmwareUpgradeError
-//*******************************************************************************************
+//******************************************************************************
 
 public enum FirmwareUpgradeError: Error {
     case unknown(String)
@@ -342,9 +343,9 @@ public enum FirmwareUpgradeError: Error {
     case connectionFailedAfterReset
 }
 
-//*******************************************************************************************
+//******************************************************************************
 // MARK: FirmwareUpgradeState
-//*******************************************************************************************
+//******************************************************************************
 
 public enum FirmwareUpgradeState {
     case none, upload, test, reset, confirm, success
@@ -354,9 +355,9 @@ public enum FirmwareUpgradeState {
     }
 }
 
-//*******************************************************************************************
+//******************************************************************************
 // MARK: FirmwareUpgradeDelegate
-//*******************************************************************************************
+//******************************************************************************
 
 public protocol FirmwareUpgradeDelegate {
     func didStart(manager: FirmwareUpgradeManager)

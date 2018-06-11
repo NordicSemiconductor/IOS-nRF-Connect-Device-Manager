@@ -23,11 +23,14 @@ public class McuMgrHeader: CustomDebugStringConvertible {
         return "{op: \(op!), flags: \(flags!), length: \(length!), group: \(op!), seqNum=\(sequenceNumber!), commandId=\(commandId!)}"
     }
     
-    /// Initialize the header with raw data. Because this method only parses the first eight
-    /// bytes of the input data, the data's count must be greater or equal than eight.
+    /// Initialize the header with raw data. Because this method only parses the
+    /// first eight bytes of the input data, the data's count must be greater or
+    /// equal than eight.
     ///
-    /// - parameter data: The data to parse. Data count must be greater than or equal to eight.
-    /// - throws: McuMgrHeaderParseException.invalidSize(Int) if the data count is too small
+    /// - parameter data: The data to parse. Data count must be greater than or
+    ///   equal to eight.
+    /// - throws: McuMgrHeaderParseException.invalidSize(Int) if the data count
+    ///   is too small
     init(data: Data) throws {
         if (data.count < McuMgrHeader.HEADER_LENGTH) {
             throw McuMgrHeaderParseError.invalidSize(data.count)

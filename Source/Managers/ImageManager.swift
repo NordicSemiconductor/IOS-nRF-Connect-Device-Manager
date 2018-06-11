@@ -9,9 +9,9 @@ import CoreBluetooth
 
 public class ImageManager: McuManager {
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Constants
-    //*******************************************************************************************
+    //**************************************************************************
 
     // Image command IDs
     let ID_STATE = UInt8(0)
@@ -21,17 +21,17 @@ public class ImageManager: McuManager {
     let ID_CORELOAD = UInt8(4)
     let ID_ERASE = UInt8(5)
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Initializers
-    //*******************************************************************************************
+    //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
         super.init(group: .image, transporter: transporter)
     }
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Commands
-    //*******************************************************************************************
+    //**************************************************************************
 
     /// List the images on the device
     ///
@@ -42,8 +42,8 @@ public class ImageManager: McuManager {
     
     /// Test the image with the provided hash.
     ///
-    /// A successful test will put the image in a pending state. A pending image will be booted
-    /// upon once upon reset, but not again unless confirmed.
+    /// A successful test will put the image in a pending state. A pending image
+    /// will be booted upon once upon reset, but not again unless confirmed.
     ///
     /// - parameter hash: The hash of the image to test
     /// - parameter callback: The response callback
@@ -55,10 +55,11 @@ public class ImageManager: McuManager {
     
     /// Confirm the image with the provided hash.
     ///
-    /// A successful confirm will make the image permenant (i.e. the image will be booted upon reset).
+    /// A successful confirm will make the image permenant (i.e. the image will
+    /// be booted upon reset).
     ///
-    /// - parameter hash: The hash of the image to test. If not provided, the current image running on the device will
-    ///                   be made permenant.
+    /// - parameter hash: The hash of the image to test. If not provided, the
+    ///   current image running on the device will be made permenant.
     /// - parameter callback: The response callback
     public func confirm(hash: [UInt8]? = nil, callback: @escaping McuMgrCallback<McuMgrImageStateResponse>) {
         var payload: [String:CBOR] = ["confirm": CBOR.boolean(true)]
@@ -97,9 +98,9 @@ public class ImageManager: McuManager {
     }
 
     
-    //*******************************************************************************************
+    //**************************************************************************
     // MARK: Image Upload
-    //*******************************************************************************************
+    //**************************************************************************
 
     /// Image upload states
     public enum UploadState: UInt8 {
@@ -143,10 +144,12 @@ public class ImageManager: McuManager {
 
     /// Cancels the current upload.
     ///
-    /// If an error is supplied, the delegate's didFailUpload method will be called with the Upload Error provided
+    /// If an error is supplied, the delegate's didFailUpload method will be
+    /// called with the Upload Error provided
     ///
-    /// - parameter error: The optional upload error which caused the cancellation. This error (if supplied) is used as
-    ///                    the argument for the delegate's didFailUpload method.
+    /// - parameter error: The optional upload error which caused the
+    ///   cancellation. This error (if supplied) is used as the argument for the
+    ///   delegate's didFailUpload method.
     public func cancelUpload(error: Error? = nil) {
         objc_sync_enter(self)
         if error != nil {
@@ -162,7 +165,8 @@ public class ImageManager: McuManager {
         objc_sync_exit(self)
     }
     
-    /// Pauses the current upload. If there is no upload in progress, nothing happens.
+    /// Pauses the current upload. If there is no upload in progress, nothing
+    /// happens.
     public func pauseUpload() {
         objc_sync_enter(self)
         if uploadState == .none {
@@ -174,7 +178,8 @@ public class ImageManager: McuManager {
         objc_sync_exit(self)
     }
 
-    /// Continues a paused upload. If the upload is not paused or not uploading, nothing happens.
+    /// Continues a paused upload. If the upload is not paused or not uploading,
+    /// nothing happens.
     public func continueUpload() {
         objc_sync_enter(self)
         guard let imageData = imageData else {
@@ -195,14 +200,17 @@ public class ImageManager: McuManager {
     
     /// Begins the image upload to a peripheral.
     ///
-    /// An instance of ImageManager can only have one upload in progress at a time. Therefore, if this method is called
-    /// multiple times on the same ImageManager instance, all calls after the first will return false. Upload progress
-    /// is reported asynchronously to the delegate provided in this method.
+    /// An instance of ImageManager can only have one upload in progress at a
+    /// time. Therefore, if this method is called multiple times on the same
+    /// ImageManager instance, all calls after the first will return false.
+    /// Upload progress is reported asynchronously to the delegate provided in
+    /// this method.
     ///
-    /// - parameter data: The entire image data in bytes to upload to the peripheral
-    /// - parameter peripheral: The BLE periheral to send the data to. The peripneral must be supplied so ImageManager
-    ///                         can determine the MTU and thus the number of bytes of image data that it can send per
-    ///                         packet.
+    /// - parameter data: The entire image data in bytes to upload to the
+    ///   peripheral
+    /// - parameter peripheral: The BLE periheral to send the data to. The
+    ///   peripneral must be supplied so ImageManager can determine the MTU and
+    ///   thus the number of bytes of image data that it can send per packet.
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: true if the upload has started successfully, false otherwise.
@@ -249,7 +257,8 @@ public class ImageManager: McuManager {
         // Calculate the number of remaining bytes
         let remainingBytes: UInt = UInt(imageData.count) - offset
         
-        // Data length to end is the minimum of the max data lenght and the number of remaining bytes
+        // Data length to end is the minimum of the max data lenght and the
+        // number of remaining bytes
         let packetOverhead = calculatePacketOverhead(data: imageData, offset: offset)
         
         // Get the length of image data to send
@@ -261,7 +270,8 @@ public class ImageManager: McuManager {
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](imageData[offset..<(offset+dataLength)])),
                                      "off": CBOR.unsignedInt(offset)]
         
-        // If this is the initial packet, send the image data length in the payload
+        // If this is the initial packet, send the image data length in the
+        // payload
         if offset == 0 {
             payload.updateValue(CBOR.unsignedInt(UInt(imageData.count)), forKey: "len")
         }
@@ -331,7 +341,8 @@ public class ImageManager: McuManager {
         // Get the Newt Manager header
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8]([0])),
                                       "off": CBOR.unsignedInt(offset)]
-        // If this is the initial packet we have to include the length of the entire image
+        // If this is the initial packet we have to include the length of the
+        // entire image
         if offset == 0 {
             payload.updateValue(CBOR.unsignedInt(UInt(data.count)), forKey: "len")
         }
@@ -339,16 +350,16 @@ public class ImageManager: McuManager {
         let packet = buildPacket(op: .write, flags: 0, group: group, sequenceNumber: 0, commandId: ID_UPLOAD, payload: payload)
         var packetOverhead = packet.count + 5
         if transporter.getScheme().isCoap() {
-            // Add 25 to the packet size
-            packetOverhead = packetOverhead + 25 // add 25 bytes to packet overhead estimate for the CoAP header
+            // Add 25 bytes to packet overhead estimate for the CoAP header
+            packetOverhead = packetOverhead + 25
         }
         return packetOverhead
     }
 }
 
-//******************************************************************
+//******************************************************************************
 // MARK: Image Upload Delegate
-//******************************************************************
+//******************************************************************************
 
 public protocol ImageUploadDelegate {
     /// Called when a packet of image data has been sent successfully.
