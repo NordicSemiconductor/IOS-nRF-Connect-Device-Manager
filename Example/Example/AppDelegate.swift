@@ -1,10 +1,8 @@
-//
-//  AppDelegate.swift
-//  sc-test
-//
-//  Created by Brian Giori on 11/29/17.
-//  Copyright © 2017 Runtime. All rights reserved.
-//
+/*
+ * Copyright (c) 2017-2018 Runtime Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 import UIKit
 

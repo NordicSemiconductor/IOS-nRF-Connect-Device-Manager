@@ -1,5 +1,7 @@
-//
-//  Use this file to import your target's public headers that you would like to expose to Swift.
-//
+/*
+ * Copyright (c) 2017-2018 Runtime Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #import "CBOR/SwiftCBOR.h"
