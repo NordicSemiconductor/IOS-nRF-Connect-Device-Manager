@@ -1,0 +1,179 @@
+/*
+ * Copyright (c) 2017-2018 Runtime Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import Foundation
+
+public class McuMgrImage {
+    
+    public static let IMG_HASH_LEN = 32
+    
+    let header: McuMgrImageHeader
+    let tlv: McuMgrImageTlv
+    let data: Data
+    let hash: Data
+    
+    init(data: Data) throws {
+        self.data = data
+        self.header = McuMgrImageHeader(data: data)
+        self.tlv = try McuMgrImageTlv(data: data, imageHeader: header)
+        self.hash = tlv.hash
+    }
+}
+
+public class McuMgrImageHeader {
+    
+    public static let IMG_HEADER_LEN = 24
+    
+    public static let IMG_HEADER_MAGIC: UInt32 = 0x96f3b83d
+    public static let IMG_HEADER_MAGIC_V1: UInt32 = 0x96f3b83c
+    
+    public static let MAGIC_OFFSET = 0
+    public static let LOAD_ADDR_OFFSET = 4
+    public static let HEADER_SIZE_OFFSET = 8
+    public static let IMAGE_SIZE_OFFSET = 12
+    public static let FLAGS_OFFSET = 16
+    
+    let magic: UInt32
+    let loadAddr: UInt32
+    let headerSize: UInt16
+    // __pad1: UInt16
+    let imageSize: UInt32
+    let flags: UInt32
+    let version: McuMgrImageVersion
+    // __pad2 UInt16
+    
+    init(data: Data) {
+        magic = data.to(type: UInt32.self, offset: McuMgrImageHeader.MAGIC_OFFSET)
+        loadAddr = data.to(type: UInt32.self, offset: McuMgrImageHeader.LOAD_ADDR_OFFSET)
+        headerSize = data.to(type: UInt16.self, offset: McuMgrImageHeader.HEADER_SIZE_OFFSET)
+        imageSize = data.to(type: UInt32.self, offset: McuMgrImageHeader.IMAGE_SIZE_OFFSET)
+        flags = data.to(type: UInt32.self, offset: McuMgrImageHeader.FLAGS_OFFSET)
+        version = McuMgrImageVersion(data: data)
+    }
+    
+    func isLegacy() -> Bool {
+        return magic == McuMgrImageHeader.IMG_HEADER_MAGIC_V1
+    }
+}
+
+class McuMgrImageVersion {
+    
+    public static let VERSION_OFFSET = 20
+    
+    let major: UInt8
+    let minor: UInt8
+    let revision: UInt16
+    let build: UInt32
+    
+    init(data: Data, offset: Int = VERSION_OFFSET) {
+        major = data[offset]
+        minor = data[offset + 1]
+        revision = data.to(type: UInt16.self, offset: offset + 2)
+        build = data.to(type: UInt32.self, offset: offset + 4)
+    }
+}
+
+class McuMgrImageTlv {
+    
+    public static let IMG_TLV_SHA256: UInt8 = 0x10
+    public static let IMG_TLV_SHA256_V1: UInt8 = 0x01
+    public static let IMG_TLV_INFO_MAGIC: UInt16 = 0x6907
+    
+    var tlvInfo: McuMgrImageTlvInfo?
+    var trailerTlvEntries: [McuMgrImageTlvTrailerEntry]
+    
+    let hash: Data
+    
+    init(data: Data, imageHeader: McuMgrImageHeader) throws {
+        var offset = Int(imageHeader.headerSize) + Int(imageHeader.imageSize)
+        let end = data.count
+        
+        // Parse the tlv info header (Not included in legacy version)
+        if !imageHeader.isLegacy() {
+            try tlvInfo = McuMgrImageTlvInfo(data: data, offset: offset)
+            offset += McuMgrImageTlvInfo.SIZE
+        }
+        
+        // Parse each tlv entry
+        trailerTlvEntries = [McuMgrImageTlvTrailerEntry]()
+        var hashEntry: McuMgrImageTlvTrailerEntry?
+        while offset + McuMgrImageTlvTrailerEntry.MIN_SIZE < end {
+            let tlvEntry = try McuMgrImageTlvTrailerEntry(data: data, offset: offset)
+            trailerTlvEntries.append(tlvEntry)
+            // Set the hash if this entry's type matches the hash's type
+            if imageHeader.isLegacy() && tlvEntry.type == McuMgrImageTlv.IMG_TLV_SHA256_V1 ||
+                !imageHeader.isLegacy() && tlvEntry.type == McuMgrImageTlv.IMG_TLV_SHA256 {
+                hashEntry = tlvEntry
+            }
+            
+            // Increment offset
+            offset += tlvEntry.size
+        }
+        
+        // Set the hash. If not found, throw an error
+        if let hashEntry = hashEntry {
+            hash = hashEntry.value
+        } else {
+            throw McuMgrImageParseError.hashNotFound
+        }
+    }
+    
+    
+}
+
+/// Represents the header which starts immediately after the image data and
+/// precedes the image trailer TLV.
+class McuMgrImageTlvInfo {
+    
+    public static let SIZE = 4
+    
+    let magic: UInt16
+    let total: UInt16
+    
+    init(data: Data, offset: Int) throws {
+        magic = data.to(type: UInt16.self, offset: offset)
+        total = data.to(type: UInt16.self, offset: offset + 2)
+        if magic != McuMgrImageTlv.IMG_TLV_INFO_MAGIC {
+            throw McuMgrImageParseError.invalidTlvInfoMagic
+        }
+    }
+}
+
+/// Represents an entry in the image TLV trailer.
+class McuMgrImageTlvTrailerEntry {
+    
+    /// The minimum size of the TLV entry (length = 0)
+    public static let MIN_SIZE = 4
+    
+    let type: UInt8
+    // __pad: UInt8
+    let length: UInt16
+    let value: Data
+    
+    /// Size of the entire TLV entry in bytes
+    let size: Int
+    
+    init(data: Data, offset: Int) throws {
+        if (offset + McuMgrImageTlvTrailerEntry.MIN_SIZE > data.count) {
+            throw McuMgrImageParseError.insufficientData
+        }
+        
+        var offset = offset
+        type = data[offset]
+        offset += 2 // Increment offset and account for extra byte of padding
+        length = data.to(type: UInt16.self, offset: offset)
+        offset += 2 // Move offset past length
+        value = data[Int(offset)..<Int(offset + Int(length))]
+        size = McuMgrImageTlvTrailerEntry.MIN_SIZE + Int(length)
+    }
+    
+}
+
+enum McuMgrImageParseError: Error {
+    case invalidTlvInfoMagic
+    case insufficientData
+    case hashNotFound
+}
