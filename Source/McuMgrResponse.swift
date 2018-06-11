@@ -12,8 +12,9 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
     // MARK: Value Mapping
     //**************************************************************************
     
-    /// Every McuMgrResponse will contain a return code value. If the original response packet
-    /// does not contain a "rc", the success value of 0 is assumed.
+    /// Every McuMgrResponse will contain a return code value. If the original
+    /// response packet does not contain a "rc", the success value of 0 is
+    /// assumed.
     public var rc: UInt = 0
     
     //**************************************************************************
@@ -186,10 +187,11 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
     // MARK: Utilities
     //**************************************************************************
     
-    /// Gets the expected length of the entire respose from the length field in the
-    /// McuMgrHeader. The return value includes the 8-byte McuMgr header.
+    /// Gets the expected length of the entire respose from the length field in
+    /// the McuMgrHeader. The return value includes the 8-byte McuMgr header.
     ///
-    /// - parameter scheme: The transport scheme (Must be BLE to use this function)
+    /// - parameter scheme: The transport scheme (Must be BLE to use this
+    ///   function)
     ///
     /// - returns: The expected length of the header or nil on error
     public static func getExpectedLength(scheme: McuMgrScheme, responseData: Data) -> Int? {
