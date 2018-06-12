@@ -9,20 +9,31 @@ import CoreBluetooth
 
 public class McuMgrBleTransport: NSObject {
     
-    private let TAG: String
-    
-    private static let MAX_RETRIES = 3
-    private static let TIMEOUT = 10
-    
     public static let SMP_SERVICE = CBUUID(string: "8D53DC1D-1DB7-4CD3-868B-8A527460AA84")
     public static let SMP_CHARACTERISTIC = CBUUID(string: "DA2E7828-FBCE-4E01-AE9E-261174997C48")
     
+    /// Logging TAG
+    private let TAG: String
+    
+    /// Max number of retries until the transaction is failed
+    private static let MAX_RETRIES = 3
+    /// Transaction Timout (seconds)
+    private static let TIMEOUT = 10
+    
+    /// The CBPeripheral for this transport to communicate with.
     private var peripheral: CBPeripheral
+    /// The central manager
     private var bleCentralManager: BleCentralManager
+    /// Dispatch queue for queuing requests
     private var dispatchQueue: DispatchQueue
+    /// Lock used to wait for callbacks before continuing the request. This lock
+    /// is used to wait for the device to setup (i.e. connection, descriptor
+    /// writes) and the device to be received.
     private var lock: ResultLock
     
+    /// SMP Service object
     private var smpService: CBService?
+    /// SMP Characteristic object. Used to write requests.
     private var smpCharacteristic: CBCharacteristic?
     
     // Used to store fragmented response data
@@ -51,7 +62,7 @@ public class McuMgrBleTransport: NSObject {
     /// Private initializer
     private init(peripheral: CBPeripheral) {
         self.peripheral = peripheral
-        self.TAG = "SMP\(peripheral.name ?? "Unknown") (\(peripheral.identifier.uuidString.prefix(4)))"
+        self.TAG = "SMP \(peripheral.name ?? "Unknown") (\(peripheral.identifier.uuidString.prefix(4)))"
         self.bleCentralManager = BleCentralManager.getInstance()
         self.dispatchQueue = DispatchQueue(label: "McuMgrBleTransport")
         lock = ResultLock(isOpen: false)

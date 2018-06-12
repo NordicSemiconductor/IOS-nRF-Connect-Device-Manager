@@ -32,6 +32,26 @@ extension CBOR: CustomStringConvertible {
         }
     }
     
+    public var value : Any? {
+        switch self {
+        case let .unsignedInt(l): return Int(l)
+        case let .negativeInt(l): return Int(l) * -1
+        case let .byteString(l):  return l
+        case let .utf8String(l):  return l
+        case let .array(l):       return l
+        case let .map(l):         return l
+        case let .tagged(t, l):   return (t, l)
+        case let .simple(l):      return l
+        case let .boolean(l):     return l
+        case .null:               return nil
+        case .undefined:          return nil
+        case let .half(l):        return l
+        case let .float(l):       return l
+        case let .double(l):      return l
+        case .break:              return nil
+        }
+    }
+    
     public static func toObjectMap<V: CBORMappable>(map: [CBOR:CBOR]?) throws -> [String:V]? {
         guard let map = map else {
             return nil
@@ -46,6 +66,21 @@ extension CBOR: CustomStringConvertible {
         return objMap
     }
     
+    public static func toMap<V>(map: [CBOR:CBOR]?) throws -> [String:V]? {
+        guard let map = map else {
+            return nil
+        }
+        var objMap = [String:V]()
+        for (key, value) in map {
+            if case let CBOR.utf8String(keyString) = key {
+                if let v = value.value as? V {
+                    objMap.updateValue(v, forKey: keyString)
+                }
+            }
+        }
+        return objMap
+    }
+    
     public static func toObjectArray<V: CBORMappable>(array: [CBOR]?) throws -> [V]? {
         guard let array = array else {
             return nil
@@ -54,6 +89,19 @@ extension CBOR: CustomStringConvertible {
         for cbor in array {
             let obj = try V(cbor: cbor)
             objArray.append(obj)
+        }
+        return objArray
+    }
+    
+    public static func toArray<V>(array: [CBOR]?) throws -> [V]? {
+        guard let array = array else {
+            return nil
+        }
+        var objArray = [V]()
+        for cbor in array {
+            if let v = cbor.value as? V {
+                objArray.append(v)
+            }
         }
         return objArray
     }

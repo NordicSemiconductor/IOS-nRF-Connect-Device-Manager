@@ -10,12 +10,12 @@ public class McuMgrImage {
     
     public static let IMG_HASH_LEN = 32
     
-    let header: McuMgrImageHeader
-    let tlv: McuMgrImageTlv
-    let data: Data
-    let hash: Data
+    public let header: McuMgrImageHeader
+    public let tlv: McuMgrImageTlv
+    public let data: Data
+    public let hash: Data
     
-    init(data: Data) throws {
+    public init(data: Data) throws {
         self.data = data
         self.header = McuMgrImageHeader(data: data)
         self.tlv = try McuMgrImageTlv(data: data, imageHeader: header)
@@ -36,16 +36,16 @@ public class McuMgrImageHeader {
     public static let IMAGE_SIZE_OFFSET = 12
     public static let FLAGS_OFFSET = 16
     
-    let magic: UInt32
-    let loadAddr: UInt32
-    let headerSize: UInt16
+    public let magic: UInt32
+    public let loadAddr: UInt32
+    public let headerSize: UInt16
     // __pad1: UInt16
-    let imageSize: UInt32
-    let flags: UInt32
-    let version: McuMgrImageVersion
+    public let imageSize: UInt32
+    public let flags: UInt32
+    public let version: McuMgrImageVersion
     // __pad2 UInt16
     
-    init(data: Data) {
+    public init(data: Data) {
         magic = data.to(type: UInt32.self, offset: McuMgrImageHeader.MAGIC_OFFSET)
         loadAddr = data.to(type: UInt32.self, offset: McuMgrImageHeader.LOAD_ADDR_OFFSET)
         headerSize = data.to(type: UInt16.self, offset: McuMgrImageHeader.HEADER_SIZE_OFFSET)
@@ -54,21 +54,21 @@ public class McuMgrImageHeader {
         version = McuMgrImageVersion(data: data)
     }
     
-    func isLegacy() -> Bool {
+    public func isLegacy() -> Bool {
         return magic == McuMgrImageHeader.IMG_HEADER_MAGIC_V1
     }
 }
 
-class McuMgrImageVersion {
+public class McuMgrImageVersion {
     
     public static let VERSION_OFFSET = 20
     
-    let major: UInt8
-    let minor: UInt8
-    let revision: UInt16
-    let build: UInt32
+    public let major: UInt8
+    public let minor: UInt8
+    public let revision: UInt16
+    public let build: UInt32
     
-    init(data: Data, offset: Int = VERSION_OFFSET) {
+    public init(data: Data, offset: Int = VERSION_OFFSET) {
         major = data[offset]
         minor = data[offset + 1]
         revision = data.to(type: UInt16.self, offset: offset + 2)
@@ -76,18 +76,18 @@ class McuMgrImageVersion {
     }
 }
 
-class McuMgrImageTlv {
+public class McuMgrImageTlv {
     
     public static let IMG_TLV_SHA256: UInt8 = 0x10
     public static let IMG_TLV_SHA256_V1: UInt8 = 0x01
     public static let IMG_TLV_INFO_MAGIC: UInt16 = 0x6907
     
-    var tlvInfo: McuMgrImageTlvInfo?
-    var trailerTlvEntries: [McuMgrImageTlvTrailerEntry]
+    public var tlvInfo: McuMgrImageTlvInfo?
+    public var trailerTlvEntries: [McuMgrImageTlvTrailerEntry]
     
-    let hash: Data
+    public let hash: Data
     
-    init(data: Data, imageHeader: McuMgrImageHeader) throws {
+    public init(data: Data, imageHeader: McuMgrImageHeader) throws {
         var offset = Int(imageHeader.headerSize) + Int(imageHeader.imageSize)
         let end = data.count
         
@@ -126,14 +126,14 @@ class McuMgrImageTlv {
 
 /// Represents the header which starts immediately after the image data and
 /// precedes the image trailer TLV.
-class McuMgrImageTlvInfo {
+public class McuMgrImageTlvInfo {
     
     public static let SIZE = 4
     
-    let magic: UInt16
-    let total: UInt16
+    public let magic: UInt16
+    public let total: UInt16
     
-    init(data: Data, offset: Int) throws {
+    public init(data: Data, offset: Int) throws {
         magic = data.to(type: UInt16.self, offset: offset)
         total = data.to(type: UInt16.self, offset: offset + 2)
         if magic != McuMgrImageTlv.IMG_TLV_INFO_MAGIC {
@@ -143,20 +143,20 @@ class McuMgrImageTlvInfo {
 }
 
 /// Represents an entry in the image TLV trailer.
-class McuMgrImageTlvTrailerEntry {
+public class McuMgrImageTlvTrailerEntry {
     
     /// The minimum size of the TLV entry (length = 0)
     public static let MIN_SIZE = 4
     
-    let type: UInt8
+    public let type: UInt8
     // __pad: UInt8
-    let length: UInt16
-    let value: Data
+    public let length: UInt16
+    public let value: Data
     
     /// Size of the entire TLV entry in bytes
-    let size: Int
+    public let size: Int
     
-    init(data: Data, offset: Int) throws {
+    public init(data: Data, offset: Int) throws {
         if (offset + McuMgrImageTlvTrailerEntry.MIN_SIZE > data.count) {
             throw McuMgrImageParseError.insufficientData
         }
@@ -172,7 +172,7 @@ class McuMgrImageTlvTrailerEntry {
     
 }
 
-enum McuMgrImageParseError: Error {
+public enum McuMgrImageParseError: Error {
     case invalidTlvInfoMagic
     case insufficientData
     case hashNotFound

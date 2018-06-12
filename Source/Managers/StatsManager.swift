@@ -24,7 +24,7 @@ public class StatsManager: McuManager {
     // MARK: Initializers
     //**************************************************************************
 
-    init(transporter: McuMgrTransport) {
+    public init(transporter: McuMgrTransport) {
         super.init(group: .stats, transporter: transporter)
     }
     
@@ -36,7 +36,7 @@ public class StatsManager: McuManager {
     ///
     /// - parameter module: The statistics module to
     /// - parameter callback: The response callback
-    func read(module: String, callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func read(module: String, callback: @escaping McuMgrCallback<McuMgrStatsResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(module)]
         send(op: .read, commandId: ID_READ, payload: payload, callback: callback)
     }
@@ -44,8 +44,7 @@ public class StatsManager: McuManager {
     /// List the statistic modules from a device.
     ///
     /// - parameter callback: The response callback
-    func list(callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func list(callback: @escaping McuMgrCallback<McuMgrStatsListResponse>) {
         send(op: .read, commandId: ID_LIST, payload: nil, callback: callback)
     }
-    
 }

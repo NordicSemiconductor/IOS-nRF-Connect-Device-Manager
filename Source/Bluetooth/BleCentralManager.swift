@@ -102,6 +102,17 @@ public class BleCentralManager: NSObject {
         return scannedPeripherals[address]
     }
     
+    /// Get a scanned peripheral object using the advertised name. This function
+    /// will return the first peripheral whose name matches the provided
+    /// parameter.
+    ///
+    /// - parameter name: the advertised name of the peripheral to get
+    ///
+    /// - returns: foobar
+    public func getScannedPeripheralWithName(_ name: String) -> CBPeripheral? {
+        return scannedPeripherals.values.first(where: {$0.name == name})
+    }
+    
     /// Removes a scanned peripheral from the dictionary.
     ///
     /// - parameter address: the address of the peripheral to remove

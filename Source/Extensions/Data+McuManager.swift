@@ -27,8 +27,8 @@ public extension Data {
     
     public struct HexEncodingOptions: OptionSet {
         public let rawValue: Int
-        static let upperCase = HexEncodingOptions(rawValue: 1 << 0)
-        static let space = HexEncodingOptions(rawValue: 1 << 1)
+        public static let upperCase = HexEncodingOptions(rawValue: 1 << 0)
+        public static let space = HexEncodingOptions(rawValue: 1 << 1)
         public init(rawValue: Int) {
             self.rawValue = rawValue
         }

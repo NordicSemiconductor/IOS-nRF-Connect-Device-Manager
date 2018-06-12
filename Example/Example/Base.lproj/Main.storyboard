@@ -33,7 +33,7 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Zephyr" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="9aN-gq-Bsq">
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="nimble-bleprph" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="9aN-gq-Bsq">
                                         <rect key="frame" x="52.5" y="0.0" width="290.5" height="30"/>
                                         <nil key="textColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -41,24 +41,18 @@
                                     </textField>
                                 </subviews>
                             </stackView>
-                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EWz-TO-FgL">
-                                <rect key="frame" x="159" y="95" width="200" height="30"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="EWz-TO-FgL">
+                                <rect key="frame" x="277" y="95" width="82" height="30"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NbG-nP-9Cd">
-                                        <rect key="frame" x="0.0" y="0.0" width="100" height="30"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="ldc-u9-F76"/>
-                                        </constraints>
+                                        <rect key="frame" x="0.0" y="0.0" width="30" height="30"/>
                                         <state key="normal" title="Find"/>
                                         <connections>
                                             <action selector="findDevice:" destination="BYZ-38-t0r" eventType="touchUpInside" id="TLo-0f-9hw"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="A0Z-Fv-DBI">
-                                        <rect key="frame" x="100" y="0.0" width="100" height="30"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="wdl-qq-PMQ"/>
-                                        </constraints>
+                                        <rect key="frame" x="46" y="0.0" width="36" height="30"/>
                                         <state key="normal" title="Clear"/>
                                         <connections>
                                             <action selector="reset:" destination="BYZ-38-t0r" eventType="touchUpInside" id="gWh-Km-cNh"/>
@@ -322,24 +316,18 @@
                                             </stackView>
                                         </subviews>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aKc-GL-AeH">
-                                        <rect key="frame" x="109" y="193.5" width="250" height="30"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="aKc-GL-AeH">
+                                        <rect key="frame" x="177" y="193.5" width="182" height="30"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3LC-qT-Gnr">
-                                                <rect key="frame" x="0.0" y="0.0" width="150" height="30"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="150" id="w6E-Rx-bXA"/>
-                                                </constraints>
+                                                <rect key="frame" x="0.0" y="0.0" width="127" height="30"/>
                                                 <state key="normal" title="Upgrade Firmware"/>
                                                 <connections>
                                                     <action selector="selectImage:" destination="BYZ-38-t0r" eventType="touchUpInside" id="0Zh-NW-OKz"/>
                                                 </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3Dt-iM-btK">
-                                                <rect key="frame" x="150" y="0.0" width="100" height="30"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="100" id="PWS-aS-tKq"/>
-                                                </constraints>
+                                                <rect key="frame" x="143" y="0.0" width="39" height="30"/>
                                                 <state key="normal" title="Erase"/>
                                                 <connections>
                                                     <action selector="eraseImage:" destination="BYZ-38-t0r" eventType="touchUpInside" id="JSo-5K-AvZ"/>

@@ -27,7 +27,7 @@ public class FirmwareUpgradeManager {
     // MARK: Initializer
     //**************************************************************************
     
-    public    init(transporter: McuMgrTransport, imageData: Data, delegate: FirmwareUpgradeDelegate) throws {
+    public init(transporter: McuMgrTransport, imageData: Data, delegate: FirmwareUpgradeDelegate) throws {
         self.transporter = transporter
         self.imageManager = ImageManager(transporter: transporter)
         self.defaultManager = DefaultManager(transporter: transporter)

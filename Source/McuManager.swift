@@ -177,7 +177,7 @@ public enum McuMgrReturnCode: UInt, Error {
     case noEntry    = 5
     case badState   = 6
     case unrecognized
-    var localizedDescription: String {
+    public var localizedDescription: String {
         switch self {
         case .ok:
             return "OK (0)"
@@ -197,10 +197,10 @@ public enum McuMgrReturnCode: UInt, Error {
             return "Unrecognized (\(rawValue))"
         }
     }
-    func isSuccess() -> Bool {
+    public func isSuccess() -> Bool {
         return self == .ok
     }
-    func isError() -> Bool {
+    public func isError() -> Bool {
         return self != .ok
     }
 }

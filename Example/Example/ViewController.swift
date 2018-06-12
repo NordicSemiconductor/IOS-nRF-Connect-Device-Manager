@@ -85,7 +85,6 @@ class ViewController: UIViewController {
             }
         }
         if peripheral != nil {
-            //
             setupPeripheral(peripheral)
         }
     }
@@ -171,7 +170,6 @@ class ViewController: UIViewController {
         })
     }
 }
-
 
 //******************************************************************************
 // MARK: Document Picker Delegates

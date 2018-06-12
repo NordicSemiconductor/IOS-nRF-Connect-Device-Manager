@@ -23,7 +23,7 @@ public class LogManager: McuManager {
     // MARK: Initializers
     //**************************************************************************
 
-    init(transporter: McuMgrTransport) {
+    public init(transporter: McuMgrTransport) {
         super.init(group: .logs, transporter: transporter)
     }
     
@@ -48,7 +48,7 @@ public class LogManager: McuManager {
     /// - parameter minTimestamp: The minimum timestamp to pull logs from. This
     ///   parameter is only used if a minIndex is also provided.
     /// - parameter callback: The response callback
-    func show(log: String? = nil, minIndex: UInt? = nil, minTimestamp: Date? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func show(log: String? = nil, minIndex: UInt? = nil, minTimestamp: Date? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         var payload: [String:CBOR] = [:]
         if let log = log {
             payload.updateValue(CBOR.utf8String(log), forKey: "log_name")
@@ -65,28 +65,28 @@ public class LogManager: McuManager {
     /// Clear the logs on a device.
     ///
     /// - parameter callback: The response callback
-    func clear(callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func clear(callback: @escaping McuMgrCallback<McuMgrResponse>) {
         send(op: .write, commandId: ID_CLEAR, payload: nil, callback: callback)
     }
 
     /// List the log modules on a device.
     ///
     /// - parameter callback: The response callback
-    func moduleList(callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func moduleList(callback: @escaping McuMgrCallback<McuMgrResponse>) {
         send(op: .read, commandId: ID_MODULE_LIST, payload: nil, callback: callback)
     }
 
     /// List the log levels on a device.
     ///
     /// - parameter callback: The response callback
-    func levelList(callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func levelList(callback: @escaping McuMgrCallback<McuMgrResponse>) {
         send(op: .read, commandId: ID_LEVEL_LIST, payload: nil, callback: callback)
     }
 
     /// List the logs on a device.
     ///
     /// - parameter callback: The response callback
-    func logsList(callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func logsList(callback: @escaping McuMgrCallback<McuMgrResponse>) {
         send(op: .read, commandId: ID_LOGS_LIST, payload: nil, callback: callback)
     }
 }

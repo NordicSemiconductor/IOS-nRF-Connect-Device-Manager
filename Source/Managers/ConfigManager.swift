@@ -31,7 +31,7 @@ public class ConfigManager: McuManager {
     ///
     /// - parameter name: The name of the system configuration variable to read
     /// - parameter callback: The response callback
-    public func read(name: String, callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func read(name: String, callback: @escaping McuMgrCallback<McuMgrConfigResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(name)]
         send(op: .read, commandId: ID_CONFIG, payload: payload, callback: callback)
     }

@@ -31,7 +31,7 @@ public class McuMgrHeader: CustomDebugStringConvertible {
     ///   equal to eight.
     /// - throws: McuMgrHeaderParseException.invalidSize(Int) if the data count
     ///   is too small
-    init(data: Data) throws {
+    public init(data: Data) throws {
         if (data.count < McuMgrHeader.HEADER_LENGTH) {
             throw McuMgrHeaderParseError.invalidSize(data.count)
         }
@@ -43,7 +43,7 @@ public class McuMgrHeader: CustomDebugStringConvertible {
         commandId = data[7]
     }
     
-    init(op: UInt8, flags: UInt8, length: UInt16, groupId: UInt16, sequenceNumber: UInt8, commandId: UInt8) {
+    public init(op: UInt8, flags: UInt8, length: UInt16, groupId: UInt16, sequenceNumber: UInt8, commandId: UInt8) {
         self.op = op
         self.flags = flags
         self.length = length
@@ -52,7 +52,7 @@ public class McuMgrHeader: CustomDebugStringConvertible {
         self.commandId = commandId
     }
     
-    func toData() -> Data {
+    public func toData() -> Data {
         var data = Data(count: McuMgrHeader.HEADER_LENGTH)
         data.append(op)
         data.append(flags)
@@ -71,12 +71,12 @@ public class McuMgrHeader: CustomDebugStringConvertible {
     /// - parameter group: The group id for this command
     /// - parameter seq: Optional sequence number
     /// - parameter id: The subcommand id for the given group
-    static func build(op: UInt8, flags: UInt8, len: UInt16, group: UInt16, seq: UInt8, id: UInt8) -> [UInt8] {
+    public static func build(op: UInt8, flags: UInt8, len: UInt16, group: UInt16, seq: UInt8, id: UInt8) -> [UInt8] {
         return [op, flags, UInt8(len >> 4), UInt8(len & 0x0F), UInt8(group >> 4), UInt8(group & 0x0F), seq, id]
     }
 }
 
-enum McuMgrHeaderParseError: Error {
+public enum McuMgrHeaderParseError: Error {
     case invalidSize(Int)
 }
 

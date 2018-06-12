@@ -6,13 +6,13 @@
 
 import Foundation
 
-class ResultLock {
+public class ResultLock {
     
     private var semaphore: DispatchSemaphore
-    var isOpen: Bool = false
-    var error: Error?
+    public var isOpen: Bool = false
+    public var error: Error?
     
-    init(isOpen: Bool) {
+    public init(isOpen: Bool) {
         self.isOpen = isOpen
         self.semaphore = DispatchSemaphore(value: 0)
     }
@@ -20,7 +20,7 @@ class ResultLock {
     /// Block the current thread until the condition is opened.
     ///
     /// If the condition is already opened, return immediately
-    func block() -> LockResult {
+    public func block() -> LockResult {
         if !isOpen {
             semaphore.wait()
         }
@@ -34,7 +34,7 @@ class ResultLock {
     /// Block the current thread until the condition is opened or until timeout.
     ///
     /// If the condition is opened, return immediately
-    func block(timeout: DispatchTime) -> LockResult {
+    public func block(timeout: DispatchTime) -> LockResult {
         let dispatchTimeoutResult: DispatchTimeoutResult
         if !isOpen {
             dispatchTimeoutResult = semaphore.wait(timeout: timeout)
@@ -54,7 +54,7 @@ class ResultLock {
     /// Open the condition, and release all threads that are blocked
     ///
     /// Any threads that later approach block() will not block unless close() is called.
-    func open(_ error: Error? = nil) {
+    public func open(_ error: Error? = nil) {
         objc_sync_enter(self)
         self.error = error
         if !isOpen {
@@ -65,7 +65,7 @@ class ResultLock {
     }
     
     /// Reset the condtion to the closed state
-    func close() {
+    public func close() {
         objc_sync_enter(self)
         error = nil
         semaphore = DispatchSemaphore(value: 0)
@@ -74,7 +74,7 @@ class ResultLock {
     }
 }
 
-enum LockResult {
+public enum LockResult {
     case timeout
     case success
     case error(Error)

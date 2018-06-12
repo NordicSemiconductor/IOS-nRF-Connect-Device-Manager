@@ -19,7 +19,7 @@ public class RunTestManager: McuManager {
     // MARK: Initializers
     //**************************************************************************
 
-    init(transporter: McuMgrTransport) {
+    public init(transporter: McuMgrTransport) {
         super.init(group: .run, transporter: transporter)
     }
     
@@ -36,7 +36,7 @@ public class RunTestManager: McuManager {
     ///   will be run.
     /// - parameter token: The optional token to returned in the response.
     /// - parameter callback: The response callback
-    func test(name: String? = nil, token: String? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func test(name: String? = nil, token: String? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         var payload: [String:CBOR] = [:]
         if let name = name {
             payload.updateValue(CBOR.utf8String(name), forKey: "testname")
@@ -50,7 +50,7 @@ public class RunTestManager: McuManager {
     /// List the tests on a device.
     ///
     /// - parameter callback: The response callback
-    func list(callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func list(callback: @escaping McuMgrCallback<McuMgrResponse>) {
         send(op: .read, commandId: ID_LIST, payload: nil, callback: callback)
     }
     

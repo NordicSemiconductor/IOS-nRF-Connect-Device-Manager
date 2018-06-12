@@ -233,7 +233,7 @@ public class McuMgrEchoResponse: McuMgrResponse {
     }
 }
 
-public class McuMgrTaskStatResponse: McuMgrResponse {
+public class McuMgrTaskStatsResponse: McuMgrResponse {
     
     /// A map of task names to task statistics
     public var tasks: [String:TaskStatistics]?
@@ -281,6 +281,51 @@ public class McuMgrTaskStatResponse: McuMgrResponse {
     }
 }
 
+public class McuMgrMemoryPoolStatsResponse: McuMgrResponse {
+    
+    /// A map of task names to task statistics
+    public var mpools: [String:MemoryPoolStatistics]?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.map(mpools)? = cbor?["mpools"] {
+            self.mpools = try CBOR.toObjectMap(map: mpools)
+        }
+    }
+    
+    public class MemoryPoolStatistics: CBORMappable {
+        
+        /// The memory pool's block size
+        public var blockSize: UInt!
+        /// The number of blocks in the memory pool
+        public var numBlocks: UInt!
+        /// The number of free blocks in the memory pool
+        public var numFree: UInt!
+        /// The minimum number of free blocks over the memory pool's life
+        public var minFree: UInt!
+        
+        public required init(cbor: CBOR?) throws {
+            try super.init(cbor: cbor)
+            if case let CBOR.unsignedInt(blockSize)? = cbor?["blksiz"] {self.blockSize = blockSize}
+            if case let CBOR.unsignedInt(numBlocks)? = cbor?["nblks"] {self.numBlocks = numBlocks}
+            if case let CBOR.unsignedInt(numFree)? = cbor?["nfree"] {self.numFree = numFree}
+            if case let CBOR.unsignedInt(minFree)? = cbor?["min"] {self.minFree = minFree}
+        }
+    }
+}
+
+public class McuMgrDateTimeResponse: McuMgrResponse {
+    
+    /// String representation of the datetime on the device
+    public var datetime: String?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.utf8String(datetime)? = cbor?["datetime"] {
+            self.datetime = datetime
+        }
+    }
+}
 
 
 //******************************************************************************
@@ -353,10 +398,149 @@ public class McuMgrUploadResponse: McuMgrResponse {
 // MARK: Logs Responses
 //******************************************************************************
 
+public class McuMgrLevelListResponse: McuMgrResponse {
+
+    /// Log level names
+    public var logLevelNames: [String]?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.array(logLevelNames)? = cbor?["level_map"]  {
+            self.logLevelNames = try CBOR.toArray(array: logLevelNames)
+            
+        }
+    }
+}
+
+public class McuMgrLogListResponse: McuMgrResponse {
+    
+    /// Log levels
+    public var logNames: [String]?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.array(logNames)? = cbor?["log_list"]  {
+            self.logNames = try CBOR.toArray(array: logNames)
+            
+        }
+    }
+}
+
+public class McuMgrLogResponse: McuMgrResponse {
+    
+    /// Next index that the device will log to.
+    public var next_index: UInt?
+    /// Logs
+    public var logs: [LogResult]?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.unsignedInt(next_index)? = cbor?["next_index"] {
+            self.next_index = next_index
+        }
+        if case let CBOR.array(logs)? = cbor?["logs"]  {
+            self.logs = try CBOR.toObjectArray(array: logs)
+        }
+    }
+    
+    public class LogResult: CBORMappable {
+        public var name: String?
+        public var type: UInt?
+        public var entries: [LogEntry]?
+        
+        public required init(cbor: CBOR?) throws {
+            try super.init(cbor: cbor)
+            if case let CBOR.utf8String(name)? = cbor?["name"] {self.name = name}
+            if case let CBOR.unsignedInt(type)? = cbor?["name"] {self.type = type}
+            if case let CBOR.array(entries)? = cbor?["entries"] {
+                self.entries = try CBOR.toObjectArray(array: entries)
+            }
+        }
+    }
+    
+    public class LogEntry: CBORMappable {
+        public var msg: [UInt8]!
+        public var ts: UInt!
+        public var level: UInt!
+        public var index: UInt!
+        public var module: UInt!
+        public var type: String!
+        
+        public required init(cbor: CBOR?) throws {
+            try super.init(cbor: cbor)
+            if case let CBOR.byteString(msg)? = cbor?["msg"] {self.msg = msg}
+            if case let CBOR.unsignedInt(ts)? = cbor?["ts"] {self.ts = ts}
+            if case let CBOR.unsignedInt(level)? = cbor?["level"] {self.level = level}
+            if case let CBOR.unsignedInt(index)? = cbor?["index"] {self.index = index}
+            if case let CBOR.unsignedInt(module)? = cbor?["module"] {self.module = module}
+            if case let CBOR.utf8String(type)? = cbor?["type"] {self.type = type}
+        }
+        
+        /// Get the string representation of the message based on type.
+        public func getMessage() -> String? {
+            if msg == nil {
+                return nil
+            }
+            if type != nil && type == "cbor" {
+                if let messageCbor = try? CBOR.decode(msg) {
+                    return messageCbor?.description
+                }
+            } else {
+                return String(bytes: msg, encoding: .utf8)
+            }
+            return nil
+        }
+    }
+}
+
 //******************************************************************************
 // MARK: Stats Responses
 //******************************************************************************
 
+public class McuMgrStatsResponse: McuMgrResponse {
+    
+    /// Name of the statistic module
+    public var name: String?
+    /// Statistic fields
+    public var fields: [String:Int]?
+    /// Statistic group
+    public var group: String?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.utf8String(name)? = cbor?["name"] {self.name = name}
+        if case let CBOR.utf8String(group)? = cbor?["group"] {self.group = group}
+        if case let CBOR.map(fields)? = cbor?["fields"] {
+            self.fields = try CBOR.toMap(map: fields)
+        }
+    }
+}
+
+public class McuMgrStatsListResponse: McuMgrResponse {
+    
+    /// List of names of the statistic modules on the device
+    public var names: [String]?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.array(names)? = cbor?["stat_list"] {
+            self.names = try CBOR.toArray(array: names)
+        }
+    }
+}
+
+
 //******************************************************************************
 // MARK: Config Responses
 //******************************************************************************
+
+public class McuMgrConfigResponse: McuMgrResponse {
+    
+    /// Config value
+    public var val: String?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.utf8String(val)? = cbor?["val"] {self.val = val}
+    }
+}
