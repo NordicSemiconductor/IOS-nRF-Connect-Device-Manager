@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BD351E7220D0604B009F3F4B /* McuManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD5A287320CB50040061F0EE /* McuManager.framework */; };
 		BD5A28A120CB50CA0061F0EE /* McuMgrHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A287E20CB50CA0061F0EE /* McuMgrHeader.swift */; };
 		BD5A28A220CB50CA0061F0EE /* CBOR+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288020CB50CA0061F0EE /* CBOR+McuManager.swift */; };
 		BD5A28A320CB50CA0061F0EE /* String+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288120CB50CA0061F0EE /* String+McuManager.swift */; };
@@ -40,18 +39,7 @@
 		BD5A28BE20CB50CA0061F0EE /* McuMgrImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A28A020CB50CA0061F0EE /* McuMgrImage.swift */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		BD351E7320D0604B009F3F4B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BD5A286A20CB50040061F0EE /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BD5A287220CB50040061F0EE;
-			remoteInfo = McuManager;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
-		BD351E6D20D0604B009F3F4B /* DefaultManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DefaultManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A287320CB50040061F0EE /* McuManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = McuManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A287720CB50040061F0EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BD5A287E20CB50CA0061F0EE /* McuMgrHeader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuMgrHeader.swift; sourceTree = "<group>"; };
@@ -87,14 +75,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		BD351E6A20D0604B009F3F4B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				BD351E7220D0604B009F3F4B /* McuManager.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		BD5A286F20CB50040061F0EE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -117,7 +97,6 @@
 			isa = PBXGroup;
 			children = (
 				BD5A287320CB50040061F0EE /* McuManager.framework */,
-				BD351E6D20D0604B009F3F4B /* DefaultManagerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -215,24 +194,6 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		BD351E6C20D0604B009F3F4B /* DefaultManagerTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = BD351E7720D0604B009F3F4B /* Build configuration list for PBXNativeTarget "DefaultManagerTests" */;
-			buildPhases = (
-				BD351E6920D0604B009F3F4B /* Sources */,
-				BD351E6A20D0604B009F3F4B /* Frameworks */,
-				BD351E6B20D0604B009F3F4B /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				BD351E7420D0604B009F3F4B /* PBXTargetDependency */,
-			);
-			name = DefaultManagerTests;
-			productName = DefaultManagerTests;
-			productReference = BD351E6D20D0604B009F3F4B /* DefaultManagerTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 		BD5A287220CB50040061F0EE /* McuManager */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = BD5A287B20CB50040061F0EE /* Build configuration list for PBXNativeTarget "McuManager" */;
@@ -261,9 +222,6 @@
 				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = Runtime;
 				TargetAttributes = {
-					BD351E6C20D0604B009F3F4B = {
-						CreatedOnToolsVersion = 9.4;
-					};
 					BD5A287220CB50040061F0EE = {
 						CreatedOnToolsVersion = 9.4;
 						LastSwiftMigration = 0940;
@@ -283,19 +241,11 @@
 			projectRoot = "";
 			targets = (
 				BD5A287220CB50040061F0EE /* McuManager */,
-				BD351E6C20D0604B009F3F4B /* DefaultManagerTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		BD351E6B20D0604B009F3F4B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		BD5A287120CB50040061F0EE /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -306,13 +256,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		BD351E6920D0604B009F3F4B /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		BD5A286E20CB50040061F0EE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -350,51 +293,7 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		BD351E7420D0604B009F3F4B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BD5A287220CB50040061F0EE /* McuManager */;
-			targetProxy = BD351E7320D0604B009F3F4B /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
-		BD351E7520D0604B009F3F4B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3Q849T3RP3;
-				INFOPLIST_FILE = DefaultManagerTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = runtime.io.DefaultManagerTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		BD351E7620D0604B009F3F4B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3Q849T3RP3;
-				INFOPLIST_FILE = DefaultManagerTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = runtime.io.DefaultManagerTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		BD5A287920CB50040061F0EE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -575,15 +474,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BD351E7720D0604B009F3F4B /* Build configuration list for PBXNativeTarget "DefaultManagerTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				BD351E7520D0604B009F3F4B /* Debug */,
-				BD351E7620D0604B009F3F4B /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		BD5A286D20CB50040061F0EE /* Build configuration list for PBXProject "McuManager" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
