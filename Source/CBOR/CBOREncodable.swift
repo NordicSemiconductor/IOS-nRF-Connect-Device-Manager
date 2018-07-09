@@ -71,13 +71,11 @@ extension UInt8: CBOREncodable {
     }
 }
 
-
 extension UInt16: CBOREncodable {
     public func encode() -> [UInt8] {
         return CBOR.encodeUInt16(self)
     }
 }
-
 
 extension UInt64: CBOREncodable {
     public func encode() -> [UInt8] {
@@ -108,7 +106,6 @@ extension Double: CBOREncodable {
         return CBOR.encodeDouble(self)
     }
 }
-
 
 extension Bool: CBOREncodable {
     public func encode() -> [UInt8] {

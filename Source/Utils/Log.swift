@@ -17,7 +17,7 @@ class Log {
     }
     
     static func log(_ level: Level, tag: String, msg: String) {
-        NSLog("\(level.rawValue)\(tag): \(msg)")
+        print("\(level.rawValue)\(tag): \(msg)")
     }
     
     static func v(_ tag: String, msg: String) {

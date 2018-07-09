@@ -7,6 +7,7 @@
 import Foundation
 
 public extension String {
+    
     public func replaceFirst(of pattern:String, with replacement:String) -> String {
         if let range = self.range(of: pattern) {
             return self.replacingCharacters(in: range, with: replacement)

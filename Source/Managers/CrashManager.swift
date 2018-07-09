@@ -12,6 +12,7 @@ public class CrashManager: McuManager {
     // MARK: Constants
     //**************************************************************************
 
+    // Mcu Crash Manager ids.
     let ID_TEST = UInt8(0)
     
     public enum CrashTest: String {
@@ -36,11 +37,10 @@ public class CrashManager: McuManager {
 
     /// Run a crash test on a device.
     ///
-    /// - parameter crash: The crash test to run
-    /// - parameter callback: The response callback
+    /// - parameter crash: The crash test to run.
+    /// - parameter callback: The response callback.
     public func test(crash: CrashTest, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["t": CBOR.utf8String(crash.rawValue)]
         send(op: .write, commandId: ID_TEST, payload: payload, callback: callback)
-        
     }
 }

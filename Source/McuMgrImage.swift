@@ -91,13 +91,13 @@ public class McuMgrImageTlv {
         var offset = Int(imageHeader.headerSize) + Int(imageHeader.imageSize)
         let end = data.count
         
-        // Parse the tlv info header (Not included in legacy version)
+        // Parse the tlv info header (Not included in legacy version).
         if !imageHeader.isLegacy() {
             try tlvInfo = McuMgrImageTlvInfo(data: data, offset: offset)
             offset += McuMgrImageTlvInfo.SIZE
         }
         
-        // Parse each tlv entry
+        // Parse each tlv entry.
         trailerTlvEntries = [McuMgrImageTlvTrailerEntry]()
         var hashEntry: McuMgrImageTlvTrailerEntry?
         while offset + McuMgrImageTlvTrailerEntry.MIN_SIZE < end {
@@ -109,19 +109,17 @@ public class McuMgrImageTlv {
                 hashEntry = tlvEntry
             }
             
-            // Increment offset
+            // Increment offset.
             offset += tlvEntry.size
         }
         
-        // Set the hash. If not found, throw an error
+        // Set the hash. If not found, throw an error.
         if let hashEntry = hashEntry {
             hash = hashEntry.value
         } else {
             throw McuMgrImageParseError.hashNotFound
         }
     }
-    
-    
 }
 
 /// Represents the header which starts immediately after the image data and
@@ -145,7 +143,7 @@ public class McuMgrImageTlvInfo {
 /// Represents an entry in the image TLV trailer.
 public class McuMgrImageTlvTrailerEntry {
     
-    /// The minimum size of the TLV entry (length = 0)
+    /// The minimum size of the TLV entry (length = 0).
     public static let MIN_SIZE = 4
     
     public let type: UInt8
@@ -153,7 +151,7 @@ public class McuMgrImageTlvTrailerEntry {
     public let length: UInt16
     public let value: Data
     
-    /// Size of the entire TLV entry in bytes
+    /// Size of the entire TLV entry in bytes.
     public let size: Int
     
     public init(data: Data, offset: Int) throws {
@@ -163,13 +161,12 @@ public class McuMgrImageTlvTrailerEntry {
         
         var offset = offset
         type = data[offset]
-        offset += 2 // Increment offset and account for extra byte of padding
+        offset += 2 // Increment offset and account for extra byte of padding.
         length = data.to(type: UInt16.self, offset: offset)
-        offset += 2 // Move offset past length
+        offset += 2 // Move offset past length.
         value = data[Int(offset)..<Int(offset + Int(length))]
         size = McuMgrImageTlvTrailerEntry.MIN_SIZE + Int(length)
     }
-    
 }
 
 public enum McuMgrImageParseError: Error {

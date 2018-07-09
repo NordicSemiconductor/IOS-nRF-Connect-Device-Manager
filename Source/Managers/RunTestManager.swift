@@ -12,6 +12,7 @@ public class RunTestManager: McuManager {
     // MARK: Run Constants
     //**************************************************************************
 
+    // Mcu Run Test Manager ids.
     let ID_TEST = UInt8(0)
     let ID_LIST = UInt8(1)
     
@@ -35,7 +36,7 @@ public class RunTestManager: McuManager {
     /// - parameter name: The name of the test to run. If left out, all tests
     ///   will be run.
     /// - parameter token: The optional token to returned in the response.
-    /// - parameter callback: The response callback
+    /// - parameter callback: The response callback.
     public func test(name: String? = nil, token: String? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         var payload: [String:CBOR] = [:]
         if let name = name {
@@ -49,7 +50,7 @@ public class RunTestManager: McuManager {
 
     /// List the tests on a device.
     ///
-    /// - parameter callback: The response callback
+    /// - parameter callback: The response callback.
     public func list(callback: @escaping McuMgrCallback<McuMgrResponse>) {
         send(op: .read, commandId: ID_LIST, payload: nil, callback: callback)
     }

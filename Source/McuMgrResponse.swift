@@ -27,15 +27,15 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
     
     /// The response's raw packet data. For CoAP transport schemes, this will
     /// include the CoAP header.
-    public var data: Data?
+    public var rawData: Data?
     
-    /// The 8-byte McuMgrHeader included in the response
+    /// The 8-byte McuMgrHeader included in the response.
     public var header: McuMgrHeader!
     
-    /// The CBOR payload from
+    /// The CBOR payload from.
     public var payload: CBOR?
     
-    /// The raw McuMgrResponse payload
+    /// The raw McuMgrResponse payload.
     public var payloadData: Data?
     
     /// The repsponse's return code obtained from the payload. If no return code
@@ -86,17 +86,17 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
     /// CBOR payload. An object of type <T> will be initialized which will map
     /// the CBOR payload values to the values in the object.
     ///
-    /// - parameter scheme: the transport scheme of the transporter
-    /// - parameter data: The response's raw packet data
-    /// - parameter coapPaylaod: (Optional) payload for CoAP transport schemes
-    /// - parameter coapCode: (Optional) CoAP response code
+    /// - parameter scheme: the transport scheme of the transporter.
+    /// - parameter data: The response's raw packet data.
+    /// - parameter coapPaylaod: (Optional) payload for CoAP transport schemes.
+    /// - parameter coapCode: (Optional) CoAP response code.
     ///
-    /// - returns: The McuMgrResponse on success or nil on failure
-    public static func buildResponse<T: McuMgrResponse>(scheme: McuMgrScheme, data: Data?, coapPayload: Data? = nil, coapCode: Int = 0) throws -> T {
-        guard let data = data else {
+    /// - returns: The McuMgrResponse on success or nil on failure.
+    public static func buildResponse<T: McuMgrResponse>(scheme: McuMgrScheme, response: Data?, coapPayload: Data? = nil, coapCode: Int = 0) throws -> T {
+        guard let bytes = response else {
             throw McuMgrResponseParseError.invalidDataSize
         }
-        if data.count < McuMgrHeader.HEADER_LENGTH {
+        if bytes.count < McuMgrHeader.HEADER_LENGTH {
             throw McuMgrResponseParseError.invalidDataSize
         }
         
@@ -112,21 +112,21 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
                 throw McuMgrResponseParseError.invalidDataSize
             }
             payloadData = coapPayload
-            // Parse the raw payload into CBOR
+            // Parse the raw payload into CBOR.
             payload = try CBOR.decode([UInt8](coapPayload))
-            // Get the header from the CBOR
+            // Get the header from the CBOR.
             if case let CBOR.byteString(rawHeader)? = payload?["_h"] {
                 header = try McuMgrHeader(data: Data(rawHeader))
             } else {
                 throw McuMgrResponseParseError.invalidPayload
             }
         } else {
-            // Parse the header
-            header = try McuMgrHeader(data: data)
-            // Get header and payload from raw data
-            payloadData = data.subdata(in: McuMgrHeader.HEADER_LENGTH..<data.count)
+            // Parse the header.
+            header = try McuMgrHeader(data: bytes)
+            // Get header and payload from raw data.
+            payloadData = bytes.subdata(in: McuMgrHeader.HEADER_LENGTH..<bytes.count)
             if payloadData != nil {
-                // Parse CBOR from raw payload
+                // Parse CBOR from raw payload.
                 payload = try CBOR.decode([UInt8](payloadData!))
             } else {
                 payload = nil
@@ -134,15 +134,15 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
         }
         
         // Init the response with the CBOR payload. This will also map the CBOR
-        // values to object values
+        // values to object values.
         let response = try T(cbor: payload)
         
-        // Set remaining properties
+        // Set remaining properties.
         response.payloadData = payloadData
         response.payload = payload
         response.header = header
         response.scheme = scheme
-        response.data = data
+        response.rawData = bytes
         response.returnCode = McuMgrReturnCode(rawValue: response.rc)
         response.coapCode = coapCode
         
@@ -156,31 +156,31 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
     /// CBOR payload, An object of type <T> will be initialized which will map
     /// the CBOR payload values to the values in the object.
     ///
-    /// - parameter scheme: the transport scheme of the transporter
-    /// - parameter data: The response's raw packet data
+    /// - parameter scheme: the transport scheme of the transporter.
+    /// - parameter data: The response's raw packet data.
     ///
-    /// - returns: The McuMgrResponse on success or nil on failure
+    /// - returns: The McuMgrResponse on success or nil on failure.
     public static func buildResponse<T: McuMgrResponse>(scheme: McuMgrScheme, data: Data?) throws -> T {
-        return try buildResponse(scheme: scheme, data: data, coapPayload: nil, coapCode: 0)
+        return try buildResponse(scheme: scheme, response: data, coapPayload: nil, coapCode: 0)
     }
     
     /// Build a McuMgrResponse for CoAP transport schemes to return to the
-    /// McuManager
+    /// McuManager.
     ///
     /// This method will parse the raw packet data according to the transport
     /// scheme to obtain the header, payload, and return code. After getting the
     /// CBOR payload, An object of type <T> will be initialized which will map
     /// the CBOR payload values to the values in the object.
     ///
-    /// - parameter scheme: The transport scheme of the transporter
-    /// - parameter data: The response's raw packet data
-    /// - parameter coapPayload: The CoAP payload of the response
-    /// - parameter codeClass: The CoAP response code class
-    /// - parameter codeDetail: The CoAP response code detail
+    /// - parameter scheme: The transport scheme of the transporter.
+    /// - parameter data: The response's raw packet data.
+    /// - parameter coapPayload: The CoAP payload of the response.
+    /// - parameter codeClass: The CoAP response code class.
+    /// - parameter codeDetail: The CoAP response code detail.
     ///
-    /// - returns: The McuMgrResponse on success or nil on failure
+    /// - returns: The McuMgrResponse on success or nil on failure.
     public static func buildCoapResponse<T: McuMgrResponse>(scheme: McuMgrScheme, data: Data, coapPayload: Data, codeClass: Int, codeDetail: Int) throws -> T? {
-        return try buildResponse(scheme: scheme, data: data, coapPayload: coapPayload, coapCode: (codeClass * 100 + codeDetail))
+        return try buildResponse(scheme: scheme, response: data, coapPayload: coapPayload, coapCode: (codeClass * 100 + codeDetail))
     }
     
     //**************************************************************************
@@ -191,9 +191,9 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
     /// the McuMgrHeader. The return value includes the 8-byte McuMgr header.
     ///
     /// - parameter scheme: The transport scheme (Must be BLE to use this
-    ///   function)
+    ///   function).
     ///
-    /// - returns: The expected length of the header or nil on error
+    /// - returns: The expected length of the header or nil on error.
     public static func getExpectedLength(scheme: McuMgrScheme, responseData: Data) -> Int? {
         if scheme.isCoap() {
             return nil // TODO
@@ -222,7 +222,7 @@ public enum McuMgrResponseParseError: Error {
 
 public class McuMgrEchoResponse: McuMgrResponse {
     
-    /// Echo response
+    /// Echo response.
     public var response: String?
     
     public required init(cbor: CBOR?) throws {
@@ -235,7 +235,7 @@ public class McuMgrEchoResponse: McuMgrResponse {
 
 public class McuMgrTaskStatsResponse: McuMgrResponse {
     
-    /// A map of task names to task statistics
+    /// A map of task names to task statistics.
     public var tasks: [String:TaskStatistics]?
     
     public required init(cbor: CBOR?) throws {
@@ -247,23 +247,23 @@ public class McuMgrTaskStatsResponse: McuMgrResponse {
     
     public class TaskStatistics: CBORMappable {
         
-        /// The task's priority
+        /// The task's priority.
         public var priority: UInt!
-        /// The task's ID
+        /// The task's ID.
         public var taskId: UInt!
-        /// The task's state
+        /// The task's state.
         public var state: UInt!
-        /// The actual size of the task's stack that is being used
+        /// The actual size of the task's stack that is being used.
         public var stackUse: UInt!
-        /// The size of the task's stack
+        /// The size of the task's stack.
         public var stackSize: UInt!
-        /// The number of times the task has switched context
+        /// The number of times the task has switched context.
         public var contextSwitchCount: UInt!
-        /// The time (ms) that the task has been running
+        /// The time (ms) that the task has been running.
         public var runtime: UInt!
-        /// The last sanity checking with the sanity task
+        /// The last sanity checking with the sanity task.
         public var lastCheckin: UInt!
-        /// The next sanity checkin
+        /// The next sanity checkin.
         public var nextCheckin: UInt!
         
         public required init(cbor: CBOR?) throws {
@@ -283,7 +283,7 @@ public class McuMgrTaskStatsResponse: McuMgrResponse {
 
 public class McuMgrMemoryPoolStatsResponse: McuMgrResponse {
     
-    /// A map of task names to task statistics
+    /// A map of task names to task statistics.
     public var mpools: [String:MemoryPoolStatistics]?
     
     public required init(cbor: CBOR?) throws {
@@ -295,13 +295,13 @@ public class McuMgrMemoryPoolStatsResponse: McuMgrResponse {
     
     public class MemoryPoolStatistics: CBORMappable {
         
-        /// The memory pool's block size
+        /// The memory pool's block size.
         public var blockSize: UInt!
-        /// The number of blocks in the memory pool
+        /// The number of blocks in the memory pool.
         public var numBlocks: UInt!
-        /// The number of free blocks in the memory pool
+        /// The number of free blocks in the memory pool.
         public var numFree: UInt!
-        /// The minimum number of free blocks over the memory pool's life
+        /// The minimum number of free blocks over the memory pool's life.
         public var minFree: UInt!
         
         public required init(cbor: CBOR?) throws {
@@ -316,7 +316,7 @@ public class McuMgrMemoryPoolStatsResponse: McuMgrResponse {
 
 public class McuMgrDateTimeResponse: McuMgrResponse {
     
-    /// String representation of the datetime on the device
+    /// String representation of the datetime on the device.
     public var datetime: String?
     
     public required init(cbor: CBOR?) throws {
@@ -335,9 +335,9 @@ public class McuMgrDateTimeResponse: McuMgrResponse {
 public class McuMgrImageStateResponse: McuMgrResponse {
     
     /// The image slots on the device. This may contain one or two values,
-    /// depending on whether there is an image loaded in slot 1
+    /// depending on whether there is an image loaded in slot 1.
     public var images: [ImageSlot]?
-    /// Whether the bootloader is configured to use a split image setup
+    /// Whether the bootloader is configured to use a split image setup.
     public var splitStatus: UInt?
     
     public required init(cbor: CBOR?) throws {
@@ -351,22 +351,22 @@ public class McuMgrImageStateResponse: McuMgrResponse {
     }
     
     public class ImageSlot: CBORMappable {
-        /// The (zero) index of this image slot
+        /// The (zero) index of this image slot.
         public var slot: UInt!
-        /// The verison of the image
+        /// The verison of the image.
         public var version: String!
-        /// The sha256 hash of the image
+        /// The sha256 hash of the image.
         public var hash: [UInt8]!
-        /// Bootable flag
+        /// Bootable flag.
         public var bootable: Bool!
         /// Pending flag. A pending image will be booted into on reset.
         public var pending: Bool!
         /// Confired flag. A confirmed image will always be booted into (unless
         /// another image is pending.
         public var confirmed: Bool!
-        /// Active flag. Set if the image in this slot is active
+        /// Active flag. Set if the image in this slot is active.
         public var active: Bool!
-        /// Permanent flag. Set if this image is permanent
+        /// Permanent flag. Set if this image is permanent.
         public var permanent: Bool!
         
         public required init(cbor: CBOR?) throws {
@@ -385,12 +385,30 @@ public class McuMgrImageStateResponse: McuMgrResponse {
 
 public class McuMgrUploadResponse: McuMgrResponse {
     
-    /// Offset to send the next packet of image data from
+    /// Offset to send the next packet of image data from.
     public var off: UInt?
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
         if case let CBOR.unsignedInt(off)? = cbor?["off"] {self.off = off}
+    }
+}
+
+public class McuMgrCoreLoadResponse: McuMgrResponse {
+    
+    /// The offset of the data.
+    public var off: UInt?
+    /// The length of the core (in bytes). Set only in the
+    /// first packet, when the off is equal to 0.
+    public var len: UInt?
+    /// The core data received.
+    public var data: [UInt8]?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.unsignedInt(off)? = cbor?["off"] {self.off = off}
+        if case let CBOR.unsignedInt(len)? = cbor?["len"] {self.len = len}
+        if case let CBOR.byteString(data)? = cbor?["data"] {self.data = data}
     }
 }
 
@@ -400,28 +418,26 @@ public class McuMgrUploadResponse: McuMgrResponse {
 
 public class McuMgrLevelListResponse: McuMgrResponse {
 
-    /// Log level names
+    /// Log level names.
     public var logLevelNames: [String]?
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
         if case let CBOR.array(logLevelNames)? = cbor?["level_map"]  {
             self.logLevelNames = try CBOR.toArray(array: logLevelNames)
-            
         }
     }
 }
 
 public class McuMgrLogListResponse: McuMgrResponse {
     
-    /// Log levels
+    /// Log levels.
     public var logNames: [String]?
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
         if case let CBOR.array(logNames)? = cbor?["log_list"]  {
             self.logNames = try CBOR.toArray(array: logNames)
-            
         }
     }
 }
@@ -430,7 +446,7 @@ public class McuMgrLogResponse: McuMgrResponse {
     
     /// Next index that the device will log to.
     public var next_index: UInt?
-    /// Logs
+    /// Logs.
     public var logs: [LogResult]?
     
     public required init(cbor: CBOR?) throws {
@@ -499,11 +515,11 @@ public class McuMgrLogResponse: McuMgrResponse {
 
 public class McuMgrStatsResponse: McuMgrResponse {
     
-    /// Name of the statistic module
+    /// Name of the statistic module.
     public var name: String?
-    /// Statistic fields
+    /// Statistic fields.
     public var fields: [String:Int]?
-    /// Statistic group
+    /// Statistic group.
     public var group: String?
     
     public required init(cbor: CBOR?) throws {
@@ -518,7 +534,7 @@ public class McuMgrStatsResponse: McuMgrResponse {
 
 public class McuMgrStatsListResponse: McuMgrResponse {
     
-    /// List of names of the statistic modules on the device
+    /// List of names of the statistic modules on the device.
     public var names: [String]?
     
     public required init(cbor: CBOR?) throws {
@@ -536,7 +552,7 @@ public class McuMgrStatsListResponse: McuMgrResponse {
 
 public class McuMgrConfigResponse: McuMgrResponse {
     
-    /// Config value
+    /// Config value.
     public var val: String?
     
     public required init(cbor: CBOR?) throws {

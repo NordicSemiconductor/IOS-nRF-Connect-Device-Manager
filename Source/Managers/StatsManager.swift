@@ -16,7 +16,7 @@ public class StatsManager: McuManager {
     // MARK: Stats Constants
     //**************************************************************************
 
-    // Newt Manager Image op codes
+    // Mcu Stats Manager ids.
     let ID_READ = UInt8(0)
     let ID_LIST = UInt8(1)
     
@@ -34,8 +34,8 @@ public class StatsManager: McuManager {
 
     /// Read statistics from a particular stats module.
     ///
-    /// - parameter module: The statistics module to
-    /// - parameter callback: The response callback
+    /// - parameter module: The statistics module to.
+    /// - parameter callback: The response callback.
     public func read(module: String, callback: @escaping McuMgrCallback<McuMgrStatsResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(module)]
         send(op: .read, commandId: ID_READ, payload: payload, callback: callback)
@@ -43,7 +43,7 @@ public class StatsManager: McuManager {
     
     /// List the statistic modules from a device.
     ///
-    /// - parameter callback: The response callback
+    /// - parameter callback: The response callback.
     public func list(callback: @escaping McuMgrCallback<McuMgrStatsListResponse>) {
         send(op: .read, commandId: ID_LIST, payload: nil, callback: callback)
     }

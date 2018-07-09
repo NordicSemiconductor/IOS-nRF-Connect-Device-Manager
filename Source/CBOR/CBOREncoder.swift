@@ -6,8 +6,8 @@
 
 let isBigEndian = Int(bigEndian: 42) == 42
 
-/*
- Takes a value breaks it into bytes. assumes necessity to reverse for endianness
+/**
+ Takes a value breaks it into bytes. Assumes necessity to reverse for endianness
  if needed This function has only been tested with UInt_s, Floats and Doubles
  T must be a simple type. It cannot be a collection type.
  */
@@ -21,13 +21,12 @@ func rawBytes<T>(of x: T) -> [UInt8] {
 
 /// Defines basic CBOR.encode API.
 /// Defines more fine-grained functions of form CBOR.encode*(_ x)
-/// for all CBOR types except Float16
+/// for all CBOR types except Float16.
 extension CBOR {
 
     public static func encode<T: CBOREncodable>(_ value: T) -> [UInt8] {
         return value.encode()
     }
-
 
     /// Encodes an array as either a CBOR array type or a CBOR bytestring type,
     /// depending on `asByteString`. NOTE: when `asByteString` is true and
@@ -60,7 +59,6 @@ extension CBOR {
     public static func encode<A: CBOREncodable, B: CBOREncodable>(_ dict: [A: B]) -> [UInt8] {
         return encodeMap(dict)
     }
-
     
     // major 0: unsigned integer
     public static func encodeUInt8(_ x: UInt8) -> [UInt8] {
@@ -140,7 +138,6 @@ extension CBOR {
         return [0b110_00000 | tag] + value.encode()
     }
     
-    
     // major 7: floats, simple values, the 'break' stop code
     public static func encodeSimpleValue(_ x: UInt8) -> [UInt8] {
         if x < 24 {
@@ -173,7 +170,6 @@ extension CBOR {
     public static func encodeBool(_ x: Bool) -> [UInt8] {
         return x ? [0xf5] : [0xf4]
     }
-
 
     // -----------------------
     // Indefinite length items

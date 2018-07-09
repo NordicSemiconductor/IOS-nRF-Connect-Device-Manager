@@ -13,22 +13,22 @@ public class McuManager {
     // MARK: Mcu Manager Constants
     //**************************************************************************
     
-    /// Mcu Manager CoAP Resource URI
+    /// Mcu Manager CoAP Resource URI.
     public static let COAP_PATH = "/omgr"
     
-    /// Header Key for CoAP Payloads
+    /// Header Key for CoAP Payloads.
     public static let HEADER_KEY = "_h"
     
     //**************************************************************************
     // MARK: Properties
     //**************************************************************************
 
-    /// Handles transporting Mcu Manager commands
-    public var transporter: McuMgrTransport!
+    /// Handles transporting Mcu Manager commands.
+    public var transporter: McuMgrTransport
     
     /// The command group used for in the header of commands sent using this Mcu
-    /// Manager
-    public var group: McuMgrGroup!
+    /// Manager.
+    public var group: McuMgrGroup
     
     //**************************************************************************
     // MARK: Initializers
@@ -62,39 +62,39 @@ public class McuManager {
     
     /// Build a McuManager request packet based on the transporter scheme.
     ///
-    /// - parameter op: The McuManagerOperation code
-    /// - parameter flags: The optional flags
-    /// - parameter group: The command group
-    /// - parameter sequenceNumber: The optional sequence number
-    /// - parameter commandId: The command id
-    /// - parameter payload: The request payload
+    /// - parameter op: The McuManagerOperation code.
+    /// - parameter flags: The optional flags.
+    /// - parameter group: The command group.
+    /// - parameter sequenceNumber: The optional sequence number.
+    /// - parameter commandId: The command id.
+    /// - parameter payload: The request payload.
     ///
-    /// - returns: The raw packet data to send to the transporter
+    /// - returns: The raw packet data to send to the transporter.
     public func buildPacket(op: McuMgrOperation, flags: UInt8, group: McuMgrGroup, sequenceNumber: UInt8, commandId: UInt8, payload: [String:CBOR]?) -> Data {
-        // If the payload map is nil, initialize an empty map
+        // If the payload map is nil, initialize an empty map.
         var payload = (payload == nil ? [:] : payload)!
         
-        // Copy the payload map to remove the header key
+        // Copy the payload map to remove the header key.
         var payloadCopy = payload
-        // Remove the header if present (for CoAP schemes)
+        // Remove the header if present (for CoAP schemes).
         payloadCopy.removeValue(forKey: McuManager.HEADER_KEY)
         
-        // Get the length
+        // Get the length.
         let len: UInt16 = UInt16(CBOR.encode(payloadCopy).count)
         
-        // Build header
+        // Build header.
         let header = McuMgrHeader.build(op: op.rawValue, flags: flags, len: len, group: group.rawValue, seq: sequenceNumber, id: commandId)
         
-        // Build the packet based on scheme
+        // Build the packet based on scheme.
         if transporter.getScheme().isCoap() {
             // CoAP transport schemes puts the header as a key-value pair in the
-            // payload
+            // payload.
             if payload[McuManager.HEADER_KEY] == nil {
                 payload.updateValue(CBOR.byteString(header), forKey: McuManager.HEADER_KEY)
             }
             return Data(CBOR.encode(payload))
         } else {
-            // Standard scheme appends the CBOR payload to the header
+            // Standard scheme appends the CBOR payload to the header.
             let cborPayload = CBOR.encode(payload)
             var packet = Data(bytes: header)
             packet.append(contentsOf: cborPayload)
@@ -111,11 +111,11 @@ public class McuManager {
     ///
     /// The date format used is: "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
     ///
-    /// - parameter date: The date
+    /// - parameter date: The date.
     /// - parameter timeZone: Optional timezone for the given date. If left out
     ///   or nil, the timzone will be set to the system time zone.
     ///
-    /// - returns: The datetime string
+    /// - returns: The datetime string.
     public static func dateToString(date: Date, timeZone: TimeZone? = nil) -> String {
         let RFC3339DateFormatter = DateFormatter()
         RFC3339DateFormatter.locale = Locale(identifier: "en_US_POSIX")
@@ -202,13 +202,5 @@ public enum McuMgrReturnCode: UInt, Error {
     }
     public func isError() -> Bool {
         return self != .ok
-    }
-}
-
-/// McuManager transport scheme
-public enum McuMgrScheme {
-    case ble, coapBle, coapUdp
-    func isCoap() -> Bool {
-        return self != .ble
     }
 }
