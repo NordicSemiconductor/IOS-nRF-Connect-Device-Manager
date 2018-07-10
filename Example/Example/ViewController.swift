@@ -40,6 +40,9 @@ class ViewController: UIViewController {
     @IBOutlet weak var uploadProgressLabel: UILabel!
     @IBOutlet weak var upgradeStateLabel: UILabel!
     
+    // Firmware Upgrade start timestamp. Used to track the speed of the upload.
+    var startTime: Date!
+    
     var transport: McuMgrBleTransport?
     var centralManager: CBCentralManager!
     var firmwareUpgradeManager: FirmwareUpgradeManager?
@@ -66,7 +69,7 @@ class ViewController: UIViewController {
         findDeviceName.resignFirstResponder()
         self.name = name
         print("Starting Scan...")
-        centralManager.scanForPeripherals(withServices: [McuMgrBleTransport.SMP_SERVICE])
+        centralManager.scanForPeripherals(withServices: [])
     }
     
     /// Disconnect from the current peripheral and reset the UI
@@ -193,6 +196,13 @@ extension ViewController: UIDocumentPickerDelegate {
                 self.firmwareUpgradeManager!.mode = .confirmOnly
                 self.start(imageData)
             })
+            
+            // If the device is an ipad set the popover presentation controller
+            if let presenter = alertController.popoverPresentationController {
+                presenter.sourceView = self.view
+                presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+                presenter.permittedArrowDirections = []
+            }
             present(alertController, animated: true)
         }
     }
@@ -226,14 +236,15 @@ extension ViewController: FirmwareUpgradeDelegate {
     
     func upgradeDidStart(controller: FirmwareUpgradeController) {
         // Do nothing...
+        startTime = Date()
     }
-    
+
     func upgradeStateDidChange(from previousState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
         DispatchQueue.main.async {
             self.upgradeStateLabel.text = String(describing: newState)
         }
     }
-    
+
     func upgradeDidComplete() {
         DispatchQueue.main.async {
             self.upgradeStateLabel.text = String(describing: "complete")
@@ -260,7 +271,11 @@ extension ViewController: FirmwareUpgradeDelegate {
     func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
         DispatchQueue.main.async {
             let progress: Int = Int((Float(bytesSent) / Float(imageSize)) * 100.0)
-            self.uploadProgressLabel.text = "\(progress)%"
+            let elapsed = timestamp.timeIntervalSince(self.startTime)
+            let bytesPerSecond = Double(bytesSent) / elapsed
+            let estimatedTime = (imageSize - bytesSent) / Int(bytesPerSecond)
+            let KBps = String(format: "%.2f", Float(bytesPerSecond / 1000))
+            self.uploadProgressLabel.text = "\(progress)% (\(KBps) KBps) (\(estimatedTime) sec remain)"
         }
     }
 }
