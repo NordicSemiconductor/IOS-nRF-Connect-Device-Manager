@@ -17,7 +17,7 @@ class Log {
     }
     
     static func log(_ level: Level, tag: String, msg: String) {
-        print("\(level.rawValue)\(tag): \(msg)")
+        print("\(timestamp()) \(level.rawValue)\(tag): \(msg)")
     }
     
     static func v(_ tag: String, msg: String) {
@@ -42,5 +42,11 @@ class Log {
     
     static func e(_ tag: String, error: Error) {
         log(.error, tag: tag, msg: String(describing: error))
+    }
+    
+    static func timestamp() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss.SSS"
+        return formatter.string(from: Date())
     }
 }
