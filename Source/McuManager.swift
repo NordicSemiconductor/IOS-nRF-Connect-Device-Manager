@@ -9,6 +9,8 @@ import CoreBluetooth
 
 public class McuManager {
     
+    private static let TAG: String = "McuManager"
+    
     //**************************************************************************
     // MARK: Mcu Manager Constants
     //**************************************************************************
@@ -30,6 +32,12 @@ public class McuManager {
     /// Manager.
     public var group: McuMgrGroup
     
+    /// The MTU used by this manager. This value must be between 23 and 1024.
+    /// The MTU is usually only a factor when uploading files or images to the
+    /// device, where each request should attempt to maximize the amount of
+    /// data being sent to the device.
+    public var mtu: Int
+    
     //**************************************************************************
     // MARK: Initializers
     //**************************************************************************
@@ -37,6 +45,7 @@ public class McuManager {
     public init(group: McuMgrGroup, transporter: McuMgrTransport) {
         self.group = group
         self.transporter = transporter
+        self.mtu = McuManager.getDefaultMtu(scheme: transporter.getScheme())
     }
     
     //**************************************************************************
@@ -122,6 +131,50 @@ public class McuManager {
         RFC3339DateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
         RFC3339DateFormatter.timeZone = (timeZone != nil ? timeZone : TimeZone.current)
         return RFC3339DateFormatter.string(from: date)
+    }
+    
+    /// Set the MTU used by this McuManager. The McuManager MTU must be between
+    /// 23 and 1024 (inclusive). The MTU generally only matters when uploading
+    /// to the device, where the upload data in each request should be
+    /// maximized.
+    ///
+    /// - parameter mtu: The mtu to set.
+    ///
+    /// - returns: true if the value is between 23 and 1024 (inclusive), false
+    ///   otherwise
+    public func setMtu(mtu: Int) -> Bool {
+        if mtu >= 23 && mtu <= 1024 {
+            self.mtu = mtu
+            Log.d(McuManager.TAG, msg: "MTU set to \(mtu)")
+            return true
+        } else {
+            Log.w(McuManager.TAG, msg: "Invalid MTU (\(mtu)): Value must be between 23 and 1024")
+            return false
+        }
+    }
+    
+    /// Get the default MTU which should be used for a transport scheme. If the
+    /// scheme is BLE, the iOS version is used to determine the MTU. If the
+    /// scheme is UDP, the MTU returned is always 1024.
+    ///
+    /// - parameter scheme: the transporter
+    public static func getDefaultMtu(scheme: McuMgrScheme) -> Int {
+        // BLE MTU is determined by the version of iOS running on the device
+        if scheme.isBle() {
+            /// Return the maximum BLE ATT MTU for this iOS device.
+            if #available(iOS 11.0, *) {
+                // For iOS 11.0+ (527 - 3)
+                return 524
+            } else if #available(iOS 10.0, *) {
+                // For iOS 10.0 (185 - 3)
+                return 182
+            } else {
+                // For iOS 9.0 (158 - 3)
+                return 155
+            }
+        } else {
+            return 1024
+        }
     }
 }
 

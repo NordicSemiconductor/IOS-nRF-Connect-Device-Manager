@@ -14,6 +14,10 @@ public enum McuMgrScheme {
     func isCoap() -> Bool {
         return self != .ble
     }
+    
+    func isBle() -> Bool {
+        return self != .coapUdp
+    }
 }
 
 /// The connectin state observer protocol.
@@ -23,6 +27,22 @@ public protocol ConnectionStateObserver: class {
     /// - parameter transport: the Mcu Mgr transport object.
     /// - parameter state: The new state of the peripehral.
     func peripheral(_ transport: McuMgrTransport, didChangeStateTo state: CBPeripheralState)
+}
+
+public enum McuMgrTransportError: Error {
+    /// Connection to the remote device has timed out.
+    case connectionTimeout
+    /// Connection to the remote device has failed.
+    case connectionFailed
+    /// Sending the request to the device has timed out.
+    case sendTimeout
+    /// Sending the request to the device has failed.
+    case sendFailed
+    /// The transport MTU is insufficient to send the request. The transport's
+    /// MTU must be sent back as this case's argument.
+    case insufficientMtu(mtu: Int)
+    /// The response received was bad.
+    case badResponse
 }
 
 /// Mcu Mgr transport object. The transport object

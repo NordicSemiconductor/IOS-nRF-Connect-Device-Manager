@@ -88,6 +88,18 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
         return state.isInProgress() && !paused
     }
     
+    /// Sets the MTU of the image upload. The MTU must be between 23 and 1024
+    /// (inclusive). The upload MTU determines the number of bytes sent in each
+    /// upload request. The MTU will default the the maximum available to the
+    /// phone and may change automatically if the end device's MTU is lower.
+    ///
+    /// - parameter mtu: The mtu to use in image upload.
+    ///
+    /// - returns: true if the mtu was within range, false otherwise
+    public func setUploadMtu(mtu: Int) -> Bool {
+        return imageManager.setMtu(mtu: mtu)
+    }
+    
     //**************************************************************************
     // MARK: Firmware Upgrade State Machine
     //**************************************************************************
@@ -317,7 +329,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
     public func peripheral(_ transport: McuMgrTransport, didChangeStateTo state: CBPeripheralState) {
         transport.removeObserver(self)
         Log.i(self.TAG, msg: "Reset successful")
-        
         switch mode {
         case .testAndConfirm:
             confirm()
@@ -333,7 +344,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
     private lazy var resetCallback: McuMgrCallback<McuMgrResponse> =
     { [unowned self] (response: McuMgrResponse?, error: Error?) in
         if let error = error {
-            Log.e(self.TAG, error: error)
             self.fail(error: error)
             return
         }
@@ -358,7 +368,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
     private lazy var confirmCallback: McuMgrCallback<McuMgrImageStateResponse> =
     { [unowned self] (response: McuMgrImageStateResponse?, error: Error?) in
         if let error = error {
-            Log.e(self.TAG, error: error)
             self.fail(error: error)
             return
         }

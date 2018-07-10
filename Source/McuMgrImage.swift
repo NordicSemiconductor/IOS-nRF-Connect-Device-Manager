@@ -17,7 +17,7 @@ public class McuMgrImage {
     
     public init(data: Data) throws {
         self.data = data
-        self.header = McuMgrImageHeader(data: data)
+        self.header = try McuMgrImageHeader(data: data)
         self.tlv = try McuMgrImageTlv(data: data, imageHeader: header)
         self.hash = tlv.hash
     }
@@ -45,13 +45,16 @@ public class McuMgrImageHeader {
     public let version: McuMgrImageVersion
     // __pad2 UInt16
     
-    public init(data: Data) {
+    public init(data: Data) throws {
         magic = data.to(type: UInt32.self, offset: McuMgrImageHeader.MAGIC_OFFSET)
         loadAddr = data.to(type: UInt32.self, offset: McuMgrImageHeader.LOAD_ADDR_OFFSET)
         headerSize = data.to(type: UInt16.self, offset: McuMgrImageHeader.HEADER_SIZE_OFFSET)
         imageSize = data.to(type: UInt32.self, offset: McuMgrImageHeader.IMAGE_SIZE_OFFSET)
         flags = data.to(type: UInt32.self, offset: McuMgrImageHeader.FLAGS_OFFSET)
         version = McuMgrImageVersion(data: data)
+        if magic != McuMgrImageHeader.IMG_HEADER_MAGIC && magic != McuMgrImageHeader.IMG_HEADER_MAGIC_V1 {
+            throw McuMgrImageParseError.invalidHeaderMagic
+        }
     }
     
     public func isLegacy() -> Bool {
@@ -170,6 +173,7 @@ public class McuMgrImageTlvTrailerEntry {
 }
 
 public enum McuMgrImageParseError: Error {
+    case invalidHeaderMagic
     case invalidTlvInfoMagic
     case insufficientData
     case hashNotFound
