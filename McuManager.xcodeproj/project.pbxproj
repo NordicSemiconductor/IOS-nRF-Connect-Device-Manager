@@ -7,22 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B7933FF820F3D0B500F14A7C /* FirmwareUpgradeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7933FF620F3D0B500F14A7C /* FirmwareUpgradeController.swift */; };
+		B7933FF920F3D0B500F14A7C /* FirmwareUpgradeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7933FF720F3D0B500F14A7C /* FirmwareUpgradeManager.swift */; };
 		BD5A28A120CB50CA0061F0EE /* McuMgrHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A287E20CB50CA0061F0EE /* McuMgrHeader.swift */; };
 		BD5A28A220CB50CA0061F0EE /* CBOR+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288020CB50CA0061F0EE /* CBOR+McuManager.swift */; };
 		BD5A28A320CB50CA0061F0EE /* String+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288120CB50CA0061F0EE /* String+McuManager.swift */; };
-		BD5A28A420CB50CA0061F0EE /* CBPeripheral+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288220CB50CA0061F0EE /* CBPeripheral+McuManager.swift */; };
 		BD5A28A520CB50CA0061F0EE /* Data+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288320CB50CA0061F0EE /* Data+McuManager.swift */; };
 		BD5A28A620CB50CA0061F0EE /* McuMgrResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288420CB50CA0061F0EE /* McuMgrResponse.swift */; };
 		BD5A28A720CB50CA0061F0EE /* McuMgrTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288520CB50CA0061F0EE /* McuMgrTransport.swift */; };
 		BD5A28A820CB50CA0061F0EE /* ResultLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288720CB50CA0061F0EE /* ResultLock.swift */; };
 		BD5A28A920CB50CA0061F0EE /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288820CB50CA0061F0EE /* Log.swift */; };
 		BD5A28AA20CB50CA0061F0EE /* McuMgrBleTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288A20CB50CA0061F0EE /* McuMgrBleTransport.swift */; };
-		BD5A28AB20CB50CA0061F0EE /* BleCentralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288B20CB50CA0061F0EE /* BleCentralManager.swift */; };
 		BD5A28AC20CB50CA0061F0EE /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288D20CB50CA0061F0EE /* ConfigManager.swift */; };
 		BD5A28AD20CB50CA0061F0EE /* CrashManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288E20CB50CA0061F0EE /* CrashManager.swift */; };
 		BD5A28AE20CB50CA0061F0EE /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A288F20CB50CA0061F0EE /* ImageManager.swift */; };
 		BD5A28AF20CB50CA0061F0EE /* DefaultManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289020CB50CA0061F0EE /* DefaultManager.swift */; };
-		BD5A28B020CB50CA0061F0EE /* FirmwareUpgradeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289120CB50CA0061F0EE /* FirmwareUpgradeManager.swift */; };
 		BD5A28B120CB50CA0061F0EE /* StatsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289220CB50CA0061F0EE /* StatsManager.swift */; };
 		BD5A28B220CB50CA0061F0EE /* RunTestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289320CB50CA0061F0EE /* RunTestManager.swift */; };
 		BD5A28B320CB50CA0061F0EE /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289420CB50CA0061F0EE /* LogManager.swift */; };
@@ -40,24 +39,23 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B7933FF620F3D0B500F14A7C /* FirmwareUpgradeController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeController.swift; sourceTree = "<group>"; };
+		B7933FF720F3D0B500F14A7C /* FirmwareUpgradeManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeManager.swift; sourceTree = "<group>"; };
 		BD5A287320CB50040061F0EE /* McuManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = McuManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A287720CB50040061F0EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BD5A287E20CB50CA0061F0EE /* McuMgrHeader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuMgrHeader.swift; sourceTree = "<group>"; };
 		BD5A288020CB50CA0061F0EE /* CBOR+McuManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CBOR+McuManager.swift"; sourceTree = "<group>"; };
 		BD5A288120CB50CA0061F0EE /* String+McuManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+McuManager.swift"; sourceTree = "<group>"; };
-		BD5A288220CB50CA0061F0EE /* CBPeripheral+McuManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CBPeripheral+McuManager.swift"; sourceTree = "<group>"; };
 		BD5A288320CB50CA0061F0EE /* Data+McuManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Data+McuManager.swift"; sourceTree = "<group>"; };
 		BD5A288420CB50CA0061F0EE /* McuMgrResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuMgrResponse.swift; sourceTree = "<group>"; };
 		BD5A288520CB50CA0061F0EE /* McuMgrTransport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuMgrTransport.swift; sourceTree = "<group>"; };
 		BD5A288720CB50CA0061F0EE /* ResultLock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResultLock.swift; sourceTree = "<group>"; };
 		BD5A288820CB50CA0061F0EE /* Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		BD5A288A20CB50CA0061F0EE /* McuMgrBleTransport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuMgrBleTransport.swift; sourceTree = "<group>"; };
-		BD5A288B20CB50CA0061F0EE /* BleCentralManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BleCentralManager.swift; sourceTree = "<group>"; };
 		BD5A288D20CB50CA0061F0EE /* ConfigManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
 		BD5A288E20CB50CA0061F0EE /* CrashManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashManager.swift; sourceTree = "<group>"; };
 		BD5A288F20CB50CA0061F0EE /* ImageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
 		BD5A289020CB50CA0061F0EE /* DefaultManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultManager.swift; sourceTree = "<group>"; };
-		BD5A289120CB50CA0061F0EE /* FirmwareUpgradeManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeManager.swift; sourceTree = "<group>"; };
 		BD5A289220CB50CA0061F0EE /* StatsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatsManager.swift; sourceTree = "<group>"; };
 		BD5A289320CB50CA0061F0EE /* RunTestManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RunTestManager.swift; sourceTree = "<group>"; };
 		BD5A289420CB50CA0061F0EE /* LogManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
@@ -85,6 +83,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B7933FF520F3D0B500F14A7C /* DFU */ = {
+			isa = PBXGroup;
+			children = (
+				B7933FF620F3D0B500F14A7C /* FirmwareUpgradeController.swift */,
+				B7933FF720F3D0B500F14A7C /* FirmwareUpgradeManager.swift */,
+			);
+			path = DFU;
+			sourceTree = "<group>";
+		};
 		BD5A286920CB50040061F0EE = {
 			isa = PBXGroup;
 			children = (
@@ -125,7 +132,6 @@
 			children = (
 				BD5A288020CB50CA0061F0EE /* CBOR+McuManager.swift */,
 				BD5A288120CB50CA0061F0EE /* String+McuManager.swift */,
-				BD5A288220CB50CA0061F0EE /* CBPeripheral+McuManager.swift */,
 				BD5A288320CB50CA0061F0EE /* Data+McuManager.swift */,
 			);
 			path = Extensions;
@@ -144,7 +150,6 @@
 			isa = PBXGroup;
 			children = (
 				BD5A288A20CB50CA0061F0EE /* McuMgrBleTransport.swift */,
-				BD5A288B20CB50CA0061F0EE /* BleCentralManager.swift */,
 			);
 			path = Bluetooth;
 			sourceTree = "<group>";
@@ -152,11 +157,11 @@
 		BD5A288C20CB50CA0061F0EE /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				B7933FF520F3D0B500F14A7C /* DFU */,
 				BD5A288D20CB50CA0061F0EE /* ConfigManager.swift */,
 				BD5A288E20CB50CA0061F0EE /* CrashManager.swift */,
 				BD5A288F20CB50CA0061F0EE /* ImageManager.swift */,
 				BD5A289020CB50CA0061F0EE /* DefaultManager.swift */,
-				BD5A289120CB50CA0061F0EE /* FirmwareUpgradeManager.swift */,
 				BD5A289220CB50CA0061F0EE /* StatsManager.swift */,
 				BD5A289320CB50CA0061F0EE /* RunTestManager.swift */,
 				BD5A289420CB50CA0061F0EE /* LogManager.swift */,
@@ -262,13 +267,12 @@
 			files = (
 				BD5A28AA20CB50CA0061F0EE /* McuMgrBleTransport.swift in Sources */,
 				BD5A28BD20CB50CA0061F0EE /* McuManager.swift in Sources */,
-				BD5A28A420CB50CA0061F0EE /* CBPeripheral+McuManager.swift in Sources */,
 				BD5A28A620CB50CA0061F0EE /* McuMgrResponse.swift in Sources */,
 				BD5A28BA20CB50CA0061F0EE /* CBOR.swift in Sources */,
 				BD5A28A920CB50CA0061F0EE /* Log.swift in Sources */,
-				BD5A28AB20CB50CA0061F0EE /* BleCentralManager.swift in Sources */,
 				BD5A28B620CB50CA0061F0EE /* CBOREncoder.swift in Sources */,
 				BD5A28B120CB50CA0061F0EE /* StatsManager.swift in Sources */,
+				B7933FF820F3D0B500F14A7C /* FirmwareUpgradeController.swift in Sources */,
 				BD5A28B920CB50CA0061F0EE /* CBORDecoder.swift in Sources */,
 				BD5A28BE20CB50CA0061F0EE /* McuMgrImage.swift in Sources */,
 				BD5A28A320CB50CA0061F0EE /* String+McuManager.swift in Sources */,
@@ -277,8 +281,8 @@
 				BD5A28B220CB50CA0061F0EE /* RunTestManager.swift in Sources */,
 				BD5A28AD20CB50CA0061F0EE /* CrashManager.swift in Sources */,
 				BD5A28B420CB50CA0061F0EE /* FileSystemManager.swift in Sources */,
-				BD5A28B020CB50CA0061F0EE /* FirmwareUpgradeManager.swift in Sources */,
 				BD5A28A820CB50CA0061F0EE /* ResultLock.swift in Sources */,
+				B7933FF920F3D0B500F14A7C /* FirmwareUpgradeManager.swift in Sources */,
 				BD5A28BC20CB50CA0061F0EE /* CBOREncodable.swift in Sources */,
 				BD5A28A120CB50CA0061F0EE /* McuMgrHeader.swift in Sources */,
 				BD5A28AF20CB50CA0061F0EE /* DefaultManager.swift in Sources */,
