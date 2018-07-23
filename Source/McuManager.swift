@@ -142,7 +142,7 @@ public class McuManager {
     ///
     /// - returns: true if the value is between 23 and 1024 (inclusive), false
     ///   otherwise
-    public func setMtu(mtu: Int) -> Bool {
+    public func setMtu(_ mtu: Int) -> Bool {
         if mtu >= 23 && mtu <= 1024 {
             self.mtu = mtu
             Log.d(McuManager.TAG, msg: "MTU set to \(mtu)")

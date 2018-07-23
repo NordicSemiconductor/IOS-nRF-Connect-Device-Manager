@@ -97,7 +97,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
     ///
     /// - returns: true if the mtu was within range, false otherwise
     public func setUploadMtu(mtu: Int) -> Bool {
-        return imageManager.setMtu(mtu: mtu)
+        return imageManager.setMtu(mtu)
     }
     
     //**************************************************************************

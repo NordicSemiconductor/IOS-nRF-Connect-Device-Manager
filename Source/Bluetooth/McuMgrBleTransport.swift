@@ -34,7 +34,7 @@ public class McuMgrBleTransport: NSObject {
     /// writes) and the device to be received.
     private var lock: ResultLock
     
-    /// SMP Characteristic object. Used to write requests adn receive
+    /// SMP Characteristic object. Used to write requests and receive
     /// notificaitons.
     private var smpCharacteristic: CBCharacteristic?
     
