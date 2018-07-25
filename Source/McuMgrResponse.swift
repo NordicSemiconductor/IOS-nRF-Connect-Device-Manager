@@ -6,7 +6,7 @@
 
 import Foundation
 
-public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugStringConvertible {
+public class McuMgrResponse: CBORMappable {
     
     //**************************************************************************
     // MARK: Value Mapping
@@ -45,16 +45,6 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
     /// The CoAP Response code for CoAP based transport schemes. For non-CoAP
     /// transport schemes this value will always be 0
     public var coapCode: Int = 0
-    
-    /// String representation of the response.
-    public var description: String {
-        return payload?.description ?? "nil"
-    }
-    
-    /// String representation of the response.
-    public var debugDescription: String {
-        return "Header: \(self.header!), Payload: \(payload?.description ?? "nil")"
-    }
     
     //**************************************************************************
     // MARK: Initializers
@@ -204,6 +194,21 @@ public class McuMgrResponse: CBORMappable, CustomStringConvertible, CustomDebugS
                 return nil
             }
         }
+    }
+}
+
+extension McuMgrResponse: CustomStringConvertible {
+    
+    public var description: String {
+        return payload?.description ?? "nil"
+    }
+}
+
+extension McuMgrResponse: CustomDebugStringConvertible {
+    
+    /// String representation of the response.
+    public var debugDescription: String {
+        return "Header: \(self.header!), Payload: \(payload?.description ?? "nil")"
     }
 }
 

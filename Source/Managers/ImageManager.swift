@@ -92,7 +92,7 @@ public class ImageManager: McuManager {
     /// A successful confirm will make the image permenant (i.e. the image will
     /// be booted upon reset).
     ///
-    /// - parameter hash: The hash of the image to test. If not provided, the
+    /// - parameter hash: The hash of the image to confirm. If not provided, the
     ///   current image running on the device will be made permenant.
     /// - parameter callback: The response callback.
     public func confirm(hash: [UInt8]? = nil, callback: @escaping McuMgrCallback<McuMgrImageStateResponse>) {
@@ -195,15 +195,6 @@ public class ImageManager: McuManager {
         case paused = 2
     }
     
-    public enum ImageUploadError: Error {
-        /// Response payload values do not exist.
-        case invalidPayload
-        /// Image Data is nil.
-        case invalidData
-        /// McuMgrResponse contains a error return code.
-        case mcuMgrErrorCode(McuMgrReturnCode)
-    }
-    
     /// State of the image upload.
     private var uploadState: UploadState = .none
     /// Current image byte offset to send from.
@@ -224,19 +215,19 @@ public class ImageManager: McuManager {
     ///   delegate's didFailUpload method.
     public func cancelUpload(error: Error? = nil) {
         objc_sync_enter(self)
+        let state = uploadState
+        resetUploadVariables()
         if error != nil {
             Log.d(ImageManager.TAG, msg: "Upload cancelled due to error: \(error!)")
-            resetUploadVariables() // this should be called before notifying the delegate
             uploadDelegate?.uploadDidFail(with: error!)
+        } else {
+            Log.d(ImageManager.TAG, msg: "Upload cancelled!")
+            if state == .none {
+                print("There is no image upload currently in progress.")
+            } else if state == .paused {
+                uploadDelegate?.uploadDidCancel()
+            }
         }
-        Log.d(ImageManager.TAG, msg: "Upload cancelled!")
-        if uploadState == .none {
-            print("There is not an image upload currently in progress.")
-        } else if uploadState == .paused {
-            resetUploadVariables() // this should be called before notifying the delegate
-            uploadDelegate?.uploadDidCancel()
-        }
-        resetUploadVariables()
         uploadDelegate = nil
         objc_sync_exit(self)
     }
@@ -276,7 +267,8 @@ public class ImageManager: McuManager {
     
     // MARK: - Image Upload Private Methods
     
-    private lazy var uploadCallback: McuMgrCallback<McuMgrUploadResponse> = { [unowned self] (response: McuMgrUploadResponse?, error: Error?) in
+    private lazy var uploadCallback: McuMgrCallback<McuMgrUploadResponse> = {
+        [unowned self] (response: McuMgrUploadResponse?, error: Error?) in
         // Check for an error.
         if let error = error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
@@ -384,6 +376,29 @@ public class ImageManager: McuManager {
             packetOverhead = packetOverhead + 25
         }
         return packetOverhead
+    }
+}
+
+public enum ImageUploadError: Error {
+    /// Response payload values do not exist.
+    case invalidPayload
+    /// Image Data is nil.
+    case invalidData
+    /// McuMgrResponse contains a error return code.
+    case mcuMgrErrorCode(McuMgrReturnCode)
+}
+
+extension ImageUploadError: CustomStringConvertible {
+    
+    public var description: String {
+        switch self {
+        case .invalidPayload:
+            return "Response payload values do not exist."
+        case .invalidData:
+            return "Image data is nil."
+        case .mcuMgrErrorCode(let code):
+            return "Error: \(code)"
+        }
     }
 }
 

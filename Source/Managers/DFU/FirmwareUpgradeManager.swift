@@ -41,7 +41,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
     public func start(data: Data) throws {
         objc_sync_enter(self)
         if state != .none {
-            Log.i(TAG, msg: "Firmware upgrade is already in progress")
+            Log.w(TAG, msg: "Firmware upgrade is already in progress")
             return
         }
         imageData = data
@@ -62,7 +62,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
     public func pause() {
         objc_sync_enter(self)
         if state.isInProgress() && !paused {
-            Log.d(TAG, msg: "Pausing upgrade.")
+            Log.v(TAG, msg: "Pausing upgrade...")
             paused = true
             if state == .upload {
                 imageManager.pauseUpload()
@@ -105,11 +105,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
     //**************************************************************************
     
     private func setState(_ state: FirmwareUpgradeState) {
+        objc_sync_enter(self)
         let previousState = self.state
         self.state = state
         if state != previousState {
             delegate.upgradeStateDidChange(from: previousState, to: state)
         }
+        objc_sync_exit(self)
     }
     
     private func validate() {
@@ -137,6 +139,14 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
         setState(.confirm)
         if !paused {
             imageManager.confirm(hash: [UInt8](hash), callback: confirmCallback)
+        }
+    }
+    
+    private func verify() {
+        setState(.confirm)
+        if !paused {
+            // This will confirm the image on slot 0
+            imageManager.confirm(callback: confirmCallback)
         }
     }
     
@@ -216,7 +226,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
         Log.v(self.TAG, msg: "Validation response: \(response)")
         // Check for McuMgrReturnCode error.
         if !response.isSuccess() {
-            Log.e(self.TAG, msg: "Validation failed due to McuManagerReturnCode error: \(response.returnCode)")
             self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
             return
         }
@@ -225,7 +234,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
             self.fail(error: FirmwareUpgradeError.invalidResponse(response))
             return
         }
-        
         // Check if the new firmware is different then the active one.
         if Data(bytes: images[0].hash) == self.hash {
             if images[0].confirmed {
@@ -243,8 +251,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
             }
             return
         }
-        
-        if images.count > 1 && Data(bytes: images[0].hash) == self.hash {
+        // Check if the firmware has already been uploaded.
+        if images.count > 1 && Data(bytes: images[1].hash) == self.hash {
             // Firmware is identical to the one in slot 1. No need to send
             // anything.
             
@@ -262,12 +270,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
             
             // If the image was already confirmed, reset (if confirm was
             // intended), or fail.
-            if images[0].permanent {
+            if images[1].permanent || images[1].confirmed {
                 switch self.mode {
                 case .confirmOnly, .testAndConfirm:
                     self.reset()
                 case .testOnly:
-                    self.fail(error: FirmwareUpgradeError.unknown("Image already confirmed. Can't be tested"))
+                    self.fail(error: FirmwareUpgradeError.unknown("Image already confirmed. Can't be tested!"))
                 }
                 return
             }
@@ -303,7 +311,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
         Log.v(self.TAG, msg: "Test response: \(response)")
         // Check for McuMgrReturnCode error.
         if !response.isSuccess() {
-            Log.e(self.TAG, msg: "Test failed due to McuManagerReturnCode error: \(response.returnCode)")
             self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
             return
         }
@@ -312,7 +319,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
             self.fail(error: FirmwareUpgradeError.invalidResponse(response))
             return
         }
-        // Check that we have 2 images in the array
+        // Check that we have 2 images in the array.
         if images.count != 2 {
             self.fail(error: FirmwareUpgradeError.unknown("Test response does not contain enough info."))
             return
@@ -331,16 +338,16 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
         Log.i(self.TAG, msg: "Reset successful")
         switch mode {
         case .testAndConfirm:
-            confirm()
+            verify()
         default:
             success()
         }
     }
     
-    /// Callback for the RESET state
+    /// Callback for the RESET state.
     ///
     /// This callback will fail the upgrade on error. On success, the reset
-    /// poller will be started after a 3 second delay
+    /// poller will be started after a 3 second delay.
     private lazy var resetCallback: McuMgrCallback<McuMgrResponse> =
     { [unowned self] (response: McuMgrResponse?, error: Error?) in
         if let error = error {
@@ -351,20 +358,18 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
             self.fail(error: FirmwareUpgradeError.unknown("Reset response is nil!"))
             return
         }
-        Log.v(self.TAG, msg: "Reset response: \(response)")
-        // Check for McuMgrReturnCode error
+        // Check for McuMgrReturnCode error.
         if !response.isSuccess() {
-            Log.e(self.TAG, msg: "Reset failed due to McuManagerReturnCode error: \(response.returnCode)")
             self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
             return
         }
-        Log.i(self.TAG, msg: "Reset request sent. Waiting for reset")
+        Log.i(self.TAG, msg: "Reset request sent. Waiting for reset...")
     }
     
-    /// Callback for the CONFIRM state
+    /// Callback for the CONFIRM state.
     ///
     /// This callback will fail the upload on error or move to the next state on
-    /// success
+    /// success.
     private lazy var confirmCallback: McuMgrCallback<McuMgrImageStateResponse> =
     { [unowned self] (response: McuMgrImageStateResponse?, error: Error?) in
         if let error = error {
@@ -376,31 +381,54 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
             return
         }
         Log.v(self.TAG, msg: "Confirm response: \(response)")
-        // Check for McuMgrReturnCode error
+        // Check for McuMgrReturnCode error.
         if !response.isSuccess() {
-            Log.e(self.TAG, msg: "Test failed due to McuManagerReturnCode error: \(response.returnCode)")
             self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
             return
         }
-        // Check that the image array exists
+        // Check that the image array exists.
         guard let images = response.images else {
             self.fail(error: FirmwareUpgradeError.invalidResponse(response))
             return
         }
-        // Check that we have 2 images in the array
+        // Check that we have at least one image in the array.
         if images.count == 0 {
-            Log.e(self.TAG, msg: "Test response does not contain enough info.")
             self.fail(error: FirmwareUpgradeError.invalidResponse(response))
+            return
         }
-        // Check that the image in slot 1 is pending (i.e. test succeeded)
-        if !images[0].confirmed {
-            Log.e(self.TAG, msg: "Image is not in a confirmed state.")
-            self.fail(error: FirmwareUpgradeError.unknown("Image is not in a confirmed state."))
+        
+        switch self.mode {
+        case .confirmOnly:
+            // The new image should be in slot 1.
+            if images.count != 2 {
+                self.fail(error: FirmwareUpgradeError.invalidResponse(response))
+                return
+            }
+            // Check that the new image is in permanent state.
+            if !images[1].permanent {
+                self.fail(error: FirmwareUpgradeError.unknown("Image is not in a permanent state."))
+                return
+            }
+            // Image was confirmed, reset the device.
+            self.reset()
+        case .testAndConfirm:
+            // Check that the upgrade image has successfully booted.
+            if Data(bytes: images[0].hash) != self.hash {
+                self.fail(error: FirmwareUpgradeError.unknown("Device failed to boot into new image."))
+                return
+            }
+            // Check that the new image is in confirmed state.
+            if !images[0].confirmed {
+                self.fail(error: FirmwareUpgradeError.unknown("Image is not in a confirmed state."))
+                return
+            }
+            // Confirm successful.
+            self.success()
+        case .testOnly:
+            // Impossible state. Ignore.
+            break
         }
-        // Confirm successful
-        self.success()
     }
-    
 }
 
 //******************************************************************************
@@ -414,7 +442,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     }
     
     public func uploadDidFail(with error: Error) {
-        // If the upload fails, fail the upgrade
+        // If the upload fails, fail the upgrade.
         delegate.upgradeDidFail(inState: state, with: error)
     }
     
@@ -423,11 +451,11 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     }
     
     public func uploadDidFinish() {
-        // On a successful upload move to the next state
+        // On a successful upload move to the next state.
         switch mode {
         case .confirmOnly:
             confirm()
-        default:
+        case .testOnly, .testAndConfirm:
             test()
         }
     }
@@ -442,6 +470,22 @@ public enum FirmwareUpgradeError: Error {
     case invalidResponse(McuMgrResponse)
     case mcuMgrReturnCodeError(McuMgrReturnCode)
     case connectionFailedAfterReset
+}
+
+extension FirmwareUpgradeError: CustomStringConvertible {
+    
+    public var description: String {
+        switch self {
+        case .unknown(let message):
+            return message
+        case .invalidResponse(let response):
+            return "Invalid response: \(response)"
+        case .mcuMgrReturnCodeError(let code):
+            return "Error: \(code)"
+        case .connectionFailedAfterReset:
+            return "Connection failed after reset"
+        }
+    }
 }
 
 //******************************************************************************

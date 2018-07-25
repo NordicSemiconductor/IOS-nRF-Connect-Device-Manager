@@ -34,6 +34,8 @@ public enum McuMgrTransportError: Error {
     case connectionTimeout
     /// Connection to the remote device has failed.
     case connectionFailed
+    /// Device has disconnected.
+    case disconnected
     /// Sending the request to the device has timed out.
     case sendTimeout
     /// Sending the request to the device has failed.
@@ -43,6 +45,28 @@ public enum McuMgrTransportError: Error {
     case insufficientMtu(mtu: Int)
     /// The response received was bad.
     case badResponse
+}
+
+extension McuMgrTransportError: CustomStringConvertible {
+    
+    public var description: String {
+        switch self {
+        case .connectionTimeout:
+            return "Connection to the remote device has timed out."
+        case .connectionFailed:
+            return "Connection to the remote device has failed."
+        case .disconnected:
+            return "Device has disconnected unexpectedly."
+        case .sendTimeout:
+            return "Sending the request to the device has timed out."
+        case .sendFailed:
+            return "Sending the request to the device has failed."
+        case .insufficientMtu(mtu: let mtu):
+            return "Insufficient MTU: \(mtu)."
+        case .badResponse:
+            return "Bad response received."
+        }
+    }
 }
 
 /// Mcu Mgr transport object. The transport object

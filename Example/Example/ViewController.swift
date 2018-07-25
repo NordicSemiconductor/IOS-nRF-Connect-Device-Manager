@@ -376,7 +376,7 @@ extension ViewController {
         if images.count > 0 {
             let imageSlot0 = images[0]
             slotLabel0.text = imageSlot0.slot.description
-            hashLabel0.text = Data(imageSlot0.hash).base64EncodedString()
+            hashLabel0.text = Data(imageSlot0.hash).hexEncodedString(options: .upperCase)
             versionLabel0.text = imageSlot0.version
             var stateStr = ""
             if imageSlot0.active {
@@ -399,7 +399,7 @@ extension ViewController {
         if images.count > 1 {
             let imageSlot1 = images[1]
             slotLabel1.text = imageSlot1.slot.description
-            hashLabel1.text = Data(imageSlot1.hash).base64EncodedString()
+            hashLabel1.text = Data(imageSlot1.hash).hexEncodedString(options: .upperCase)
             versionLabel1.text = imageSlot1.version
             var stateStr = ""
             if imageSlot1.active {
