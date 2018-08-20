@@ -20,13 +20,17 @@ public enum McuMgrScheme {
     }
 }
 
-/// The connectin state observer protocol.
-public protocol ConnectionStateObserver: class {
+public enum McuMgrTransportState {
+    case connected, disconnected
+}
+
+/// The connection state observer protocol.
+public protocol ConnectionObserver: class {
     /// Called whenever the peripheral state changes.
     ///
     /// - parameter transport: the Mcu Mgr transport object.
-    /// - parameter state: The new state of the peripehral.
-    func peripheral(_ transport: McuMgrTransport, didChangeStateTo state: CBPeripheralState)
+    /// - parameter state: The new state of the peripheral.
+    func transport(_ transport: McuMgrTransport, didChangeStateTo state: McuMgrTransportState)
 }
 
 public enum McuMgrTransportError: Error {
@@ -52,15 +56,15 @@ extension McuMgrTransportError: CustomStringConvertible {
     public var description: String {
         switch self {
         case .connectionTimeout:
-            return "Connection to the remote device has timed out."
+            return "Connection timed out."
         case .connectionFailed:
-            return "Connection to the remote device has failed."
+            return "Connection failed."
         case .disconnected:
-            return "Device has disconnected unexpectedly."
+            return "Device disconnected unexpectedly."
         case .sendTimeout:
-            return "Sending the request to the device has timed out."
+            return "Sending the request timed out."
         case .sendFailed:
-            return "Sending the request to the device has failed."
+            return "Sending the request failed."
         case .insufficientMtu(mtu: let mtu):
             return "Insufficient MTU: \(mtu)."
         case .badResponse:
@@ -89,10 +93,10 @@ public protocol McuMgrTransport: class {
     /// Adds the connection state observer.
     ///
     /// - parameter observer: The observer to be added.
-    func addObserver(_ observer: ConnectionStateObserver);
+    func addObserver(_ observer: ConnectionObserver);
     
     /// Removes the connection state observer.
     ///
     /// - parameter observer: The observer to be removed.
-    func removeObserver(_ observer: ConnectionStateObserver);
+    func removeObserver(_ observer: ConnectionObserver);
 }

@@ -7,7 +7,7 @@
 import Foundation
 import CoreBluetooth
 
-public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionStateObserver {
+public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObserver {
     
     private let TAG = "FirmwareUpgradeManager"
     
@@ -54,8 +54,10 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
     
     public func cancel() {
         objc_sync_enter(self)
-        if state.isInProgress() {
-            cancelPrivate()        }
+        if state == .upload {
+            imageManager.cancelUpload()
+            paused = false
+        }
         objc_sync_exit(self)
     }
     
@@ -124,7 +126,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
     private func upload() {
         setState(.upload)
         if !paused {
-            _ = imageManager.upload(data: [UInt8](imageData), delegate: self)
+            _ = imageManager.upload(data: imageData, delegate: self)
         }
     }
     
@@ -159,6 +161,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
     }
     
     private func success() {
+        setState(.success)
         objc_sync_enter(self)
         state = .none
         paused = false
@@ -169,18 +172,10 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
     private func fail(error: Error) {
         objc_sync_enter(self)
         Log.e(TAG, error: error)
-        cancelPrivate()
-        delegate.upgradeDidFail(inState: state, with: error)
-        objc_sync_exit(self)
-    }
-    
-    private func cancelPrivate() {
-        objc_sync_enter(self)
-        if state == .upload {
-            imageManager.cancelUpload()
-        }
+        let tmp = state
         state = .none
         paused = false
+        delegate.upgradeDidFail(inState: tmp, with: error)
         objc_sync_exit(self)
     }
     
@@ -270,7 +265,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
             
             // If the image was already confirmed, reset (if confirm was
             // intended), or fail.
-            if images[1].permanent || images[1].confirmed {
+            if images[1].permanent {
                 switch self.mode {
                 case .confirmOnly, .testAndConfirm:
                     self.reset()
@@ -288,6 +283,16 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
             case .testOnly, .testAndConfirm:
                 self.reset()
             }
+        }
+        
+        // If the image in slot 1 is confirmed (we are in test mode)
+        // we won't be able to erase the slot. A No Memory error
+        // would be thrown. We have to reset the device and return
+        // from test mode before firmware upgrade begins.
+        if images.count > 1 && images[1].confirmed {
+            self.defaultManager.transporter.addObserver(self)
+            self.defaultManager.reset(callback: self.resetCallback)
+            return
         }
         
         // Validation successful, begin with image upload.
@@ -333,14 +338,21 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionState
         self.reset()
     }
     
-    public func peripheral(_ transport: McuMgrTransport, didChangeStateTo state: CBPeripheralState) {
+    public func transport(_ transport: McuMgrTransport, didChangeStateTo state: McuMgrTransportState) {
         transport.removeObserver(self)
         Log.i(self.TAG, msg: "Reset successful")
-        switch mode {
-        case .testAndConfirm:
-            verify()
+        switch self.state {
+        case .validate:
+            validate()
+        case .reset:
+            switch mode {
+            case .testAndConfirm:
+                verify()
+            default:
+                success()
+            }
         default:
-            success()
+            break
         }
     }
     
@@ -443,11 +455,12 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     
     public func uploadDidFail(with error: Error) {
         // If the upload fails, fail the upgrade.
-        delegate.upgradeDidFail(inState: state, with: error)
+        fail(error: error)
     }
     
     public func uploadDidCancel() {
         delegate.upgradeDidCancel(state: state)
+        state = .none
     }
     
     public func uploadDidFinish() {
@@ -481,7 +494,7 @@ extension FirmwareUpgradeError: CustomStringConvertible {
         case .invalidResponse(let response):
             return "Invalid response: \(response)"
         case .mcuMgrReturnCodeError(let code):
-            return "Error: \(code)"
+            return "\(code)"
         case .connectionFailedAfterReset:
             return "Connection failed after reset"
         }

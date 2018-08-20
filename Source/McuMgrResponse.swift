@@ -332,7 +332,6 @@ public class McuMgrDateTimeResponse: McuMgrResponse {
     }
 }
 
-
 //******************************************************************************
 // MARK: Image Responses
 //******************************************************************************
@@ -407,6 +406,38 @@ public class McuMgrCoreLoadResponse: McuMgrResponse {
     /// first packet, when the off is equal to 0.
     public var len: UInt?
     /// The core data received.
+    public var data: [UInt8]?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.unsignedInt(off)? = cbor?["off"] {self.off = off}
+        if case let CBOR.unsignedInt(len)? = cbor?["len"] {self.len = len}
+        if case let CBOR.byteString(data)? = cbor?["data"] {self.data = data}
+    }
+}
+
+//******************************************************************************
+// MARK: Fs Responses
+//******************************************************************************
+
+public class McuMgrFsUploadResponse: McuMgrResponse {
+    
+    /// Offset to send the next packet of image data from.
+    public var off: UInt?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.unsignedInt(off)? = cbor?["off"] {self.off = off}
+    }
+}
+
+public class McuMgrFsDownloadResponse: McuMgrResponse {
+    
+    /// Offset to send the next packet of image data from.
+    public var off: UInt?
+    /// The length of the file. This is not nil only if offset = 0.
+    public var len: UInt?
+    /// The file data received.
     public var data: [UInt8]?
     
     public required init(cbor: CBOR?) throws {

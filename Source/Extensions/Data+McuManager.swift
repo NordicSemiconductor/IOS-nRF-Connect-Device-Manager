@@ -49,5 +49,15 @@ public extension Data {
             Data(self[$0..<Swift.min($0 + size, self.count)])
         }
     }
+    
+    // MARK: - SHA 256
+    
+    public func sha256() -> [UInt8] {
+        var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+        withUnsafeBytes {
+            _ = CC_SHA256($0, CC_LONG(count), &hash)
+        }
+        return hash
+    }
 }
 

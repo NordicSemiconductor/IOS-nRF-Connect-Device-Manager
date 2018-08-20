@@ -97,18 +97,30 @@ public class CBORDecoder {
         case 0x58:
             let numBytes: Int = Int(try istream.popByte())
             return CBOR.byteString(Array(try istream.popBytes(numBytes)))
-		case 0x59: return CBOR.byteString(Array(try istream.popBytes(Int(try readUInt(2) as UInt16))))
-		case 0x5a: return CBOR.byteString(Array(try istream.popBytes(Int(try readUInt(4) as UInt32))))
-		case 0x5b: return CBOR.byteString(Array(try istream.popBytes(Int(try readUInt(8) as UInt64))))
+		case 0x59:
+            let numBytes: Int = Int(try readUInt(2) as UInt16)
+            return CBOR.byteString(Array(try istream.popBytes(numBytes)))
+		case 0x5a:
+            let numBytes: Int = Int(try readUInt(4) as UInt32)
+            return CBOR.byteString(Array(try istream.popBytes(numBytes)))
+		case 0x5b:
+            let numBytes: Int = Int(try readUInt(8) as UInt64)
+            return CBOR.byteString(Array(try istream.popBytes(numBytes)))
 		case 0x5f: return CBOR.byteString(try readUntilBreak().flatMap { x -> [UInt8] in guard case .byteString(let r) = x else { throw CBORError.wrongTypeInsideSequence }; return r })
 
 		case let b where 0x60 <= b && b <= 0x77: return CBOR.utf8String(try Util.decodeUtf8(try istream.popBytes(Int(b - 0x60))))
         case 0x78:
             let numBytes: Int = Int(try istream.popByte())
             return CBOR.utf8String(try Util.decodeUtf8(try istream.popBytes(numBytes)))
-		case 0x79: return CBOR.utf8String(try Util.decodeUtf8(try istream.popBytes(Int(try readUInt(2) as UInt16))))
-		case 0x7a: return CBOR.utf8String(try Util.decodeUtf8(try istream.popBytes(Int(try readUInt(4) as UInt32))))
-		case 0x7b: return CBOR.utf8String(try Util.decodeUtf8(try istream.popBytes(Int(try readUInt(8) as UInt64))))
+		case 0x79:
+            let numBytes: Int = Int(try readUInt(2) as UInt16)
+            return CBOR.utf8String(try Util.decodeUtf8(try istream.popBytes(numBytes)))
+		case 0x7a:
+            let numBytes: Int = Int(try readUInt(4) as UInt32)
+            return CBOR.utf8String(try Util.decodeUtf8(try istream.popBytes(numBytes)))
+		case 0x7b:
+            let numBytes: Int = Int(try readUInt(8) as UInt64)
+            return CBOR.utf8String(try Util.decodeUtf8(try istream.popBytes(numBytes)))
 		case 0x7f: return CBOR.utf8String(try readUntilBreak().map { x -> String in guard case .utf8String(let r) = x else { throw CBORError.wrongTypeInsideSequence }; return r }.joined(separator: ""))
 
 		case let b where 0x80 <= b && b <= 0x97: return CBOR.array(try readN(Int(b - 0x80)))

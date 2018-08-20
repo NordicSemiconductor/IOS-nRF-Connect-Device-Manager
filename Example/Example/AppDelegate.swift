@@ -1,19 +1,23 @@
 /*
- * Copyright (c) 2017-2018 Runtime Inc.
+ * Copyright (c) 2018 Nordic Semiconductor ASA.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import UIKit
+import CoreBluetooth
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        UserDefaults.standard.register(defaults: [
+            "filterByUuid" : true,
+            "filterByRssi" : false
+            ])
         return true
     }
 

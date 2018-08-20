@@ -8,8 +8,9 @@ import Foundation
 import CoreBluetooth
 
 public class ImageManager: McuManager {
-    
     private static let TAG = "ImageManager"
+    
+    private static let truncatedHashLen = 3
     
     //**************************************************************************
     // MARK: Constants
@@ -65,10 +66,11 @@ public class ImageManager: McuManager {
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[offset..<(offset+dataLength)])),
                                       "off": CBOR.unsignedInt(offset)]
         
-        // If this is the initial packet, send the image data length in the
-        // payload.
+        // If this is the initial packet, send the image data length and
+        // SHA 256 in the payload.
         if offset == 0 {
             payload.updateValue(CBOR.unsignedInt(UInt(data.count)), forKey: "len")
+            payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
         }
         // Build request and send.
         send(op: .write, commandId: ID_UPLOAD, payload: payload, callback: callback)
@@ -111,15 +113,14 @@ public class ImageManager: McuManager {
     /// Upload progress is reported asynchronously to the delegate provided in
     /// this method.
     ///
-    /// - parameter data: The entire image data in bytes to upload to the
-    ///   peripheral.
+    /// - parameter data: The entire image data to be uploaded to the peripheral.
     /// - parameter peripheral: The BLE periheral to send the data to. The
     ///   peripneral must be supplied so ImageManager can determine the MTU and
     ///   thus the number of bytes of image data that it can send per packet.
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
-    public func upload(data: [UInt8], delegate: ImageUploadDelegate) -> Bool {
+    public func upload(data: Data, delegate: ImageUploadDelegate) -> Bool {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         // If upload is already in progress or paused, do not continue.
@@ -135,8 +136,8 @@ public class ImageManager: McuManager {
         // Set upload delegate.
         uploadDelegate = delegate
         
-        // Set inage data.
-        imageData = Data(bytes: data)
+        // Set image data.
+        imageData = data
         
         upload(data: imageData!, offset: 0, callback: uploadCallback)
         return true
@@ -215,20 +216,26 @@ public class ImageManager: McuManager {
     ///   delegate's didFailUpload method.
     public func cancelUpload(error: Error? = nil) {
         objc_sync_enter(self)
-        let state = uploadState
-        resetUploadVariables()
-        if error != nil {
-            Log.d(ImageManager.TAG, msg: "Upload cancelled due to error: \(error!)")
-            uploadDelegate?.uploadDidFail(with: error!)
+        if uploadState == .none {
+            Log.d(ImageManager.TAG, msg: "Image upload is not in progress")
         } else {
-            Log.d(ImageManager.TAG, msg: "Upload cancelled!")
-            if state == .none {
-                print("There is no image upload currently in progress.")
-            } else if state == .paused {
-                uploadDelegate?.uploadDidCancel()
+            if error != nil {
+                Log.d(ImageManager.TAG, msg: "Upload cancelled due to error: \(error!)")
+                resetUploadVariables()
+                uploadDelegate?.uploadDidFail(with: error!)
+                uploadDelegate = nil
+            } else {
+                if uploadState == .paused {
+                    Log.d(ImageManager.TAG, msg: "Upload cancelled!")
+                    resetUploadVariables()
+                    uploadDelegate?.uploadDidCancel()
+                    uploadDelegate = nil
+                }
+                // else
+                // Transfer will be cancelled after the next notification is received.
             }
+            uploadState = .none
         }
-        uploadDelegate = nil
         objc_sync_exit(self)
     }
     
@@ -303,7 +310,8 @@ public class ImageManager: McuManager {
             self.offset = offset
             self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: imageData.count, timestamp: Date())
             
-            if self.uploadState == .paused {
+            if self.uploadState == .none {
+                Log.d(ImageManager.TAG, msg: "Upload cancelled!")
                 self.resetUploadVariables()
                 self.uploadDelegate?.uploadDidCancel()
                 self.uploadDelegate = nil
@@ -312,6 +320,7 @@ public class ImageManager: McuManager {
             
             // Check if the upload has completed.
             if offset == imageData.count {
+                Log.d(ImageManager.TAG, msg: "Upload finished!")
                 self.resetUploadVariables()
                 self.uploadDelegate?.uploadDidFinish()
                 self.uploadDelegate = nil
@@ -327,7 +336,6 @@ public class ImageManager: McuManager {
     
     private func sendNext(from offset: UInt) {
         if uploadState != .uploading {
-            Log.d(ImageManager.TAG, msg: "Image Manager is not in uploading state")
             return
         }
         upload(data: imageData!, offset: offset, callback: uploadCallback)
@@ -355,7 +363,7 @@ public class ImageManager: McuManager {
         let tempData = imageData
         let tempDelegate = uploadDelegate
         resetUploadVariables()
-        _ = upload(data: [UInt8](tempData), delegate: tempDelegate)
+        _ = upload(data: tempData, delegate: tempDelegate)
         objc_sync_exit(self)
     }
     
@@ -367,6 +375,7 @@ public class ImageManager: McuManager {
         // entire image.
         if offset == 0 {
             payload.updateValue(CBOR.unsignedInt(UInt(data.count)), forKey: "len")
+            payload.updateValue(CBOR.byteString([UInt8](repeating: 0, count: ImageManager.truncatedHashLen)), forKey: "sha")
         }
         // Build the packet and return the size.
         let packet = buildPacket(op: .write, flags: 0, group: group, sequenceNumber: 0, commandId: ID_UPLOAD, payload: payload)
@@ -397,7 +406,7 @@ extension ImageUploadError: CustomStringConvertible {
         case .invalidData:
             return "Image data is nil."
         case .mcuMgrErrorCode(let code):
-            return "Error: \(code)"
+            return "\(code)"
         }
     }
 }

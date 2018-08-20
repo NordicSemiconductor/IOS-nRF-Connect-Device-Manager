@@ -5,3 +5,4 @@
  */
 
 #import "CBOR/SwiftCBOR.h"
+#import <CommonCrypto/CommonCrypto.h>

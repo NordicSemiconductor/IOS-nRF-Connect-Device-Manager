@@ -7,8 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5215762D212320F300C21B0C /* LogsStatsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215762C212320F300C21B0C /* LogsStatsController.swift */; };
+		5215762F2125B59400C21B0C /* FilesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215762E2125B59400C21B0C /* FilesController.swift */; };
+		521576312126CC8F00C21B0C /* FileUploadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521576302126CC8F00C21B0C /* FileUploadViewController.swift */; };
+		521576332126FFBE00C21B0C /* FileDownloadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521576322126FFBE00C21B0C /* FileDownloadViewController.swift */; };
+		5246368A2108DE77008B3D5B /* ScannerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524636892108DE77008B3D5B /* ScannerTableViewCell.swift */; };
+		5246368E2108DF23008B3D5B /* DiscoveredPeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5246368D2108DF23008B3D5B /* DiscoveredPeripheral.swift */; };
+		524636962109D0D7008B3D5B /* ScannerFilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524636952109D0D7008B3D5B /* ScannerFilterViewController.swift */; };
+		524DCFD0210B0EB6000E110D /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524DCFCF210B0EB6000E110D /* BaseViewController.swift */; };
+		524DCFD4210B1C17000E110D /* DeviceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524DCFD3210B1C17000E110D /* DeviceController.swift */; };
+		524DCFD6210B21D6000E110D /* ConnectionStateLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524DCFD5210B21D6000E110D /* ConnectionStateLabel.swift */; };
+		524DCFD9210B4241000E110D /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524DCFD8210B4241000E110D /* UIColor.swift */; };
+		526270A4210B8E8000FC17D4 /* ImageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526270A3210B8E8000FC17D4 /* ImageController.swift */; };
+		5264C1D6210E26C20044FBBA /* FirmwareUpgradeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1D5210E26C20044FBBA /* FirmwareUpgradeViewController.swift */; };
+		5264C1D8210F32A60044FBBA /* FirmwareUploadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1D7210F32A60044FBBA /* FirmwareUploadViewController.swift */; };
+		5264C1DA210F43B40044FBBA /* ResetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1D9210F43B40044FBBA /* ResetViewController.swift */; };
+		5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1DB210F63850044FBBA /* ImagesViewController.swift */; };
+		5264C1DE210F640F0044FBBA /* McuMgrViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1DD210F640F0044FBBA /* McuMgrViewController.swift */; };
 		BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285720CB44AF0061F0EE /* AppDelegate.swift */; };
-		BD5A285A20CB44AF0061F0EE /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285920CB44AF0061F0EE /* ViewController.swift */; };
+		BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */; };
 		BD5A285D20CB44AF0061F0EE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285B20CB44AF0061F0EE /* Main.storyboard */; };
 		BD5A285F20CB44B00061F0EE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285E20CB44B00061F0EE /* Assets.xcassets */; };
 		BD5A286220CB44B00061F0EE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A286020CB44B00061F0EE /* LaunchScreen.storyboard */; };
@@ -31,10 +48,27 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5215762C212320F300C21B0C /* LogsStatsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsStatsController.swift; sourceTree = "<group>"; };
+		5215762E2125B59400C21B0C /* FilesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesController.swift; sourceTree = "<group>"; };
+		521576302126CC8F00C21B0C /* FileUploadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileUploadViewController.swift; sourceTree = "<group>"; };
+		521576322126FFBE00C21B0C /* FileDownloadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloadViewController.swift; sourceTree = "<group>"; };
+		524636892108DE77008B3D5B /* ScannerTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerTableViewCell.swift; sourceTree = "<group>"; };
+		5246368D2108DF23008B3D5B /* DiscoveredPeripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveredPeripheral.swift; sourceTree = "<group>"; };
+		524636952109D0D7008B3D5B /* ScannerFilterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerFilterViewController.swift; sourceTree = "<group>"; };
+		524DCFCF210B0EB6000E110D /* BaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
+		524DCFD3210B1C17000E110D /* DeviceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceController.swift; sourceTree = "<group>"; };
+		524DCFD5210B21D6000E110D /* ConnectionStateLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionStateLabel.swift; sourceTree = "<group>"; };
+		524DCFD8210B4241000E110D /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
+		526270A3210B8E8000FC17D4 /* ImageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageController.swift; sourceTree = "<group>"; };
+		5264C1D5210E26C20044FBBA /* FirmwareUpgradeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeViewController.swift; sourceTree = "<group>"; };
+		5264C1D7210F32A60044FBBA /* FirmwareUploadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUploadViewController.swift; sourceTree = "<group>"; };
+		5264C1D9210F43B40044FBBA /* ResetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetViewController.swift; sourceTree = "<group>"; };
+		5264C1DB210F63850044FBBA /* ImagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ImagesViewController.swift; path = Widgets/ImagesViewController.swift; sourceTree = "<group>"; };
+		5264C1DD210F640F0044FBBA /* McuMgrViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McuMgrViewController.swift; sourceTree = "<group>"; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A285720CB44AF0061F0EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		BD5A285920CB44AF0061F0EE /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerViewController.swift; sourceTree = "<group>"; };
 		BD5A285C20CB44AF0061F0EE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BD5A285E20CB44B00061F0EE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BD5A286120CB44B00061F0EE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -54,6 +88,69 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		524636882108DCF1008B3D5B /* View Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				524DCFCD210B0E50000E110D /* Scanner */,
+				524DCFCE210B0E6E000E110D /* Manager */,
+			);
+			path = "View Controllers";
+			sourceTree = "<group>";
+		};
+		5246368C2108DEFC008B3D5B /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				5246368D2108DF23008B3D5B /* DiscoveredPeripheral.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		524DCFCD210B0E50000E110D /* Scanner */ = {
+			isa = PBXGroup;
+			children = (
+				BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */,
+				524636892108DE77008B3D5B /* ScannerTableViewCell.swift */,
+				524636952109D0D7008B3D5B /* ScannerFilterViewController.swift */,
+			);
+			path = Scanner;
+			sourceTree = "<group>";
+		};
+		524DCFCE210B0E6E000E110D /* Manager */ = {
+			isa = PBXGroup;
+			children = (
+				526270A2210B8E5E00FC17D4 /* Widgets */,
+				524DCFCF210B0EB6000E110D /* BaseViewController.swift */,
+				524DCFD3210B1C17000E110D /* DeviceController.swift */,
+				526270A3210B8E8000FC17D4 /* ImageController.swift */,
+				5215762E2125B59400C21B0C /* FilesController.swift */,
+				5215762C212320F300C21B0C /* LogsStatsController.swift */,
+				5264C1D5210E26C20044FBBA /* FirmwareUpgradeViewController.swift */,
+				5264C1D7210F32A60044FBBA /* FirmwareUploadViewController.swift */,
+				5264C1DB210F63850044FBBA /* ImagesViewController.swift */,
+				5264C1D9210F43B40044FBBA /* ResetViewController.swift */,
+				521576302126CC8F00C21B0C /* FileUploadViewController.swift */,
+				521576322126FFBE00C21B0C /* FileDownloadViewController.swift */,
+			);
+			path = Manager;
+			sourceTree = "<group>";
+		};
+		524DCFD7210B421E000E110D /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				524DCFD8210B4241000E110D /* UIColor.swift */,
+			);
+			path = Util;
+			sourceTree = "<group>";
+		};
+		526270A2210B8E5E00FC17D4 /* Widgets */ = {
+			isa = PBXGroup;
+			children = (
+				524DCFD5210B21D6000E110D /* ConnectionStateLabel.swift */,
+				5264C1DD210F640F0044FBBA /* McuMgrViewController.swift */,
+			);
+			path = Widgets;
+			sourceTree = "<group>";
+		};
 		BD5A284B20CB44AF0061F0EE = {
 			isa = PBXGroup;
 			children = (
@@ -75,11 +172,13 @@
 			isa = PBXGroup;
 			children = (
 				BD54DE5320CEE16F0023F980 /* Example.entitlements */,
+				5246368C2108DEFC008B3D5B /* Model */,
+				524636882108DCF1008B3D5B /* View Controllers */,
+				524DCFD7210B421E000E110D /* Util */,
 				BD5A285720CB44AF0061F0EE /* AppDelegate.swift */,
-				BD5A285920CB44AF0061F0EE /* ViewController.swift */,
 				BD5A285B20CB44AF0061F0EE /* Main.storyboard */,
-				BD5A285E20CB44B00061F0EE /* Assets.xcassets */,
 				BD5A286020CB44B00061F0EE /* LaunchScreen.storyboard */,
+				BD5A285E20CB44B00061F0EE /* Assets.xcassets */,
 				BD5A286320CB44B00061F0EE /* Info.plist */,
 			);
 			path = Example;
@@ -122,7 +221,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0940;
 				LastUpgradeCheck = 0940;
-				ORGANIZATIONNAME = Runtime;
+				ORGANIZATIONNAME = "Nordic Semiconductor ASA";
 				TargetAttributes = {
 					BD5A285320CB44AF0061F0EE = {
 						CreatedOnToolsVersion = 9.4;
@@ -170,8 +269,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BD5A285A20CB44AF0061F0EE /* ViewController.swift in Sources */,
+				5264C1DA210F43B40044FBBA /* ResetViewController.swift in Sources */,
+				5246368A2108DE77008B3D5B /* ScannerTableViewCell.swift in Sources */,
+				524636962109D0D7008B3D5B /* ScannerFilterViewController.swift in Sources */,
+				5264C1D8210F32A60044FBBA /* FirmwareUploadViewController.swift in Sources */,
+				5246368E2108DF23008B3D5B /* DiscoveredPeripheral.swift in Sources */,
+				5264C1D6210E26C20044FBBA /* FirmwareUpgradeViewController.swift in Sources */,
+				BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */,
+				524DCFD9210B4241000E110D /* UIColor.swift in Sources */,
+				5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */,
+				526270A4210B8E8000FC17D4 /* ImageController.swift in Sources */,
+				5264C1DE210F640F0044FBBA /* McuMgrViewController.swift in Sources */,
+				524DCFD4210B1C17000E110D /* DeviceController.swift in Sources */,
+				5215762D212320F300C21B0C /* LogsStatsController.swift in Sources */,
 				BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */,
+				5215762F2125B59400C21B0C /* FilesController.swift in Sources */,
+				521576332126FFBE00C21B0C /* FileDownloadViewController.swift in Sources */,
+				524DCFD6210B21D6000E110D /* ConnectionStateLabel.swift in Sources */,
+				524DCFD0210B0EB6000E110D /* BaseViewController.swift in Sources */,
+				521576312126CC8F00C21B0C /* FileUploadViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -317,14 +433,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3Q849T3RP3;
+				DEVELOPMENT_TEAM = P3R8YQEV4L;
 				INFOPLIST_FILE = Example/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = runtime.io.McuMgrExample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nordicsemi.McuMgrExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -337,14 +453,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3Q849T3RP3;
+				DEVELOPMENT_TEAM = P3R8YQEV4L;
 				INFOPLIST_FILE = Example/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = runtime.io.McuMgrExample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nordicsemi.McuMgrExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
