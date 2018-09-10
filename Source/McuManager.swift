@@ -26,11 +26,11 @@ public class McuManager {
     //**************************************************************************
 
     /// Handles transporting Mcu Manager commands.
-    public var transporter: McuMgrTransport
+    public let transporter: McuMgrTransport
     
     /// The command group used for in the header of commands sent using this Mcu
     /// Manager.
-    public var group: McuMgrGroup
+    public let group: McuMgrGroup
     
     /// The MTU used by this manager. This value must be between 23 and 1024.
     /// The MTU is usually only a factor when uploading files or images to the
@@ -53,11 +53,14 @@ public class McuManager {
     //**************************************************************************
 
     public func send<T: McuMgrResponse>(op: McuMgrOperation, commandId: UInt8, payload: [String:CBOR]?, callback: @escaping McuMgrCallback<T>) {
-        send(op: op, flags: 0, group: group, sequenceNumber: 0, commandId: commandId, payload: payload, callback: callback)
+        send(op: op, flags: 0, sequenceNumber: 0, commandId: commandId, payload: payload, callback: callback)
     }
     
-    public func send<T: McuMgrResponse>(op: McuMgrOperation, flags: UInt8, group: McuMgrGroup, sequenceNumber: UInt8, commandId: UInt8, payload: [String:CBOR]?, callback: @escaping McuMgrCallback<T>) {
-        let data = buildPacket(op: op, flags: flags, group: group, sequenceNumber: sequenceNumber, commandId: commandId, payload: payload)
+    public func send<T: McuMgrResponse>(op: McuMgrOperation, flags: UInt8, sequenceNumber: UInt8,
+                                        commandId: UInt8, payload: [String:CBOR]?, callback: @escaping McuMgrCallback<T>) {
+        let data = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
+                                          flags: flags, group: group, sequenceNumber: sequenceNumber,
+                                          commandId: commandId, payload: payload)
         send(data: data, callback: callback)
     }
     
@@ -71,6 +74,7 @@ public class McuManager {
     
     /// Build a McuManager request packet based on the transporter scheme.
     ///
+    /// - parameter scheme: The transport scheme.
     /// - parameter op: The McuManagerOperation code.
     /// - parameter flags: The optional flags.
     /// - parameter group: The command group.
@@ -79,7 +83,8 @@ public class McuManager {
     /// - parameter payload: The request payload.
     ///
     /// - returns: The raw packet data to send to the transporter.
-    public func buildPacket(op: McuMgrOperation, flags: UInt8, group: McuMgrGroup, sequenceNumber: UInt8, commandId: UInt8, payload: [String:CBOR]?) -> Data {
+    public static func buildPacket(scheme: McuMgrScheme, op: McuMgrOperation, flags: UInt8,
+                                   group: McuMgrGroup, sequenceNumber: UInt8, commandId: UInt8, payload: [String:CBOR]?) -> Data {
         // If the payload map is nil, initialize an empty map.
         var payload = (payload == nil ? [:] : payload)!
         
@@ -95,7 +100,7 @@ public class McuManager {
         let header = McuMgrHeader.build(op: op.rawValue, flags: flags, len: len, group: group.rawValue, seq: sequenceNumber, id: commandId)
         
         // Build the packet based on scheme.
-        if transporter.getScheme().isCoap() {
+        if scheme.isCoap() {
             // CoAP transport schemes puts the header as a key-value pair in the
             // payload.
             if payload[McuManager.HEADER_KEY] == nil {
