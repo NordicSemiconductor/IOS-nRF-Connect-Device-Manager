@@ -399,12 +399,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         // Check that the image array exists.
-        guard let images = response.images else {
-            self.fail(error: FirmwareUpgradeError.invalidResponse(response))
-            return
-        }
-        // Check that we have at least one image in the array.
-        if images.count == 0 {
+        guard let images = response.images, images.count > 0 else {
             self.fail(error: FirmwareUpgradeError.invalidResponse(response))
             return
         }

@@ -43,7 +43,7 @@ public class ConfigManager: McuManager {
     /// - parameter callback: The response callback.
     public func write(name: String, value: String, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(name),
-                                     "val": CBOR.utf8String(value)]
+                                      "val":  CBOR.utf8String(value)]
         send(op: .write, commandId: ID_CONFIG, payload: payload, callback: callback)
     }
 }

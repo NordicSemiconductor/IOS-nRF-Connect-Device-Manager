@@ -15,7 +15,7 @@ public class FileSystemManager: McuManager {
     //**************************************************************************
     
     // Mcu File System Manager ids
-    let ID_FILE        =  UInt8(0)
+    let ID_FILE =  UInt8(0)
     
     //**************************************************************************
     // MARK: Initializers
@@ -158,10 +158,10 @@ public class FileSystemManager: McuManager {
     
     /// Image upload states
     public enum UploadState: UInt8 {
-        case none = 0
-        case uploading = 1
+        case none        = 0
+        case uploading   = 1
         case downloading = 2
-        case paused = 3
+        case paused      = 3
     }
     
     /// State of the file upload.
@@ -419,14 +419,15 @@ public class FileSystemManager: McuManager {
         // Get the Mcu Manager header.
         var payload: [String:CBOR] = ["name": CBOR.utf8String(name),
                                       "data": CBOR.byteString([UInt8]([0])),
-                                      "off": CBOR.unsignedInt(offset)]
+                                      "off":  CBOR.unsignedInt(offset)]
         // If this is the initial packet we have to include the length of the
         // entire file.
         if offset == 0 {
             payload.updateValue(CBOR.unsignedInt(UInt(data.count)), forKey: "len")
         }
         // Build the packet and return the size.
-        let packet = buildPacket(op: .write, flags: 0, group: group, sequenceNumber: 0, commandId: ID_FILE, payload: payload)
+        let packet = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write, flags: 0,
+                                            group: group, sequenceNumber: 0, commandId: ID_FILE, payload: payload)
         var packetOverhead = packet.count + 5
         if transporter.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.

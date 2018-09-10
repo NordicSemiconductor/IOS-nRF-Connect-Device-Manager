@@ -191,9 +191,9 @@ public class ImageManager: McuManager {
 
     /// Image upload states
     public enum UploadState: UInt8 {
-        case none = 0
+        case none      = 0
         case uploading = 1
-        case paused = 2
+        case paused    = 2
     }
     
     /// State of the image upload.
@@ -370,7 +370,7 @@ public class ImageManager: McuManager {
     private func calculatePacketOverhead(data: Data, offset: UInt) -> Int {
         // Get the Mcu Manager header.
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8]([0])),
-                                      "off": CBOR.unsignedInt(offset)]
+                                      "off":  CBOR.unsignedInt(offset)]
         // If this is the initial packet we have to include the length of the
         // entire image.
         if offset == 0 {
@@ -378,7 +378,8 @@ public class ImageManager: McuManager {
             payload.updateValue(CBOR.byteString([UInt8](repeating: 0, count: ImageManager.truncatedHashLen)), forKey: "sha")
         }
         // Build the packet and return the size.
-        let packet = buildPacket(op: .write, flags: 0, group: group, sequenceNumber: 0, commandId: ID_UPLOAD, payload: payload)
+        let packet = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write, flags: 0,
+                                            group: group, sequenceNumber: 0, commandId: ID_UPLOAD, payload: payload)
         var packetOverhead = packet.count + 5
         if transporter.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.
