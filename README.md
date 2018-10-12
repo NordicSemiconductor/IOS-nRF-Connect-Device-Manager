@@ -4,7 +4,11 @@ A transport agnostic implementation of the McuManager protocol (aka Newt Manager
 
 ## Install
 
-TODO Create Cocoa Pod and Carthage
+### Carthage
+
+```
+github "runtimeco/mcumgr-ios"
+```
 
 # Introduction
 
@@ -33,7 +37,19 @@ This library provides a `FirmwareUpgradeManager` as a convinience for upgrading 
 
 A `FirmwareUpgradeManager` provides an easy way to perform firmware upgrades on a device. A `FirmwareUpgradeManager` must be initialized with an `McuMgrTransport` which defines the transport scheme and device. Once initialized, a `FirmwareUpgradeManager` can perform one firmware upgrade at a time. Firmware upgrades are started using the `start(data: Data)` method and can be paused, resumed, and canceled using `pause()`, `resume()`, and `cancel()` respectively.
 
-#### Firmware Upgrade Mode
+### Example
+```swift
+// Initialize the BLE transporter using a scanned peripheral
+let bleTransport = McuMgrBleTransport(cbPeripheral)
+
+// Initialize the FirmwareUpgradeManager using the transport and a delegate
+let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
+
+// Start the firmware upgrade with the image data
+dfuManager.start(data: imageData)
+```
+
+### Firmware Upgrade Mode
 
 McuManager firmware upgrades can actually be performed in few different ways. These different upgrade modes determine the commands sent after the `upload` step. The `FirmwareUpgradeManager` can be configured to perform these upgrade variations by setting the `mode` property. The different firmware upgrade modes are as follows:
 
@@ -47,14 +63,3 @@ McuManager firmware upgrades can actually be performed in few different ways. Th
 
 The `FirmwareUpgradeManager` contains an additional state, `validate`, which precedes the upload. The `validate` state checks the current image state of the device in an attempt to bypass certain states of the firmware upgrade. For example, if the image to upgrade to already exists in slot 1 on the device, the `FirmwareUpgradeManager` will skip `upload` and move directly to `test` (or `confirm` if `.confirmOnly` mode has been set) from `validate`. If the uploaded image is already active, and confirmed in slot 0, the upgrade will succeed immediately. In short, the `validate` state makes it easy to reattempt an upgrade without needing to re-upload the image or manually determine where to start.
 
-### Example
-```swift
-// Initialize the BLE transporter using a scanned peripheral
-let bleTransport = McuMgrBleTransport(cbPeripheral)
-
-// Initialize the FirmwareUpgradeManager using the transport and a delegate
-let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
-
-// Start the firmware upgrade with the image data
-dfuManager.start(data: imageData)
-```
