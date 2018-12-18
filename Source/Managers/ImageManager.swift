@@ -120,7 +120,7 @@ public class ImageManager: McuManager {
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
-    public func upload(data: Data, delegate: ImageUploadDelegate) -> Bool {
+    public func upload(data: Data, delegate: ImageUploadDelegate?) -> Bool {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         // If upload is already in progress or paused, do not continue.
@@ -204,7 +204,7 @@ public class ImageManager: McuManager {
     /// Contains the image data to send to the device.
     private var imageData: Data?
     /// Delegate to send image upload updates to.
-    private var uploadDelegate: ImageUploadDelegate?
+    private weak var uploadDelegate: ImageUploadDelegate?
     
     /// Cancels the current upload.
     ///
@@ -416,7 +416,7 @@ extension ImageUploadError: CustomStringConvertible {
 // MARK: Image Upload Delegate
 //******************************************************************************
 
-public protocol ImageUploadDelegate {
+public protocol ImageUploadDelegate : class {
     
     /// Called when a packet of image data has been sent successfully.
     ///

@@ -13,7 +13,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     
     private let imageManager: ImageManager
     private let defaultManager: DefaultManager
-    private let delegate: FirmwareUpgradeDelegate
+    private weak var delegate: FirmwareUpgradeDelegate?
     
     public var mode: FirmwareUpgradeMode = .testAndConfirm
     private var imageData: Data!
@@ -26,7 +26,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     // MARK: Initializer
     //**************************************************************************
     
-    public init(transporter: McuMgrTransport, delegate: FirmwareUpgradeDelegate) {
+    public init(transporter: McuMgrTransport, delegate: FirmwareUpgradeDelegate?) {
         self.imageManager = ImageManager(transporter: transporter)
         self.defaultManager = DefaultManager(transporter: transporter)
         self.delegate = delegate
@@ -47,7 +47,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         imageData = data
         hash = try McuMgrImage(data: imageData).hash
         
-        delegate.upgradeDidStart(controller: self)
+        delegate?.upgradeDidStart(controller: self)
         validate()
         objc_sync_exit(self)
     }
@@ -111,7 +111,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         let previousState = self.state
         self.state = state
         if state != previousState {
-            delegate.upgradeStateDidChange(from: previousState, to: state)
+            delegate?.upgradeStateDidChange(from: previousState, to: state)
         }
         objc_sync_exit(self)
     }
@@ -165,7 +165,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         objc_sync_enter(self)
         state = .none
         paused = false
-        delegate.upgradeDidComplete()
+        delegate?.upgradeDidComplete()
         objc_sync_exit(self)
     }
     
@@ -175,7 +175,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         let tmp = state
         state = .none
         paused = false
-        delegate.upgradeDidFail(inState: tmp, with: error)
+        delegate?.upgradeDidFail(inState: tmp, with: error)
         objc_sync_exit(self)
     }
     
@@ -445,7 +445,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
 extension FirmwareUpgradeManager: ImageUploadDelegate {
     
     public func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
-        delegate.uploadProgressDidChange(bytesSent: bytesSent, imageSize: imageSize, timestamp: timestamp)
+        delegate?.uploadProgressDidChange(bytesSent: bytesSent, imageSize: imageSize, timestamp: timestamp)
     }
     
     public func uploadDidFail(with error: Error) {
@@ -454,7 +454,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     }
     
     public func uploadDidCancel() {
-        delegate.upgradeDidCancel(state: state)
+        delegate?.upgradeDidCancel(state: state)
         state = .none
     }
     
@@ -524,7 +524,7 @@ public enum FirmwareUpgradeMode {
 //******************************************************************************
 
 /// Callbacks for firmware upgrades started using FirmwareUpgradeManager.
-public protocol FirmwareUpgradeDelegate {
+public protocol FirmwareUpgradeDelegate : class {
     
     /// Called when the upgrade has started.
     ///

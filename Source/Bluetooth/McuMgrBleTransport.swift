@@ -67,7 +67,7 @@ public class McuMgrBleTransport: NSObject {
     /// An array of observers.
     private var observers: [ConnectionObserver]
     /// BLE transport delegate.
-    public var delegate: PeripheralDelegate? {
+    public weak var delegate: PeripheralDelegate? {
         didSet {
             DispatchQueue.main.async {
                 self.delegate?.peripheral(self.peripheral, didChangeStateTo: self.state)

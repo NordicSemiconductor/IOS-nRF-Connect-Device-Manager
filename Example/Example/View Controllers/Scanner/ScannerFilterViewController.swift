@@ -6,7 +6,7 @@
 
 import UIKit
 
-protocol ScannerFilterDelegate {
+protocol ScannerFilterDelegate : class {
     /// Called when user modifies the filter.
     func filterSettingsDidChange(filterByUuid: Bool, filterByRssi: Bool)
 }
@@ -18,7 +18,7 @@ class ScannerFilterViewController: UIViewController {
     
     var filterByUuidEnabled: Bool!
     var filterByRssiEnabled: Bool!
-    var delegate: ScannerFilterDelegate?
+    weak var delegate: ScannerFilterDelegate?
     
     @IBAction func filterValueChanged(_ sender: UISwitch) {
         filterByUuidEnabled = self.filterByUuid.isOn

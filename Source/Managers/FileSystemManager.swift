@@ -88,7 +88,7 @@ public class FileSystemManager: McuManager {
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
-    public func download(name: String, delegate: FileDownloadDelegate) -> Bool {
+    public func download(name: String, delegate: FileDownloadDelegate?) -> Bool {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         // If upload is already in progress or paused, do not continue.
@@ -101,7 +101,7 @@ public class FileSystemManager: McuManager {
         }
         objc_sync_exit(self)
         
-        // Set upload delegate.
+        // Set download delegate.
         downloadDelegate = delegate
         
         // Set file data.
@@ -174,9 +174,9 @@ public class FileSystemManager: McuManager {
     /// Contains the file data to send to the device.
     private var fileData: Data?
     /// Delegate to send file upload updates to.
-    private var uploadDelegate: FileUploadDelegate?
+    private weak var uploadDelegate: FileUploadDelegate?
     /// Delegate to send file download updates to.
-    private var downloadDelegate: FileDownloadDelegate?
+    private weak var downloadDelegate: FileDownloadDelegate?
     
     /// Cancels the current transfer.
     ///
@@ -464,7 +464,7 @@ extension FileTransferError: CustomStringConvertible {
 // MARK: File Upload Delegate
 //******************************************************************************
 
-public protocol FileUploadDelegate {
+public protocol FileUploadDelegate : class {
     
     /// Called when a packet of file data has been sent successfully.
     ///
@@ -489,7 +489,7 @@ public protocol FileUploadDelegate {
 // MARK: File Download Delegate
 //******************************************************************************
 
-public protocol FileDownloadDelegate {
+public protocol FileDownloadDelegate : class {
     
     /// Called when a packet of file data has been sent successfully.
     ///
