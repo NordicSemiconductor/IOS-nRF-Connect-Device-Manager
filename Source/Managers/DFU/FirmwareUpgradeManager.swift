@@ -15,6 +15,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private let defaultManager: DefaultManager
     private weak var delegate: FirmwareUpgradeDelegate?
     
+    /// Cyclic reference is used to prevent from releasing the manager
+    /// in the middle of an update. The reference cycle will be set
+    /// when upgrade was started and released on success, error or cancel.
+    private var cyclicReferenceHolder: (() -> FirmwareUpgradeManager)?
+    
     public var mode: FirmwareUpgradeMode = .testAndConfirm
     private var imageData: Data!
     private var hash: Data!
@@ -46,6 +51,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         imageData = data
         hash = try McuMgrImage(data: imageData).hash
+        
+        // Grab a strong reference to something holding a strong reference to self.
+        cyclicReferenceHolder = { return self }
         
         delegate?.upgradeDidStart(controller: self)
         validate()
@@ -166,6 +174,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         state = .none
         paused = false
         delegate?.upgradeDidComplete()
+        // Release cyclic reference.
+        cyclicReferenceHolder = nil
         objc_sync_exit(self)
     }
     
@@ -176,6 +186,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         state = .none
         paused = false
         delegate?.upgradeDidFail(inState: tmp, with: error)
+        // Release cyclic reference.
+        cyclicReferenceHolder = nil
         objc_sync_exit(self)
     }
     
@@ -209,9 +221,14 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// This callback will fail the upgrade on error and continue to the next
     /// state on success.
     private lazy var validateCallback: McuMgrCallback<McuMgrImageStateResponse> =
-    { [unowned self] (response: McuMgrImageStateResponse?, error: Error?) in
+    { [weak self] (response: McuMgrImageStateResponse?, error: Error?) in
+        // Ensure the manager is not released.
+        guard let self = self else {
+            return
+        }
+        // Check for an error.
         if let error = error {
-            print(error)
+            self.fail(error: error)
             return
         }
         guard let response = response else {
@@ -304,7 +321,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// This callback will fail the upgrade on error and continue to the next
     /// state on success.
     private lazy var testCallback: McuMgrCallback<McuMgrImageStateResponse> =
-    { [unowned self] (response: McuMgrImageStateResponse?, error: Error?) in
+    { [weak self] (response: McuMgrImageStateResponse?, error: Error?) in
+        // Ensure the manager is not released.
+        guard let self = self else {
+            return
+        }
+        // Check for an error.
         if let error = error {
             self.fail(error: error)
             return
@@ -361,7 +383,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// This callback will fail the upgrade on error. On success, the reset
     /// poller will be started after a 3 second delay.
     private lazy var resetCallback: McuMgrCallback<McuMgrResponse> =
-    { [unowned self] (response: McuMgrResponse?, error: Error?) in
+    { [weak self] (response: McuMgrResponse?, error: Error?) in
+        // Ensure the manager is not released.
+        guard let self = self else {
+            return
+        }
+        // Check for an error.
         if let error = error {
             self.fail(error: error)
             return
@@ -383,7 +410,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// This callback will fail the upload on error or move to the next state on
     /// success.
     private lazy var confirmCallback: McuMgrCallback<McuMgrImageStateResponse> =
-    { [unowned self] (response: McuMgrImageStateResponse?, error: Error?) in
+    { [weak self] (response: McuMgrImageStateResponse?, error: Error?) in
+        // Ensure the manager is not released.
+        guard let self = self else {
+            return
+        }
+        // Check for an error.
         if let error = error {
             self.fail(error: error)
             return
@@ -456,6 +488,8 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     public func uploadDidCancel() {
         delegate?.upgradeDidCancel(state: state)
         state = .none
+        // Release cyclic reference.
+        cyclicReferenceHolder = nil
     }
     
     public func uploadDidFinish() {

@@ -108,6 +108,9 @@ public class FileSystemManager: McuManager {
         fileName = name
         fileData = nil
         
+        // Grab a strong reference to something holding a strong reference to self.
+        cyclicReferenceHolder = { return self }
+        
         download(name: name, offset: 0, callback: downloadCallback)
         return true
     }
@@ -148,6 +151,9 @@ public class FileSystemManager: McuManager {
         fileName = name
         fileData = data
         
+        // Grab a strong reference to something holding a strong reference to self.
+        cyclicReferenceHolder = { return self }
+        
         upload(name: name, data: fileData!, offset: 0, callback: uploadCallback)
         return true
     }
@@ -178,6 +184,12 @@ public class FileSystemManager: McuManager {
     /// Delegate to send file download updates to.
     private weak var downloadDelegate: FileDownloadDelegate?
     
+    /// Cyclic reference is used to prevent from releasing the manager
+    /// in the middle of an update. The reference cycle will be set
+    /// when upload or download was started and released on success, error
+    /// or cancel.
+    private var cyclicReferenceHolder: (() -> FileSystemManager)?
+    
     /// Cancels the current transfer.
     ///
     /// If an error is supplied, the delegate's didFailUpload method will be
@@ -198,6 +210,8 @@ public class FileSystemManager: McuManager {
                 uploadDelegate = nil
                 downloadDelegate?.downloadDidFail(with: error!)
                 downloadDelegate = nil
+                // Release cyclic reference.
+                cyclicReferenceHolder = nil
             } else {
                 if transferState == .paused {
                     Log.d(FileSystemManager.TAG, msg: "Transfer cancelled!")
@@ -206,6 +220,8 @@ public class FileSystemManager: McuManager {
                     downloadDelegate?.downloadDidCancel()
                     uploadDelegate = nil
                     downloadDelegate = nil
+                    // Release cyclic reference.
+                    cyclicReferenceHolder = nil
                 }
                 // else
                 // Transfer will be cancelled after the next notification is received.
@@ -252,7 +268,11 @@ public class FileSystemManager: McuManager {
     //**************************************************************************
     
     private lazy var uploadCallback: McuMgrCallback<McuMgrFsUploadResponse> = {
-        [unowned self] (response: McuMgrFsUploadResponse?, error: Error?) in
+        [weak self] (response: McuMgrFsUploadResponse?, error: Error?) in
+        // Ensure the manager is not released.
+        guard let self = self else {
+            return
+        }
         // Check for an error.
         if let error = error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
@@ -292,6 +312,8 @@ public class FileSystemManager: McuManager {
                 self.resetTransfer()
                 self.uploadDelegate?.uploadDidCancel()
                 self.uploadDelegate = nil
+                // Release cyclic reference.
+                self.cyclicReferenceHolder = nil
                 return
             }
             
@@ -301,6 +323,8 @@ public class FileSystemManager: McuManager {
                 self.resetTransfer()
                 self.uploadDelegate?.uploadDidFinish()
                 self.uploadDelegate = nil
+                // Release cyclic reference.
+                self.cyclicReferenceHolder = nil
                 return
             }
             
@@ -312,7 +336,11 @@ public class FileSystemManager: McuManager {
     }
     
     private lazy var downloadCallback: McuMgrCallback<McuMgrFsDownloadResponse> = {
-        [unowned self] (response: McuMgrFsDownloadResponse?, error: Error?) in
+        [weak self] (response: McuMgrFsDownloadResponse?, error: Error?) in
+        // Ensure the manager is not released.
+        guard let self = self else {
+            return
+        }
         // Check for an error.
         if let error = error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
@@ -356,16 +384,19 @@ public class FileSystemManager: McuManager {
                 self.resetTransfer()
                 self.downloadDelegate?.downloadDidCancel()
                 self.downloadDelegate = nil
+                // Release cyclic reference.
+                self.cyclicReferenceHolder = nil
                 return
             }
             
             // Check if the upload has completed.
             if self.offset == self.fileData!.count {
                 Log.d(FileSystemManager.TAG, msg: "Download finished!")
-                self.transferState = .none
+                self.resetTransfer()
                 self.downloadDelegate?.download(of: self.fileName!, didFinish: self.fileData!)
                 self.downloadDelegate = nil
-                self.resetTransfer()
+                // Release cyclic reference.
+                self.cyclicReferenceHolder = nil
                 return
             }
             

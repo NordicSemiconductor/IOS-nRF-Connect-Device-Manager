@@ -139,6 +139,9 @@ public class ImageManager: McuManager {
         // Set image data.
         imageData = data
         
+        // Grab a strong reference to something holding a strong reference to self.
+        cyclicReferenceHolder = { return self }
+        
         upload(data: imageData!, offset: 0, callback: uploadCallback)
         return true
     }
@@ -206,6 +209,11 @@ public class ImageManager: McuManager {
     /// Delegate to send image upload updates to.
     private weak var uploadDelegate: ImageUploadDelegate?
     
+    /// Cyclic reference is used to prevent from releasing the manager
+    /// in the middle of an update. The reference cycle will be set
+    /// when upload was started and released on success, error or cancel.
+    private var cyclicReferenceHolder: (() -> ImageManager)?
+    
     /// Cancels the current upload.
     ///
     /// If an error is supplied, the delegate's didFailUpload method will be
@@ -224,12 +232,16 @@ public class ImageManager: McuManager {
                 resetUploadVariables()
                 uploadDelegate?.uploadDidFail(with: error!)
                 uploadDelegate = nil
+                // Release cyclic reference.
+                cyclicReferenceHolder = nil
             } else {
                 if uploadState == .paused {
                     Log.d(ImageManager.TAG, msg: "Upload cancelled!")
                     resetUploadVariables()
                     uploadDelegate?.uploadDidCancel()
                     uploadDelegate = nil
+                    // Release cyclic reference.
+                    cyclicReferenceHolder = nil
                 }
                 // else
                 // Transfer will be cancelled after the next notification is received.
@@ -275,7 +287,11 @@ public class ImageManager: McuManager {
     // MARK: - Image Upload Private Methods
     
     private lazy var uploadCallback: McuMgrCallback<McuMgrUploadResponse> = {
-        [unowned self] (response: McuMgrUploadResponse?, error: Error?) in
+        [weak self] (response: McuMgrUploadResponse?, error: Error?) in
+        // Ensure the manager is not released.
+        guard let self = self else {
+            return
+        }
         // Check for an error.
         if let error = error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
@@ -315,6 +331,8 @@ public class ImageManager: McuManager {
                 self.resetUploadVariables()
                 self.uploadDelegate?.uploadDidCancel()
                 self.uploadDelegate = nil
+                // Release cyclic reference.
+                self.cyclicReferenceHolder = nil
                 return
             }
             
@@ -324,6 +342,8 @@ public class ImageManager: McuManager {
                 self.resetUploadVariables()
                 self.uploadDelegate?.uploadDidFinish()
                 self.uploadDelegate = nil
+                // Release cyclic reference.
+                self.cyclicReferenceHolder = nil
                 return
             }
             
