@@ -20,7 +20,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// when upgrade was started and released on success, error or cancel.
     private var cyclicReferenceHolder: (() -> FirmwareUpgradeManager)?
     
-    public var mode: FirmwareUpgradeMode = .testAndConfirm
     private var imageData: Data!
     private var hash: Data!
     
