@@ -27,6 +27,15 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private var state: FirmwareUpgradeState
     private var paused: Bool = false
     
+    /// Upgrade mode. The default mode is .testAndConfirm.
+    public var mode: FirmwareUpgradeMode = .testAndConfirm
+    
+    /// Estimated time required for swapping images, in seconds.
+    /// If the mode is set to `.testAndConfirm`, the manager will try to
+    /// reconnect after this time. 0 by default.
+    public var estimatedSwapTime: TimeInterval = 0.0
+    private var resetResponseTime: Date?
+    
     //**************************************************************************
     // MARK: Initializer
     //**************************************************************************
@@ -369,7 +378,17 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         case .reset:
             switch mode {
             case .testAndConfirm:
-                verify()
+                let now = Date()
+                let timeSinceReset = now.timeIntervalSince(resetResponseTime!)
+                let remainingTime = estimatedSwapTime - timeSinceReset
+                
+                if remainingTime > 0 {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) { [weak self] in
+                        self?.verify()
+                    }
+                } else {
+                    verify()
+                }
             default:
                 success()
             }
@@ -402,6 +421,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
             return
         }
+        self.resetResponseTime = Date()
         Log.i(self.TAG, msg: "Reset request sent. Waiting for reset...")
     }
     
@@ -548,8 +568,30 @@ public enum FirmwareUpgradeState {
 //******************************************************************************
 
 public enum FirmwareUpgradeMode {
+    /// When this mode is set, the manager will send the test and reset commands
+    /// to the device after the upload is complete. The device will reboot and
+    /// will run the new image on its next boot. If the new image supports
+    /// auto-confirm feature, it will try to confirm itself and change state to
+    /// permanent. If not, test image will run just once and will be swapped
+    /// again with the original image on the next boot.
+    ///
+    /// Use this mode if you just want to test the image, when it can confirm
+    /// itself.
     case testOnly
+    
+    /// When this flag is set, the manager will send confirm and reset commands
+    /// immediately after upload.
+    ///
+    /// Use this mode if when the new image does not support both auto-confirm
+    /// feature and SMP service and could not be confirmed otherwise.
     case confirmOnly
+    
+    /// When this flag is set, the manager will first send test followed by
+    /// reset commands, then it will reconnect to the new application and will
+    /// send confirm command.
+    ///
+    /// Use this mode when the new image supports SMP service and you want to
+    /// test it before confirming.
     case testAndConfirm
 }
 

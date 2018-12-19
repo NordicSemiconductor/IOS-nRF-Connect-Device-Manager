@@ -50,6 +50,9 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
     var transporter: McuMgrTransport! {
         didSet {
             dfuManager = FirmwareUpgradeManager(transporter: transporter, delegate: self)
+            // nRF52840 requires ~ 10 seconds for swapping images.
+            // Adjust this parameter for your device.
+            dfuManager.estimatedSwapTime = 10.0
         }
     }
     
