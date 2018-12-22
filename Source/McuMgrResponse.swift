@@ -503,7 +503,7 @@ public class McuMgrLogResponse: McuMgrResponse {
         public required init(cbor: CBOR?) throws {
             try super.init(cbor: cbor)
             if case let CBOR.utf8String(name)? = cbor?["name"] {self.name = name}
-            if case let CBOR.unsignedInt(type)? = cbor?["name"] {self.type = type}
+            if case let CBOR.unsignedInt(type)? = cbor?["type"] {self.type = type}
             if case let CBOR.array(entries)? = cbor?["entries"] {
                 self.entries = try CBOR.toObjectArray(array: entries)
             }
