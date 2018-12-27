@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import SwiftCBOR
 
 public class McuMgrResponse: CBORMappable {
     
@@ -15,7 +16,7 @@ public class McuMgrResponse: CBORMappable {
     /// Every McuMgrResponse will contain a return code value. If the original
     /// response packet does not contain a "rc", the success value of 0 is
     /// assumed.
-    public var rc: UInt = 0
+    public var rc: UInt64 = 0
     
     //**************************************************************************
     // MARK: Response Properties
@@ -253,23 +254,23 @@ public class McuMgrTaskStatsResponse: McuMgrResponse {
     public class TaskStatistics: CBORMappable {
         
         /// The task's priority.
-        public var priority: UInt!
+        public var priority: UInt64!
         /// The task's ID.
-        public var taskId: UInt!
+        public var taskId: UInt64!
         /// The task's state.
-        public var state: UInt!
+        public var state: UInt64!
         /// The actual size of the task's stack that is being used.
-        public var stackUse: UInt!
+        public var stackUse: UInt64!
         /// The size of the task's stack.
-        public var stackSize: UInt!
+        public var stackSize: UInt64!
         /// The number of times the task has switched context.
-        public var contextSwitchCount: UInt!
+        public var contextSwitchCount: UInt64!
         /// The time (ms) that the task has been running.
-        public var runtime: UInt!
+        public var runtime: UInt64!
         /// The last sanity checking with the sanity task.
-        public var lastCheckin: UInt!
+        public var lastCheckin: UInt64!
         /// The next sanity checkin.
-        public var nextCheckin: UInt!
+        public var nextCheckin: UInt64!
         
         public required init(cbor: CBOR?) throws {
             try super.init(cbor: cbor)
@@ -301,13 +302,13 @@ public class McuMgrMemoryPoolStatsResponse: McuMgrResponse {
     public class MemoryPoolStatistics: CBORMappable {
         
         /// The memory pool's block size.
-        public var blockSize: UInt!
+        public var blockSize: UInt64!
         /// The number of blocks in the memory pool.
-        public var numBlocks: UInt!
+        public var numBlocks: UInt64!
         /// The number of free blocks in the memory pool.
-        public var numFree: UInt!
+        public var numFree: UInt64!
         /// The minimum number of free blocks over the memory pool's life.
-        public var minFree: UInt!
+        public var minFree: UInt64!
         
         public required init(cbor: CBOR?) throws {
             try super.init(cbor: cbor)
@@ -342,7 +343,7 @@ public class McuMgrImageStateResponse: McuMgrResponse {
     /// depending on whether there is an image loaded in slot 1.
     public var images: [ImageSlot]?
     /// Whether the bootloader is configured to use a split image setup.
-    public var splitStatus: UInt?
+    public var splitStatus: UInt64?
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
@@ -356,7 +357,7 @@ public class McuMgrImageStateResponse: McuMgrResponse {
     
     public class ImageSlot: CBORMappable {
         /// The (zero) index of this image slot.
-        public var slot: UInt!
+        public var slot: UInt64!
         /// The verison of the image.
         public var version: String!
         /// The sha256 hash of the image.
@@ -390,7 +391,7 @@ public class McuMgrImageStateResponse: McuMgrResponse {
 public class McuMgrUploadResponse: McuMgrResponse {
     
     /// Offset to send the next packet of image data from.
-    public var off: UInt?
+    public var off: UInt64?
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
@@ -401,10 +402,10 @@ public class McuMgrUploadResponse: McuMgrResponse {
 public class McuMgrCoreLoadResponse: McuMgrResponse {
     
     /// The offset of the data.
-    public var off: UInt?
+    public var off: UInt64?
     /// The length of the core (in bytes). Set only in the
     /// first packet, when the off is equal to 0.
-    public var len: UInt?
+    public var len: UInt64?
     /// The core data received.
     public var data: [UInt8]?
     
@@ -423,7 +424,7 @@ public class McuMgrCoreLoadResponse: McuMgrResponse {
 public class McuMgrFsUploadResponse: McuMgrResponse {
     
     /// Offset to send the next packet of image data from.
-    public var off: UInt?
+    public var off: UInt64?
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
@@ -434,9 +435,9 @@ public class McuMgrFsUploadResponse: McuMgrResponse {
 public class McuMgrFsDownloadResponse: McuMgrResponse {
     
     /// Offset to send the next packet of image data from.
-    public var off: UInt?
+    public var off: UInt64?
     /// The length of the file. This is not nil only if offset = 0.
-    public var len: UInt?
+    public var len: UInt64?
     /// The file data received.
     public var data: [UInt8]?
     
@@ -481,7 +482,7 @@ public class McuMgrLogListResponse: McuMgrResponse {
 public class McuMgrLogResponse: McuMgrResponse {
     
     /// Next index that the device will log to.
-    public var next_index: UInt?
+    public var next_index: UInt64?
     /// Logs.
     public var logs: [LogResult]?
     
@@ -497,7 +498,7 @@ public class McuMgrLogResponse: McuMgrResponse {
     
     public class LogResult: CBORMappable {
         public var name: String?
-        public var type: UInt?
+        public var type: UInt64?
         public var entries: [LogEntry]?
         
         public required init(cbor: CBOR?) throws {
@@ -512,10 +513,10 @@ public class McuMgrLogResponse: McuMgrResponse {
     
     public class LogEntry: CBORMappable {
         public var msg: [UInt8]!
-        public var ts: UInt!
-        public var level: UInt!
-        public var index: UInt!
-        public var module: UInt!
+        public var ts: UInt64!
+        public var level: UInt64!
+        public var index: UInt64!
+        public var module: UInt64!
         public var type: String!
         
         public required init(cbor: CBOR?) throws {

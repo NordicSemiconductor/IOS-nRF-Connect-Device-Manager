@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import SwiftCBOR
 
 extension CBOR: CustomStringConvertible {
     

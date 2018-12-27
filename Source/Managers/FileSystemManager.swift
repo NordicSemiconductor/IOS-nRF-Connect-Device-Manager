@@ -6,6 +6,7 @@
 
 import Foundation
 import CoreBluetooth
+import SwiftCBOR
 
 public class FileSystemManager: McuManager {
     private static let TAG = "FileSystemManager"
@@ -38,7 +39,7 @@ public class FileSystemManager: McuManager {
     public func download(name: String, offset: UInt, callback: @escaping McuMgrCallback<McuMgrFsDownloadResponse>) {
         // Build the request payload.
         let payload: [String:CBOR] = ["name": CBOR.utf8String(name),
-                                      "off": CBOR.unsignedInt(offset)]
+                                      "off": CBOR.unsignedInt(UInt64(offset))]
         // Build request and send.
         send(op: .read, commandId: ID_FILE, payload: payload, callback: callback)
     }
@@ -56,7 +57,7 @@ public class FileSystemManager: McuManager {
         
         // Data length to end is the minimum of the max data lenght and the
         // number of remaining bytes.
-        let packetOverhead = calculatePacketOverhead(name: name, data: data, offset: offset)
+        let packetOverhead = calculatePacketOverhead(name: name, data: data, offset: UInt64(offset))
         
         // Get the length of file data to send.
         let maxDataLength: UInt = UInt(mtu) - UInt(packetOverhead)
@@ -65,11 +66,11 @@ public class FileSystemManager: McuManager {
         // Build the request payload.
         var payload: [String:CBOR] = ["name": CBOR.utf8String(name),
                                       "data": CBOR.byteString([UInt8](data[offset..<(offset+dataLength)])),
-                                      "off": CBOR.unsignedInt(offset)]
+                                      "off": CBOR.unsignedInt(UInt64(offset))]
         
         // If this is the initial packet, send the file data length.
         if offset == 0 {
-            payload.updateValue(CBOR.unsignedInt(UInt(data.count)), forKey: "len")
+            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
         }
         // Build request and send.
         send(op: .write, commandId: ID_FILE, payload: payload, callback: callback)
@@ -173,7 +174,7 @@ public class FileSystemManager: McuManager {
     /// State of the file upload.
     private var transferState: UploadState = .none
     /// Current file byte offset to send from.
-    private var offset: UInt = 0
+    private var offset: UInt64 = 0
     
     /// The file name.
     private var fileName: String?
@@ -252,10 +253,10 @@ public class FileSystemManager: McuManager {
             Log.d(FileSystemManager.TAG, msg: "Continuing transfer")
             if let _ = downloadDelegate {
                 transferState = .downloading
-                download(name: fileName!, offset: offset, callback: downloadCallback)
+                download(name: fileName!, offset: UInt(offset), callback: downloadCallback)
             } else {
                 transferState = .uploading
-                upload(name: fileName!, data: fileData!, offset: offset, callback: uploadCallback)
+                upload(name: fileName!, data: fileData!, offset: UInt(offset), callback: uploadCallback)
             }
         } else {
             Log.d(FileSystemManager.TAG, msg: "Transfer is not paused")
@@ -329,7 +330,7 @@ public class FileSystemManager: McuManager {
             }
             
             // Send the next packet of data.
-            self.sendNext(from: offset)
+            self.sendNext(from: UInt(offset))
         } else {
             self.cancelTransfer(error: ImageUploadError.invalidPayload)
         }
@@ -375,7 +376,7 @@ public class FileSystemManager: McuManager {
                 }
             }
             // Set the file upload offset.
-            self.offset = offset + UInt(data.count)
+            self.offset = offset + UInt64(data.count)
             self.fileData!.append(contentsOf: data)
             self.downloadDelegate?.downloadProgressDidChange(bytesDownloaded: Int(self.offset), fileSize: self.fileData!.count, timestamp: Date())
             
@@ -401,7 +402,7 @@ public class FileSystemManager: McuManager {
             }
             
             // Send the next packet of data.
-            self.requestNext(from: offset)
+            self.requestNext(from: UInt(offset))
         } else {
             self.cancelTransfer(error: FileTransferError.invalidPayload)
         }
@@ -446,7 +447,7 @@ public class FileSystemManager: McuManager {
         objc_sync_exit(self)
     }
     
-    private func calculatePacketOverhead(name: String, data: Data, offset: UInt) -> Int {
+    private func calculatePacketOverhead(name: String, data: Data, offset: UInt64) -> Int {
         // Get the Mcu Manager header.
         var payload: [String:CBOR] = ["name": CBOR.utf8String(name),
                                       "data": CBOR.byteString([UInt8]([0])),
@@ -454,7 +455,7 @@ public class FileSystemManager: McuManager {
         // If this is the initial packet we have to include the length of the
         // entire file.
         if offset == 0 {
-            payload.updateValue(CBOR.unsignedInt(UInt(data.count)), forKey: "len")
+            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
         }
         // Build the packet and return the size.
         let packet = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write, flags: 0,

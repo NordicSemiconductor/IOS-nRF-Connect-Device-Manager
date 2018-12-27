@@ -10,7 +10,10 @@ Pod::Spec.new do |s|
 
   s.ios.deployment_target = '9.0'
 
-  s.source_files = 'Source/**/*'
+  s.source_files = 'Source/**/*.{swift, h}'
+  s.exclude_files = "Source/*.plist"
 
   s.requires_arc = true
+
+  s.dependency 'SwiftCBOR', '0.3.0'
 end

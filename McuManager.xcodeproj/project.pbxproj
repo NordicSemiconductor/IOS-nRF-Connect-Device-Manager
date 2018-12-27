@@ -27,22 +27,15 @@
 		BD5A28B320CB50CA0061F0EE /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289420CB50CA0061F0EE /* LogManager.swift */; };
 		BD5A28B420CB50CA0061F0EE /* FileSystemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289520CB50CA0061F0EE /* FileSystemManager.swift */; };
 		BD5A28B520CB50CA0061F0EE /* McuManager-Bridging-Header.h in Headers */ = {isa = PBXBuildFile; fileRef = BD5A289620CB50CA0061F0EE /* McuManager-Bridging-Header.h */; };
-		BD5A28B620CB50CA0061F0EE /* CBOREncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289820CB50CA0061F0EE /* CBOREncoder.swift */; };
-		BD5A28B720CB50CA0061F0EE /* SwiftCBOR.h in Headers */ = {isa = PBXBuildFile; fileRef = BD5A289920CB50CA0061F0EE /* SwiftCBOR.h */; };
-		BD5A28B820CB50CA0061F0EE /* CBORInputStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289A20CB50CA0061F0EE /* CBORInputStream.swift */; };
-		BD5A28B920CB50CA0061F0EE /* CBORDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289B20CB50CA0061F0EE /* CBORDecoder.swift */; };
-		BD5A28BA20CB50CA0061F0EE /* CBOR.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289C20CB50CA0061F0EE /* CBOR.swift */; };
-		BD5A28BB20CB50CA0061F0EE /* Util.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289D20CB50CA0061F0EE /* Util.swift */; };
-		BD5A28BC20CB50CA0061F0EE /* CBOREncodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289E20CB50CA0061F0EE /* CBOREncodable.swift */; };
 		BD5A28BD20CB50CA0061F0EE /* McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289F20CB50CA0061F0EE /* McuManager.swift */; };
 		BD5A28BE20CB50CA0061F0EE /* McuMgrImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A28A020CB50CA0061F0EE /* McuMgrImage.swift */; };
+		D36F288421D5649100C963F0 /* SwiftCBOR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D36F288321D5649100C963F0 /* SwiftCBOR.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		B7933FF620F3D0B500F14A7C /* FirmwareUpgradeController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeController.swift; sourceTree = "<group>"; };
 		B7933FF720F3D0B500F14A7C /* FirmwareUpgradeManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeManager.swift; sourceTree = "<group>"; };
 		BD5A287320CB50040061F0EE /* McuManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = McuManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		BD5A287720CB50040061F0EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BD5A287E20CB50CA0061F0EE /* McuMgrHeader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuMgrHeader.swift; sourceTree = "<group>"; };
 		BD5A288020CB50CA0061F0EE /* CBOR+McuManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CBOR+McuManager.swift"; sourceTree = "<group>"; };
 		BD5A288120CB50CA0061F0EE /* String+McuManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+McuManager.swift"; sourceTree = "<group>"; };
@@ -61,15 +54,9 @@
 		BD5A289420CB50CA0061F0EE /* LogManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		BD5A289520CB50CA0061F0EE /* FileSystemManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileSystemManager.swift; sourceTree = "<group>"; };
 		BD5A289620CB50CA0061F0EE /* McuManager-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "McuManager-Bridging-Header.h"; sourceTree = "<group>"; };
-		BD5A289820CB50CA0061F0EE /* CBOREncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBOREncoder.swift; sourceTree = "<group>"; };
-		BD5A289920CB50CA0061F0EE /* SwiftCBOR.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwiftCBOR.h; sourceTree = "<group>"; };
-		BD5A289A20CB50CA0061F0EE /* CBORInputStream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBORInputStream.swift; sourceTree = "<group>"; };
-		BD5A289B20CB50CA0061F0EE /* CBORDecoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBORDecoder.swift; sourceTree = "<group>"; };
-		BD5A289C20CB50CA0061F0EE /* CBOR.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBOR.swift; sourceTree = "<group>"; };
-		BD5A289D20CB50CA0061F0EE /* Util.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Util.swift; sourceTree = "<group>"; };
-		BD5A289E20CB50CA0061F0EE /* CBOREncodable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBOREncodable.swift; sourceTree = "<group>"; };
 		BD5A289F20CB50CA0061F0EE /* McuManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuManager.swift; sourceTree = "<group>"; };
 		BD5A28A020CB50CA0061F0EE /* McuMgrImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuMgrImage.swift; sourceTree = "<group>"; };
+		D36F288321D5649100C963F0 /* SwiftCBOR.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftCBOR.framework; path = Carthage/Build/iOS/SwiftCBOR.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D36F288421D5649100C963F0 /* SwiftCBOR.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +85,7 @@
 			children = (
 				BD5A287520CB50040061F0EE /* Source */,
 				BD5A287420CB50040061F0EE /* Products */,
+				D36F288221D5649000C963F0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -112,7 +101,6 @@
 			isa = PBXGroup;
 			children = (
 				BD5A288920CB50CA0061F0EE /* Bluetooth */,
-				BD5A289720CB50CA0061F0EE /* CBOR */,
 				BD5A287F20CB50CA0061F0EE /* Extensions */,
 				BD5A288C20CB50CA0061F0EE /* Managers */,
 				BD5A289F20CB50CA0061F0EE /* McuManager.swift */,
@@ -122,7 +110,6 @@
 				BD5A288420CB50CA0061F0EE /* McuMgrResponse.swift */,
 				BD5A288520CB50CA0061F0EE /* McuMgrTransport.swift */,
 				BD5A288620CB50CA0061F0EE /* Utils */,
-				BD5A287720CB50040061F0EE /* Info.plist */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -170,18 +157,12 @@
 			path = Managers;
 			sourceTree = "<group>";
 		};
-		BD5A289720CB50CA0061F0EE /* CBOR */ = {
+		D36F288221D5649000C963F0 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				BD5A289820CB50CA0061F0EE /* CBOREncoder.swift */,
-				BD5A289920CB50CA0061F0EE /* SwiftCBOR.h */,
-				BD5A289A20CB50CA0061F0EE /* CBORInputStream.swift */,
-				BD5A289B20CB50CA0061F0EE /* CBORDecoder.swift */,
-				BD5A289C20CB50CA0061F0EE /* CBOR.swift */,
-				BD5A289D20CB50CA0061F0EE /* Util.swift */,
-				BD5A289E20CB50CA0061F0EE /* CBOREncodable.swift */,
+				D36F288321D5649100C963F0 /* SwiftCBOR.framework */,
 			);
-			path = CBOR;
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -191,7 +172,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BD5A28B720CB50CA0061F0EE /* SwiftCBOR.h in Headers */,
 				BD5A28B520CB50CA0061F0EE /* McuManager-Bridging-Header.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -268,28 +248,22 @@
 				BD5A28AA20CB50CA0061F0EE /* McuMgrBleTransport.swift in Sources */,
 				BD5A28BD20CB50CA0061F0EE /* McuManager.swift in Sources */,
 				BD5A28A620CB50CA0061F0EE /* McuMgrResponse.swift in Sources */,
-				BD5A28BA20CB50CA0061F0EE /* CBOR.swift in Sources */,
 				BD5A28A920CB50CA0061F0EE /* Log.swift in Sources */,
-				BD5A28B620CB50CA0061F0EE /* CBOREncoder.swift in Sources */,
 				BD5A28B120CB50CA0061F0EE /* StatsManager.swift in Sources */,
 				B7933FF820F3D0B500F14A7C /* FirmwareUpgradeController.swift in Sources */,
-				BD5A28B920CB50CA0061F0EE /* CBORDecoder.swift in Sources */,
 				BD5A28BE20CB50CA0061F0EE /* McuMgrImage.swift in Sources */,
 				BD5A28A320CB50CA0061F0EE /* String+McuManager.swift in Sources */,
-				BD5A28B820CB50CA0061F0EE /* CBORInputStream.swift in Sources */,
 				BD5A28B320CB50CA0061F0EE /* LogManager.swift in Sources */,
 				BD5A28B220CB50CA0061F0EE /* RunTestManager.swift in Sources */,
 				BD5A28AD20CB50CA0061F0EE /* CrashManager.swift in Sources */,
 				BD5A28B420CB50CA0061F0EE /* FileSystemManager.swift in Sources */,
 				BD5A28A820CB50CA0061F0EE /* ResultLock.swift in Sources */,
 				B7933FF920F3D0B500F14A7C /* FirmwareUpgradeManager.swift in Sources */,
-				BD5A28BC20CB50CA0061F0EE /* CBOREncodable.swift in Sources */,
 				BD5A28A120CB50CA0061F0EE /* McuMgrHeader.swift in Sources */,
 				BD5A28AF20CB50CA0061F0EE /* DefaultManager.swift in Sources */,
 				BD5A28AE20CB50CA0061F0EE /* ImageManager.swift in Sources */,
 				BD5A28A220CB50CA0061F0EE /* CBOR+McuManager.swift in Sources */,
 				BD5A28A520CB50CA0061F0EE /* Data+McuManager.swift in Sources */,
-				BD5A28BB20CB50CA0061F0EE /* Util.swift in Sources */,
 				BD5A28A720CB50CA0061F0EE /* McuMgrTransport.swift in Sources */,
 				BD5A28AC20CB50CA0061F0EE /* ConfigManager.swift in Sources */,
 			);
@@ -350,6 +324,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -407,6 +382,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
@@ -425,10 +401,14 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
+				DEVELOPMENT_TEAM = 6ZYG6BJL9V;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = Source/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
@@ -454,10 +434,14 @@
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
+				DEVELOPMENT_TEAM = 6ZYG6BJL9V;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = Source/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
