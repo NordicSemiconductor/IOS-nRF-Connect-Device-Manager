@@ -26,7 +26,6 @@
 		BD5A28B220CB50CA0061F0EE /* RunTestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289320CB50CA0061F0EE /* RunTestManager.swift */; };
 		BD5A28B320CB50CA0061F0EE /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289420CB50CA0061F0EE /* LogManager.swift */; };
 		BD5A28B420CB50CA0061F0EE /* FileSystemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289520CB50CA0061F0EE /* FileSystemManager.swift */; };
-		BD5A28B520CB50CA0061F0EE /* McuManager-Bridging-Header.h in Headers */ = {isa = PBXBuildFile; fileRef = BD5A289620CB50CA0061F0EE /* McuManager-Bridging-Header.h */; };
 		BD5A28BD20CB50CA0061F0EE /* McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289F20CB50CA0061F0EE /* McuManager.swift */; };
 		BD5A28BE20CB50CA0061F0EE /* McuMgrImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A28A020CB50CA0061F0EE /* McuMgrImage.swift */; };
 		D36F288421D5649100C963F0 /* SwiftCBOR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D36F288321D5649100C963F0 /* SwiftCBOR.framework */; };
@@ -53,7 +52,6 @@
 		BD5A289320CB50CA0061F0EE /* RunTestManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RunTestManager.swift; sourceTree = "<group>"; };
 		BD5A289420CB50CA0061F0EE /* LogManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		BD5A289520CB50CA0061F0EE /* FileSystemManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileSystemManager.swift; sourceTree = "<group>"; };
-		BD5A289620CB50CA0061F0EE /* McuManager-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "McuManager-Bridging-Header.h"; sourceTree = "<group>"; };
 		BD5A289F20CB50CA0061F0EE /* McuManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuManager.swift; sourceTree = "<group>"; };
 		BD5A28A020CB50CA0061F0EE /* McuMgrImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuMgrImage.swift; sourceTree = "<group>"; };
 		D36F288321D5649100C963F0 /* SwiftCBOR.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftCBOR.framework; path = Carthage/Build/iOS/SwiftCBOR.framework; sourceTree = "<group>"; };
@@ -104,7 +102,6 @@
 				BD5A287F20CB50CA0061F0EE /* Extensions */,
 				BD5A288C20CB50CA0061F0EE /* Managers */,
 				BD5A289F20CB50CA0061F0EE /* McuManager.swift */,
-				BD5A289620CB50CA0061F0EE /* McuManager-Bridging-Header.h */,
 				BD5A287E20CB50CA0061F0EE /* McuMgrHeader.swift */,
 				BD5A28A020CB50CA0061F0EE /* McuMgrImage.swift */,
 				BD5A288420CB50CA0061F0EE /* McuMgrResponse.swift */,
@@ -172,7 +169,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BD5A28B520CB50CA0061F0EE /* McuManager-Bridging-Header.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -420,7 +416,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = runtime.io.McuManager;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "Source/McuManager-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -453,7 +449,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = runtime.io.McuManager;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "Source/McuManager-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
