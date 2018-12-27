@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.homepage = 'https://github.com/JuulLabs-OSS/mcumgr-ios'
   s.authors = { 'Brian Giori' => 'brian.giori@juul.com' }
   s.source = { :git => 'https://github.com/JuulLabs-OSS/mcumgr-ios.git', :tag => "v#{s.version}" }
-  s.swift_version = '4.0'
+  s.swift_version = '4.2'
 
   s.ios.deployment_target = '9.0'
 
