@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import SwiftCBOR
 
 public class LogManager: McuManager {
     

@@ -6,7 +6,6 @@
 
 import Foundation
 import CoreBluetooth
-import SwiftCBOR
 
 public class FileSystemManager: McuManager {
     private static let TAG = "FileSystemManager"

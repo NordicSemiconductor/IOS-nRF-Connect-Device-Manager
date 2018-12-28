@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import SwiftCBOR
 
 internal extension CBOR {
     

@@ -6,7 +6,6 @@
 
 import Foundation
 import CoreBluetooth
-import SwiftCBOR
 
 public class McuManager {
     

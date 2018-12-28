@@ -6,7 +6,6 @@
 
 import Foundation
 import CoreBluetooth
-import SwiftCBOR
 
 public class ImageManager: McuManager {
     private static let TAG = "ImageManager"
