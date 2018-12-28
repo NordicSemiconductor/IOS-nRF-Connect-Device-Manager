@@ -38,3 +38,6 @@ playground.xcworkspace
 # Carthage
 Carthage
 Cartfile.resolved
+
+# CocoaPods
+Example/Pods

@@ -6,32 +6,44 @@
 	objectVersion = 50;
 	objects = {
 
-/* Begin PBXAggregateTarget section */
-		3AFD1B420D54B42618AA9C353DE924AE /* McuManager */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = 18614B1FB581FB7B518E75F58CEB1C88 /* Build configuration list for PBXAggregateTarget "McuManager" */;
-			buildPhases = (
-			);
-			dependencies = (
-				879E3F1EFDA137591FD04C898B23B877 /* PBXTargetDependency */,
-			);
-			name = McuManager;
-		};
-/* End PBXAggregateTarget section */
-
 /* Begin PBXBuildFile section */
-		134DA6495129DFCC249BA4304FC5613C /* CBORDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A41BEC327C353F7B4DA4FD2A236BCEB /* CBORDecoder.swift */; };
-		4FC0BF82E153BE8BD579754C3F1D3FF6 /* CBORInputStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7113DE052F350185EF86EEBE9A3BF76D /* CBORInputStream.swift */; };
-		5919FF9D87C0CFE5E2F28267BD50FCCA /* Util.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6988D11FF3E4F6FEFBD968F6993B6B0 /* Util.swift */; };
-		752C708244E0FE605B8149EDF7045E30 /* SwiftCBOR-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E73EFFE5CD73C2D9F66F533995AD38C /* SwiftCBOR-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		7EB0C76C19D72C545D5D522FE9E52D3C /* SwiftCBOR-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = C34AA24FDEC8E0D770806BD20479790C /* SwiftCBOR-dummy.m */; };
+		0146EBEBDFD50B07EB22BA81E59509C3 /* FileSystemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C77DBA82D18950EE50A7B4FF0377D3C3 /* FileSystemManager.swift */; };
+		021A064E55A9BA551A916793752BECC1 /* CBOREncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAD1CC21E1AD95ABD2BBFC6645FA6D7C /* CBOREncoder.swift */; };
+		037CD8C390377CE849744A64B684AE58 /* String+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50B2309F4440167BD3B7F933CDE19474 /* String+McuManager.swift */; };
+		259108A0776861CA66221FC878894CCD /* McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DADB6041716DB5C95A45800DB2BB97DD /* McuManager.swift */; };
+		2D18E193E52505CE4A3ADA0BA9F7CBF1 /* CBORInputStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7113DE052F350185EF86EEBE9A3BF76D /* CBORInputStream.swift */; };
+		2E92466E7F8570368DB026D0623EF33D /* ResultLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97A58E4D85A5782F0BD3EF1FB9BF95CC /* ResultLock.swift */; };
+		39E1B6A3DEB1F122FEA50193EBCE976D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 710C02C581ED5A737C30033B5C72BD19 /* Foundation.framework */; };
+		4AFE0B330CA90ECA972A1D3A40A02C5A /* McuMgrBleTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC5360A237CD25C42FCD84FD61FA6CC /* McuMgrBleTransport.swift */; };
+		4CDDF6F7C1E39E06EB74C898A4F5D45F /* McuMgrHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FCAAAE21339D2C98F1B07D4CE4AC84 /* McuMgrHeader.swift */; };
+		511B4E7D66D254BC7B9BE44937CE84D8 /* CBORDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A41BEC327C353F7B4DA4FD2A236BCEB /* CBORDecoder.swift */; };
+		59DB49FD9C781353E6566925282D13EB /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4398BA4BC723F175A5BB770F84D8AB5C /* Log.swift */; };
+		5C3586F3B83483A02FB87F1CFEE9280C /* CBOR+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5C0C79651D7A723993F59D78943182 /* CBOR+McuManager.swift */; };
+		629CBC78B7097DD456420E9229F7FA3F /* CrashManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3285EC9BB309145DCF4C576A72A20D /* CrashManager.swift */; };
+		68E8B3B8306DF30336C1B5D1451A94D2 /* RunTestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32C5955B3AE1BC74F4893834132EBC65 /* RunTestManager.swift */; };
+		734505DB923C6C60BCA5F692422A9FE9 /* SwiftCBOR-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = C34AA24FDEC8E0D770806BD20479790C /* SwiftCBOR-dummy.m */; };
+		746CEF90310A536D6B1656C85D8260F8 /* FirmwareUpgradeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DF8FFB9766F6242C451BC20E89BD643 /* FirmwareUpgradeManager.swift */; };
+		7A78E246C3BD35453B81AD46933CB669 /* McuMgrResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1C2109B1FED405F0CBCF6FF3567B39 /* McuMgrResponse.swift */; };
+		82484CD9C792F593BA75390B8989A67C /* McuMgrTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465A8647F6A1B3224546C997C5275B44 /* McuMgrTransport.swift */; };
 		845901BF16012DAA6F3BA91FF2D923BA /* Pods-Example-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 5272241D4675EBF4B77A6B77E33CF611 /* Pods-Example-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		89D1FC89405FCE2799B5BCB5ED9E48C5 /* CBOREncodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB23ED61D1699F0833BCD72FC6E48710 /* CBOREncodable.swift */; };
-		956EA9CD32C4552AF0C67D48AF9DB25D /* CBOREncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAD1CC21E1AD95ABD2BBFC6645FA6D7C /* CBOREncoder.swift */; };
-		B70D963BB9C5205AFB199D8B94629EE8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6DFF15000AFE2A371BF499E7AFDA808 /* Foundation.framework */; };
+		869DCE040CB3FF976F37D36DF4D3F411 /* Data+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCCDBF65E1F8A116534800E0C0E10FC9 /* Data+McuManager.swift */; };
+		8A0FF67A54402EDCB21E118DF1C74DCD /* McuManager-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 95132D193E78835117B77ECB1161D3D4 /* McuManager-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8A431B9F9338F0C6EBAD5634D7D6DAFD /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 238BE3073F509801A07BDC0F0E3FFD59 /* ImageManager.swift */; };
+		8F18AFA4ADE4D0FC8969D42AF61C6D5A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 710C02C581ED5A737C30033B5C72BD19 /* Foundation.framework */; };
+		97B4A83AD6CDB71403FA1A35B5B1A647 /* FirmwareUpgradeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CE5CCF30E923C76F113B0713A6B991A /* FirmwareUpgradeController.swift */; };
+		9FD5D4A0AEBA540D3E2F41BBC0084E07 /* Util.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6988D11FF3E4F6FEFBD968F6993B6B0 /* Util.swift */; };
+		B13E2C5182BDCB86F9328451FEB9B97B /* McuMgrImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88060C90D3079FF3EB01C82908E6C6EE /* McuMgrImage.swift */; };
+		B55BAD85FA6920A6A35247FAD21AFF53 /* DefaultManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9BF94351BD4CE00FD500A08D6D276B /* DefaultManager.swift */; };
+		B793DCA03D8E9C377E6DADB357DD8329 /* StatsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC73A397EBB08C9D65C6A2BA93B78691 /* StatsManager.swift */; };
+		BAB2913342F58331A18366162B47B36D /* CBOR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4053409BAFD87E9A1BB9707E31FA5C3F /* CBOR.swift */; };
 		BD4506DCA3E093C894F9ACE574757CD5 /* Pods-Example-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = B7F47266550AC865B9D4E1AD83140218 /* Pods-Example-dummy.m */; };
-		EAB82F707043669138FD4ADD0052F03F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6DFF15000AFE2A371BF499E7AFDA808 /* Foundation.framework */; };
-		F2C21E9A04F6CF02F91F14B7C77BD872 /* CBOR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4053409BAFD87E9A1BB9707E31FA5C3F /* CBOR.swift */; };
+		C2E586C13A7AFA0A01C96A9F01551805 /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF9EFCA6272E1684A5AB84435F0D4109 /* ConfigManager.swift */; };
+		C7750185DF8E051C55E9F06B9FDEF74B /* SwiftCBOR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35D66803655B68A9FF6CD219CB0AE0EB /* SwiftCBOR.framework */; };
+		D67F4BB837DC12DC62EFE829D978F6EB /* SwiftCBOR-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E73EFFE5CD73C2D9F66F533995AD38C /* SwiftCBOR-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DCB7E9390B21192FD371038762EACBE4 /* McuManager-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = C72F555143B6D73B917C3636D9A0EBB1 /* McuManager-dummy.m */; };
+		E089788A72EA41E13636FF73EDDB507A /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0106CD8270461C035033AE9B862D9B /* LogManager.swift */; };
+		EAB82F707043669138FD4ADD0052F03F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 710C02C581ED5A737C30033B5C72BD19 /* Foundation.framework */; };
+		FE6D117C6748D6A3E83EFCDDB9270CD7 /* CBOREncodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB23ED61D1699F0833BCD72FC6E48710 /* CBOREncodable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,66 +51,86 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 3AFD1B420D54B42618AA9C353DE924AE;
+			remoteGlobalIDString = CA1F0D5E8B7605F0A84DEEC15BB8E550;
 			remoteInfo = McuManager;
 		};
 		6AE6CB5964547F898F4C5D49D4D04D23 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 47BBEDDB94F8DC354CD23240EEB8C45E;
+			remoteGlobalIDString = 9DFF660A305C6699837B491F76ACA965;
 			remoteInfo = SwiftCBOR;
 		};
-		EC2CEC945B443C9B480E3A3194ED6335 /* PBXContainerItemProxy */ = {
+		C9F224955983A7ACD62201F62ABF0A75 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 47BBEDDB94F8DC354CD23240EEB8C45E;
+			remoteGlobalIDString = 9DFF660A305C6699837B491F76ACA965;
 			remoteInfo = SwiftCBOR;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		01A2E95412555EB44C1D9548DE374CF2 /* SwiftCBOR.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = SwiftCBOR.framework; path = SwiftCBOR.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		16A196AE5F481BB54801C0E12177C4CD /* SwiftCBOR-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "SwiftCBOR-Info.plist"; sourceTree = "<group>"; };
-		18CA2ABE55C03766D879F8C74E048318 /* McuManager.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = McuManager.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		238BE3073F509801A07BDC0F0E3FFD59 /* ImageManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
 		2A41BEC327C353F7B4DA4FD2A236BCEB /* CBORDecoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBORDecoder.swift; path = Sources/SwiftCBOR/CBORDecoder.swift; sourceTree = "<group>"; };
-		330A492F27B1D378AA9EF4DD692E29F1 /* Pods_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_Example.framework; path = "Pods-Example.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		32C5955B3AE1BC74F4893834132EBC65 /* RunTestManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunTestManager.swift; sourceTree = "<group>"; };
+		35D66803655B68A9FF6CD219CB0AE0EB /* SwiftCBOR.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SwiftCBOR.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3B3285EC9BB309145DCF4C576A72A20D /* CrashManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CrashManager.swift; sourceTree = "<group>"; };
 		4053409BAFD87E9A1BB9707E31FA5C3F /* CBOR.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBOR.swift; path = Sources/SwiftCBOR/CBOR.swift; sourceTree = "<group>"; };
+		4398BA4BC723F175A5BB770F84D8AB5C /* Log.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
+		4557E68F97C47F356C56665AFE6BB3FD /* McuManager-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "McuManager-prefix.pch"; sourceTree = "<group>"; };
+		465A8647F6A1B3224546C997C5275B44 /* McuMgrTransport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = McuMgrTransport.swift; path = Source/McuMgrTransport.swift; sourceTree = "<group>"; };
+		4B1C2109B1FED405F0CBCF6FF3567B39 /* McuMgrResponse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = McuMgrResponse.swift; path = Source/McuMgrResponse.swift; sourceTree = "<group>"; };
 		4C64B10F97AB02EB59B9CBC9FC973479 /* Pods-Example-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-Example-frameworks.sh"; sourceTree = "<group>"; };
+		50B2309F4440167BD3B7F933CDE19474 /* String+McuManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "String+McuManager.swift"; sourceTree = "<group>"; };
 		515C651099897C83996403DC88924974 /* Pods-Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-Example.modulemap"; sourceTree = "<group>"; };
 		5272241D4675EBF4B77A6B77E33CF611 /* Pods-Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-Example-umbrella.h"; sourceTree = "<group>"; };
 		52EB128553BCCD0A43A7713241401647 /* Pods-Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Example.debug.xcconfig"; sourceTree = "<group>"; };
-		5FE5FF456F0EE9ED397EB98722277143 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE; sourceTree = "<group>"; };
+		6782AFB60285C20328AD28F1D852D1ED /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
 		6B397BF54958A6A41E006314BE7E97C4 /* SwiftCBOR.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = SwiftCBOR.modulemap; sourceTree = "<group>"; };
+		6F798ACCE2195A4DACD6CC3F401B4C1A /* SwiftCBOR.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = SwiftCBOR.framework; path = SwiftCBOR.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		710C02C581ED5A737C30033B5C72BD19 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		7113DE052F350185EF86EEBE9A3BF76D /* CBORInputStream.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBORInputStream.swift; path = Sources/SwiftCBOR/CBORInputStream.swift; sourceTree = "<group>"; };
+		73020BB8B417E2CFC72852064611E294 /* McuManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = McuManager.framework; path = McuManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7CE5CCF30E923C76F113B0713A6B991A /* FirmwareUpgradeController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeController.swift; sourceTree = "<group>"; };
+		84B2134AC6152E5ABA20A0170CE38396 /* McuManager.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = McuManager.modulemap; sourceTree = "<group>"; };
+		88060C90D3079FF3EB01C82908E6C6EE /* McuMgrImage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = McuMgrImage.swift; path = Source/McuMgrImage.swift; sourceTree = "<group>"; };
 		8B278378E8AE995FBE26E513BED2DB8E /* Pods-Example-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-Example-Info.plist"; sourceTree = "<group>"; };
+		8BA1D2485B3DF5361F0F41865300C1F0 /* Pods_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_Example.framework; path = "Pods-Example.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8DF8FFB9766F6242C451BC20E89BD643 /* FirmwareUpgradeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeManager.swift; sourceTree = "<group>"; };
+		95132D193E78835117B77ECB1161D3D4 /* McuManager-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "McuManager-umbrella.h"; sourceTree = "<group>"; };
+		97A58E4D85A5782F0BD3EF1FB9BF95CC /* ResultLock.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ResultLock.swift; sourceTree = "<group>"; };
+		9C0106CD8270461C035033AE9B862D9B /* LogManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
+		9D5C0C79651D7A723993F59D78943182 /* CBOR+McuManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CBOR+McuManager.swift"; sourceTree = "<group>"; };
 		9E73EFFE5CD73C2D9F66F533995AD38C /* SwiftCBOR-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "SwiftCBOR-umbrella.h"; sourceTree = "<group>"; };
+		A8C1899D6CA145F30389F973611562CD /* McuManager.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = McuManager.xcconfig; sourceTree = "<group>"; };
 		B049B4849AF3113C3580161606670F39 /* Pods-Example-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-Example-acknowledgements.plist"; sourceTree = "<group>"; };
 		B36AB396275697EEE1A5B13BA8A38FE3 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		B5A5215990CD9B9E302D772EF78A87E1 /* Pods-Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Example.release.xcconfig"; sourceTree = "<group>"; };
 		B7F47266550AC865B9D4E1AD83140218 /* Pods-Example-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-Example-dummy.m"; sourceTree = "<group>"; };
+		BAE3011CAA1E87BE60472ABEA7B773E5 /* McuManager.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = McuManager.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		BB23ED61D1699F0833BCD72FC6E48710 /* CBOREncodable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBOREncodable.swift; path = Sources/SwiftCBOR/CBOREncodable.swift; sourceTree = "<group>"; };
 		C34AA24FDEC8E0D770806BD20479790C /* SwiftCBOR-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "SwiftCBOR-dummy.m"; sourceTree = "<group>"; };
+		C72F555143B6D73B917C3636D9A0EBB1 /* McuManager-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "McuManager-dummy.m"; sourceTree = "<group>"; };
+		C77DBA82D18950EE50A7B4FF0377D3C3 /* FileSystemManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileSystemManager.swift; sourceTree = "<group>"; };
 		CA261082AFE599D995B91ADAA6F171A5 /* SwiftCBOR.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = SwiftCBOR.xcconfig; sourceTree = "<group>"; };
+		CD6573FBAD7A5E98AC3F2614872CB47E /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE; sourceTree = "<group>"; };
+		CD9BF94351BD4CE00FD500A08D6D276B /* DefaultManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DefaultManager.swift; sourceTree = "<group>"; };
 		D1F11F03A401FD6CB3AF42C16B21F0F7 /* SwiftCBOR-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "SwiftCBOR-prefix.pch"; sourceTree = "<group>"; };
 		D6988D11FF3E4F6FEFBD968F6993B6B0 /* Util.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Util.swift; path = Sources/SwiftCBOR/Util.swift; sourceTree = "<group>"; };
-		D6DFF15000AFE2A371BF499E7AFDA808 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		DE6D86A9B78633778FC0EAC539780FA7 /* McuManager.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = McuManager.xcconfig; sourceTree = "<group>"; };
+		D7FCAAAE21339D2C98F1B07D4CE4AC84 /* McuMgrHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = McuMgrHeader.swift; path = Source/McuMgrHeader.swift; sourceTree = "<group>"; };
+		DADB6041716DB5C95A45800DB2BB97DD /* McuManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = McuManager.swift; path = Source/McuManager.swift; sourceTree = "<group>"; };
+		DDC5360A237CD25C42FCD84FD61FA6CC /* McuMgrBleTransport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = McuMgrBleTransport.swift; sourceTree = "<group>"; };
+		E9C78AEDAFB1981A424502CDCD498F70 /* McuManager-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "McuManager-Info.plist"; sourceTree = "<group>"; };
 		EAD1CC21E1AD95ABD2BBFC6645FA6D7C /* CBOREncoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBOREncoder.swift; path = Sources/SwiftCBOR/CBOREncoder.swift; sourceTree = "<group>"; };
-		F10563BC74C7E501044DA0C8B7B2A38E /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
 		F34353F775E9E7D79176839735E2D482 /* Pods-Example-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-Example-acknowledgements.markdown"; sourceTree = "<group>"; };
+		FC73A397EBB08C9D65C6A2BA93B78691 /* StatsManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatsManager.swift; sourceTree = "<group>"; };
+		FCCDBF65E1F8A116534800E0C0E10FC9 /* Data+McuManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Data+McuManager.swift"; sourceTree = "<group>"; };
+		FF9EFCA6272E1684A5AB84435F0D4109 /* ConfigManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		1862138D5B4E1B43CD57D8BDDC29CF67 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				B70D963BB9C5205AFB199D8B94629EE8 /* Foundation.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		592208342A7E630716C8D7CA28C2E4DB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -107,17 +139,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9E5A868F8D3C2B443396F67AB89DDE19 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8F18AFA4ADE4D0FC8969D42AF61C6D5A /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FDEEE916A65D15A88BE572D4A043E265 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				39E1B6A3DEB1F122FEA50193EBCE976D /* Foundation.framework in Frameworks */,
+				C7750185DF8E051C55E9F06B9FDEF74B /* SwiftCBOR.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		12233C1E99BF6402E9BE74E8FA4BAFA2 /* Development Pods */ = {
-			isa = PBXGroup;
-			children = (
-				5F169E4F67949252A0BED7305EA4158D /* McuManager */,
-			);
-			name = "Development Pods";
-			sourceTree = "<group>";
-		};
 		1D373341CEBB87349D59AEDD7D73C201 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -134,50 +175,72 @@
 			name = "Targets Support Files";
 			sourceTree = "<group>";
 		};
-		44D5347904CF754D6785B84253F2574A /* iOS */ = {
+		4A71812DA249042310A29281046C7AD5 /* Bluetooth */ = {
 			isa = PBXGroup;
 			children = (
-				D6DFF15000AFE2A371BF499E7AFDA808 /* Foundation.framework */,
+				DDC5360A237CD25C42FCD84FD61FA6CC /* McuMgrBleTransport.swift */,
+			);
+			name = Bluetooth;
+			path = Source/Bluetooth;
+			sourceTree = "<group>";
+		};
+		54BE217ED06AD29B9C3D78A460B324DC /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				4398BA4BC723F175A5BB770F84D8AB5C /* Log.swift */,
+				97A58E4D85A5782F0BD3EF1FB9BF95CC /* ResultLock.swift */,
+			);
+			name = Utils;
+			path = Source/Utils;
+			sourceTree = "<group>";
+		};
+		6653236AFF838CEE07FC7AD9D11ACA4F /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				710C02C581ED5A737C30033B5C72BD19 /* Foundation.framework */,
 			);
 			name = iOS;
 			sourceTree = "<group>";
 		};
-		5771CA65811913FE1F9A20389F1630A7 /* Support Files */ = {
+		69CEB068EE22015B7512DACE11C0C573 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				DE6D86A9B78633778FC0EAC539780FA7 /* McuManager.xcconfig */,
+				84B2134AC6152E5ABA20A0170CE38396 /* McuManager.modulemap */,
+				A8C1899D6CA145F30389F973611562CD /* McuManager.xcconfig */,
+				C72F555143B6D73B917C3636D9A0EBB1 /* McuManager-dummy.m */,
+				E9C78AEDAFB1981A424502CDCD498F70 /* McuManager-Info.plist */,
+				4557E68F97C47F356C56665AFE6BB3FD /* McuManager-prefix.pch */,
+				95132D193E78835117B77ECB1161D3D4 /* McuManager-umbrella.h */,
 			);
 			name = "Support Files";
 			path = "Example/Pods/Target Support Files/McuManager";
 			sourceTree = "<group>";
 		};
-		5F169E4F67949252A0BED7305EA4158D /* McuManager */ = {
+		6A8746B50458EA3BE261A2C649ADA7F4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				DA3C5B79BE35317720BFB0E9FE46C11A /* Pod */,
-				5771CA65811913FE1F9A20389F1630A7 /* Support Files */,
+				35D66803655B68A9FF6CD219CB0AE0EB /* SwiftCBOR.framework */,
+				6653236AFF838CEE07FC7AD9D11ACA4F /* iOS */,
 			);
-			name = McuManager;
-			path = ../..;
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		692A1E06FCA9DA18CA2D3B80615DA1E3 /* Products */ = {
+		73336B3DFA70C3AB60BBA800BD015F1F /* Development Pods */ = {
 			isa = PBXGroup;
 			children = (
-				330A492F27B1D378AA9EF4DD692E29F1 /* Pods_Example.framework */,
-				01A2E95412555EB44C1D9548DE374CF2 /* SwiftCBOR.framework */,
+				CC11E856A2EDD6A65476B71343C63958 /* McuManager */,
 			);
-			name = Products;
+			name = "Development Pods";
 			sourceTree = "<group>";
 		};
 		7DB346D0F39D3F0E887471402A8071AB = {
 			isa = PBXGroup;
 			children = (
 				B36AB396275697EEE1A5B13BA8A38FE3 /* Podfile */,
-				12233C1E99BF6402E9BE74E8FA4BAFA2 /* Development Pods */,
-				BC3CA7F9E30CC8F7E2DD044DD34432FC /* Frameworks */,
+				73336B3DFA70C3AB60BBA800BD015F1F /* Development Pods */,
+				6A8746B50458EA3BE261A2C649ADA7F4 /* Frameworks */,
 				1D373341CEBB87349D59AEDD7D73C201 /* Pods */,
-				692A1E06FCA9DA18CA2D3B80615DA1E3 /* Products */,
+				9FDDEF2548362BDDB6361D7EA8542A1D /* Products */,
 				3BFB1236E5F61C24E4383B2E5824E66B /* Targets Support Files */,
 			);
 			sourceTree = "<group>";
@@ -199,6 +262,23 @@
 			path = "Target Support Files/Pods-Example";
 			sourceTree = "<group>";
 		};
+		8115B5AA5F1F86D220EFE15105DA8B53 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				FF9EFCA6272E1684A5AB84435F0D4109 /* ConfigManager.swift */,
+				3B3285EC9BB309145DCF4C576A72A20D /* CrashManager.swift */,
+				CD9BF94351BD4CE00FD500A08D6D276B /* DefaultManager.swift */,
+				C77DBA82D18950EE50A7B4FF0377D3C3 /* FileSystemManager.swift */,
+				238BE3073F509801A07BDC0F0E3FFD59 /* ImageManager.swift */,
+				9C0106CD8270461C035033AE9B862D9B /* LogManager.swift */,
+				32C5955B3AE1BC74F4893834132EBC65 /* RunTestManager.swift */,
+				FC73A397EBB08C9D65C6A2BA93B78691 /* StatsManager.swift */,
+				AEE59F72353463F6D0AC60C9731F5364 /* DFU */,
+			);
+			name = Managers;
+			path = Source/Managers;
+			sourceTree = "<group>";
+		};
 		8184DFF02F58ADAB9295CC18AC96B7D5 /* SwiftCBOR */ = {
 			isa = PBXGroup;
 			children = (
@@ -214,12 +294,35 @@
 			path = SwiftCBOR;
 			sourceTree = "<group>";
 		};
-		BC3CA7F9E30CC8F7E2DD044DD34432FC /* Frameworks */ = {
+		8BD7F7E0875F33FF077C13F9288D7A44 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				44D5347904CF754D6785B84253F2574A /* iOS */,
+				9D5C0C79651D7A723993F59D78943182 /* CBOR+McuManager.swift */,
+				FCCDBF65E1F8A116534800E0C0E10FC9 /* Data+McuManager.swift */,
+				50B2309F4440167BD3B7F933CDE19474 /* String+McuManager.swift */,
 			);
-			name = Frameworks;
+			name = Extensions;
+			path = Source/Extensions;
+			sourceTree = "<group>";
+		};
+		9FDDEF2548362BDDB6361D7EA8542A1D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				73020BB8B417E2CFC72852064611E294 /* McuManager.framework */,
+				8BA1D2485B3DF5361F0F41865300C1F0 /* Pods_Example.framework */,
+				6F798ACCE2195A4DACD6CC3F401B4C1A /* SwiftCBOR.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AEE59F72353463F6D0AC60C9731F5364 /* DFU */ = {
+			isa = PBXGroup;
+			children = (
+				7CE5CCF30E923C76F113B0713A6B991A /* FirmwareUpgradeController.swift */,
+				8DF8FFB9766F6242C451BC20E89BD643 /* FirmwareUpgradeManager.swift */,
+			);
+			name = DFU;
+			path = DFU;
 			sourceTree = "<group>";
 		};
 		BDB7CB468A9C5534CA06F629B3A829EE /* Support Files */ = {
@@ -236,12 +339,31 @@
 			path = "../Target Support Files/SwiftCBOR";
 			sourceTree = "<group>";
 		};
-		DA3C5B79BE35317720BFB0E9FE46C11A /* Pod */ = {
+		CC11E856A2EDD6A65476B71343C63958 /* McuManager */ = {
 			isa = PBXGroup;
 			children = (
-				5FE5FF456F0EE9ED397EB98722277143 /* LICENSE */,
-				18CA2ABE55C03766D879F8C74E048318 /* McuManager.podspec */,
-				F10563BC74C7E501044DA0C8B7B2A38E /* README.md */,
+				DADB6041716DB5C95A45800DB2BB97DD /* McuManager.swift */,
+				D7FCAAAE21339D2C98F1B07D4CE4AC84 /* McuMgrHeader.swift */,
+				88060C90D3079FF3EB01C82908E6C6EE /* McuMgrImage.swift */,
+				4B1C2109B1FED405F0CBCF6FF3567B39 /* McuMgrResponse.swift */,
+				465A8647F6A1B3224546C997C5275B44 /* McuMgrTransport.swift */,
+				4A71812DA249042310A29281046C7AD5 /* Bluetooth */,
+				8BD7F7E0875F33FF077C13F9288D7A44 /* Extensions */,
+				8115B5AA5F1F86D220EFE15105DA8B53 /* Managers */,
+				D90FF6FB175FB424630833C90E5A9C10 /* Pod */,
+				69CEB068EE22015B7512DACE11C0C573 /* Support Files */,
+				54BE217ED06AD29B9C3D78A460B324DC /* Utils */,
+			);
+			name = McuManager;
+			path = ../..;
+			sourceTree = "<group>";
+		};
+		D90FF6FB175FB424630833C90E5A9C10 /* Pod */ = {
+			isa = PBXGroup;
+			children = (
+				CD6573FBAD7A5E98AC3F2614872CB47E /* LICENSE */,
+				BAE3011CAA1E87BE60472ABEA7B773E5 /* McuManager.podspec */,
+				6782AFB60285C20328AD28F1D852D1ED /* README.md */,
 			);
 			name = Pod;
 			sourceTree = "<group>";
@@ -257,11 +379,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		5C842AF4E16E0217B3EA2661F0AE984B /* Headers */ = {
+		339271C8FF335D8C142628B84CC97D7E /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				752C708244E0FE605B8149EDF7045E30 /* SwiftCBOR-umbrella.h in Headers */,
+				8A0FF67A54402EDCB21E118DF1C74DCD /* McuManager-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C95BA5B3293BA883D379FE7551331360 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D67F4BB837DC12DC62EFE829D978F6EB /* SwiftCBOR-umbrella.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -285,17 +415,17 @@
 			);
 			name = "Pods-Example";
 			productName = "Pods-Example";
-			productReference = 330A492F27B1D378AA9EF4DD692E29F1 /* Pods_Example.framework */;
+			productReference = 8BA1D2485B3DF5361F0F41865300C1F0 /* Pods_Example.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		47BBEDDB94F8DC354CD23240EEB8C45E /* SwiftCBOR */ = {
+		9DFF660A305C6699837B491F76ACA965 /* SwiftCBOR */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 11670A5EE29F7F3671A6FD648DA91470 /* Build configuration list for PBXNativeTarget "SwiftCBOR" */;
+			buildConfigurationList = 465414845EDC4B6DF2B36719ECBA562E /* Build configuration list for PBXNativeTarget "SwiftCBOR" */;
 			buildPhases = (
-				5C842AF4E16E0217B3EA2661F0AE984B /* Headers */,
-				F89CF577C8DEEA1AE18BF061C13129E7 /* Sources */,
-				1862138D5B4E1B43CD57D8BDDC29CF67 /* Frameworks */,
-				5EFCF523CA76252D2E36A4CB87CCE75B /* Resources */,
+				C95BA5B3293BA883D379FE7551331360 /* Headers */,
+				8349E408E27DEE9AB380CE9084195089 /* Sources */,
+				9E5A868F8D3C2B443396F67AB89DDE19 /* Frameworks */,
+				E7509455080EB3794CB3E4BCD4F69AFD /* Resources */,
 			);
 			buildRules = (
 			);
@@ -303,7 +433,26 @@
 			);
 			name = SwiftCBOR;
 			productName = SwiftCBOR;
-			productReference = 01A2E95412555EB44C1D9548DE374CF2 /* SwiftCBOR.framework */;
+			productReference = 6F798ACCE2195A4DACD6CC3F401B4C1A /* SwiftCBOR.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		CA1F0D5E8B7605F0A84DEEC15BB8E550 /* McuManager */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E3BD6A8087808A35833DD5902698B6EC /* Build configuration list for PBXNativeTarget "McuManager" */;
+			buildPhases = (
+				339271C8FF335D8C142628B84CC97D7E /* Headers */,
+				E8B62BEDDFE444A7E5DA8F295E10C03B /* Sources */,
+				FDEEE916A65D15A88BE572D4A043E265 /* Frameworks */,
+				495DEED1AE3B4301AF8D238B3CDC1E1A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1DFAE35D0A000CDDA03712EF795EEA9A /* PBXTargetDependency */,
+			);
+			name = McuManager;
+			productName = McuManager;
+			productReference = 73020BB8B417E2CFC72852064611E294 /* McuManager.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -323,19 +472,26 @@
 				en,
 			);
 			mainGroup = 7DB346D0F39D3F0E887471402A8071AB;
-			productRefGroup = 692A1E06FCA9DA18CA2D3B80615DA1E3 /* Products */;
+			productRefGroup = 9FDDEF2548362BDDB6361D7EA8542A1D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				3AFD1B420D54B42618AA9C353DE924AE /* McuManager */,
+				CA1F0D5E8B7605F0A84DEEC15BB8E550 /* McuManager */,
 				30AEE4818CE95449035EF4E9920DBF7E /* Pods-Example */,
-				47BBEDDB94F8DC354CD23240EEB8C45E /* SwiftCBOR */,
+				9DFF660A305C6699837B491F76ACA965 /* SwiftCBOR */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		5EFCF523CA76252D2E36A4CB87CCE75B /* Resources */ = {
+		495DEED1AE3B4301AF8D238B3CDC1E1A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E7509455080EB3794CB3E4BCD4F69AFD /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -360,17 +516,46 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F89CF577C8DEEA1AE18BF061C13129E7 /* Sources */ = {
+		8349E408E27DEE9AB380CE9084195089 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F2C21E9A04F6CF02F91F14B7C77BD872 /* CBOR.swift in Sources */,
-				134DA6495129DFCC249BA4304FC5613C /* CBORDecoder.swift in Sources */,
-				89D1FC89405FCE2799B5BCB5ED9E48C5 /* CBOREncodable.swift in Sources */,
-				956EA9CD32C4552AF0C67D48AF9DB25D /* CBOREncoder.swift in Sources */,
-				4FC0BF82E153BE8BD579754C3F1D3FF6 /* CBORInputStream.swift in Sources */,
-				7EB0C76C19D72C545D5D522FE9E52D3C /* SwiftCBOR-dummy.m in Sources */,
-				5919FF9D87C0CFE5E2F28267BD50FCCA /* Util.swift in Sources */,
+				BAB2913342F58331A18366162B47B36D /* CBOR.swift in Sources */,
+				511B4E7D66D254BC7B9BE44937CE84D8 /* CBORDecoder.swift in Sources */,
+				FE6D117C6748D6A3E83EFCDDB9270CD7 /* CBOREncodable.swift in Sources */,
+				021A064E55A9BA551A916793752BECC1 /* CBOREncoder.swift in Sources */,
+				2D18E193E52505CE4A3ADA0BA9F7CBF1 /* CBORInputStream.swift in Sources */,
+				734505DB923C6C60BCA5F692422A9FE9 /* SwiftCBOR-dummy.m in Sources */,
+				9FD5D4A0AEBA540D3E2F41BBC0084E07 /* Util.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E8B62BEDDFE444A7E5DA8F295E10C03B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5C3586F3B83483A02FB87F1CFEE9280C /* CBOR+McuManager.swift in Sources */,
+				C2E586C13A7AFA0A01C96A9F01551805 /* ConfigManager.swift in Sources */,
+				629CBC78B7097DD456420E9229F7FA3F /* CrashManager.swift in Sources */,
+				869DCE040CB3FF976F37D36DF4D3F411 /* Data+McuManager.swift in Sources */,
+				B55BAD85FA6920A6A35247FAD21AFF53 /* DefaultManager.swift in Sources */,
+				0146EBEBDFD50B07EB22BA81E59509C3 /* FileSystemManager.swift in Sources */,
+				97B4A83AD6CDB71403FA1A35B5B1A647 /* FirmwareUpgradeController.swift in Sources */,
+				746CEF90310A536D6B1656C85D8260F8 /* FirmwareUpgradeManager.swift in Sources */,
+				8A431B9F9338F0C6EBAD5634D7D6DAFD /* ImageManager.swift in Sources */,
+				59DB49FD9C781353E6566925282D13EB /* Log.swift in Sources */,
+				E089788A72EA41E13636FF73EDDB507A /* LogManager.swift in Sources */,
+				DCB7E9390B21192FD371038762EACBE4 /* McuManager-dummy.m in Sources */,
+				259108A0776861CA66221FC878894CCD /* McuManager.swift in Sources */,
+				4AFE0B330CA90ECA972A1D3A40A02C5A /* McuMgrBleTransport.swift in Sources */,
+				4CDDF6F7C1E39E06EB74C898A4F5D45F /* McuMgrHeader.swift in Sources */,
+				B13E2C5182BDCB86F9328451FEB9B97B /* McuMgrImage.swift in Sources */,
+				7A78E246C3BD35453B81AD46933CB669 /* McuMgrResponse.swift in Sources */,
+				82484CD9C792F593BA75390B8989A67C /* McuMgrTransport.swift in Sources */,
+				2E92466E7F8570368DB026D0623EF33D /* ResultLock.swift in Sources */,
+				68E8B3B8306DF30336C1B5D1451A94D2 /* RunTestManager.swift in Sources */,
+				B793DCA03D8E9C377E6DADB357DD8329 /* StatsManager.swift in Sources */,
+				037CD8C390377CE849744A64B684AE58 /* String+McuManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -380,20 +565,20 @@
 		161A167E074DF2F5F47FCAFC57C7125A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = SwiftCBOR;
-			target = 47BBEDDB94F8DC354CD23240EEB8C45E /* SwiftCBOR */;
+			target = 9DFF660A305C6699837B491F76ACA965 /* SwiftCBOR */;
 			targetProxy = 6AE6CB5964547F898F4C5D49D4D04D23 /* PBXContainerItemProxy */;
+		};
+		1DFAE35D0A000CDDA03712EF795EEA9A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SwiftCBOR;
+			target = 9DFF660A305C6699837B491F76ACA965 /* SwiftCBOR */;
+			targetProxy = C9F224955983A7ACD62201F62ABF0A75 /* PBXContainerItemProxy */;
 		};
 		4E0D70A65ED3687F01EEF6963F631F0B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = McuManager;
-			target = 3AFD1B420D54B42618AA9C353DE924AE /* McuManager */;
+			target = CA1F0D5E8B7605F0A84DEEC15BB8E550 /* McuManager */;
 			targetProxy = 5760CCB7E151521D4E6385186F4EACE7 /* PBXContainerItemProxy */;
-		};
-		879E3F1EFDA137591FD04C898B23B877 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = SwiftCBOR;
-			target = 47BBEDDB94F8DC354CD23240EEB8C45E /* SwiftCBOR */;
-			targetProxy = EC2CEC945B443C9B480E3A3194ED6335 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -462,24 +647,7 @@
 			};
 			name = Debug;
 		};
-		7AD48F9F1B093743AD4E347FB179FA4F /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = DE6D86A9B78633778FC0EAC539780FA7 /* McuManager.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		85866147B0695CBB1CDABDD4A244F63E /* Release */ = {
+		1CAD5466265D0DAEFC687888579FE10D /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CA261082AFE599D995B91ADAA6F171A5 /* SwiftCBOR.xcconfig */;
 			buildSettings = {
@@ -514,6 +682,41 @@
 				VERSION_INFO_PREFIX = "";
 			};
 			name = Release;
+		};
+		3A5BA30B100695C1689311C521B82460 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CA261082AFE599D995B91ADAA6F171A5 /* SwiftCBOR.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/SwiftCBOR/SwiftCBOR-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/SwiftCBOR/SwiftCBOR-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/SwiftCBOR/SwiftCBOR.modulemap";
+				PRODUCT_MODULE_NAME = SwiftCBOR;
+				PRODUCT_NAME = SwiftCBOR;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
 		};
 		8A4D5AA41C827A8534C7C1846893E26B /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -590,9 +793,9 @@
 			};
 			name = Debug;
 		};
-		9D5D1469B2F1183E6FB971DE96A97FA4 /* Debug */ = {
+		C4AE4BF877E777EA84BEA6E722A78AB2 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CA261082AFE599D995B91ADAA6F171A5 /* SwiftCBOR.xcconfig */;
+			baseConfigurationReference = A8C1899D6CA145F30389F973611562CD /* McuManager.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
@@ -603,43 +806,28 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_PREFIX_HEADER = "Target Support Files/SwiftCBOR/SwiftCBOR-prefix.pch";
-				INFOPLIST_FILE = "Target Support Files/SwiftCBOR/SwiftCBOR-Info.plist";
+				GCC_PREFIX_HEADER = "Target Support Files/McuManager/McuManager-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/McuManager/McuManager-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MODULEMAP_FILE = "Target Support Files/SwiftCBOR/SwiftCBOR.modulemap";
-				PRODUCT_MODULE_NAME = SwiftCBOR;
-				PRODUCT_NAME = SwiftCBOR;
+				MODULEMAP_FILE = "Target Support Files/McuManager/McuManager.modulemap";
+				PRODUCT_MODULE_NAME = McuManager;
+				PRODUCT_NAME = McuManager;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
-			name = Debug;
-		};
-		B596056E8E1E9A73BA905142EF223D79 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = DE6D86A9B78633778FC0EAC539780FA7 /* McuManager.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
+			name = Release;
 		};
 		E82C56363775B4EF468FF2AD9A2F5414 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -701,18 +889,44 @@
 			};
 			name = Release;
 		};
+		F66AEE13CA619AE46EDDE3AE3367A924 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A8C1899D6CA145F30389F973611562CD /* McuManager.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/McuManager/McuManager-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/McuManager/McuManager-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/McuManager/McuManager.modulemap";
+				PRODUCT_MODULE_NAME = McuManager;
+				PRODUCT_NAME = McuManager;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		11670A5EE29F7F3671A6FD648DA91470 /* Build configuration list for PBXNativeTarget "SwiftCBOR" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				9D5D1469B2F1183E6FB971DE96A97FA4 /* Debug */,
-				85866147B0695CBB1CDABDD4A244F63E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		14F628DE01B5E57A48AB4544F91BFCA4 /* Build configuration list for PBXNativeTarget "Pods-Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -722,20 +936,29 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		18614B1FB581FB7B518E75F58CEB1C88 /* Build configuration list for PBXAggregateTarget "McuManager" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				B596056E8E1E9A73BA905142EF223D79 /* Debug */,
-				7AD48F9F1B093743AD4E347FB179FA4F /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		2D8E8EC45A3A1A1D94AE762CB5028504 /* Build configuration list for PBXProject "Pods" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				08B0394D5F17A9F046DC0719C25BA452 /* Debug */,
 				E82C56363775B4EF468FF2AD9A2F5414 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		465414845EDC4B6DF2B36719ECBA562E /* Build configuration list for PBXNativeTarget "SwiftCBOR" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3A5BA30B100695C1689311C521B82460 /* Debug */,
+				1CAD5466265D0DAEFC687888579FE10D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E3BD6A8087808A35833DD5902698B6EC /* Build configuration list for PBXNativeTarget "McuManager" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F66AEE13CA619AE46EDDE3AE3367A924 /* Debug */,
+				C4AE4BF877E777EA84BEA6E722A78AB2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

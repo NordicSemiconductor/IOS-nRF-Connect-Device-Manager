@@ -61,7 +61,6 @@
 		BD5A285E20CB44B00061F0EE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BD5A286120CB44B00061F0EE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BD5A286320CB44B00061F0EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D36F28A221D5AAE300C963F0 /* McuManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = McuManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,7 +149,6 @@
 		BD5A284B20CB44AF0061F0EE = {
 			isa = PBXGroup;
 			children = (
-				D36F28A221D5AAE300C963F0 /* McuManager.framework */,
 				BD5A285620CB44AF0061F0EE /* Example */,
 				BD5A285520CB44AF0061F0EE /* Products */,
 				C8D042FE3DAC39D53B874632 /* Pods */,
@@ -297,12 +295,14 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Example/Pods-Example-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/McuManager/McuManager.framework",
 				"${BUILT_PRODUCTS_DIR}/SwiftCBOR/SwiftCBOR.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/McuManager.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftCBOR.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
