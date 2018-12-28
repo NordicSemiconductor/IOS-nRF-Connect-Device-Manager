@@ -29,7 +29,21 @@
 		BD5A28BD20CB50CA0061F0EE /* McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A289F20CB50CA0061F0EE /* McuManager.swift */; };
 		BD5A28BE20CB50CA0061F0EE /* McuMgrImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A28A020CB50CA0061F0EE /* McuMgrImage.swift */; };
 		D36F288421D5649100C963F0 /* SwiftCBOR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D36F288321D5649100C963F0 /* SwiftCBOR.framework */; };
+		D36F28A721D5ABB600C963F0 /* SwiftCBOR.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = D36F28A621D5ABB600C963F0 /* SwiftCBOR.framework.dSYM */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D36F28A521D5AAFB00C963F0 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				D36F28A721D5ABB600C963F0 /* SwiftCBOR.framework.dSYM in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		B7933FF620F3D0B500F14A7C /* FirmwareUpgradeController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeController.swift; sourceTree = "<group>"; };
@@ -55,6 +69,7 @@
 		BD5A289F20CB50CA0061F0EE /* McuManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuManager.swift; sourceTree = "<group>"; };
 		BD5A28A020CB50CA0061F0EE /* McuMgrImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = McuMgrImage.swift; sourceTree = "<group>"; };
 		D36F288321D5649100C963F0 /* SwiftCBOR.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftCBOR.framework; path = Carthage/Build/iOS/SwiftCBOR.framework; sourceTree = "<group>"; };
+		D36F28A621D5ABB600C963F0 /* SwiftCBOR.framework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = SwiftCBOR.framework.dSYM; path = Carthage/Build/iOS/SwiftCBOR.framework.dSYM; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +96,7 @@
 		BD5A286920CB50040061F0EE = {
 			isa = PBXGroup;
 			children = (
+				D36F28A621D5ABB600C963F0 /* SwiftCBOR.framework.dSYM */,
 				BD5A287520CB50040061F0EE /* Source */,
 				BD5A287420CB50040061F0EE /* Products */,
 				D36F288221D5649000C963F0 /* Frameworks */,
@@ -183,6 +199,7 @@
 				BD5A286F20CB50040061F0EE /* Frameworks */,
 				BD5A287020CB50040061F0EE /* Headers */,
 				BD5A287120CB50040061F0EE /* Resources */,
+				D36F28A521D5AAFB00C963F0 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -205,7 +222,7 @@
 				TargetAttributes = {
 					BD5A287220CB50040061F0EE = {
 						CreatedOnToolsVersion = 9.4;
-						LastSwiftMigration = 0940;
+						LastSwiftMigration = 1010;
 					};
 				};
 			};
@@ -418,7 +435,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -450,7 +467,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

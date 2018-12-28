@@ -186,7 +186,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
                                                 y: (view.frame.height / 2) - (emptyPeripheralsView.frame.size.height / 2),
                                                 width: view.frame.width,
                                                 height: emptyPeripheralsView.frame.height)
-            view.bringSubview(toFront: emptyPeripheralsView)
+            view.bringSubviewToFront(emptyPeripheralsView)
             UIView.animate(withDuration: 0.5, animations: {
                 self.emptyPeripheralsView.alpha = 1
             })
