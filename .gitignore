@@ -1,7 +1,8 @@
 # Mac OS X
 .DS_Store
 
-# Xcode
+# IntelliJ
+.idea/
 
 ## Build generated
 build/
@@ -36,4 +37,8 @@ playground.xcworkspace
 .build/
 
 # Carthage
-Carthage/Build
+Carthage
+Cartfile.resolved
+
+# CocoaPods
+Example/Pods/

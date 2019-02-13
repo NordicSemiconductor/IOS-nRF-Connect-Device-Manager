@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import SwiftCBOR
 
 /// Displays statistics from a device.
 ///

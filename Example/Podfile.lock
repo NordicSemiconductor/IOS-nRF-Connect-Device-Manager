@@ -1,0 +1,23 @@
+PODS:
+  - McuManager (0.6.2):
+    - SwiftCBOR (= 0.3.0)
+  - SwiftCBOR (0.3.0)
+
+DEPENDENCIES:
+  - McuManager (from `../`)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - SwiftCBOR
+
+EXTERNAL SOURCES:
+  McuManager:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  McuManager: 5a1bc87ca91539a0b8825aa35832abc3d2dc5cf8
+  SwiftCBOR: 0b6b686bf24b77d06d35a2a6298713358c761bf8
+
+PODFILE CHECKSUM: 1753bed557e63b1f87b38c0a0b6c494113220627
+
+COCOAPODS: 1.6.0

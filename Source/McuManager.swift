@@ -6,6 +6,7 @@
 
 import Foundation
 import CoreBluetooth
+import SwiftCBOR
 
 public class McuManager {
     
@@ -226,7 +227,7 @@ public enum McuMgrOperation: UInt8 {
 ///
 /// Each Mcu Manager response will contain a "rc" key with one of these return
 /// codes.
-public enum McuMgrReturnCode: UInt, Error {
+public enum McuMgrReturnCode: UInt64, Error {
     case ok         = 0
     case unknown    = 1
     case noMemory   = 2

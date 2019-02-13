@@ -6,6 +6,7 @@
 
 import Foundation
 import CoreBluetooth
+import SwiftCBOR
 
 public class ImageManager: McuManager {
     private static let TAG = "ImageManager"
@@ -56,7 +57,7 @@ public class ImageManager: McuManager {
         
         // Data length to end is the minimum of the max data lenght and the
         // number of remaining bytes.
-        let packetOverhead = calculatePacketOverhead(data: data, offset: offset)
+        let packetOverhead = calculatePacketOverhead(data: data, offset: UInt64(offset))
         
         // Get the length of image data to send.
         let maxDataLength: UInt = UInt(mtu) - UInt(packetOverhead)
@@ -64,12 +65,12 @@ public class ImageManager: McuManager {
         
         // Build the request payload.
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[offset..<(offset+dataLength)])),
-                                      "off": CBOR.unsignedInt(offset)]
+                                      "off": CBOR.unsignedInt(UInt64(offset))]
         
         // If this is the initial packet, send the image data length and
         // SHA 256 in the payload.
         if offset == 0 {
-            payload.updateValue(CBOR.unsignedInt(UInt(data.count)), forKey: "len")
+            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
             payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
         }
         // Build request and send.
@@ -177,7 +178,7 @@ public class ImageManager: McuManager {
     /// - parameter offset: The offset to load from, in bytes.
     /// - parameter callback: The response callback.
     public func coreLoad(offset: UInt, callback: @escaping McuMgrCallback<McuMgrCoreLoadResponse>) {
-        let payload: [String:CBOR] = ["off": CBOR.unsignedInt(offset)]
+        let payload: [String:CBOR] = ["off": CBOR.unsignedInt(UInt64(offset))]
         send(op: .read, commandId: ID_CORELOAD, payload: payload, callback: callback)
     }
 
@@ -202,7 +203,7 @@ public class ImageManager: McuManager {
     /// State of the image upload.
     private var uploadState: UploadState = .none
     /// Current image byte offset to send from.
-    private var offset: UInt = 0
+    private var offset: UInt64 = 0
     
     /// Contains the image data to send to the device.
     private var imageData: Data?
@@ -277,7 +278,7 @@ public class ImageManager: McuManager {
         if uploadState == .paused {
             Log.d(ImageManager.TAG, msg: "Continuing upload from \(offset)/\(imageData.count)")
             uploadState = .uploading
-            upload(data: imageData, offset: offset, callback: uploadCallback)
+            upload(data: imageData, offset: UInt(offset), callback: uploadCallback)
         } else {
             print("Upload has not been previously paused");
         }
@@ -348,7 +349,7 @@ public class ImageManager: McuManager {
             }
             
             // Send the next packet of data.
-            self.sendNext(from: offset)
+            self.sendNext(from: UInt(offset))
         } else {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
         }
@@ -387,14 +388,14 @@ public class ImageManager: McuManager {
         objc_sync_exit(self)
     }
     
-    private func calculatePacketOverhead(data: Data, offset: UInt) -> Int {
+    private func calculatePacketOverhead(data: Data, offset: UInt64) -> Int {
         // Get the Mcu Manager header.
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8]([0])),
                                       "off":  CBOR.unsignedInt(offset)]
         // If this is the initial packet we have to include the length of the
         // entire image.
         if offset == 0 {
-            payload.updateValue(CBOR.unsignedInt(UInt(data.count)), forKey: "len")
+            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
             payload.updateValue(CBOR.byteString([UInt8](repeating: 0, count: ImageManager.truncatedHashLen)), forKey: "sha")
         }
         // Build the packet and return the size.

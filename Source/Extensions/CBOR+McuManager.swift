@@ -5,14 +5,15 @@
  */
 
 import Foundation
+import SwiftCBOR
 
-extension CBOR: CustomStringConvertible {
+internal extension CBOR {
     
     private func wrapQuotes(_ string: String) -> String {
         return "\"\(string)\""
     }
     
-    public var description: String {
+    internal var description: String {
         switch self {
         case let .unsignedInt(l): return l.description
         case let .negativeInt(l): return l.description
@@ -32,7 +33,7 @@ extension CBOR: CustomStringConvertible {
         }
     }
     
-    public var value : Any? {
+    internal var value : Any? {
         switch self {
         case let .unsignedInt(l): return Int(l)
         case let .negativeInt(l): return Int(l) * -1
@@ -52,7 +53,7 @@ extension CBOR: CustomStringConvertible {
         }
     }
     
-    public static func toObjectMap<V: CBORMappable>(map: [CBOR:CBOR]?) throws -> [String:V]? {
+    internal static func toObjectMap<V: CBORMappable>(map: [CBOR:CBOR]?) throws -> [String:V]? {
         guard let map = map else {
             return nil
         }
@@ -66,7 +67,7 @@ extension CBOR: CustomStringConvertible {
         return objMap
     }
     
-    public static func toMap<V>(map: [CBOR:CBOR]?) throws -> [String:V]? {
+    internal static func toMap<V>(map: [CBOR:CBOR]?) throws -> [String:V]? {
         guard let map = map else {
             return nil
         }
@@ -81,7 +82,7 @@ extension CBOR: CustomStringConvertible {
         return objMap
     }
     
-    public static func toObjectArray<V: CBORMappable>(array: [CBOR]?) throws -> [V]? {
+    internal static func toObjectArray<V: CBORMappable>(array: [CBOR]?) throws -> [V]? {
         guard let array = array else {
             return nil
         }
@@ -93,7 +94,7 @@ extension CBOR: CustomStringConvertible {
         return objArray
     }
     
-    public static func toArray<V>(array: [CBOR]?) throws -> [V]? {
+    internal static func toArray<V>(array: [CBOR]?) throws -> [V]? {
         guard let array = array else {
             return nil
         }

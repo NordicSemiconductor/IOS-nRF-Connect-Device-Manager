@@ -6,11 +6,14 @@ Pod::Spec.new do |s|
   s.homepage = 'https://github.com/JuulLabs-OSS/mcumgr-ios'
   s.authors = { 'Brian Giori' => 'brian.giori@juul.com' }
   s.source = { :git => 'https://github.com/JuulLabs-OSS/mcumgr-ios.git', :tag => "v#{s.version}" }
-  s.swift_version = '4.0'
+  s.swift_version = '4.2'
 
   s.ios.deployment_target = '9.0'
 
-  s.source_files = 'Source/**/*'
+  s.source_files = 'Source/**/*.{swift, h}'
+  s.exclude_files = "Source/*.plist"
 
   s.requires_arc = true
+
+  s.dependency 'SwiftCBOR', '0.3.0'
 end

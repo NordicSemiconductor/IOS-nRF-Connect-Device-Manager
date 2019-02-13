@@ -24,30 +24,18 @@
 		5264C1DA210F43B40044FBBA /* ResetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1D9210F43B40044FBBA /* ResetViewController.swift */; };
 		5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1DB210F63850044FBBA /* ImagesViewController.swift */; };
 		5264C1DE210F640F0044FBBA /* McuMgrViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1DD210F640F0044FBBA /* McuMgrViewController.swift */; };
+		6702C6D4E800EAB025F73D36 /* Pods_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BA3C7AC9F2CB82CD7294334 /* Pods_Example.framework */; };
 		BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285720CB44AF0061F0EE /* AppDelegate.swift */; };
 		BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */; };
 		BD5A285D20CB44AF0061F0EE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285B20CB44AF0061F0EE /* Main.storyboard */; };
 		BD5A285F20CB44B00061F0EE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285E20CB44B00061F0EE /* Assets.xcassets */; };
 		BD5A286220CB44B00061F0EE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A286020CB44B00061F0EE /* LaunchScreen.storyboard */; };
-		BD5A28C620CB56460061F0EE /* McuManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD5A28C120CB53E90061F0EE /* McuManager.framework */; };
-		BD5A28C720CB56460061F0EE /* McuManager.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BD5A28C120CB53E90061F0EE /* McuManager.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		BD5A28C820CB56460061F0EE /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				BD5A28C720CB56460061F0EE /* McuManager.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
+		104101493546D7C73013F97D /* Pods-Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Example/Pods-Example.debug.xcconfig"; sourceTree = "<group>"; };
+		2BA3C7AC9F2CB82CD7294334 /* Pods_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AB22F670E9213B61E038DFD /* Pods-Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.release.xcconfig"; path = "Target Support Files/Pods-Example/Pods-Example.release.xcconfig"; sourceTree = "<group>"; };
 		5215762C212320F300C21B0C /* LogsStatsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsStatsController.swift; sourceTree = "<group>"; };
 		5215762E2125B59400C21B0C /* FilesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesController.swift; sourceTree = "<group>"; };
 		521576302126CC8F00C21B0C /* FileUploadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileUploadViewController.swift; sourceTree = "<group>"; };
@@ -65,6 +53,8 @@
 		5264C1D9210F43B40044FBBA /* ResetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetViewController.swift; sourceTree = "<group>"; };
 		5264C1DB210F63850044FBBA /* ImagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ImagesViewController.swift; path = Widgets/ImagesViewController.swift; sourceTree = "<group>"; };
 		5264C1DD210F640F0044FBBA /* McuMgrViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McuMgrViewController.swift; sourceTree = "<group>"; };
+		5D6426560CCD5711DA24A875 /* Pods-Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-Example/Pods-Example.release.xcconfig"; sourceTree = "<group>"; };
+		A67A61AE338625CC9DDF6619 /* Pods-Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.debug.xcconfig"; path = "Target Support Files/Pods-Example/Pods-Example.debug.xcconfig"; sourceTree = "<group>"; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A285720CB44AF0061F0EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -73,7 +63,6 @@
 		BD5A285E20CB44B00061F0EE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BD5A286120CB44B00061F0EE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BD5A286320CB44B00061F0EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		BD5A28C120CB53E90061F0EE /* McuManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = McuManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,13 +70,21 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BD5A28C620CB56460061F0EE /* McuManager.framework in Frameworks */,
+				6702C6D4E800EAB025F73D36 /* Pods_Example.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1826EFA43054923B90DBDA06 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2BA3C7AC9F2CB82CD7294334 /* Pods_Example.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		524636882108DCF1008B3D5B /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
@@ -156,7 +153,8 @@
 			children = (
 				BD5A285620CB44AF0061F0EE /* Example */,
 				BD5A285520CB44AF0061F0EE /* Products */,
-				BD5A28C020CB53E90061F0EE /* Frameworks */,
+				C8D042FE3DAC39D53B874632 /* Pods */,
+				1826EFA43054923B90DBDA06 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -184,12 +182,15 @@
 			path = Example;
 			sourceTree = "<group>";
 		};
-		BD5A28C020CB53E90061F0EE /* Frameworks */ = {
+		C8D042FE3DAC39D53B874632 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				BD5A28C120CB53E90061F0EE /* McuManager.framework */,
+				A67A61AE338625CC9DDF6619 /* Pods-Example.debug.xcconfig */,
+				4AB22F670E9213B61E038DFD /* Pods-Example.release.xcconfig */,
+				104101493546D7C73013F97D /* Pods-Example.debug.xcconfig */,
+				5D6426560CCD5711DA24A875 /* Pods-Example.release.xcconfig */,
 			);
-			name = Frameworks;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -199,10 +200,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BD5A286620CB44B00061F0EE /* Build configuration list for PBXNativeTarget "Example" */;
 			buildPhases = (
+				99C08A785468B7859D5BDA47 /* [CP] Check Pods Manifest.lock */,
 				BD5A285020CB44AF0061F0EE /* Sources */,
 				BD5A285120CB44AF0061F0EE /* Frameworks */,
 				BD5A285220CB44AF0061F0EE /* Resources */,
-				BD5A28C820CB56460061F0EE /* Embed Frameworks */,
+				F46CA9EDEC82B8A7FFDB0869 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -225,6 +227,7 @@
 				TargetAttributes = {
 					BD5A285320CB44AF0061F0EE = {
 						CreatedOnToolsVersion = 9.4;
+						LastSwiftMigration = 1010;
 						SystemCapabilities = {
 							com.apple.iCloud = {
 								enabled = 1;
@@ -263,6 +266,55 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		99C08A785468B7859D5BDA47 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Example-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F46CA9EDEC82B8A7FFDB0869 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Example/Pods-Example-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/McuManager/McuManager.framework",
+				"${BUILT_PRODUCTS_DIR}/SwiftCBOR/SwiftCBOR.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/McuManager.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftCBOR.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Example/Pods-Example-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BD5A285020CB44AF0061F0EE /* Sources */ = {
@@ -429,40 +481,42 @@
 		};
 		BD5A286720CB44B00061F0EE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A67A61AE338625CC9DDF6619 /* Pods-Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
+				DEVELOPMENT_TEAM = 5EH8QG4538;
 				INFOPLIST_FILE = Example/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nordicsemi.McuMgrExample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juul.McuMgrExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
 		BD5A286820CB44B00061F0EE /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4AB22F670E9213B61E038DFD /* Pods-Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
+				DEVELOPMENT_TEAM = 5EH8QG4538;
 				INFOPLIST_FILE = Example/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nordicsemi.McuMgrExample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juul.McuMgrExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

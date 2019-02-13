@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import SwiftCBOR
 
 public class LogManager: McuManager {
     
@@ -49,7 +50,7 @@ public class LogManager: McuManager {
     /// - parameter minTimestamp: The minimum timestamp to pull logs from. This
     ///   parameter is only used if a minIndex is also provided.
     /// - parameter callback: The response callback.
-    public func show(log: String? = nil, minIndex: UInt? = nil, minTimestamp: Date? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func show(log: String? = nil, minIndex: UInt64? = nil, minTimestamp: Date? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         var payload: [String:CBOR] = [:]
         if let log = log {
             payload.updateValue(CBOR.utf8String(log), forKey: "log_name")
