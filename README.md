@@ -4,10 +4,16 @@ A transport agnostic implementation of the McuManager protocol (aka Newt Manager
 
 ## Install
 
+### CocoaPods
+
+```
+pod 'McuManager', '~> 0.6.3'
+```
+
 ### Carthage
 
 ```
-github "runtimeco/mcumgr-ios"
+github "JuulLabs-OSS/mcumgr-ios" ~> 0.6.3
 ```
 
 # Introduction
@@ -62,4 +68,16 @@ McuManager firmware upgrades can actually be performed in few different ways. Th
 `FirmwareUpgradeManager` acts as a simple, mostly linear state machine which is determined by the `Mode`. As the manager moves through the firmware upgrade process, state changes are provided through the `FirmwareUpgradeDelegate`'s `upgradeStateDidChange` method.
 
 The `FirmwareUpgradeManager` contains an additional state, `validate`, which precedes the upload. The `validate` state checks the current image state of the device in an attempt to bypass certain states of the firmware upgrade. For example, if the image to upgrade to already exists in slot 1 on the device, the `FirmwareUpgradeManager` will skip `upload` and move directly to `test` (or `confirm` if `.confirmOnly` mode has been set) from `validate`. If the uploaded image is already active, and confirmed in slot 0, the upgrade will succeed immediately. In short, the `validate` state makes it easy to reattempt an upgrade without needing to re-upload the image or manually determine where to start.
+
+# Developing for McuManager
+
+Clone the repository, install pods.
+
+```
+git clone https://github.com/JuulLabs-OSS/mcumgr-ios.git
+cd mcumgr-ios/Example
+pod install
+```
+
+In Xcode (or other IDE) open the `mcumgr-ios/Example/Example.xcworkspace`. The development pod for McuManager should be under `Pods -> Development Pods -> McuManager`.
 
