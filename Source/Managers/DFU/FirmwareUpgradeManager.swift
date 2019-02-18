@@ -271,6 +271,17 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             }
             return
         }
+        
+        // If the image in slot 1 is confirmed or pending we won't be able to
+        // erase or test the slot causing a no memory or bad state error,
+        // respectively. Therefore, We must reset the device and revalidate the
+        // new image state.
+        if images.count > 1 && (images[1].confirmed || images[1].pending) {
+            self.defaultManager.transporter.addObserver(self)
+            self.defaultManager.reset(callback: self.resetCallback)
+            return
+        }
+        
         // Check if the firmware has already been uploaded.
         if images.count > 1 && Data(bytes: images[1].hash) == self.hash {
             // Firmware is identical to the one in slot 1. No need to send
@@ -308,16 +319,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             case .testOnly, .testAndConfirm:
                 self.reset()
             }
-        }
-        
-        // If the image in slot 1 is confirmed (we are in test mode)
-        // we won't be able to erase the slot. A No Memory error
-        // would be thrown. We have to reset the device and return
-        // from test mode before firmware upgrade begins.
-        if images.count > 1 && images[1].confirmed {
-            self.defaultManager.transporter.addObserver(self)
-            self.defaultManager.reset(callback: self.resetCallback)
-            return
         }
         
         // Validation successful, begin with image upload.
