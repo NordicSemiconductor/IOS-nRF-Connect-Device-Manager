@@ -369,34 +369,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.reset()
     }
     
-    public func transport(_ transport: McuMgrTransport, didChangeStateTo state: McuMgrTransportState) {
-        transport.removeObserver(self)
-        Log.i(self.TAG, msg: "Reset successful")
-        switch self.state {
-        case .validate:
-            validate()
-        case .reset:
-            switch mode {
-            case .testAndConfirm:
-                let now = Date()
-                let timeSinceReset = now.timeIntervalSince(resetResponseTime!)
-                let remainingTime = estimatedSwapTime - timeSinceReset
-                
-                if remainingTime > 0 {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) { [weak self] in
-                        self?.verify()
-                    }
-                } else {
-                    verify()
-                }
-            default:
-                success()
-            }
-        default:
-            break
-        }
-    }
-    
     /// Callback for the RESET state.
     ///
     /// This callback will fail the upgrade on error. On success, the reset
@@ -423,6 +395,63 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         self.resetResponseTime = Date()
         Log.i(self.TAG, msg: "Reset request sent. Waiting for reset...")
+    }
+    
+    public func transport(_ transport: McuMgrTransport, didChangeStateTo state: McuMgrTransportState) {
+        transport.removeObserver(self)
+        // Disregard connected state
+        guard state == .disconnected else {
+            return
+        }
+        Log.i(self.TAG, msg: "Device has disconnected (reset). Reconnecting...")
+        let now = Date()
+        let timeSinceReset = now.timeIntervalSince(resetResponseTime!)
+        let remainingTime = estimatedSwapTime - timeSinceReset
+        
+        if remainingTime > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) { [weak self] in
+                self?.reconnect()
+            }
+        } else {
+            reconnect()
+        }
+    }
+    
+    
+    /// Reconnect to the device and continue the
+    private func reconnect() {
+        imageManager.transporter.connect { [weak self] result in
+            guard let self = self else {
+                return
+            }
+            switch result {
+            case .connected:
+                Log.i(self.TAG, msg: "Reconnect successful.")
+                break
+            case .deferred:
+                Log.i(self.TAG, msg: "Reconnect deferred.")
+                break
+            case .failed(let error):
+                Log.e(self.TAG, msg: "Reconnect failed. \(error)")
+                self.fail(error: error)
+                return
+            }
+            
+            // Continue the upgrade after reconnect.
+            switch self.state {
+            case .validate:
+                self.validate()
+            case .reset:
+                switch self.mode {
+                case .testAndConfirm:
+                    self.verify()
+                default:
+                    self.success()
+                }
+            default:
+                break
+            }
+        }
     }
     
     /// Callback for the CONFIRM state.

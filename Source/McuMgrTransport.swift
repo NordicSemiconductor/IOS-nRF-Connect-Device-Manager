@@ -33,6 +33,14 @@ public protocol ConnectionObserver: class {
     func transport(_ transport: McuMgrTransport, didChangeStateTo state: McuMgrTransportState)
 }
 
+public enum ConnectionResult {
+    case connected
+    case deferred
+    case failed(Error)
+}
+
+public typealias ConnectionCallback = (ConnectionResult) -> Void
+
 public enum McuMgrTransportError: Error {
     /// Connection to the remote device has timed out.
     case connectionTimeout
@@ -86,6 +94,9 @@ public protocol McuMgrTransport: class {
     /// - parameter data: The data to be sent.
     /// - parameter callback: The request callback.
     func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>)
+    
+    /// Set up a connection to the remote device.
+    func connect(_ callback: @escaping ConnectionCallback)
     
     /// Releases the transport object. This should disconnect the peripheral.
     func close()
