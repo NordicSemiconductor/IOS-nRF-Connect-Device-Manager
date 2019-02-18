@@ -50,7 +50,7 @@ public class LogManager: McuManager {
     /// - parameter minTimestamp: The minimum timestamp to pull logs from. This
     ///   parameter is only used if a minIndex is also provided.
     /// - parameter callback: The response callback.
-    public func show(log: String? = nil, minIndex: UInt64? = nil, minTimestamp: Date? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func show(log: String? = nil, minIndex: UInt64? = nil, minTimestamp: Date? = nil, callback: @escaping McuMgrCallback<McuMgrLogResponse>) {
         var payload: [String:CBOR] = [:]
         if let log = log {
             payload.updateValue(CBOR.utf8String(log), forKey: "log_name")
@@ -81,14 +81,14 @@ public class LogManager: McuManager {
     /// List the log levels on a device.
     ///
     /// - parameter callback: The response callback.
-    public func levelList(callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func levelList(callback: @escaping McuMgrCallback<McuMgrLevelListResponse>) {
         send(op: .read, commandId: ID_LEVEL_LIST, payload: nil, callback: callback)
     }
 
     /// List the logs on a device.
     ///
     /// - parameter callback: The response callback.
-    public func logsList(callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func logsList(callback: @escaping McuMgrCallback<McuMgrLogListResponse>) {
         send(op: .read, commandId: ID_LOGS_LIST, payload: nil, callback: callback)
     }
 }
