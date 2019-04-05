@@ -377,8 +377,16 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         case .reset:
             switch mode {
             case .testAndConfirm:
-                let now = Date()
-                let timeSinceReset = now.timeIntervalSince(resetResponseTime!)
+                let timeSinceReset: TimeInterval
+                
+                if let resetResponseTime = resetResponseTime {
+                    let now = Date()
+                    timeSinceReset = now.timeIntervalSince(resetResponseTime)
+                } else {
+                    // Fallback if state changed prior to `resetResponseTime` is set
+                    timeSinceReset = 0
+                }
+                
                 let remainingTime = estimatedSwapTime - timeSinceReset
                 
                 if remainingTime > 0 {
