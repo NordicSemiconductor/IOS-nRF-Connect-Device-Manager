@@ -512,12 +512,12 @@ public class McuMgrLogResponse: McuMgrResponse {
     }
     
     public class LogEntry: CBORMappable {
-        public var msg: [UInt8]!
-        public var ts: UInt64!
-        public var level: UInt64!
-        public var index: UInt64!
-        public var module: UInt64!
-        public var type: String!
+        public var msg: [UInt8]?
+        public var ts: UInt64?
+        public var level: UInt64?
+        public var index: UInt64?
+        public var module: UInt64?
+        public var type: String?
         
         public required init(cbor: CBOR?) throws {
             try super.init(cbor: cbor)
@@ -531,9 +531,7 @@ public class McuMgrLogResponse: McuMgrResponse {
         
         /// Get the string representation of the message based on type.
         public func getMessage() -> String? {
-            if msg == nil {
-                return nil
-            }
+            guard let msg = msg else { return nil }
             if type != nil && type == "cbor" {
                 if let messageCbor = try? CBOR.decode(msg) {
                     return messageCbor?.description
