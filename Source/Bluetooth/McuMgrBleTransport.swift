@@ -83,21 +83,38 @@ public class McuMgrBleTransport: NSObject {
         }
     }
     
+
+    /// Creates a BLE transport object for the given peripheral.
+    /// The implementation will create internal instance of
+    /// CBCentralManager, and will retrieve the CBPeripheral from it.
+    /// The target given as a parameter will not be used.
+    /// The CBCentralManager from which the target was obtained will not
+    /// be notified about connection states.
+    ///
+    /// The peripheral will connect automatically if a request to it is
+    /// made. To disconnect from the peripheral, call `close()`.
+    ///
+    /// - parameter target: The BLE peripheral with Simple Managerment
+    ///   Protocol (SMP) service.
+    public convenience init?(_ target: CBPeripheral) {
+        self.init(target.identifier)
+    }
+
     /// Creates a BLE transport object for the peripheral matching given
     /// identifier. The implementation will create internal instance of
     /// CBCentralManager, and will retrieve the CBPeripheral from it.
     /// The target given as a parameter will not be used.
-    /// The CBCentralManager from which the target was obtaied will not
+    /// The CBCentralManager from which the target was obtained will not
     /// be notified about connection states.
     ///
     /// The peripheral will connect automatically if a request to it is
-    /// made. To disconnect the periphera, call close().
+    /// made. To disconnect from the peripheral, call `close()`.
     ///
-    /// - parameter target: The BLE peripheral with Simple Managerment
+    /// - parameter targetIdentifier: The UUID of the peripheral with Simple Managerment
     ///   Protocol (SMP) service.
-    public init?(_ target: CBPeripheral) {
+    public init?(_ targetIdentifier: UUID) {
         self.centralManager = CBCentralManager(delegate: nil, queue: nil)
-        guard let peripheral = centralManager.retrievePeripherals(withIdentifiers: [target.identifier]).first else {
+        guard let peripheral = centralManager.retrievePeripherals(withIdentifiers: [targetIdentifier]).first else {
             return nil
         }
         self.TAG = "SMP \(peripheral.name ?? "Unknown") (\(peripheral.identifier.uuidString.prefix(4)))"
