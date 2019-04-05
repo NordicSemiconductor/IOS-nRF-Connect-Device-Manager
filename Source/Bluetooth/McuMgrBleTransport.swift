@@ -162,6 +162,10 @@ extension McuMgrBleTransport: McuMgrTransport {
         }
     }
     
+    public func connect(_ callback: @escaping ConnectionCallback) {
+        callback(.deferred)
+    }
+    
     public func close() {
         if peripheral.state == .connected || peripheral.state == .connecting {
             Log.v(TAG, msg: "Cancelling connection...")
@@ -306,6 +310,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             fail(error: McuMgrTransportError.insufficientMtu(mtu: mtu) as Error, callback: callback)
             return false
         }
+        
         
         // Write the value to the characteristic
         peripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
