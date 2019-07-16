@@ -272,11 +272,18 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        // If the image in slot 1 is confirmed or pending we won't be able to
-        // erase or test the slot causing a no memory or bad state error,
-        // respectively. Therefore, We must reset the device and revalidate the
-        // new image state.
-        if images.count > 1 && (images[1].confirmed || images[1].pending) {
+        // If the image in slot 1 is confirmed, we won't be able to erase or
+        // test the slot. Therefore, we confirm the image in slot 0 to allow us
+        // to modify the image in slot 1.
+        if images.count > 1 && images[1].confirmed {
+            self.validationConfirm(hash: images[0].hash)
+            return
+        }
+        
+        // If the image in slot 1 is pending, we won't be able to
+        // erase or test the slot. Therefore, We must reset the device and
+        // revalidate the new image state.
+        if images.count > 1 && images[1].pending {
             self.defaultManager.transporter.addObserver(self)
             self.defaultManager.reset(callback: self.resetCallback)
             return
@@ -323,6 +330,27 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         
         // Validation successful, begin with image upload.
         self.upload()
+    }
+    
+    func validationConfirm(hash: [UInt8]?) {
+        self.imageManager.confirm(hash: hash) { [weak self] (response, error) in
+            guard let self = self else {
+                return
+            }
+            if let error = error {
+                self.fail(error: error)
+                return
+            }
+            guard let response = response else {
+                self.fail(error: FirmwareUpgradeError.unknown("Test response is nil!"))
+                return
+            }
+            if !response.isSuccess() {
+                self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
+                return
+            }
+            self.validate()
+        }
     }
     
     /// Callback for the TEST state.

@@ -13,7 +13,7 @@ internal extension CBOR {
         return "\"\(string)\""
     }
     
-    internal var description: String {
+    var description: String {
         switch self {
         case let .unsignedInt(l): return l.description
         case let .negativeInt(l): return l.description
@@ -33,7 +33,7 @@ internal extension CBOR {
         }
     }
     
-    internal var value : Any? {
+    var value : Any? {
         switch self {
         case let .unsignedInt(l): return Int(l)
         case let .negativeInt(l): return Int(l) * -1
@@ -53,7 +53,7 @@ internal extension CBOR {
         }
     }
     
-    internal static func toObjectMap<V: CBORMappable>(map: [CBOR:CBOR]?) throws -> [String:V]? {
+    static func toObjectMap<V: CBORMappable>(map: [CBOR:CBOR]?) throws -> [String:V]? {
         guard let map = map else {
             return nil
         }
@@ -67,7 +67,7 @@ internal extension CBOR {
         return objMap
     }
     
-    internal static func toMap<V>(map: [CBOR:CBOR]?) throws -> [String:V]? {
+    static func toMap<V>(map: [CBOR:CBOR]?) throws -> [String:V]? {
         guard let map = map else {
             return nil
         }
@@ -82,7 +82,7 @@ internal extension CBOR {
         return objMap
     }
     
-    internal static func toObjectArray<V: CBORMappable>(array: [CBOR]?) throws -> [V]? {
+    static func toObjectArray<V: CBORMappable>(array: [CBOR]?) throws -> [V]? {
         guard let array = array else {
             return nil
         }
@@ -94,7 +94,7 @@ internal extension CBOR {
         return objArray
     }
     
-    internal static func toArray<V>(array: [CBOR]?) throws -> [V]? {
+    static func toArray<V>(array: [CBOR]?) throws -> [V]? {
         guard let array = array else {
             return nil
         }

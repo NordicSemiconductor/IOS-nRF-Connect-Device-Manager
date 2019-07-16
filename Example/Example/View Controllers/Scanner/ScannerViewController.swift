@@ -78,7 +78,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
             filterController.delegate = self
         case "connect":
             let controller = segue.destination as! BaseViewController
-            controller.peripheral = sender as! DiscoveredPeripheral
+            controller.peripheral = (sender as! DiscoveredPeripheral)
         default:
             break
         }

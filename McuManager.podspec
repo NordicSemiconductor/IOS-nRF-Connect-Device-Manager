@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'McuManager'
-  s.version = '0.7.0'
+  s.version = '0.7.1'
   s.license = { :type => "Apache 2.0", :file => 'LICENSE' }
   s.summary = 'A mobile management library for devices running Apache Mynewt or Zephyr'
   s.homepage = 'https://github.com/JuulLabs-OSS/mcumgr-ios'
