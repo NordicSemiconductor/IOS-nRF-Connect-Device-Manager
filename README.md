@@ -7,13 +7,13 @@ A transport agnostic implementation of the McuManager protocol (aka Newt Manager
 ### CocoaPods
 
 ```
-pod 'McuManager', '~> 0.6.3'
+pod 'McuManager', '~> 0.8.0'
 ```
 
 ### Carthage
 
 ```
-github "JuulLabs-OSS/mcumgr-ios" ~> 0.6.3
+github "JuulLabs-OSS/mcumgr-ios" ~> 0.8.0
 ```
 
 # Introduction
