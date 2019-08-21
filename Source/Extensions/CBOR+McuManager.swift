@@ -30,6 +30,7 @@ internal extension CBOR {
         case let .float(l):       return l.description
         case let .double(l):      return l.description
         case .break:              return ""
+        case let .date(l):         return l.description
         }
     }
     
@@ -50,6 +51,7 @@ internal extension CBOR {
         case let .float(l):       return l
         case let .double(l):      return l
         case .break:              return nil
+        case let .date(l):        return l
         }
     }
     
