@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
   s.source = { :git => 'https://github.com/JuulLabs-OSS/mcumgr-ios.git', :tag => "#{s.version}" }
   s.swift_version = '4.2'
 
-  s.ios.deployment_target = '10.0'
+  s.ios.deployment_target = '9.0'
 
   s.source_files = 'Source/**/*.{swift, h}'
   s.exclude_files = "Source/*.plist"
