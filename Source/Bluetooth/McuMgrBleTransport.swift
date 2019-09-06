@@ -34,7 +34,7 @@ public class McuMgrBleTransport: NSObject {
     public static let SMP_CHARACTERISTIC = CBUUID(string: "DA2E7828-FBCE-4E01-AE9E-261174997C48")
     
     /// Logging TAG.
-    private let TAG: String
+    private var TAG: String
     
     /// Max number of retries until the transaction is failed.
     private static let MAX_RETRIES = 3
@@ -44,7 +44,7 @@ public class McuMgrBleTransport: NSObject {
     private static let TRANSACTION_TIMEOUT = 30
     
     /// The CBPeripheral for this transport to communicate with.
-    private let peripheral: CBPeripheral
+    private var peripheral: CBPeripheral?
     /// The CBCentralManager instance from which the peripheral was obtained.
     /// This is used to connect and cancel connection.
     private let centralManager: CBCentralManager
@@ -70,7 +70,7 @@ public class McuMgrBleTransport: NSObject {
     public weak var delegate: PeripheralDelegate? {
         didSet {
             DispatchQueue.main.async {
-                self.delegate?.peripheral(self.peripheral, didChangeStateTo: self.state)
+                self.notifyPeripheralDelegate()
             }
         }
     }
@@ -78,7 +78,7 @@ public class McuMgrBleTransport: NSObject {
     public var state: PeripheralState = .disconnected {
         didSet {
             DispatchQueue.main.async {
-                self.delegate?.peripheral(self.peripheral, didChangeStateTo: self.state)
+                self.notifyPeripheralDelegate()
             }
         }
     }
@@ -114,25 +114,30 @@ public class McuMgrBleTransport: NSObject {
     ///   Protocol (SMP) service.
     public init?(_ targetIdentifier: UUID) {
         self.centralManager = CBCentralManager(delegate: nil, queue: nil)
-        guard let peripheral = centralManager.retrievePeripherals(withIdentifiers: [targetIdentifier]).first else {
-            return nil
-        }
-        self.TAG = "SMP \(peripheral.name ?? "Unknown") (\(peripheral.identifier.uuidString.prefix(4)))"
-        self.peripheral = peripheral
+        self.identifier = targetIdentifier
+        self.TAG = "SMP (\(identifier.uuidString.prefix(4)))"
         self.dispatchQueue = DispatchQueue(label: "McuMgrBleTransport")
         self.lock = ResultLock(isOpen: false)
         self.observers = []
         self.operationQueue = OperationQueue()
         self.operationQueue.maxConcurrentOperationCount = 1
         super.init()
+        self.centralManager.delegate = self
+        if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [targetIdentifier]).first {
+            self.peripheral = peripheral
+        }
     }
     
     public var name: String? {
-        return peripheral.name
+        return peripheral?.name
     }
     
-    public var identifier: UUID {
-        return peripheral.identifier
+    public private(set) var identifier: UUID
+
+    private func notifyPeripheralDelegate() {
+        if let peripheral = self.peripheral {
+            delegate?.peripheral(peripheral, didChangeStateTo: state)
+        }
     }
 }
 
@@ -167,7 +172,7 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
     
     public func close() {
-        if peripheral.state == .connected || peripheral.state == .connecting {
+        if let peripheral = peripheral, peripheral.state == .connected || peripheral.state == .connecting {
             Log.v(TAG, msg: "Cancelling connection...")
             state = .disconnecting
             centralManager.cancelPeripheralConnection(peripheral)
@@ -200,18 +205,21 @@ extension McuMgrBleTransport: McuMgrTransport {
     /// - returns: True if the send should be retried until the max retries
     ///   has been met, false if it has been handled.
     private func _send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) -> Bool {
-        centralManager.delegate = self
-        
         // Is Bluetooth operational?
         if centralManager.state == .poweredOff || centralManager.state == .unsupported {
             Log.w(TAG, msg: "Central Manager powered off")
             fail(error: McuMgrBleTransportError.centralManagerPoweredOff, callback: callback)
             return false
         }
-        
-        // Wait until the Central Manager is ready.
-        // This is required when the manager has just been created.
-        if centralManager.state == .unknown {
+
+        // We might not have a peripheral instance yet, if the Central Manager has not
+        // reported that it is powered on.
+        // Wait until it is ready, and timeout if we do not get a valid peripheral instance
+        let targetPeripheral: CBPeripheral
+
+        if let existing = peripheral, centralManager.state != .unknown {
+            targetPeripheral = existing
+        } else {
             // Close the lock
             lock.close()
             
@@ -229,8 +237,14 @@ extension McuMgrBleTransport: McuMgrTransport {
                 fail(error: error, callback: callback)
                 return false
             case .success:
-                Log.v(TAG, msg: "Central Manager  ready")
+                guard let target = self.peripheral else {
+                    Log.w(TAG, msg: "Central Manager timed out")
+                    fail(error: McuMgrTransportError.connectionTimeout, callback: callback)
+                    return false
+                }
                 // continue
+                Log.v(TAG, msg: "Central Manager  ready")
+                targetPeripheral = target
             }
         }
         
@@ -239,7 +253,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             // Close the lock
             lock.close()
             
-            switch peripheral.state {
+            switch targetPeripheral.state {
             case .connected:
                 // If the peripheral was already connected, but the SMP
                 // characteristic has not been set, start by performing service
@@ -248,8 +262,8 @@ extension McuMgrBleTransport: McuMgrTransport {
                 Log.i(TAG, msg: "Peripheral already connected")
                 Log.v(TAG, msg: "Discovering services...")
                 state = .connecting
-                peripheral.delegate = self
-                peripheral.discoverServices([McuMgrBleTransport.SMP_SERVICE])
+                targetPeripheral.delegate = self
+                targetPeripheral.discoverServices([McuMgrBleTransport.SMP_SERVICE])
             case .disconnected:
                 // If the peripheral is disconnected, begin the setup process by
                 // connecting to the device. Once the characteristic's
@@ -257,7 +271,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 // the request can be sent.
                 Log.v(TAG, msg: "Connecting...")
                 state = .connecting
-                centralManager.connect(peripheral)
+                centralManager.connect(targetPeripheral)
             case .connecting:
                 Log.i(TAG, msg: "Device is connecting. Wait...")
                 state = .connecting
@@ -303,7 +317,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         lock.close()
         
         // Check that data length does not exceed the mtu.
-        let mtu = peripheral.maximumWriteValueLength(for: .withoutResponse)
+        let mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
         if (data.count > mtu) {
             Log.e(TAG, msg: "Length of data to send exceeds MTU")
             // Fail with an insufficient MTU error
@@ -313,7 +327,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         
         
         // Write the value to the characteristic
-        peripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
+        targetPeripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
 
         // Wait for the response.
         let result = lock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransport.TRANSACTION_TIMEOUT))
@@ -365,14 +379,20 @@ extension McuMgrBleTransport: CBCentralManagerDelegate {
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
-            lock.open()
+            if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [identifier]).first {
+                self.peripheral = peripheral
+                TAG = "SMP \(peripheral.name ?? "Unknown") (\(identifier.uuidString.prefix(4)))"
+                lock.open()
+            } else {
+                lock.open(McuMgrBleTransportError.centralManagerNotReady)
+            }
         default:
             lock.open(McuMgrBleTransportError.centralManagerNotReady)
         }
     }
     
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        guard self.peripheral.identifier == peripheral.identifier else {
+        guard self.identifier == peripheral.identifier else {
             return
         }
         Log.i(TAG, msg: "Peripheral connected")
@@ -383,7 +403,7 @@ extension McuMgrBleTransport: CBCentralManagerDelegate {
     }
     
     public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        guard self.peripheral.identifier == peripheral.identifier else {
+        guard self.identifier == peripheral.identifier else {
             return
         }
         Log.i(TAG, msg: "Peripheral disconnected")
@@ -396,7 +416,7 @@ extension McuMgrBleTransport: CBCentralManagerDelegate {
     }
     
     public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        guard self.peripheral.identifier == peripheral.identifier else {
+        guard self.identifier == peripheral.identifier else {
             return
         }
         Log.w(TAG, msg: "Peripheral failed to connect")
