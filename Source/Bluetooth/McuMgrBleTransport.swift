@@ -407,7 +407,6 @@ extension McuMgrBleTransport: CBCentralManagerDelegate {
             return
         }
         Log.i(TAG, msg: "Peripheral disconnected")
-        centralManager.delegate = nil
         peripheral.delegate = nil
         smpCharacteristic = nil
         lock.open(McuMgrTransportError.disconnected)
