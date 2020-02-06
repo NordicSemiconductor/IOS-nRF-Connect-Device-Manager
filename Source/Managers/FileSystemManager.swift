@@ -393,8 +393,8 @@ public class FileSystemManager: McuManager {
             // Check if the upload has completed.
             if self.offset == self.fileData!.count {
                 Log.d(FileSystemManager.TAG, msg: "Download finished!")
-                self.resetTransfer()
                 self.downloadDelegate?.download(of: self.fileName!, didFinish: self.fileData!)
+                self.resetTransfer()
                 self.downloadDelegate = nil
                 // Release cyclic reference.
                 self.cyclicReferenceHolder = nil
