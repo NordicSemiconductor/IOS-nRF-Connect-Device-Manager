@@ -6,15 +6,9 @@
 
 import Foundation
 
-class Log {
-    
-    enum Level: String {
-        case verbose = "V/"
-        case debug = "D/"
-        case info = "I/"
-        case warn = "W/"
-        case error = "E/"
-    }
+// MARK: - Log
+
+public class Log {
     
     static func log(_ level: Level, tag: String, msg: String) {
         print("\(timestamp()) \(level.rawValue)\(tag): \(msg)")
@@ -48,5 +42,18 @@ class Log {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss.SSS"
         return formatter.string(from: Date())
+    }
+}
+
+// MARK: - Log.Level
+
+extension Log {
+    
+    public enum Level: String {
+        case verbose = "V/"
+        case debug = "D/"
+        case info = "I/"
+        case warn = "W/"
+        case error = "E/"
     }
 }

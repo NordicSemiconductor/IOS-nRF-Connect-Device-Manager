@@ -69,6 +69,10 @@ McuManager firmware upgrades can actually be performed in few different ways. Th
 
 The `FirmwareUpgradeManager` contains an additional state, `validate`, which precedes the upload. The `validate` state checks the current image state of the device in an attempt to bypass certain states of the firmware upgrade. For example, if the image to upgrade to already exists in slot 1 on the device, the `FirmwareUpgradeManager` will skip `upload` and move directly to `test` (or `confirm` if `.confirmOnly` mode has been set) from `validate`. If the uploaded image is already active, and confirmed in slot 0, the upgrade will succeed immediately. In short, the `validate` state makes it easy to reattempt an upgrade without needing to re-upload the image or manually determine where to start.
 
+### Log Access
+
+`McuMgrLogDelegate` is the protocol used as a callback to give you logs regarding the state of the firmware upgrade mechanism, including device connection, service discovery and so on. You can use the `@logDelegate` property from `McuMgrBleTransport` to get access to the BLE Transport logs, and as for the firmware upgrade process itself, `FirmwareUpgradeManager`'s delegate type, `FirmwareUpgradeDelegate`, extends `McuMgrLogDelegate`, so the same callback site applies to both.
+
 # Developing for McuManager
 
 Clone the repository, install pods.

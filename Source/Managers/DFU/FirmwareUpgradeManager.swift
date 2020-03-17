@@ -54,7 +54,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     public func start(data: Data) throws {
         objc_sync_enter(self)
         if state != .none {
-            Log.w(TAG, msg: "Firmware upgrade is already in progress")
+            log(msg: "Firmware upgrade is already in progress", atLevel: .warn)
             return
         }
         imageData = data
@@ -80,7 +80,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     public func pause() {
         objc_sync_enter(self)
         if state.isInProgress() && !paused {
-            Log.v(TAG, msg: "Pausing upgrade...")
+            log(msg: "Pausing upgrade...", atLevel: .verbose)
             paused = true
             if state == .upload {
                 imageManager.pauseUpload()
@@ -189,7 +189,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     
     private func fail(error: Error) {
         objc_sync_enter(self)
-        Log.e(TAG, error: error)
+        log(msg: error.localizedDescription, atLevel: .error)
         let tmp = state
         state = .none
         paused = false
@@ -221,7 +221,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     }
     
     //**************************************************************************
-    // MARK: McuMgrCallbacks
+    // MARK: - McuMgrCallbacks
     //**************************************************************************
     
     /// Callback for the VALIDATE state.
@@ -243,7 +243,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             self.fail(error: FirmwareUpgradeError.unknown("Validation response is nil!"))
             return
         }
-        Log.v(self.TAG, msg: "Validation response: \(response)")
+        self.log(msg: "Validation response: \(response)", atLevel: .verbose)
         // Check for McuMgrReturnCode error.
         if !response.isSuccess() {
             self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
@@ -372,7 +372,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             self.fail(error: FirmwareUpgradeError.unknown("Test response is nil!"))
             return
         }
-        Log.v(self.TAG, msg: "Test response: \(response)")
+        self.log(msg: "Test response: \(response)", atLevel: .verbose)
         // Check for McuMgrReturnCode error.
         if !response.isSuccess() {
             self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
@@ -422,7 +422,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         self.resetResponseTime = Date()
-        Log.i(self.TAG, msg: "Reset request sent. Waiting for reset...")
+        self.log(msg: "Reset request sent. Waiting for reset...", atLevel: .info)
     }
     
     public func transport(_ transport: McuMgrTransport, didChangeStateTo state: McuMgrTransportState) {
@@ -431,7 +431,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         guard state == .disconnected else {
             return
         }
-        Log.i(self.TAG, msg: "Device has disconnected (reset). Reconnecting...")
+        self.log(msg: "Device has disconnected (reset). Reconnecting...", atLevel: .info)
         let timeSinceReset: TimeInterval
         if let resetResponseTime = resetResponseTime {
             let now = Date()
@@ -459,13 +459,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             }
             switch result {
             case .connected:
-                Log.i(self.TAG, msg: "Reconnect successful.")
+                self.log(msg: "Reconnect successful.", atLevel: .info)
                 break
             case .deferred:
-                Log.i(self.TAG, msg: "Reconnect deferred.")
+                self.log(msg: "Reconnect deferred.", atLevel: .info)
                 break
             case .failed(let error):
-                Log.e(self.TAG, msg: "Reconnect failed. \(error)")
+                self.log(msg: "Reconnect failed. \(error)", atLevel: .error)
                 self.fail(error: error)
                 return
             }
@@ -487,6 +487,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
     }
     
+    private func log(msg: String, atLevel level: Log.Level) {
+        Log.log(level, tag: TAG, msg: msg)
+        delegate?.log(msg, atLevel: level)
+    }
+    
     /// Callback for the CONFIRM state.
     ///
     /// This callback will fail the upload on error or move to the next state on
@@ -506,7 +511,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             self.fail(error: FirmwareUpgradeError.unknown("Confirm response is nil!"))
             return
         }
-        Log.v(self.TAG, msg: "Confirm response: \(response)")
+        self.log(msg: "Confirm response: \(response)", atLevel: .verbose)
         // Check for McuMgrReturnCode error.
         if !response.isSuccess() {
             self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
@@ -553,7 +558,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
 }
 
 //******************************************************************************
-// MARK: ImageUploadDelegate
+// MARK: - ImageUploadDelegate
 //******************************************************************************
 
 extension FirmwareUpgradeManager: ImageUploadDelegate {
@@ -586,7 +591,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
 }
 
 //******************************************************************************
-// MARK: FirmwareUpgradeError
+// MARK: - FirmwareUpgradeError
 //******************************************************************************
 
 public enum FirmwareUpgradeError: Error {
@@ -613,7 +618,7 @@ extension FirmwareUpgradeError: CustomStringConvertible {
 }
 
 //******************************************************************************
-// MARK: FirmwareUpgradeState
+// MARK: - FirmwareUpgradeState
 //******************************************************************************
 
 public enum FirmwareUpgradeState {
@@ -626,7 +631,7 @@ public enum FirmwareUpgradeState {
 }
 
 //******************************************************************************
-// MARK: FirmwareUpgradeMode
+// MARK: - FirmwareUpgradeMode
 //******************************************************************************
 
 public enum FirmwareUpgradeMode {
@@ -658,11 +663,11 @@ public enum FirmwareUpgradeMode {
 }
 
 //******************************************************************************
-// MARK: FirmwareUpgradeDelegate
+// MARK: - FirmwareUpgradeDelegate
 //******************************************************************************
 
 /// Callbacks for firmware upgrades started using FirmwareUpgradeManager.
-public protocol FirmwareUpgradeDelegate : class {
+public protocol FirmwareUpgradeDelegate : McuMgrLogDelegate {
     
     /// Called when the upgrade has started.
     ///
