@@ -72,7 +72,7 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
         actionCancel.isHidden = true
         actionStart.isHidden = false
         actionSelect.isEnabled = true
-        status.textColor = UIColor.red
+        status.textColor = .systemRed
         status.text = "\(error)"
     }
     
@@ -83,7 +83,7 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
         actionCancel.isHidden = true
         actionStart.isHidden = false
         actionSelect.isEnabled = true
-        status.textColor = UIColor.darkGray
+        status.textColor = .primary
         status.text = "CANCELLED"
     }
     
@@ -95,7 +95,7 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
         actionStart.isHidden = false
         actionStart.isEnabled = false
         actionSelect.isEnabled = true
-        status.textColor = UIColor.darkGray
+        status.textColor = .primary
         status.text = "UPLOAD COMPLETE"
         imageData = nil
     }
@@ -119,13 +119,13 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
                 
                 imageData = data
                 fileHash.text = hash.hexEncodedString(options: .upperCase)
-                status.textColor = UIColor.darkGray
+                status.textColor = .primary
                 status.text = "READY"
                 actionStart.isEnabled = true
             } catch {
                 print("Error reading hash: \(error)")
                 fileHash.text = ""
-                status.textColor = UIColor.red
+                status.textColor = .systemRed
                 status.text = "INVALID FILE"
                 actionStart.isEnabled = false
             }
@@ -138,7 +138,7 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
             return try Data(contentsOf: url)
         } catch {
             print("Error reading file: \(error)")
-            status.textColor = UIColor.red
+            status.textColor = .systemRed
             status.text = "COULD NOT OPEN FILE"
             return nil
         }

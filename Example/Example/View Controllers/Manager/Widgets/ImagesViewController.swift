@@ -40,7 +40,7 @@ class ImagesViewController: UIViewController , McuMgrViewController{
                 self.read(sender)
             } else {
                 self.readAction.isEnabled = true
-                self.message.textColor = UIColor.red
+                self.message.textColor = .systemRed
                 self.message.text = "\(error!)"
             }
         }
@@ -67,7 +67,7 @@ class ImagesViewController: UIViewController , McuMgrViewController{
                 for image in images {
                     info += "\nSlot \(i)\n" +
                         "• Version: \(image.version!)\n" +
-                        "• Hash: \(Data(bytes: image.hash).hexEncodedString(options: .upperCase))\n" +
+                        "• Hash: \(Data(image.hash).hexEncodedString(options: .upperCase))\n" +
                         "• Flags: "
                     if image.bootable {
                         info += "Bootable, "
@@ -101,10 +101,10 @@ class ImagesViewController: UIViewController , McuMgrViewController{
                 eraseAction.isEnabled = images.count > 1 && !images[1].confirmed
             }
             message.text = info
-            message.textColor = UIColor.darkGray
+            message.textColor = .primary
         } else {
             readAction.isEnabled = true
-            message.textColor = UIColor.red
+            message.textColor = .systemRed
             message.text = "\(error!)"
         }
         let newRect = message.sizeThatFits(bounds)

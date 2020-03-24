@@ -9,6 +9,7 @@
 import Foundation
 
 extension Data {
+    
     internal struct HexEncodingOptions: OptionSet {
         public let rawValue: Int
         public static let upperCase = HexEncodingOptions(rawValue: 1 << 0)
@@ -25,4 +26,5 @@ extension Data {
         }
         return map { String(format: format, $0) }.joined()
     }
+    
 }

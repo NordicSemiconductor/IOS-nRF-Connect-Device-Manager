@@ -111,7 +111,7 @@ public class McuManager {
         } else {
             // Standard scheme appends the CBOR payload to the header.
             let cborPayload = CBOR.encode(payload)
-            var packet = Data(bytes: header)
+            var packet = Data(header)
             packet.append(contentsOf: cborPayload)
             return packet
         }

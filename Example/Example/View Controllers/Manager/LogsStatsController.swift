@@ -19,7 +19,7 @@ class LogsStatsController: UITableViewController {
             
             if let response = response {
                 self.stats.text = ""
-                self.stats.textColor = UIColor.darkGray
+                self.stats.textColor = .primary
                 
                 // Iterate all module names.
                 if let names = response.names, !names.isEmpty {
@@ -60,7 +60,7 @@ class LogsStatsController: UITableViewController {
                     self.stats.text = "No stats found."
                 }
             } else {
-                self.stats.textColor = UIColor.red
+                self.stats.textColor = .systemRed
                 self.stats.text = "\(error!)"
                 
                 let newRect = self.stats.sizeThatFits(bounds)

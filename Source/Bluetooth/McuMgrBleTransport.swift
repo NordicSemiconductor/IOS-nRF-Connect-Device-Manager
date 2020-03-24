@@ -186,7 +186,7 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
     
     public func removeObserver(_ observer: ConnectionObserver) {
-        if let index = observers.index(where: {$0 === observer}) {
+        if let index = observers.firstIndex(where: {$0 === observer}) {
             observers.remove(at: index)
         }
     }
@@ -285,6 +285,8 @@ extension McuMgrBleTransport: McuMgrTransport {
                 sleep(10)
                 log(msg: "Retry send request...", atLevel: .verbose)
                 return true
+            @unknown default:
+                log(msg: "Unknown state", atLevel: .warn)
             }
             
             // Wait for the setup process to complete.

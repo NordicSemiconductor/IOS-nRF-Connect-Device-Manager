@@ -12,6 +12,7 @@
 		5215762F2125B59400C21B0C /* FilesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215762E2125B59400C21B0C /* FilesController.swift */; };
 		521576312126CC8F00C21B0C /* FileUploadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521576302126CC8F00C21B0C /* FileUploadViewController.swift */; };
 		521576332126FFBE00C21B0C /* FileDownloadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521576322126FFBE00C21B0C /* FileDownloadViewController.swift */; };
+		523C05B32423DA3C0007E563 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523C05B22423DA3C0007E563 /* RootViewController.swift */; };
 		5246368A2108DE77008B3D5B /* ScannerTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524636892108DE77008B3D5B /* ScannerTableViewCell.swift */; };
 		5246368E2108DF23008B3D5B /* DiscoveredPeripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5246368D2108DF23008B3D5B /* DiscoveredPeripheral.swift */; };
 		524636962109D0D7008B3D5B /* ScannerFilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524636952109D0D7008B3D5B /* ScannerFilterViewController.swift */; };
@@ -42,6 +43,7 @@
 		5215762E2125B59400C21B0C /* FilesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesController.swift; sourceTree = "<group>"; };
 		521576302126CC8F00C21B0C /* FileUploadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileUploadViewController.swift; sourceTree = "<group>"; };
 		521576322126FFBE00C21B0C /* FileDownloadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloadViewController.swift; sourceTree = "<group>"; };
+		523C05B22423DA3C0007E563 /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
 		524636892108DE77008B3D5B /* ScannerTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerTableViewCell.swift; sourceTree = "<group>"; };
 		5246368D2108DF23008B3D5B /* DiscoveredPeripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveredPeripheral.swift; sourceTree = "<group>"; };
 		524636952109D0D7008B3D5B /* ScannerFilterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerFilterViewController.swift; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 		524636882108DCF1008B3D5B /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				523C05B22423DA3C0007E563 /* RootViewController.swift */,
 				524DCFCD210B0E50000E110D /* Scanner */,
 				524DCFCE210B0E6E000E110D /* Manager */,
 			);
@@ -230,7 +233,7 @@
 				TargetAttributes = {
 					BD5A285320CB44AF0061F0EE = {
 						CreatedOnToolsVersion = 9.4;
-						LastSwiftMigration = 1010;
+						LastSwiftMigration = 1130;
 						SystemCapabilities = {
 							com.apple.iCloud = {
 								enabled = 1;
@@ -334,6 +337,7 @@
 				BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */,
 				5215762F2125B59400C21B0C /* FilesController.swift in Sources */,
 				521576332126FFBE00C21B0C /* FileDownloadViewController.swift in Sources */,
+				523C05B32423DA3C0007E563 /* RootViewController.swift in Sources */,
 				524DCFD6210B21D6000E110D /* ConnectionStateLabel.swift in Sources */,
 				524DCFD0210B0EB6000E110D /* BaseViewController.swift in Sources */,
 				521576312126CC8F00C21B0C /* FileUploadViewController.swift in Sources */,
@@ -492,7 +496,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.juul.McuMgrExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -513,7 +517,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.juul.McuMgrExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

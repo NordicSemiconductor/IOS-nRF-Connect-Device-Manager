@@ -60,17 +60,23 @@ class ImageController: UITableViewController {
             advancedMode = !advancedMode
         }
         let action = advancedMode ? "Basic" : "Advanced"
-        tabBarController!.navigationItem.rightBarButtonItem = UIBarButtonItem(title: action, style: .plain, target: self, action: #selector(modeSwitched))
+        let navItem = tabBarController!.navigationItem
+        navItem.rightBarButtonItem = UIBarButtonItem(title: action,
+                                                     style: .plain,
+                                                     target: self,
+                                                     action: #selector(modeSwitched))
     }
     
-    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView,
+                            heightForHeaderInSection section: Int) -> CGFloat {
         if (advancedMode && section == 1) || (!advancedMode && 2...4 ~= section) {
             return 0.1
         }
         return super.tableView(tableView, heightForHeaderInSection: section)
     }
     
-    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView,
+                            heightForFooterInSection section: Int) -> CGFloat {
         if (advancedMode && section == 1) || (!advancedMode && 2...4 ~= section) {
             return 0.1
         }

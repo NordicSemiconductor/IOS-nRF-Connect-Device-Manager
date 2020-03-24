@@ -21,10 +21,12 @@ class ScannerFilterViewController: UIViewController {
     weak var delegate: ScannerFilterDelegate?
     
     @IBAction func filterValueChanged(_ sender: UISwitch) {
-        filterByUuidEnabled = self.filterByUuid.isOn
-        filterByRssiEnabled = self.filterByRssi.isOn
+        filterByUuidEnabled = filterByUuid.isOn
+        filterByRssiEnabled = filterByRssi.isOn
         
-        delegate?.filterSettingsDidChange(filterByUuid: filterByUuidEnabled, filterByRssi: filterByRssiEnabled)
+        delegate?.filterSettingsDidChange(
+            filterByUuid: filterByUuidEnabled,
+            filterByRssi: filterByRssiEnabled)
     }
     
     override func viewWillAppear(_ animated: Bool) {

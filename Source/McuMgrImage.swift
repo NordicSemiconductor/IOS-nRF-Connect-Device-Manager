@@ -46,11 +46,11 @@ public class McuMgrImageHeader {
     // __pad2 UInt16
     
     public init(data: Data) throws {
-        magic = data.to(type: UInt32.self, offset: McuMgrImageHeader.MAGIC_OFFSET)
-        loadAddr = data.to(type: UInt32.self, offset: McuMgrImageHeader.LOAD_ADDR_OFFSET)
-        headerSize = data.to(type: UInt16.self, offset: McuMgrImageHeader.HEADER_SIZE_OFFSET)
-        imageSize = data.to(type: UInt32.self, offset: McuMgrImageHeader.IMAGE_SIZE_OFFSET)
-        flags = data.to(type: UInt32.self, offset: McuMgrImageHeader.FLAGS_OFFSET)
+        magic = data.read(offset: McuMgrImageHeader.MAGIC_OFFSET)
+        loadAddr = data.read(offset: McuMgrImageHeader.LOAD_ADDR_OFFSET)
+        headerSize = data.read(offset: McuMgrImageHeader.HEADER_SIZE_OFFSET)
+        imageSize = data.read(offset: McuMgrImageHeader.IMAGE_SIZE_OFFSET)
+        flags = data.read(offset: McuMgrImageHeader.FLAGS_OFFSET)
         version = McuMgrImageVersion(data: data)
         if magic != McuMgrImageHeader.IMG_HEADER_MAGIC && magic != McuMgrImageHeader.IMG_HEADER_MAGIC_V1 {
             throw McuMgrImageParseError.invalidHeaderMagic
@@ -74,8 +74,8 @@ public class McuMgrImageVersion {
     public init(data: Data, offset: Int = VERSION_OFFSET) {
         major = data[offset]
         minor = data[offset + 1]
-        revision = data.to(type: UInt16.self, offset: offset + 2)
-        build = data.to(type: UInt32.self, offset: offset + 4)
+        revision = data.read(offset: offset + 2)
+        build = data.read(offset: offset + 4)
     }
 }
 
@@ -135,8 +135,8 @@ public class McuMgrImageTlvInfo {
     public let total: UInt16
     
     public init(data: Data, offset: Int) throws {
-        magic = data.to(type: UInt16.self, offset: offset)
-        total = data.to(type: UInt16.self, offset: offset + 2)
+        magic = data.read(offset: offset)
+        total = data.read(offset: offset + 2)
         if magic != McuMgrImageTlv.IMG_TLV_INFO_MAGIC {
             throw McuMgrImageParseError.invalidTlvInfoMagic
         }
@@ -165,7 +165,7 @@ public class McuMgrImageTlvTrailerEntry {
         var offset = offset
         type = data[offset]
         offset += 2 // Increment offset and account for extra byte of padding.
-        length = data.to(type: UInt16.self, offset: offset)
+        length = data.read(offset: offset)
         offset += 2 // Move offset past length.
         value = data[Int(offset)..<Int(offset + Int(length))]
         size = McuMgrImageTlvTrailerEntry.MIN_SIZE + Int(length)

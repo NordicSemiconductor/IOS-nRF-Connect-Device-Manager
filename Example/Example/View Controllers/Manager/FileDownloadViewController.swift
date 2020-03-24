@@ -8,6 +8,8 @@ import UIKit
 import McuManager
 
 class FileDownloadViewController: UIViewController, McuMgrViewController {
+    
+    private let recentsKey = "recents"
 
     @IBOutlet weak var file: UITextField!
     @IBOutlet weak var actionOpenRecents: UIButton!
@@ -21,11 +23,12 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
         refreshSource()
     }
     @IBAction func openRecents(_ sender: UIButton) {
-        let recents = (UserDefaults.standard.array(forKey: "recents") ?? []) as! [String]
+        let recents = (UserDefaults.standard.array(forKey: recentsKey) ?? []) as! [String]
         
         let alert = UIAlertController(title: "Recents", message: nil, preferredStyle: .actionSheet)
         let action: (UIAlertAction) -> Void = { action in
             self.file.text = action.title!
+            self.file.becomeFirstResponder()
             self.refreshSource()
         }
         recents.forEach { name in
@@ -34,8 +37,9 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
-    @IBAction func download(_ sender: UIButton) {
-        if file.text!.count > 0 {
+    @IBAction func download(_ sender: Any) {
+        file.resignFirstResponder()
+        if !file.text!.isEmpty {
             addRecent(file.text!)
             _ = fsManager.download(name: source.text!, delegate: self)
         }
@@ -60,16 +64,16 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
     }
     
     override func viewDidLoad() {
-        let recents = UserDefaults.standard.array(forKey: "recents")
+        let recents = UserDefaults.standard.array(forKey: recentsKey)
         actionOpenRecents.isEnabled = recents != nil
     }
     
     func addRecent(_ name: String) {
-        var recents = (UserDefaults.standard.array(forKey: "recents") ?? []) as! [String]
+        var recents = (UserDefaults.standard.array(forKey: recentsKey) ?? []) as! [String]
         if !recents.contains(where: { $0 == name }) {
             recents.append(name)
         }
-        UserDefaults.standard.set(recents, forKey: "recents")
+        UserDefaults.standard.set(recents, forKey: recentsKey)
         actionOpenRecents.isEnabled = true
     }
 }
@@ -81,18 +85,15 @@ extension FileDownloadViewController: FileDownloadDelegate {
     }
     
     func downloadDidFail(with error: Error) {
+        fileName.textColor = .systemRed
         if let transferError = error as? FileTransferError {
             switch transferError {
             case .mcuMgrErrorCode(.unknown):
-                fileName.textColor = UIColor.darkGray
                 fileName.text = "File not found"
             default:
-                fileName.textColor = UIColor.red
                 fileName.text = "\(error)"
-                break
             }
         } else {
-            fileName.textColor = UIColor.red
             fileName.text = "\(error)"
         }
         fileContent.text = nil
@@ -107,7 +108,7 @@ extension FileDownloadViewController: FileDownloadDelegate {
     }
     
     func download(of name: String, didFinish data: Data) {
-        fileName.textColor = UIColor.darkGray
+        fileName.textColor = .primary
         fileName.text = "\(name) (\(data.count) bytes)"
         fileContent.text = String(data: data, encoding: .utf8)
         progress.setProgress(0, animated: false)

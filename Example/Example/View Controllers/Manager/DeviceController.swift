@@ -30,12 +30,14 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
         message.delegate = self
         
         let sentBackground = #imageLiteral(resourceName: "bubble_sent")
-            .resizableImage(withCapInsets: UIEdgeInsets(top: 17, left: 21, bottom: 17, right: 21), resizingMode: .stretch)
+            .resizableImage(withCapInsets: UIEdgeInsets(top: 17, left: 21, bottom: 17, right: 21),
+                            resizingMode: .stretch)
             .withRenderingMode(.alwaysTemplate)
         messageSentBackground.image = sentBackground
         
         let receivedBackground = #imageLiteral(resourceName: "bubble_received")
-            .resizableImage(withCapInsets: UIEdgeInsets(top: 17, left: 21, bottom: 17, right: 21), resizingMode: .stretch)
+            .resizableImage(withCapInsets: UIEdgeInsets(top: 17, left: 21, bottom: 17, right: 21),
+                            resizingMode: .stretch)
             .withRenderingMode(.alwaysTemplate)
         messageReceivedBackground.image = receivedBackground
         
@@ -65,11 +67,11 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
         defaultManager.echo(message) { (response, error) in
             if let response = response {
                 self.messageReceived.text = response.response
-                self.messageReceivedBackground.tintColor = UIColor.zephyr
+                self.messageReceivedBackground.tintColor = .zephyr
             }
             if let error = error {
                 self.messageReceived.text = "\(error)"
-                self.messageReceivedBackground.tintColor = UIColor.red
+                self.messageReceivedBackground.tintColor = .systemRed
             }
             self.messageReceived.isHidden = false
             self.messageReceivedBackground.isHidden = false

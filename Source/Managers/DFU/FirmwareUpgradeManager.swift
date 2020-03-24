@@ -255,7 +255,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         // Check if the new firmware is different then the active one.
-        if Data(bytes: images[0].hash) == self.hash {
+        if Data(images[0].hash) == self.hash {
             if images[0].confirmed {
                 // The new firmware is already active and confirmed.
                 // No need to do anything.
@@ -290,7 +290,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         // Check if the firmware has already been uploaded.
-        if images.count > 1 && Data(bytes: images[1].hash) == self.hash {
+        if images.count > 1 && Data(images[1].hash) == self.hash {
             // Firmware is identical to the one in slot 1. No need to send
             // anything.
             
@@ -539,7 +539,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             self.reset()
         case .testAndConfirm:
             // Check that the upgrade image has successfully booted.
-            if Data(bytes: images[0].hash) != self.hash {
+            if Data(images[0].hash) != self.hash {
                 self.fail(error: FirmwareUpgradeError.unknown("Device failed to boot into new image."))
                 return
             }

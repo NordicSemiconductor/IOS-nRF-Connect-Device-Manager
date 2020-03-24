@@ -33,8 +33,8 @@ public class McuMgrHeader {
         }
         op = data[0]
         flags = data[1]
-        length = Data(data[2..<4].reversed()).to(type: UInt16.self)
-        groupId = Data(data[4..<6].reversed()).to(type: UInt16.self)
+        length = data.readBigEndian(offset: 2)
+        groupId = data.readBigEndian(offset: 4)
         sequenceNumber = data[6]
         commandId = data[7]
     }

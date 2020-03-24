@@ -16,12 +16,19 @@ internal extension Data {
         self.init(buffer: UnsafeBufferPointer(start: &value, count: 1))
     }
     
-    func to<T>(type: T.Type, offset: Int = 0) -> T {
-        return self[offset..<self.count].withUnsafeBytes { $0.pointee }
+    func read<T: FixedWidthInteger>(offset: Int = 0) -> T {
+        let length = MemoryLayout<T>.size
+        
+        #if swift(>=5.0)
+        return subdata(in: offset ..< offset + length).withUnsafeBytes { $0.load(as: T.self) }
+        #else
+        return subdata(in: offset ..< offset + length).withUnsafeBytes { $0.pointee }
+        #endif
     }
     
-    func toReversed<T>(type: T.Type, offset: Int = 0) -> T {
-        return Data(self.reversed()[offset..<self.count]).withUnsafeBytes { $0.pointee }
+    func readBigEndian<R: FixedWidthInteger>(offset: Int = 0) -> R {
+        let r: R = read(offset: offset)
+        return r.bigEndian
     }
     
     // MARK: - Hex Encoding
@@ -56,7 +63,7 @@ internal extension Data {
     func sha256() -> [UInt8] {
         var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
         withUnsafeBytes {
-            _ = CC_SHA256($0, CC_LONG(count), &hash)
+            _ = CC_SHA256($0.baseAddress, CC_LONG(count), &hash)
         }
         return hash
     }

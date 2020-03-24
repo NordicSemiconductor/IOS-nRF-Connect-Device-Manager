@@ -86,7 +86,7 @@ extension FileUploadViewController: FileUploadDelegate {
         actionCancel.isHidden = true
         actionStart.isHidden = false
         actionSelect.isEnabled = true
-        status.textColor = UIColor.red
+        status.textColor = .systemRed
         status.text = "\(error)"
     }
     
@@ -97,7 +97,7 @@ extension FileUploadViewController: FileUploadDelegate {
         actionCancel.isHidden = true
         actionStart.isHidden = false
         actionSelect.isEnabled = true
-        status.textColor = UIColor.darkGray
+        status.textColor = .primary
         status.text = "CANCELLED"
     }
     
@@ -109,7 +109,7 @@ extension FileUploadViewController: FileUploadDelegate {
         actionStart.isHidden = false
         actionStart.isEnabled = false
         actionSelect.isEnabled = true
-        status.textColor = UIColor.darkGray
+        status.textColor = .primary
         status.text = "UPLOAD COMPLETE"
         fileData = nil
     }
@@ -131,7 +131,7 @@ extension FileUploadViewController: UIDocumentMenuDelegate, UIDocumentPickerDele
             fileSize.text = "\(data.count) bytes"
             refreshDestination()
             
-            status.textColor = UIColor.darkGray
+            status.textColor = .primary
             status.text = "READY"
             actionStart.isEnabled = true
         }
@@ -143,7 +143,7 @@ extension FileUploadViewController: UIDocumentMenuDelegate, UIDocumentPickerDele
             return try Data(contentsOf: url)
         } catch {
             print("Error reading file: \(error)")
-            status.textColor = UIColor.red
+            status.textColor = .systemRed
             status.text = "COULD NOT OPEN FILE"
             return nil
         }

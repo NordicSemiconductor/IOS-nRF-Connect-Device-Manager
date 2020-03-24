@@ -151,7 +151,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
         // If the device is already on the filtered list, update it.
         // It will be shown even if the advertising packet is no longer
         // matching the filter. We don't want any blinking on the device list.
-        if let index = filteredPeripherals.index(of: discoveredPeripheral!) {
+        if let index = filteredPeripherals.firstIndex(of: discoveredPeripheral!) {
             // Update the cell views directly, without refreshing the
             // whole table.
             if let aCell = tableView.cellForRow(at: [0, index]) as? ScannerTableViewCell {
@@ -169,6 +169,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state != .poweredOn {
             print("Central is not powered on")
+            activityIndicator.stopAnimating()
         } else {
             activityIndicator.startAnimating()
             centralManager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey : true])

@@ -534,7 +534,7 @@ public class McuMgrLogResponse: McuMgrResponse {
             guard let msg = msg else { return nil }
             if type != nil && type == "cbor" {
                 if let messageCbor = try? CBOR.decode(msg) {
-                    return messageCbor?.description
+                    return messageCbor.description
                 }
             } else {
                 return String(bytes: msg, encoding: .utf8)

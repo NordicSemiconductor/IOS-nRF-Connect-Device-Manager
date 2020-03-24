@@ -8,15 +8,28 @@ import UIKit
 
 extension UIColor {
     
-    @nonobjc class var accent: UIColor {
-        return UIColor(red: 0, green: 129 / 255, blue: 183 / 255, alpha: 1.0)
+    static let accent: UIColor = #colorLiteral(red: 0, green: 0.5483048558, blue: 0.8252354264, alpha: 1)
+    
+    static let nordic: UIColor = #colorLiteral(red: 0, green: 0.7181802392, blue: 0.8448022008, alpha: 1)
+    
+    static let zephyr: UIColor = #colorLiteral(red: 0.231372549, green: 0.2431372549, blue: 0.3058823529, alpha: 1)
+    
+    static var primary: UIColor {
+        if #available(iOS 13.0, *) {
+            return .label
+        } else {
+            return .black
+        }
     }
     
-    @nonobjc class var nordic: UIColor {
-        return UIColor(red: 0, green: 156 / 255, blue: 222 / 255, alpha: 1.0)
+    static func dynamicColor(light: UIColor, dark: UIColor) -> UIColor {
+        if #available(iOS 13.0, *) {
+            return UIColor { (traitCollection) -> UIColor in
+                return traitCollection.userInterfaceStyle == .light ? light : dark
+            }
+        } else {
+            return light
+        }
     }
     
-    @nonobjc class var zephyr: UIColor {
-        return UIColor(red: 59 / 255, green: 62 / 255, blue: 78 / 255, alpha: 1.0)
-    }
 }

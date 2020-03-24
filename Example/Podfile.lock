@@ -1,5 +1,5 @@
 PODS:
-  - McuManager (0.8.1):
+  - McuManager (0.9.0):
     - SwiftCBOR (= 0.4.3)
   - SwiftCBOR (0.4.3)
 
@@ -15,7 +15,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  McuManager: 1259e76b68c1535a77b57373af88fa9656c90e76
+  McuManager: 528ae1bc64446213dd61544648d92c78b43586b3
   SwiftCBOR: c7d740966575e0fd5d971466de2b6776db3f10c3
 
 PODFILE CHECKSUM: 1753bed557e63b1f87b38c0a0b6c494113220627
