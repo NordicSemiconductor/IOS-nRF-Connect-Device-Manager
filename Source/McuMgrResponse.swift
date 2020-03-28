@@ -41,7 +41,7 @@ public class McuMgrResponse: CBORMappable {
     
     /// The repsponse's return code obtained from the payload. If no return code
     /// is explicitly stated, OK (0) is assumed.
-    public var returnCode: McuMgrReturnCode! = .ok
+    public var returnCode: McuMgrReturnCode = .ok
     
     /// The CoAP Response code for CoAP based transport schemes. For non-CoAP
     /// transport schemes this value will always be 0
@@ -134,7 +134,7 @@ public class McuMgrResponse: CBORMappable {
         response.header = header
         response.scheme = scheme
         response.rawData = bytes
-        response.returnCode = McuMgrReturnCode(rawValue: response.rc)
+        response.returnCode = McuMgrReturnCode(rawValue: response.rc) ?? .unrecognized
         response.coapCode = coapCode
         
         return response

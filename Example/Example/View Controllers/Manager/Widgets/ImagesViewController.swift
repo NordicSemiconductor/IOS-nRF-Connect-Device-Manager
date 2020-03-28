@@ -61,10 +61,10 @@ class ImagesViewController: UIViewController , McuMgrViewController{
         let oldRect = message.sizeThatFits(bounds)
         
         if let response = response {
-            var info = "Split status: \(response.splitStatus ?? 0)"
-            if let images = response.images {
-                var i = 0
-                for image in images {
+            if response.isSuccess(), let images = response.images {
+                var info = "Split status: \(response.splitStatus ?? 0)"
+                
+                for (i, image) in images.enumerated() {
                     info += "\nSlot \(i)\n" +
                         "• Version: \(image.version!)\n" +
                         "• Hash: \(Data(image.hash).hexEncodedString(options: .upperCase))\n" +
@@ -89,7 +89,6 @@ class ImagesViewController: UIViewController , McuMgrViewController{
                     } else {
                         info = String(info.dropLast(2))
                     }
-                    i += 1
                     
                     if !image.confirmed {
                         imageHash = image.hash
@@ -99,13 +98,22 @@ class ImagesViewController: UIViewController , McuMgrViewController{
                 testAction.isEnabled = images.count > 1 && !images[1].pending
                 confirmAction.isEnabled = images.count > 1 && !images[1].permanent
                 eraseAction.isEnabled = images.count > 1 && !images[1].confirmed
+                
+                message.text = info
+                message.textColor = .primary
+            } else { // not a success
+                readAction.isEnabled = true
+                message.textColor = .systemRed
+                message.text = "Device returned error: \(response.returnCode)"
             }
-            message.text = info
-            message.textColor = .primary
-        } else {
+        } else { // no response
             readAction.isEnabled = true
             message.textColor = .systemRed
-            message.text = "\(error!)"
+            if let error = error {
+                message.text = "\(error)"
+            } else {
+                message.text = "Empty response"
+            }
         }
         let newRect = message.sizeThatFits(bounds)
         let diff = newRect.height - oldRect.height
