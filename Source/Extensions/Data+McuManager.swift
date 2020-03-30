@@ -37,17 +37,22 @@ internal extension Data {
         public let rawValue: Int
         public static let upperCase = HexEncodingOptions(rawValue: 1 << 0)
         public static let space = HexEncodingOptions(rawValue: 1 << 1)
+        public static let prepend0x = HexEncodingOptions(rawValue: 1 << 2)
         public init(rawValue: Int) {
             self.rawValue = rawValue
         }
     }
     
     func hexEncodedString(options: HexEncodingOptions = []) -> String {
+        if isEmpty {
+            return "0 bytes"
+        }
         var format = options.contains(.upperCase) ? "%02hhX" : "%02hhx"
         if options.contains(.space) {
             format.append(" ")
         }
-        return map { String(format: format, $0) }.joined()
+        let prefix = options.contains(.prepend0x) ? "0x" : ""
+        return prefix + map { String(format: format, $0) }.joined()
     }
     
     // MARK: - Fragmentation

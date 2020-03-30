@@ -9,8 +9,7 @@ import CoreBluetooth
 import SwiftCBOR
 
 public class McuManager {
-    
-    private static let TAG: String = "McuManager"
+    class var TAG: McuMgrLogCategory { .default }
     
     //**************************************************************************
     // MARK: Mcu Manager Constants
@@ -39,6 +38,9 @@ public class McuManager {
     /// data being sent to the device.
     public var mtu: Int
     
+    /// Logger delegate will receive logs.
+    public weak var logDelegate: McuMgrLogDelegate?
+    
     //**************************************************************************
     // MARK: Initializers
     //**************************************************************************
@@ -53,16 +55,38 @@ public class McuManager {
     // MARK: Send Commands
     //**************************************************************************
 
-    public func send<T: McuMgrResponse>(op: McuMgrOperation, commandId: UInt8, payload: [String:CBOR]?, callback: @escaping McuMgrCallback<T>) {
-        send(op: op, flags: 0, sequenceNumber: 0, commandId: commandId, payload: payload, callback: callback)
+    public func send<T: McuMgrResponse>(op: McuMgrOperation,
+                                        commandId: UInt8,
+                                        payload: [String:CBOR]?,
+                                        callback: @escaping McuMgrCallback<T>) {
+        send(op: op, flags: 0, sequenceNumber: 0, commandId: commandId,
+             payload: payload, callback: callback)
     }
     
-    public func send<T: McuMgrResponse>(op: McuMgrOperation, flags: UInt8, sequenceNumber: UInt8,
-                                        commandId: UInt8, payload: [String:CBOR]?, callback: @escaping McuMgrCallback<T>) {
+    public func send<T: McuMgrResponse>(op: McuMgrOperation, flags: UInt8,
+                                        sequenceNumber: UInt8,
+                                        commandId: UInt8,
+                                        payload: [String:CBOR]?,
+                                        callback: @escaping McuMgrCallback<T>) {
+        log(msg: "Sending \(op) command (Group: \(group), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
+            atLevel: .verbose)
         let data = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
-                                          flags: flags, group: group, sequenceNumber: sequenceNumber,
+                                          flags: flags, group: group,
+                                          sequenceNumber: sequenceNumber,
                                           commandId: commandId, payload: payload)
-        send(data: data, callback: callback)
+        let _callback: McuMgrCallback<T> = logDelegate == nil ? callback : { [weak self] (response, error) in
+            if let self = self {
+                if let response = response {
+                    self.log(msg: "Response (Group: \(self.group), ID: \(response.header!.commandId!)): \(response)",
+                             atLevel: .verbose)
+                } else if let error = error {
+                    self.log(msg: "Request failed: \(error.localizedDescription)",
+                             atLevel: .error)
+                }
+            }
+            callback(response, error)
+        }
+        send(data: data, callback: _callback)
     }
     
     public func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) {
@@ -85,7 +109,8 @@ public class McuManager {
     ///
     /// - returns: The raw packet data to send to the transporter.
     public static func buildPacket(scheme: McuMgrScheme, op: McuMgrOperation, flags: UInt8,
-                                   group: McuMgrGroup, sequenceNumber: UInt8, commandId: UInt8, payload: [String:CBOR]?) -> Data {
+                                   group: McuMgrGroup, sequenceNumber: UInt8,
+                                   commandId: UInt8, payload: [String:CBOR]?) -> Data {
         // If the payload map is nil, initialize an empty map.
         var payload = (payload == nil ? [:] : payload)!
         
@@ -98,7 +123,9 @@ public class McuManager {
         let len: UInt16 = UInt16(CBOR.encode(payloadCopy).count)
         
         // Build header.
-        let header = McuMgrHeader.build(op: op.rawValue, flags: flags, len: len, group: group.rawValue, seq: sequenceNumber, id: commandId)
+        let header = McuMgrHeader.build(op: op.rawValue, flags: flags, len: len,
+                                        group: group.rawValue, seq: sequenceNumber,
+                                        id: commandId)
         
         // Build the packet based on scheme.
         if scheme.isCoap() {
@@ -151,10 +178,10 @@ public class McuManager {
     public func setMtu(_ mtu: Int) -> Bool {
         if mtu >= 23 && mtu <= 1024 {
             self.mtu = mtu
-            Log.d(McuManager.TAG, msg: "MTU set to \(mtu)")
+            log(msg: "MTU set to \(mtu)", atLevel: .debug)
             return true
         } else {
-            Log.w(McuManager.TAG, msg: "Invalid MTU (\(mtu)): Value must be between 23 and 1024")
+            log(msg: "Invalid MTU (\(mtu)): Value must be between 23 and 1024", atLevel: .warning)
             return false
         }
     }
@@ -182,6 +209,14 @@ public class McuManager {
             return 1024
         }
     }
+}
+
+extension McuManager {
+    
+    func log(msg: String, atLevel level: McuMgrLogLevel) {
+        logDelegate?.log(msg, ofCategory: Self.TAG, atLevel: level)
+    }
+    
 }
 
 /// McuManager callback

@@ -58,6 +58,7 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
     var transporter: McuMgrTransport! {
         didSet {
             fsManager = FileSystemManager(transporter: transporter)
+            fsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
     

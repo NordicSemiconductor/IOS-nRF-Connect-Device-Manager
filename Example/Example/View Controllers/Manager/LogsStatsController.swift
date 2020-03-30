@@ -78,6 +78,7 @@ class LogsStatsController: UITableViewController {
         let baseController = parent as! BaseViewController
         let transporter = baseController.transporter!
         statsManager = StatsManager(transporter: transporter)
+        statsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
     }
     
     override func viewDidAppear(_ animated: Bool) {

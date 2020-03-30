@@ -9,7 +9,7 @@ import CoreBluetooth
 import SwiftCBOR
 
 public class ImageManager: McuManager {
-    private static let TAG = "ImageManager"
+    override class var TAG: McuMgrLogCategory { .image }
     
     private static let truncatedHashLen = 3
     
@@ -86,7 +86,7 @@ public class ImageManager: McuManager {
     /// - parameter callback: The response callback.
     public func test(hash: [UInt8], callback: @escaping McuMgrCallback<McuMgrImageStateResponse>) {
         let payload: [String:CBOR] = ["hash": CBOR.byteString(hash),
-                                     "confirm": CBOR.boolean(false)]
+                                      "confirm": CBOR.boolean(false)]
         send(op: .write, commandId: ID_STATE, payload: payload, callback: callback)
     }
     
@@ -115,9 +115,6 @@ public class ImageManager: McuManager {
     /// this method.
     ///
     /// - parameter data: The entire image data to be uploaded to the peripheral.
-    /// - parameter peripheral: The BLE periheral to send the data to. The
-    ///   peripneral must be supplied so ImageManager can determine the MTU and
-    ///   thus the number of bytes of image data that it can send per packet.
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
@@ -129,7 +126,8 @@ public class ImageManager: McuManager {
             // Set upload flag to true.
             uploadState = .uploading
         } else {
-            Log.d(ImageManager.TAG, msg: "An image upload is already in progress")
+            log(msg: "An image upload is already in progress", atLevel: .warning)
+            objc_sync_exit(self)
             return false
         }
         objc_sync_exit(self)
@@ -143,6 +141,7 @@ public class ImageManager: McuManager {
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
         
+        log(msg: "Uploading image (\(data.count) bytes)...", atLevel: .application)
         upload(data: imageData!, offset: 0, callback: uploadCallback)
         return true
     }
@@ -226,21 +225,21 @@ public class ImageManager: McuManager {
     public func cancelUpload(error: Error? = nil) {
         objc_sync_enter(self)
         if uploadState == .none {
-            Log.d(ImageManager.TAG, msg: "Image upload is not in progress")
+            log(msg: "Image upload is not in progress", atLevel: .warning)
         } else {
-            if error != nil {
-                Log.d(ImageManager.TAG, msg: "Upload cancelled due to error: \(error!)")
+            if let error = error {
                 resetUploadVariables()
-                uploadDelegate?.uploadDidFail(with: error!)
+                uploadDelegate?.uploadDidFail(with: error)
                 uploadDelegate = nil
+                log(msg: "Upload cancelled due to error: \(error)", atLevel: .error)
                 // Release cyclic reference.
                 cyclicReferenceHolder = nil
             } else {
                 if uploadState == .paused {
-                    Log.d(ImageManager.TAG, msg: "Upload cancelled!")
                     resetUploadVariables()
                     uploadDelegate?.uploadDidCancel()
                     uploadDelegate = nil
+                    log(msg: "Upload cancelled", atLevel: .application)
                     // Release cyclic reference.
                     cyclicReferenceHolder = nil
                 }
@@ -257,10 +256,10 @@ public class ImageManager: McuManager {
     public func pauseUpload() {
         objc_sync_enter(self)
         if uploadState == .none {
-            Log.d(ImageManager.TAG, msg: "Upload is not in progress and therefore cannot be paused")
+            log(msg: "Upload is not in progress and therefore cannot be paused", atLevel: .warning)
         } else {
-            Log.d(ImageManager.TAG, msg: "Upload paused")
             uploadState = .paused
+            log(msg: "Upload paused", atLevel: .application)
         }
         objc_sync_exit(self)
     }
@@ -270,17 +269,18 @@ public class ImageManager: McuManager {
     public func continueUpload() {
         objc_sync_enter(self)
         guard let imageData = imageData else {
+            objc_sync_exit(self)
             if uploadState != .none {
                 cancelUpload(error: ImageUploadError.invalidData)
             }
             return
         }
         if uploadState == .paused {
-            Log.d(ImageManager.TAG, msg: "Continuing upload from \(offset)/\(imageData.count)")
+            log(msg: "Continuing upload from \(offset)/\(imageData.count)...", atLevel: .application)
             uploadState = .uploading
             upload(data: imageData, offset: UInt(offset), callback: uploadCallback)
         } else {
-            print("Upload has not been previously paused");
+            log(msg: "Upload has not been previously paused", atLevel: .warning)
         }
         objc_sync_exit(self)
     }
@@ -328,7 +328,7 @@ public class ImageManager: McuManager {
             self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: imageData.count, timestamp: Date())
             
             if self.uploadState == .none {
-                Log.d(ImageManager.TAG, msg: "Upload cancelled!")
+                self.log(msg: "Upload cancelled", atLevel: .application)
                 self.resetUploadVariables()
                 self.uploadDelegate?.uploadDidCancel()
                 self.uploadDelegate = nil
@@ -339,7 +339,7 @@ public class ImageManager: McuManager {
             
             // Check if the upload has completed.
             if offset == imageData.count {
-                Log.d(ImageManager.TAG, msg: "Upload finished!")
+                self.log(msg: "Upload finished", atLevel: .application)
                 self.resetUploadVariables()
                 self.uploadDelegate?.uploadDidFinish()
                 self.uploadDelegate = nil
@@ -378,7 +378,7 @@ public class ImageManager: McuManager {
     private func restartUpload() {
         objc_sync_enter(self)
         guard let imageData = imageData, let uploadDelegate = uploadDelegate else {
-            Log.e(ImageManager.TAG, msg: "Could not restart upload: image data or callback is null")
+            log(msg: "Could not restart upload: image data or callback is null", atLevel: .error)
             return
         }
         let tempData = imageData
@@ -419,18 +419,19 @@ public enum ImageUploadError: Error {
     case mcuMgrErrorCode(McuMgrReturnCode)
 }
 
-extension ImageUploadError: CustomStringConvertible {
+extension ImageUploadError: LocalizedError {
     
-    public var description: String {
+    public var errorDescription: String? {
         switch self {
         case .invalidPayload:
             return "Response payload values do not exist."
         case .invalidData:
             return "Image data is nil."
         case .mcuMgrErrorCode(let code):
-            return "\(code)"
+            return "Remote error: \(code)."
         }
     }
+    
 }
 
 //******************************************************************************

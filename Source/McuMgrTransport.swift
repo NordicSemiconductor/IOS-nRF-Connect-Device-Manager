@@ -59,9 +59,9 @@ public enum McuMgrTransportError: Error {
     case badResponse
 }
 
-extension McuMgrTransportError: CustomStringConvertible {
+extension McuMgrTransportError: LocalizedError {
     
-    public var description: String {
+    public var errorDescription: String? {
         switch self {
         case .connectionTimeout:
             return "Connection timed out."

@@ -22,6 +22,7 @@ class ResetViewController: UIViewController, McuMgrViewController {
     var transporter: McuMgrTransport! {
         didSet {
             defaultManager = DefaultManager(transporter: transporter)
+            defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
 }

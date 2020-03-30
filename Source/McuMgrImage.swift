@@ -178,3 +178,20 @@ public enum McuMgrImageParseError: Error {
     case insufficientData
     case hashNotFound
 }
+
+extension McuMgrImageParseError: LocalizedError {
+    
+    public var errorDescription: String? {
+        switch self {
+        case .invalidHeaderMagic:
+            return "Invalid header magic number."
+        case .invalidTlvInfoMagic:
+            return "Invalid TLV Info magic number."
+        case .insufficientData:
+            return "Insufficient data."
+        case .hashNotFound:
+            return "Hash not found."
+        }
+    }
+    
+}

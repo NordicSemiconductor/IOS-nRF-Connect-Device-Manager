@@ -75,11 +75,22 @@ public class McuMgrHeader {
 extension McuMgrHeader: CustomDebugStringConvertible {
     
     public var debugDescription: String {
-        return "{op: \(op!), flags: \(flags!), length: \(length!), group: \(op!), seqNum=\(sequenceNumber!), commandId=\(commandId!)}"
+        return "{\"op\": \"\(op!)\", \"flags\": \(flags!), \"length\": \(length!), \"group\": \(groupId!), \"seqNum\": \(sequenceNumber!), \"commandId\": \(commandId!)}"
     }
+    
 }
 
 public enum McuMgrHeaderParseError: Error {
     case invalidSize(Int)
 }
 
+extension McuMgrHeaderParseError: LocalizedError {
+
+    public var errorDescription: String? {
+        switch self {
+        case .invalidSize(let size):
+            return "Invalid header size: \(size) (expected: \(McuMgrHeader.HEADER_LENGTH))."
+        }
+    }
+    
+}

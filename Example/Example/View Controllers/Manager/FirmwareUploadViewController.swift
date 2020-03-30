@@ -55,6 +55,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     var transporter: McuMgrTransport! {
         didSet {
             imageManager = ImageManager(transporter: transporter)
+            imageManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
 }

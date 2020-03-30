@@ -12,7 +12,9 @@ class BaseViewController: UITabBarController {
     var transporter: McuMgrTransport!
     var peripheral: DiscoveredPeripheral! {
         didSet {
-            transporter = McuMgrBleTransport(peripheral.basePeripheral)
+            let bleTransporter = McuMgrBleTransport(peripheral.basePeripheral)
+            bleTransporter.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
+            transporter = bleTransporter
         }
     }
     
@@ -21,6 +23,6 @@ class BaseViewController: UITabBarController {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        transporter!.close()
+        transporter?.close()
     }
 }

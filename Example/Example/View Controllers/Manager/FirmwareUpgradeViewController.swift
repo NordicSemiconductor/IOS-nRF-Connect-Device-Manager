@@ -21,7 +21,8 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var progress: UIProgressView!
     
     @IBAction func selectFirmware(_ sender: UIButton) {
-        let importMenu = UIDocumentMenuViewController(documentTypes: ["public.data", "public.content"], in: .import)
+        let importMenu = UIDocumentMenuViewController(documentTypes: ["public.data", "public.content"],
+                                                      in: .import)
         importMenu.delegate = self
         importMenu.popoverPresentationController?.sourceView = actionSelect
         present(importMenu, animated: true, completion: nil)
@@ -50,6 +51,7 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
     var transporter: McuMgrTransport! {
         didSet {
             dfuManager = FirmwareUpgradeManager(transporter: transporter, delegate: self)
+            dfuManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
             // nRF52840 requires ~ 10 seconds for swapping images.
             // Adjust this parameter for your device.
             dfuManager.estimatedSwapTime = 10.0
@@ -161,10 +163,6 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
     
     func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
         progress.setProgress(Float(bytesSent) / Float(imageSize), animated: true)
-    }
-    
-    func log(_ msg: String, atLevel level: Log.Level) {
-        // Ignore.
     }
 }
 

@@ -8,6 +8,7 @@ import Foundation
 import SwiftCBOR
 
 public class DefaultManager: McuManager {
+    override class var TAG: McuMgrLogCategory { .default }
     
     //**************************************************************************
     // MARK: Constants
@@ -82,8 +83,10 @@ public class DefaultManager: McuManager {
     /// - parameter timeZone: The time zone for the given date. If left out, the
     ///   timezone will be set to the iOS system time zone.
     /// - parameter callback: The response callback.
-    public func writeDatetime(date: Date = Date(), timeZone: TimeZone? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        let payload: [String:CBOR] = ["datetime": CBOR.utf8String(McuManager.dateToString(date: date, timeZone: timeZone))]
+    public func writeDatetime(date: Date = Date(), timeZone: TimeZone? = nil,
+                              callback: @escaping McuMgrCallback<McuMgrResponse>) {
+        let payload: [String:CBOR] =
+            ["datetime": CBOR.utf8String(McuManager.dateToString(date: date, timeZone: timeZone))]
         send(op: .write, commandId: ID_DATETIME_STR, payload: payload, callback: callback)
     }
     

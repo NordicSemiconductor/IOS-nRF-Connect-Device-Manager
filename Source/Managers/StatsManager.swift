@@ -12,6 +12,7 @@ import SwiftCBOR
 /// Stats manager can read the list of stats modules from a device and read the
 /// statistics from a specific module.
 public class StatsManager: McuManager {
+    override class var TAG: McuMgrLogCategory { .stats }
     
     //**************************************************************************
     // MARK: Stats Constants

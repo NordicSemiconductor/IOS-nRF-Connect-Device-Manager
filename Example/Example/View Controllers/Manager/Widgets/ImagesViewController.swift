@@ -51,6 +51,7 @@ class ImagesViewController: UIViewController , McuMgrViewController{
     var transporter: McuMgrTransport! {
         didSet {
             imageManager = ImageManager(transporter: transporter)
+            imageManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
     var height: CGFloat = 110

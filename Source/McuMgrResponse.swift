@@ -222,6 +222,19 @@ public enum McuMgrResponseParseError: Error {
     case invalidPayload
 }
 
+extension McuMgrResponseParseError: LocalizedError {
+    
+    public var errorDescription: String? {
+        switch self {
+        case .invalidDataSize:
+            return "Invalid data size."
+        case .invalidPayload:
+            return "Invalid payload."
+        }
+    }
+    
+}
+
 //******************************************************************************
 // MARK: Default Responses
 //******************************************************************************

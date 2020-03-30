@@ -44,6 +44,7 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
         let baseController = parent as! BaseViewController
         let transporter = baseController.transporter!
         defaultManager = DefaultManager(transporter: transporter)
+        defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
     }
     
     override func viewDidAppear(_ animated: Bool) {

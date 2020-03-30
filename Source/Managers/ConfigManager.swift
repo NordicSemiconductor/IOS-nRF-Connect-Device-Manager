@@ -8,6 +8,7 @@ import Foundation
 import SwiftCBOR
 
 public class ConfigManager: McuManager {
+    override class var TAG: McuMgrLogCategory { .config }
     
     //**************************************************************************
     // MARK: Constants
