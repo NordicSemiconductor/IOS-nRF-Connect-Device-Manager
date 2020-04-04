@@ -13,7 +13,9 @@ internal extension Data {
     
     init<T>(from value: T) {
         var value = value
-        self.init(buffer: UnsafeBufferPointer(start: &value, count: 1))
+        self = withUnsafePointer(to: &value) { (pointer) -> Data in
+            Data(buffer: UnsafeBufferPointer(start: pointer, count: 1))
+        }
     }
     
     func read<T: FixedWidthInteger>(offset: Int = 0) -> T {
