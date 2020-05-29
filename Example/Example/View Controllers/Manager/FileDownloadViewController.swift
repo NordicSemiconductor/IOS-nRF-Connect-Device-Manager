@@ -45,20 +45,21 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
         }
     }
     
-    private var fsManager: FileSystemManager!
     var transporter: McuMgrTransport! {
         didSet {
             fsManager = FileSystemManager(transporter: transporter)
             fsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
-    var partition: String = "nffs" {
-        didSet {
-            refreshSource()
-        }
-    }
     var height: CGFloat = 80
     var tableView: UITableView!
+    
+    private var fsManager: FileSystemManager!
+    private var partition: String {
+        return UserDefaults.standard
+            .string(forKey: FilesController.partitionKey)
+            ?? FilesController.defaultPartition
+    }
 
     private func refreshSource() {
         source.text = "/\(partition)/\(file.text!)"
@@ -67,6 +68,10 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
     override func viewDidLoad() {
         let recents = UserDefaults.standard.array(forKey: recentsKey)
         actionOpenRecents.isEnabled = recents != nil
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        refreshSource()
     }
     
     func addRecent(_ name: String) {
