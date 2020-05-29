@@ -92,15 +92,11 @@ extension FileDownloadViewController: FileDownloadDelegate {
     
     func downloadDidFail(with error: Error) {
         fileName.textColor = .systemRed
-        if let transferError = error as? FileTransferError {
-            switch transferError {
-            case .mcuMgrErrorCode(.unknown):
-                fileName.text = "File not found"
-            default:
-                fileName.text = "\(error)"
-            }
-        } else {
-            fileName.text = "\(error)"
+        switch error as? FileTransferError {
+        case .mcuMgrErrorCode(.unknown):
+            fileName.text = "File not found"
+        default:
+            fileName.text = "\(error.localizedDescription)"
         }
         fileContent.text = nil
         progress.setProgress(0, animated: true)

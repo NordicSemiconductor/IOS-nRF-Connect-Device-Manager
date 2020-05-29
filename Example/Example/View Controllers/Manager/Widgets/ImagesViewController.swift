@@ -111,7 +111,7 @@ class ImagesViewController: UIViewController , McuMgrViewController{
             readAction.isEnabled = true
             message.textColor = .systemRed
             if let error = error {
-                message.text = "\(error)"
+                message.text = "\(error.localizedDescription)"
             } else {
                 message.text = "Empty response"
             }

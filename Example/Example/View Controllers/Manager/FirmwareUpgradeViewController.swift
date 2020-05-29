@@ -147,7 +147,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionStart.isHidden = false
         actionSelect.isEnabled = true
         status.textColor = .systemRed
-        status.text = "\(error)"
+        status.text = "\(error.localizedDescription)"
     }
     
     func upgradeDidCancel(state: FirmwareUpgradeState) {
