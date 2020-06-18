@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="lQf-1q-WvX">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="lQf-1q-WvX">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -11,7 +11,7 @@
         <!--Root View Controller-->
         <scene sceneID="fl8-sU-CFG">
             <objects>
-                <navigationController id="lQf-1q-WvX" customClass="RootViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <navigationController id="lQf-1q-WvX" customClass="RootViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" barStyle="black" translucent="NO" largeTitles="YES" id="8Rs-aj-YFZ">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="96"/>
@@ -30,17 +30,17 @@
             </objects>
             <point key="canvasLocation" x="-258" y="251"/>
         </scene>
-        <!--Mcu Mgr Sample-->
+        <!--Device Manager-->
         <scene sceneID="fwp-u6-2m3">
             <objects>
-                <tableViewController id="brr-jW-Ynb" customClass="ScannerViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="brr-jW-Ynb" customClass="ScannerViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="50" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="ryb-XZ-8kR">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleAspectFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="deviceItem" id="fwW-dh-uj8" userLabel="Device Item" customClass="ScannerTableViewCell" customModule="Example" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleAspectFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="deviceItem" id="fwW-dh-uj8" userLabel="Device Item" customClass="ScannerTableViewCell" customModule="Device_Manager" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="55.5" width="375" height="50"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" tableViewCell="fwW-dh-uj8" id="6bp-sO-eho">
@@ -83,7 +83,7 @@
                             <outlet property="delegate" destination="brr-jW-Ynb" id="uy9-2g-OV5"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Mcu Mgr Sample" id="JgL-aj-vMP">
+                    <navigationItem key="navigationItem" title="Device Manager" id="JgL-aj-vMP">
                         <barButtonItem key="backBarButtonItem" title="Scanner" id="XAL-Mr-ksZ"/>
                         <barButtonItem key="leftBarButtonItem" systemItem="organize" id="59U-yJ-RRu">
                             <connections>
@@ -207,7 +207,7 @@
         <!--Device-->
         <scene sceneID="iYa-Ku-3q1">
             <objects>
-                <tableViewController title="Device" id="JPt-7E-9lH" customClass="DeviceController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Device" id="JPt-7E-9lH" customClass="DeviceController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="e6F-6W-hpD">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -228,7 +228,7 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Jgr-Dh-KA4" customClass="ConnectionStateLabel" customModule="Example" customModuleProvider="target">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Jgr-Dh-KA4" customClass="ConnectionStateLabel" customModule="Device_Manager" customModuleProvider="target">
                                                     <rect key="frame" x="168" y="11" width="134.5" height="28"/>
                                                     <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -347,7 +347,7 @@
         <!--Base View Controller-->
         <scene sceneID="kvH-Bp-M1y">
             <objects>
-                <tabBarController id="1dQ-jk-NPB" customClass="BaseViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <tabBarController id="1dQ-jk-NPB" customClass="BaseViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="TcB-Y8-CRY">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -369,9 +369,9 @@
         <!--Image-->
         <scene sceneID="URt-ni-pll">
             <objects>
-                <tableViewController title="Image" id="SO7-PQ-cvq" customClass="ImageController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
+                <tableViewController title="Image" id="SO7-PQ-cvq" customClass="ImageController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <sections>
@@ -390,7 +390,7 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QCq-OE-I5p" customClass="ConnectionStateLabel" customModule="Example" customModuleProvider="target">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QCq-OE-I5p" customClass="ConnectionStateLabel" customModule="Device_Manager" customModuleProvider="target">
                                                     <rect key="frame" x="168" y="11" width="134.5" height="28"/>
                                                     <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -532,7 +532,7 @@
         <!--Files-->
         <scene sceneID="rQ6-65-8EL">
             <objects>
-                <tableViewController title="Files" id="LfJ-Od-S9L" customClass="FilesController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Files" id="LfJ-Od-S9L" customClass="FilesController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="zUC-67-YRk">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -553,7 +553,7 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZUd-0P-hJK" customClass="ConnectionStateLabel" customModule="Example" customModuleProvider="target">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZUd-0P-hJK" customClass="ConnectionStateLabel" customModule="Device_Manager" customModuleProvider="target">
                                                     <rect key="frame" x="168" y="11" width="134.5" height="28"/>
                                                     <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -643,7 +643,7 @@
         <!--Logs & Stats-->
         <scene sceneID="5iX-Tj-0q4">
             <objects>
-                <tableViewController title="Logs &amp; Stats" id="HbD-Bf-mkl" customClass="LogsStatsController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Logs &amp; Stats" id="HbD-Bf-mkl" customClass="LogsStatsController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="Xnv-fZ-89I">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -664,7 +664,7 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JkP-8K-szu" customClass="ConnectionStateLabel" customModule="Example" customModuleProvider="target">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JkP-8K-szu" customClass="ConnectionStateLabel" customModule="Device_Manager" customModuleProvider="target">
                                                     <rect key="frame" x="168" y="11" width="134.5" height="28"/>
                                                     <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -752,7 +752,7 @@
         <!--Filter-->
         <scene sceneID="Vyr-7A-LFt">
             <objects>
-                <viewController title="Filter" id="Gmt-mw-TXu" customClass="ScannerFilterViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Filter" id="Gmt-mw-TXu" customClass="ScannerFilterViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="01s-A2-QUR">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="106"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -813,7 +813,7 @@
         <!--Firmware Upgrade-->
         <scene sceneID="Hmk-EH-IcV">
             <objects>
-                <viewController title="Firmware Upgrade" id="iEC-sa-48q" customClass="FirmwareUpgradeViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Firmware Upgrade" id="iEC-sa-48q" customClass="FirmwareUpgradeViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="r1I-lh-Yqh">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="169"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1023,7 +1023,7 @@
         <!--Firmware Upload-->
         <scene sceneID="5mV-eT-TXk">
             <objects>
-                <viewController title="Firmware Upload" id="xg9-8C-9qN" customClass="FirmwareUploadViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Firmware Upload" id="xg9-8C-9qN" customClass="FirmwareUploadViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Ngt-CN-ZoO">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="169"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1227,7 +1227,7 @@
         <!--Reset View Controller-->
         <scene sceneID="xe9-Vo-LsE">
             <objects>
-                <viewController id="AQx-Yv-Ia3" customClass="ResetViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="AQx-Yv-Ia3" customClass="ResetViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="f8x-hR-7lO">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="50"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1264,7 +1264,7 @@
         <!--Images View Controller-->
         <scene sceneID="eHc-wP-aT5">
             <objects>
-                <viewController id="kcO-Bb-r8z" customClass="ImagesViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="kcO-Bb-r8z" customClass="ImagesViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="z5n-w9-bRA">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="110"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1382,7 +1382,7 @@
         <!--Upload-->
         <scene sceneID="OqD-0B-QPm">
             <objects>
-                <viewController title="Upload" id="ZG1-GB-bgc" customClass="FileUploadViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Upload" id="ZG1-GB-bgc" customClass="FileUploadViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="yVO-JE-3UU">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="169"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1593,7 +1593,7 @@
         <!--Download-->
         <scene sceneID="r5o-Rc-5HP">
             <objects>
-                <viewController title="Download" id="J7J-Lw-L5u" customClass="FileDownloadViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Download" id="J7J-Lw-L5u" customClass="FileDownloadViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="E1t-48-JdD">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="157"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1717,6 +1717,7 @@
             <point key="canvasLocation" x="3277.5999999999999" y="1183.3583208395803"/>
         </scene>
     </scenes>
+    <color key="tintColor" red="0.0" green="0.50196078430000002" blue="0.71764705880000002" alpha="1" colorSpace="calibratedRGB"/>
     <resources>
         <image name="baseline_developer_board_black_24dp" width="24" height="24"/>
         <image name="baseline_folder_open_black_24dp" width="24" height="24"/>
@@ -1728,5 +1729,4 @@
         <image name="ic_send" width="30" height="30"/>
         <image name="rssi_4" width="128" height="128"/>
     </resources>
-    <color key="tintColor" red="0.0" green="0.50196078430000002" blue="0.71764705880000002" alpha="1" colorSpace="calibratedRGB"/>
 </document>
