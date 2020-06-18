@@ -71,7 +71,7 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
                 self.messageReceivedBackground.tintColor = .zephyr
             }
             if let error = error {
-                self.messageReceived.text = "\(error)"
+                self.messageReceived.text = "\(error.localizedDescription)"
                 self.messageReceivedBackground.tintColor = .systemRed
             }
             self.messageReceived.isHidden = false

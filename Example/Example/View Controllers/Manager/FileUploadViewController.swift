@@ -54,7 +54,6 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
         fsManager.cancelTransfer()
     }
     
-    private var fsManager: FileSystemManager!
     var transporter: McuMgrTransport! {
         didSet {
             fsManager = FileSystemManager(transporter: transporter)
@@ -62,15 +61,22 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
         }
     }
     
+    private var fsManager: FileSystemManager!
     private var fileData: Data?
-    var partition: String = "nffs" {
-        didSet {
-            refreshDestination()
-        }
+    private var partition: String {
+        return UserDefaults.standard
+            .string(forKey: FilesController.partitionKey)
+            ?? FilesController.defaultPartition
     }
     
     private func refreshDestination() {
-        destination.text = "/\(partition)/\(fileName.text!)"
+        if let _ = fileData {
+            destination.text = "/\(partition)/\(fileName.text!)"
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        refreshDestination()
     }
 }
 
@@ -88,7 +94,7 @@ extension FileUploadViewController: FileUploadDelegate {
         actionStart.isHidden = false
         actionSelect.isEnabled = true
         status.textColor = .systemRed
-        status.text = "\(error)"
+        status.text = "\(error.localizedDescription)"
     }
     
     func uploadDidCancel() {
@@ -119,12 +125,14 @@ extension FileUploadViewController: FileUploadDelegate {
 // MARK: - Document Picker
 extension FileUploadViewController: UIDocumentMenuDelegate, UIDocumentPickerDelegate {
     
-    func documentMenu(_ documentMenu: UIDocumentMenuViewController, didPickDocumentPicker documentPicker: UIDocumentPickerViewController) {
+    func documentMenu(_ documentMenu: UIDocumentMenuViewController,
+                      didPickDocumentPicker documentPicker: UIDocumentPickerViewController) {
         documentPicker.delegate = self
         present(documentPicker, animated: true, completion: nil)
     }
     
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
+    func documentPicker(_ controller: UIDocumentPickerViewController,
+                        didPickDocumentAt url: URL) {
         if let data = dataFrom(url: url) {
             self.fileData = data
             
