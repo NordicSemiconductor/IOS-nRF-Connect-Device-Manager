@@ -202,9 +202,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		BD5A285320CB44AF0061F0EE /* Example */ = {
+		BD5A285320CB44AF0061F0EE /* nRF Connect Device Manager */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BD5A286620CB44B00061F0EE /* Build configuration list for PBXNativeTarget "Example" */;
+			buildConfigurationList = BD5A286620CB44B00061F0EE /* Build configuration list for PBXNativeTarget "nRF Connect Device Manager" */;
 			buildPhases = (
 				99C08A785468B7859D5BDA47 /* [CP] Check Pods Manifest.lock */,
 				BD5A285020CB44AF0061F0EE /* Sources */,
@@ -216,7 +216,7 @@
 			);
 			dependencies = (
 			);
-			name = Example;
+			name = "nRF Connect Device Manager";
 			productName = Example;
 			productReference = BD5A285420CB44AF0061F0EE /* Device Manager.app */;
 			productType = "com.apple.product-type.application";
@@ -242,7 +242,7 @@
 					};
 				};
 			};
-			buildConfigurationList = BD5A284F20CB44AF0061F0EE /* Build configuration list for PBXProject "Example" */;
+			buildConfigurationList = BD5A284F20CB44AF0061F0EE /* Build configuration list for PBXProject "nRF Connect Device Manager" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -255,7 +255,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BD5A285320CB44AF0061F0EE /* Example */,
+				BD5A285320CB44AF0061F0EE /* nRF Connect Device Manager */,
 			);
 		};
 /* End PBXProject section */
@@ -525,7 +525,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BD5A284F20CB44AF0061F0EE /* Build configuration list for PBXProject "Example" */ = {
+		BD5A284F20CB44AF0061F0EE /* Build configuration list for PBXProject "nRF Connect Device Manager" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BD5A286420CB44B00061F0EE /* Debug */,
@@ -534,7 +534,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BD5A286620CB44B00061F0EE /* Build configuration list for PBXNativeTarget "Example" */ = {
+		BD5A286620CB44B00061F0EE /* Build configuration list for PBXNativeTarget "nRF Connect Device Manager" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BD5A286720CB44B00061F0EE /* Debug */,
