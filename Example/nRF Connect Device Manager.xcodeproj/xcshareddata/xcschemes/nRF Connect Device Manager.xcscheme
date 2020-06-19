@@ -16,8 +16,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "BD5A285320CB44AF0061F0EE"
                BuildableName = "Device Manager.app"
-               BlueprintName = "Example"
-               ReferencedContainer = "container:Example.xcodeproj">
+               BlueprintName = "nRF Connect Device Manager"
+               ReferencedContainer = "container:nRF Connect Device Manager.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -55,8 +55,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BD5A285320CB44AF0061F0EE"
             BuildableName = "Device Manager.app"
-            BlueprintName = "Example"
-            ReferencedContainer = "container:Example.xcodeproj">
+            BlueprintName = "nRF Connect Device Manager"
+            ReferencedContainer = "container:nRF Connect Device Manager.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,8 +72,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BD5A285320CB44AF0061F0EE"
             BuildableName = "Device Manager.app"
-            BlueprintName = "Example"
-            ReferencedContainer = "container:Example.xcodeproj">
+            BlueprintName = "nRF Connect Device Manager"
+            ReferencedContainer = "container:nRF Connect Device Manager.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
