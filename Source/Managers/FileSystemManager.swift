@@ -152,6 +152,7 @@ public class FileSystemManager: McuManager {
         // Set file data.
         fileName = name
         fileData = data
+        fileSize = nil
         
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
@@ -182,6 +183,8 @@ public class FileSystemManager: McuManager {
     private var fileName: String?
     /// Contains the file data to send to the device.
     private var fileData: Data?
+    /// Expected file length.
+    private var fileSize: Int?
     /// Delegate to send file upload updates to.
     private weak var uploadDelegate: FileUploadDelegate?
     /// Delegate to send file download updates to.
@@ -375,16 +378,18 @@ public class FileSystemManager: McuManager {
             // The first packet contains the file length.
             if offset == 0 {
                 if let len = response.len {
+                    self.fileSize = Int(len)
                     self.fileData = Data(capacity: Int(len))
                 } else {
                     self.cancelTransfer(error: FileTransferError.invalidPayload)
+                    return
                 }
             }
             // Set the file upload offset.
             self.offset = offset + UInt64(data.count)
             self.fileData!.append(contentsOf: data)
             self.downloadDelegate?.downloadProgressDidChange(bytesDownloaded: Int(self.offset),
-                                                             fileSize: self.fileData!.count,
+                                                             fileSize: self.fileSize!,
                                                              timestamp: Date())
             
             if self.transferState == .none {
@@ -398,7 +403,7 @@ public class FileSystemManager: McuManager {
             }
             
             // Check if the upload has completed.
-            if self.offset == self.fileData!.count {
+            if self.offset == self.fileSize! {
                 self.log(msg: "Download finished", atLevel: .application)
                 self.downloadDelegate?.download(of: self.fileName!, didFinish: self.fileData!)
                 self.resetTransfer()
@@ -409,7 +414,7 @@ public class FileSystemManager: McuManager {
             }
             
             // Send the next packet of data.
-            self.requestNext(from: UInt(offset))
+            self.requestNext(from: UInt(self.offset))
         } else {
             self.cancelTransfer(error: FileTransferError.invalidPayload)
         }
@@ -437,6 +442,7 @@ public class FileSystemManager: McuManager {
         // Deallocate and nil file data pointers.
         fileData = nil
         fileName = nil
+        fileSize = nil
         
         // Reset upload vars.
         offset = 0
