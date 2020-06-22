@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		20051E16221E31EA00EBB6FC /* Data+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20051E15221E31EA00EBB6FC /* Data+McuManager.swift */; };
+		21CCE09C2EE24701ECDB2BA6 /* Pods_nRF_Connect_Device_Manager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3ADC28CE90C0184DA3CCDFE1 /* Pods_nRF_Connect_Device_Manager.framework */; };
 		5215762D212320F300C21B0C /* LogsStatsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215762C212320F300C21B0C /* LogsStatsController.swift */; };
 		5215762F2125B59400C21B0C /* FilesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215762E2125B59400C21B0C /* FilesController.swift */; };
 		521576312126CC8F00C21B0C /* FileUploadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521576302126CC8F00C21B0C /* FileUploadViewController.swift */; };
@@ -26,7 +27,6 @@
 		5264C1DA210F43B40044FBBA /* ResetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1D9210F43B40044FBBA /* ResetViewController.swift */; };
 		5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1DB210F63850044FBBA /* ImagesViewController.swift */; };
 		5264C1DE210F640F0044FBBA /* McuMgrViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1DD210F640F0044FBBA /* McuMgrViewController.swift */; };
-		6702C6D4E800EAB025F73D36 /* Pods_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BA3C7AC9F2CB82CD7294334 /* Pods_Example.framework */; };
 		BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285720CB44AF0061F0EE /* AppDelegate.swift */; };
 		BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */; };
 		BD5A285D20CB44AF0061F0EE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285B20CB44AF0061F0EE /* Main.storyboard */; };
@@ -37,7 +37,7 @@
 /* Begin PBXFileReference section */
 		104101493546D7C73013F97D /* Pods-Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Example/Pods-Example.debug.xcconfig"; sourceTree = "<group>"; };
 		20051E15221E31EA00EBB6FC /* Data+McuManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+McuManager.swift"; sourceTree = "<group>"; };
-		2BA3C7AC9F2CB82CD7294334 /* Pods_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3ADC28CE90C0184DA3CCDFE1 /* Pods_nRF_Connect_Device_Manager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_nRF_Connect_Device_Manager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AB22F670E9213B61E038DFD /* Pods-Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.release.xcconfig"; path = "Target Support Files/Pods-Example/Pods-Example.release.xcconfig"; sourceTree = "<group>"; };
 		5215762C212320F300C21B0C /* LogsStatsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsStatsController.swift; sourceTree = "<group>"; };
 		5215762E2125B59400C21B0C /* FilesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesController.swift; sourceTree = "<group>"; };
@@ -58,7 +58,9 @@
 		5264C1DB210F63850044FBBA /* ImagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ImagesViewController.swift; path = Widgets/ImagesViewController.swift; sourceTree = "<group>"; };
 		5264C1DD210F640F0044FBBA /* McuMgrViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McuMgrViewController.swift; sourceTree = "<group>"; };
 		5D6426560CCD5711DA24A875 /* Pods-Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-Example/Pods-Example.release.xcconfig"; sourceTree = "<group>"; };
+		898B3D82CC3DD43ED4A1C490 /* Pods-nRF Connect Device Manager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nRF Connect Device Manager.debug.xcconfig"; path = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager.debug.xcconfig"; sourceTree = "<group>"; };
 		A67A61AE338625CC9DDF6619 /* Pods-Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.debug.xcconfig"; path = "Target Support Files/Pods-Example/Pods-Example.debug.xcconfig"; sourceTree = "<group>"; };
+		A6A2EA523C21B313D501A486 /* Pods-nRF Connect Device Manager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nRF Connect Device Manager.release.xcconfig"; path = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager.release.xcconfig"; sourceTree = "<group>"; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A285720CB44AF0061F0EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -74,7 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6702C6D4E800EAB025F73D36 /* Pods_Example.framework in Frameworks */,
+				21CCE09C2EE24701ECDB2BA6 /* Pods_nRF_Connect_Device_Manager.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,7 +86,7 @@
 		1826EFA43054923B90DBDA06 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				2BA3C7AC9F2CB82CD7294334 /* Pods_Example.framework */,
+				3ADC28CE90C0184DA3CCDFE1 /* Pods_nRF_Connect_Device_Manager.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -195,6 +197,8 @@
 				4AB22F670E9213B61E038DFD /* Pods-Example.release.xcconfig */,
 				104101493546D7C73013F97D /* Pods-Example.debug.xcconfig */,
 				5D6426560CCD5711DA24A875 /* Pods-Example.release.xcconfig */,
+				898B3D82CC3DD43ED4A1C490 /* Pods-nRF Connect Device Manager.debug.xcconfig */,
+				A6A2EA523C21B313D501A486 /* Pods-nRF Connect Device Manager.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -289,7 +293,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Example-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-nRF Connect Device Manager-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -302,15 +306,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Example/Pods-Example-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Example/Pods-Example-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Example/Pods-Example-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -482,7 +486,7 @@
 		};
 		BD5A286720CB44B00061F0EE /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A67A61AE338625CC9DDF6619 /* Pods-Example.debug.xcconfig */;
+			baseConfigurationReference = 898B3D82CC3DD43ED4A1C490 /* Pods-nRF Connect Device Manager.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
@@ -504,7 +508,7 @@
 		};
 		BD5A286820CB44B00061F0EE /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AB22F670E9213B61E038DFD /* Pods-Example.release.xcconfig */;
+			baseConfigurationReference = A6A2EA523C21B313D501A486 /* Pods-nRF Connect Device Manager.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;

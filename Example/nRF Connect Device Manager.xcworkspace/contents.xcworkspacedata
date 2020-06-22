@@ -2,7 +2,7 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:/Users/alno/Desktop/IOS-McuMgr-Library/Example/nRF Connect Device Manager.xcodeproj">
+      location = "group:nRF Connect Device Manager.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Pods/Pods.xcodeproj">
