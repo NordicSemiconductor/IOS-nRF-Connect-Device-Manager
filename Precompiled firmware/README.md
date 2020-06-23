@@ -14,9 +14,9 @@ Folder name is the board name (https://docs.zephyrproject.org/latest/boards/inde
 
 **smp_srv.signed.hex** - [SMP Server sample](https://docs.zephyrproject.org/latest/samples/subsys/mgmt/mcumgr/smp_svr/README.html) application.
 
-**smp_svr.merged.hex** - McuBoot with SMP Server sample, version 0.0.0. Ready to be dragged and droppen on the board.
+**smp_svr.merged.hex** - McuBoot with SMP Server sample, version 0.0.0. Ready to be dragged and dropped on the board.
 
-**smp_svr.dp.merged.hex** - McuBoot with [Downgrade Protection](https://mcuboot.com/mcuboot/design.html#downgrade-prevention) enabled with SMP Server sample, version 0.0.0. Ready to be dragged and droppen on the board.
+**smp_svr.dp.merged.hex** - McuBoot with [Downgrade Protection](https://mcuboot.com/mcuboot/design.html#downgrade-prevention) enabled with SMP Server sample, version 0.0.0. Ready to be dragged and dropped on the board.
 
 **smp_svr.1.0.0.signed.bin** - signed firmware in version 1.0.0.
 
