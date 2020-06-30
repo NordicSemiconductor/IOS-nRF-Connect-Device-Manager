@@ -35,6 +35,7 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
             alert.addAction(UIAlertAction(title: name, style: .default, handler: action))
         }
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.popoverPresentationController?.sourceView = sender
         present(alert, animated: true)
     }
     @IBAction func download(_ sender: Any) {
