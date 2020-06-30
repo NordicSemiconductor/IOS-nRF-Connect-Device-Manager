@@ -35,16 +35,19 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
         actionPause.isHidden = false
         actionCancel.isHidden = false
         actionSelect.isEnabled = false
+        status.textColor = .primary
         status.text = "UPLOADING..."
         _ = fsManager.upload(name: destination.text!, data: fileData!, delegate: self)
     }
     @IBAction func pause(_ sender: UIButton) {
+        status.textColor = .primary
         status.text = "PAUSED"
         actionPause.isHidden = true
         actionResume.isHidden = false
         fsManager.pauseTransfer()
     }
     @IBAction func resume(_ sender: UIButton) {
+        status.textColor = .primary
         status.text = "UPLOADING..."
         actionPause.isHidden = false
         actionResume.isHidden = true
