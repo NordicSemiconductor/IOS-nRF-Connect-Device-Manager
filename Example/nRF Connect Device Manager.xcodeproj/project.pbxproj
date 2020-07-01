@@ -27,6 +27,8 @@
 		5264C1DA210F43B40044FBBA /* ResetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1D9210F43B40044FBBA /* ResetViewController.swift */; };
 		5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1DB210F63850044FBBA /* ImagesViewController.swift */; };
 		5264C1DE210F640F0044FBBA /* McuMgrViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1DD210F640F0044FBBA /* McuMgrViewController.swift */; };
+		5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273624ACA7F4008F528C /* IntroViewController.swift */; };
+		5266273824ACA883008F528C /* NordicButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273524ACA7A1008F528C /* NordicButton.swift */; };
 		BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285720CB44AF0061F0EE /* AppDelegate.swift */; };
 		BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */; };
 		BD5A285D20CB44AF0061F0EE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285B20CB44AF0061F0EE /* Main.storyboard */; };
@@ -57,6 +59,8 @@
 		5264C1D9210F43B40044FBBA /* ResetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetViewController.swift; sourceTree = "<group>"; };
 		5264C1DB210F63850044FBBA /* ImagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ImagesViewController.swift; path = Widgets/ImagesViewController.swift; sourceTree = "<group>"; };
 		5264C1DD210F640F0044FBBA /* McuMgrViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McuMgrViewController.swift; sourceTree = "<group>"; };
+		5266273524ACA7A1008F528C /* NordicButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NordicButton.swift; sourceTree = "<group>"; };
+		5266273624ACA7F4008F528C /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		5D6426560CCD5711DA24A875 /* Pods-Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-Example/Pods-Example.release.xcconfig"; sourceTree = "<group>"; };
 		898B3D82CC3DD43ED4A1C490 /* Pods-nRF Connect Device Manager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nRF Connect Device Manager.debug.xcconfig"; path = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager.debug.xcconfig"; sourceTree = "<group>"; };
 		A67A61AE338625CC9DDF6619 /* Pods-Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.debug.xcconfig"; path = "Target Support Files/Pods-Example/Pods-Example.debug.xcconfig"; sourceTree = "<group>"; };
@@ -95,6 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				523C05B22423DA3C0007E563 /* RootViewController.swift */,
+				5266273424ACA79C008F528C /* Intro */,
 				524DCFCD210B0E50000E110D /* Scanner */,
 				524DCFCE210B0E6E000E110D /* Manager */,
 			);
@@ -154,6 +159,15 @@
 				5264C1DD210F640F0044FBBA /* McuMgrViewController.swift */,
 			);
 			path = Widgets;
+			sourceTree = "<group>";
+		};
+		5266273424ACA79C008F528C /* Intro */ = {
+			isa = PBXGroup;
+			children = (
+				5266273524ACA7A1008F528C /* NordicButton.swift */,
+				5266273624ACA7F4008F528C /* IntroViewController.swift */,
+			);
+			path = Intro;
 			sourceTree = "<group>";
 		};
 		BD5A284B20CB44AF0061F0EE = {
@@ -341,8 +355,10 @@
 				BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */,
 				5215762F2125B59400C21B0C /* FilesController.swift in Sources */,
 				521576332126FFBE00C21B0C /* FileDownloadViewController.swift in Sources */,
+				5266273824ACA883008F528C /* NordicButton.swift in Sources */,
 				523C05B32423DA3C0007E563 /* RootViewController.swift in Sources */,
 				524DCFD6210B21D6000E110D /* ConnectionStateLabel.swift in Sources */,
+				5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */,
 				524DCFD0210B0EB6000E110D /* BaseViewController.swift in Sources */,
 				521576312126CC8F00C21B0C /* FileUploadViewController.swift in Sources */,
 			);

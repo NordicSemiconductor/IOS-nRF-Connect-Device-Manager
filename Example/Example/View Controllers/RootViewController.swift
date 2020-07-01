@@ -26,5 +26,21 @@ class RootViewController: UINavigationController {
             // Fallback on earlier versions
         }
     }
-
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        let introShown = UserDefaults.standard.bool(forKey: "introShown")
+        if !introShown {
+            UserDefaults.standard.set(true, forKey: "introShown")
+            showIntro(animated: false)
+        }
+    }
+    
+    func showIntro(animated: Bool) {
+        if let intro = storyboard?.instantiateViewController(withIdentifier: "intro") {
+            intro.modalPresentationStyle = .fullScreen
+            present(intro, animated: animated)
+        }
+    }
 }

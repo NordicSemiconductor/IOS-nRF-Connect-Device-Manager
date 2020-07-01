@@ -13,12 +13,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         UserDefaults.standard.register(defaults: [
             "filterByUuid" : true,
             "filterByRssi" : false
             ])
+        // The global tint will change depending on the theme.
+        window?.tintColor = .dynamicColor(light: .accent, dark: .nordic)
         return true
     }
 
