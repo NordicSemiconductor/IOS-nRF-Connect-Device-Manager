@@ -23,7 +23,7 @@ public class RunTestManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: .run, transporter: transporter)
+        super.init(group: McuMgrGroup.run, transporter: transporter)
     }
     
     //**************************************************************************

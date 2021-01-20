@@ -7,7 +7,7 @@
 import Foundation
 import SwiftCBOR
 
-public class McuMgrResponse: CBORMappable {
+open class McuMgrResponse: CBORMappable {
     
     //**************************************************************************
     // MARK: Value Mapping
