@@ -22,7 +22,7 @@ public class ConfigManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: .config, transporter: transporter)
+        super.init(group: McuMgrGroup.config, transporter: transporter)
     }
     
     //**************************************************************************

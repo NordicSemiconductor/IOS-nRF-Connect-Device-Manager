@@ -214,11 +214,11 @@ extension McuMgrBleTransport: McuMgrTransport {
         // Wait until it is ready, and timeout if we do not get a valid peripheral instance
         let targetPeripheral: CBPeripheral
 
-        if let existing = peripheral, centralManager.state != .unknown {
+        if let existing = peripheral, centralManager.state == .poweredOn {
             targetPeripheral = existing
         } else {
             // Close the lock.
-            lock.close()
+            lock.close(key: Keys.awaitingCentralManager)
             
             // Wait for the setup process to complete.
             let result = lock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransport.CONNECTION_TIMEOUT))
@@ -248,7 +248,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         // Wait until the peripheral is ready.
         if smpCharacteristic == nil {
             // Close the lock.
-            lock.close()
+            lock.close(key: Keys.discoveringSmpCharacteristic)
             
             switch targetPeripheral.state {
             case .connected:
@@ -313,7 +313,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         }
         
         // Close the lock.
-        lock.close()
+        lock.close(key: Keys.awaitingResponse)
         
         // Check that data length does not exceed the mtu.
         let mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
@@ -390,7 +390,7 @@ extension McuMgrBleTransport: CBCentralManagerDelegate {
                 .retrievePeripherals(withIdentifiers: [identifier])
                 .first {
                 self.peripheral = peripheral
-                lock.open()
+                lock.open(key: Keys.awaitingCentralManager)
             } else {
                 lock.open(McuMgrBleTransportError.centralManagerNotReady)
             }
@@ -524,7 +524,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         
         // The SMP Service and characateristic have now been discovered and set
         // up. Signal the dispatch semaphore to continue to send the request.
-        lock.open()
+        lock.open(key: Keys.discoveringSmpCharacteristic)
     }
     
     public func peripheral(_ peripheral: CBPeripheral,
@@ -562,8 +562,22 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         
         // If we have recevied all the bytes, signal the waiting lock.
         if responseData!.count >= responseLength! {
-            lock.open()
+            lock.open(key: Keys.awaitingResponse)
         }
+    }
+}
+
+//******************************************************************************
+// MARK: Result Lock Keys
+//******************************************************************************
+
+extension McuMgrBleTransport {
+    
+    /// Keys for ResultLock
+    private struct Keys {
+        static let awaitingCentralManager: ResultLockKey = "McuMgrBleTransport.awaitingCentralManager"
+        static let discoveringSmpCharacteristic: ResultLockKey = "McuMgrBleTransport.discoveringSmpCharacteristic"
+        static let awaitingResponse: ResultLockKey = "McuMgrBleTransport.awaitingResponse"
     }
 }
 

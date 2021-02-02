@@ -12,12 +12,15 @@ public enum LockResult {
     case error(Error)
 }
 
+public typealias ResultLockKey = String
+
 public class ResultLock {
     
     private var semaphore: DispatchSemaphore
     
     public var isOpen: Bool = false
     public var error: Error?
+    public var key: ResultLockKey?
     
     public init(isOpen: Bool) {
         self.isOpen = isOpen
@@ -58,6 +61,16 @@ public class ResultLock {
         }
     }
     
+    /// Open the condition, and release all threads that are blocked
+    /// only if the provided key is the same that closed it, or if no key was used to close it.
+    ///
+    /// Any threads that later approach block() will not block unless close() is called.
+    public func open(key: ResultLockKey) {
+        let canOpen = (key == nil) || (key == self.key)
+        guard canOpen else { return }
+        open()
+    }
+    
     /// Open the condition, and release all threads that are blocked.
     ///
     /// Any threads that later approach block() will not block unless close() is called.
@@ -68,10 +81,17 @@ public class ResultLock {
             isOpen = true
             semaphore.signal()
         }
+        key = nil
         objc_sync_exit(self)
     }
     
-    /// Reset the condtion to the closed state.
+    /// Reset the condition to the closed state using the provided key.
+    public func close(key: ResultLockKey) {
+        self.key = key
+        close()
+    }
+    
+    /// Reset the condition to the closed state.
     public func close() {
         objc_sync_enter(self)
         error = nil

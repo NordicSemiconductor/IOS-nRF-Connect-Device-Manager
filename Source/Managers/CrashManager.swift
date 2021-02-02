@@ -30,7 +30,7 @@ public class CrashManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: .crash, transporter: transporter)
+        super.init(group: McuMgrGroup.crash, transporter: transporter)
     }
 
     //**************************************************************************

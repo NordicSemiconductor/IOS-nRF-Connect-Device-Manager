@@ -114,7 +114,7 @@ internal extension CBOR {
 // MARK: CBORMappable
 //*********************************************************************************************
 
-public class CBORMappable {
+open class CBORMappable {
     required public init(cbor: CBOR?) throws {
     }
 }

@@ -23,7 +23,7 @@ public class FileSystemManager: McuManager {
     //**************************************************************************
     
     public init(transporter: McuMgrTransport) {
-        super.init(group: .fs, transporter: transporter)
+        super.init(group: McuMgrGroup.fs, transporter: transporter)
     }
     
     //**************************************************************************
@@ -472,7 +472,7 @@ public class FileSystemManager: McuManager {
         }
         // Build the packet and return the size.
         let packet = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write, flags: 0,
-                                            group: group, sequenceNumber: 0, commandId: ID_FILE, payload: payload)
+                                            group: group.uInt16Value, sequenceNumber: 0, commandId: ID_FILE, payload: payload)
         var packetOverhead = packet.count + 5
         if transporter.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.
