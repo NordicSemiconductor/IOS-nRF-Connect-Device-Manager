@@ -66,7 +66,7 @@ public class ResultLock {
     ///
     /// Any threads that later approach block() will not block unless close() is called.
     public func open(key: ResultLockKey) {
-        let canOpen = (key == nil) || (key == self.key)
+        let canOpen = (self.key == nil) || (key == self.key)
         guard canOpen else { return }
         open()
     }
