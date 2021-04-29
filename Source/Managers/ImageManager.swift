@@ -438,7 +438,7 @@ extension ImageUploadError: LocalizedError {
 // MARK: Image Upload Delegate
 //******************************************************************************
 
-public protocol ImageUploadDelegate : class {
+public protocol ImageUploadDelegate: AnyObject {
     
     /// Called when a packet of image data has been sent successfully.
     ///

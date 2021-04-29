@@ -52,7 +52,7 @@ public enum McuMgrLogCategory: String {
 }
 
 /// The Logger delegate.
-public protocol McuMgrLogDelegate: class {
+public protocol McuMgrLogDelegate: AnyObject {
     
     /// Provides the delegate with content intended to be logged.
     ///

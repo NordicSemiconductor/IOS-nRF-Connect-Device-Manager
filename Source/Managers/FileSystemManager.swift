@@ -510,7 +510,7 @@ extension FileTransferError: LocalizedError {
 // MARK: File Upload Delegate
 //******************************************************************************
 
-public protocol FileUploadDelegate : class {
+public protocol FileUploadDelegate: AnyObject {
     
     /// Called when a packet of file data has been sent successfully.
     ///
@@ -535,7 +535,7 @@ public protocol FileUploadDelegate : class {
 // MARK: File Download Delegate
 //******************************************************************************
 
-public protocol FileDownloadDelegate : class {
+public protocol FileDownloadDelegate: AnyObject {
     
     /// Called when a packet of file data has been sent successfully.
     ///

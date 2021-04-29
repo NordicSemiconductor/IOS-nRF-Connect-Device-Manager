@@ -23,7 +23,7 @@ public enum PeripheralState {
     case disconnected
 }
 
-public protocol PeripheralDelegate: class {
+public protocol PeripheralDelegate: AnyObject {
     /// Callback called whenever peripheral state changes.
     func peripheral(_ peripheral: CBPeripheral, didChangeStateTo state: PeripheralState)
 }

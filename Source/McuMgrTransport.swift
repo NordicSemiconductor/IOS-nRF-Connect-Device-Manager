@@ -25,7 +25,7 @@ public enum McuMgrTransportState {
 }
 
 /// The connection state observer protocol.
-public protocol ConnectionObserver: class {
+public protocol ConnectionObserver: AnyObject {
     /// Called whenever the peripheral state changes.
     ///
     /// - parameter transport: the Mcu Mgr transport object.
@@ -83,7 +83,7 @@ extension McuMgrTransportError: LocalizedError {
 
 /// Mcu Mgr transport object. The transport object
 /// should automatically handle connection on first request.
-public protocol McuMgrTransport: class {
+public protocol McuMgrTransport: AnyObject {
     /// Returns the transport scheme.
     ///
     /// - returns: The transport scheme.
