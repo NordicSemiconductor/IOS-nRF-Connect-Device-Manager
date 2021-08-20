@@ -46,12 +46,13 @@ public class ImageManager: McuManager {
     }
     
     /// Sends the next packet of data from given offset.
-    /// To send a complete image, use upload(data:delegate) method instead.
+    /// To send a complete image, use upload(data:image:delegate) method instead.
     ///
     /// - parameter data: The image data.
+    /// - parameter image: The image number / slot number for DFU.
     /// - parameter offset: The offset from this data will be sent.
     /// - parameter callback: The callback.
-    public func upload(data: Data, offset: UInt, callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
+    public func upload(data: Data, image: Int, offset: UInt, callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
         // Calculate the number of remaining bytes.
         let remainingBytes: UInt = UInt(data.count) - offset
         
@@ -66,6 +67,12 @@ public class ImageManager: McuManager {
         // Build the request payload.
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[offset..<(offset+dataLength)])),
                                       "off": CBOR.unsignedInt(UInt64(offset))]
+        
+        // 0 is Default behaviour, so we can ignore adding it and
+        // the firmware will do the right thing.
+        if image > 0 {
+            payload.updateValue(CBOR.unsignedInt(UInt64(image)), forKey: "image")
+        }
         
         // If this is the initial packet, send the image data length and
         // SHA 256 in the payload.
@@ -115,10 +122,11 @@ public class ImageManager: McuManager {
     /// this method.
     ///
     /// - parameter data: The entire image data to be uploaded to the peripheral.
+    /// - parameter image: (Optional) Allows selection of image number for DFU.
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
-    public func upload(data: Data, delegate: ImageUploadDelegate?) -> Bool {
+    public func upload(data: Data, image: Int = 0, delegate: ImageUploadDelegate?) -> Bool {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         // If upload is already in progress or paused, do not continue.
@@ -138,11 +146,14 @@ public class ImageManager: McuManager {
         // Set image data.
         imageData = data
         
+        // Set the slot we're uploading the image to.
+        imageNumber = image
+        
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
         
         log(msg: "Uploading image (\(data.count) bytes)...", atLevel: .application)
-        upload(data: imageData!, offset: 0, callback: uploadCallback)
+        upload(data: imageData!, image: imageNumber, offset: 0, callback: uploadCallback)
         return true
     }
 
@@ -201,6 +212,9 @@ public class ImageManager: McuManager {
     
     /// State of the image upload.
     private var uploadState: UploadState = .none
+    /// Image 'slot' or core of the device we're sending data to.
+    /// Default value, will be secondary slot of core 0.
+    private var imageNumber: Int = 0
     /// Current image byte offset to send from.
     private var offset: UInt64 = 0
     
@@ -276,9 +290,9 @@ public class ImageManager: McuManager {
             return
         }
         if uploadState == .paused {
-            log(msg: "Continuing upload from \(offset)/\(imageData.count)...", atLevel: .application)
+            log(msg: "Continuing upload from \(offset)/\(imageData.count) to image \(imageNumber)...", atLevel: .application)
             uploadState = .uploading
-            upload(data: imageData, offset: UInt(offset), callback: uploadCallback)
+            upload(data: imageData, image: imageNumber, offset: UInt(offset), callback: uploadCallback)
         } else {
             log(msg: "Upload has not been previously paused", atLevel: .warning)
         }
@@ -359,7 +373,7 @@ public class ImageManager: McuManager {
         if uploadState != .uploading {
             return
         }
-        upload(data: imageData!, offset: offset, callback: uploadCallback)
+        upload(data: imageData!, image: imageNumber, offset: offset, callback: uploadCallback)
     }
     
     private func resetUploadVariables() {
@@ -371,6 +385,7 @@ public class ImageManager: McuManager {
         imageData = nil
         
         // Reset upload vars.
+        imageNumber = 0
         offset = 0
         objc_sync_exit(self)
     }
@@ -384,7 +399,7 @@ public class ImageManager: McuManager {
         let tempData = imageData
         let tempDelegate = uploadDelegate
         resetUploadVariables()
-        _ = upload(data: tempData, delegate: tempDelegate)
+        _ = upload(data: tempData, image: imageNumber, delegate: tempDelegate)
         objc_sync_exit(self)
     }
     
