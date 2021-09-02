@@ -679,7 +679,7 @@ public enum FirmwareUpgradeMode {
 //******************************************************************************
 
 /// Callbacks for firmware upgrades started using FirmwareUpgradeManager.
-public protocol FirmwareUpgradeDelegate: class {
+public protocol FirmwareUpgradeDelegate: AnyObject {
     
     /// Called when the upgrade has started.
     ///

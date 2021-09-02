@@ -4,16 +4,14 @@ A transport agnostic implementation of the McuManager protocol (aka Newt Manager
 
 ## Install
 
+### Swift Package Manager
+
+In Xcode, go to *File → Swift Packages → Add Package Dependency...* and add `https://github.com/JuulLabs-OSS/mcumgr-ios.git`.
+
 ### CocoaPods
 
 ```
-pod 'McuManager', '~> 0.10.0'
-```
-
-### Carthage
-
-```
-github "JuulLabs-OSS/mcumgr-ios" ~> 0.10.0
+pod 'McuManager', '~> 0.12.0'
 ```
 
 # Introduction

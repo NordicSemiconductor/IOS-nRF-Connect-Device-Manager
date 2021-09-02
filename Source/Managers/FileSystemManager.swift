@@ -23,7 +23,7 @@ public class FileSystemManager: McuManager {
     //**************************************************************************
     
     public init(transporter: McuMgrTransport) {
-        super.init(group: .fs, transporter: transporter)
+        super.init(group: McuMgrGroup.fs, transporter: transporter)
     }
     
     //**************************************************************************
@@ -472,7 +472,7 @@ public class FileSystemManager: McuManager {
         }
         // Build the packet and return the size.
         let packet = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write, flags: 0,
-                                            group: group, sequenceNumber: 0, commandId: ID_FILE, payload: payload)
+                                            group: group.uInt16Value, sequenceNumber: 0, commandId: ID_FILE, payload: payload)
         var packetOverhead = packet.count + 5
         if transporter.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.
@@ -510,7 +510,7 @@ extension FileTransferError: LocalizedError {
 // MARK: File Upload Delegate
 //******************************************************************************
 
-public protocol FileUploadDelegate : class {
+public protocol FileUploadDelegate: AnyObject {
     
     /// Called when a packet of file data has been sent successfully.
     ///
@@ -535,7 +535,7 @@ public protocol FileUploadDelegate : class {
 // MARK: File Download Delegate
 //******************************************************************************
 
-public protocol FileDownloadDelegate : class {
+public protocol FileDownloadDelegate: AnyObject {
     
     /// Called when a packet of file data has been sent successfully.
     ///

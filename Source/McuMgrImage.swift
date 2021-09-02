@@ -158,7 +158,7 @@ public class McuMgrImageTlvTrailerEntry {
     public let size: Int
     
     public init(data: Data, offset: Int) throws {
-        if (offset + McuMgrImageTlvTrailerEntry.MIN_SIZE > data.count) {
+        guard offset + McuMgrImageTlvTrailerEntry.MIN_SIZE < data.count else {
             throw McuMgrImageParseError.insufficientData
         }
         

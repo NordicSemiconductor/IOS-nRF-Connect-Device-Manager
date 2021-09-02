@@ -68,7 +68,7 @@ public class McuMgrHeader {
     /// - parameter seq: Optional sequence number.
     /// - parameter id: The subcommand id for the given group.
     public static func build(op: UInt8, flags: UInt8, len: UInt16, group: UInt16, seq: UInt8, id: UInt8) -> [UInt8] {
-        return [op, flags, UInt8(len >> 4), UInt8(len & 0x0F), UInt8(group >> 4), UInt8(group & 0x0F), seq, id]
+        return [op, flags, UInt8(len >> 8), UInt8(len & 0xFF), UInt8(group >> 8), UInt8(group & 0xFF), seq, id]
     }
 }
 
