@@ -20,6 +20,11 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
     private var filterByUuid: Bool!
     private var filterByRssi: Bool!
     
+    @IBAction func aboutTapped(_ sender: UIBarButtonItem) {
+        let rootViewController = navigationController as? RootViewController
+        rootViewController?.showIntro(animated: true)
+    }
+    
     // MARK: - UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()

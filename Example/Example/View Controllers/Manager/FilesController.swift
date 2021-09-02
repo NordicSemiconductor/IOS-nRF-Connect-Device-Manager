@@ -9,7 +9,7 @@ import McuManager
 
 class FilesController: UITableViewController {
     static let partitionKey = "partition"
-    static let defaultPartition = "nffs"
+    static let defaultPartition = "lfs" // https://github.com/ARMmbed/littlefs
     
     @IBOutlet weak var connectionStatus: ConnectionStateLabel!
     
@@ -58,7 +58,7 @@ class FilesController: UITableViewController {
     
     @objc func presentPartitionSettings() {
         let alert = UIAlertController(title: "Settings",
-                                      message: "Specify the mount point,\ne.g. \"nffs\" or \"lfs\":",
+                                      message: "Specify the mount point,\ne.g. \"lfs\" or \"nffs\":",
                                       preferredStyle: .alert)
         alert.addTextField { field in
             field.placeholder = "Partition"

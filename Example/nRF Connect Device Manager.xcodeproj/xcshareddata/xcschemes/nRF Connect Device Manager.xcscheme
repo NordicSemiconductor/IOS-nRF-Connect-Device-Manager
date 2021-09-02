@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "BD5A285320CB44AF0061F0EE"
-               BuildableName = "Example.app"
-               BlueprintName = "Example"
-               ReferencedContainer = "container:Example.xcodeproj">
+               BuildableName = "Device Manager.app"
+               BlueprintName = "nRF Connect Device Manager"
+               ReferencedContainer = "container:nRF Connect Device Manager.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -31,7 +31,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BD5A285320CB44AF0061F0EE"
-            BuildableName = "Example.app"
+            BuildableName = "Device Manager.app"
             BlueprintName = "Example"
             ReferencedContainer = "container:Example.xcodeproj">
          </BuildableReference>
@@ -54,9 +54,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BD5A285320CB44AF0061F0EE"
-            BuildableName = "Example.app"
-            BlueprintName = "Example"
-            ReferencedContainer = "container:Example.xcodeproj">
+            BuildableName = "Device Manager.app"
+            BlueprintName = "nRF Connect Device Manager"
+            ReferencedContainer = "container:nRF Connect Device Manager.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -71,9 +71,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BD5A285320CB44AF0061F0EE"
-            BuildableName = "Example.app"
-            BlueprintName = "Example"
-            ReferencedContainer = "container:Example.xcodeproj">
+            BuildableName = "Device Manager.app"
+            BlueprintName = "nRF Connect Device Manager"
+            ReferencedContainer = "container:nRF Connect Device Manager.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -1,17 +1,188 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="lQf-1q-WvX">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="lQf-1q-WvX">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
+        <!--Intro View Controller-->
+        <scene sceneID="j9J-Fj-mhx">
+            <objects>
+                <viewController storyboardIdentifier="intro" id="VKE-cy-G9d" customClass="IntroViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Gtv-jk-dtO">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AKf-PC-JHL" customClass="NordicButton" customModule="Device_Manager" customModuleProvider="target">
+                                <rect key="frame" x="57.5" y="547" width="260" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="260" id="KMk-gC-3lS"/>
+                                    <constraint firstAttribute="height" constant="40" id="xPo-9k-d3w"/>
+                                </constraints>
+                                <state key="normal" title="Continue"/>
+                                <connections>
+                                    <action selector="continueTapped:" destination="VKE-cy-G9d" eventType="touchUpInside" id="tWg-tF-I7O"/>
+                                </connections>
+                            </button>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Syt-jq-PrI">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="508.5"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="749" image="device_manager" translatesAutoresizingMaskIntoConstraints="NO" id="I3f-47-fb3">
+                                        <rect key="frame" x="97.5" y="37" width="180" height="180"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="180" id="bib-HL-0Hl"/>
+                                            <constraint firstAttribute="height" constant="180" id="pQJ-3w-FJd"/>
+                                            <constraint firstAttribute="height" constant="80" id="vb5-aa-889"/>
+                                        </constraints>
+                                        <variation key="default">
+                                            <mask key="constraints">
+                                                <exclude reference="bib-HL-0Hl"/>
+                                                <exclude reference="pQJ-3w-FJd"/>
+                                                <exclude reference="vb5-aa-889"/>
+                                            </mask>
+                                        </variation>
+                                        <variation key="widthClass=compact">
+                                            <mask key="constraints">
+                                                <include reference="pQJ-3w-FJd"/>
+                                            </mask>
+                                        </variation>
+                                        <variation key="widthClass=regular">
+                                            <mask key="constraints">
+                                                <include reference="vb5-aa-889"/>
+                                            </mask>
+                                        </variation>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Welcome" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kdJ-sE-bt4">
+                                        <rect key="frame" x="16" y="249" width="343" height="41"/>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleTitle0"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JBp-sS-VYI">
+                                        <rect key="frame" x="27.5" y="322" width="320" height="138"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" relation="lessThanOrEqual" constant="400" id="Tvg-t5-Ahk"/>
+                                        </constraints>
+                                        <string key="text">nRF Connect Device Manager is a generic tool for updating and managing devices running nRF Connect SDK supporting management subsystem over Bluetooth LE.  A nRF5 device with SMP Server installed is required.</string>
+                                        <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HRo-Na-vkN">
+                                        <rect key="frame" x="126" y="492" width="123" height="30"/>
+                                        <accessibility key="accessibilityConfiguration">
+                                            <accessibilityTraits key="traits" link="YES"/>
+                                        </accessibility>
+                                        <state key="normal" title="nRF Connect SDK"/>
+                                        <connections>
+                                            <action selector="sdkLinkTapped:" destination="VKE-cy-G9d" eventType="touchUpInside" id="4A4-iw-WDg"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XUW-3g-XhG">
+                                        <rect key="frame" x="111.5" y="568" width="152" height="30"/>
+                                        <accessibility key="accessibilityConfiguration">
+                                            <accessibilityTraits key="traits" link="YES"/>
+                                        </accessibility>
+                                        <state key="normal" title="Source Code (GitHub)"/>
+                                        <connections>
+                                            <action selector="sourceCodeLinkTapped:" destination="VKE-cy-G9d" eventType="touchUpInside" id="Upv-yz-Fox"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6YC-h3-Ius">
+                                        <rect key="frame" x="109" y="606" width="157" height="30"/>
+                                        <accessibility key="accessibilityConfiguration">
+                                            <accessibilityTraits key="traits" link="YES"/>
+                                        </accessibility>
+                                        <state key="normal" title="Mcu Manager (GitHub)"/>
+                                        <connections>
+                                            <action selector="mcuManagerLinkTapped:" destination="VKE-cy-G9d" eventType="touchUpInside" id="dPz-yD-hT2"/>
+                                        </connections>
+                                    </button>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="baseline_open_in_new_black_18dp" translatesAutoresizingMaskIntoConstraints="NO" id="Br2-KL-9Wb">
+                                        <rect key="frame" x="257" y="498" width="18" height="18"/>
+                                    </imageView>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="baseline_open_in_new_black_18dp" translatesAutoresizingMaskIntoConstraints="NO" id="QQc-QU-jOB">
+                                        <rect key="frame" x="271.5" y="574" width="18" height="18"/>
+                                    </imageView>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="baseline_open_in_new_black_18dp" translatesAutoresizingMaskIntoConstraints="NO" id="XMZ-87-lfL">
+                                        <rect key="frame" x="274" y="612" width="18" height="18"/>
+                                    </imageView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Iag-CB-FFj">
+                                        <rect key="frame" x="119.5" y="530" width="136" height="30"/>
+                                        <state key="normal" title="SMP Server Sample"/>
+                                        <connections>
+                                            <action selector="smpServerLinkTapped:" destination="VKE-cy-G9d" eventType="touchUpInside" id="lh4-fK-kNV"/>
+                                        </connections>
+                                    </button>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="baseline_open_in_new_black_18dp" translatesAutoresizingMaskIntoConstraints="NO" id="bls-w2-ygM">
+                                        <rect key="frame" x="263.5" y="536" width="18" height="18"/>
+                                    </imageView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="6YC-h3-Ius" firstAttribute="centerX" secondItem="Syt-jq-PrI" secondAttribute="centerX" id="0Ew-Uk-0Hl"/>
+                                    <constraint firstItem="JBp-sS-VYI" firstAttribute="centerX" secondItem="Syt-jq-PrI" secondAttribute="centerX" id="2yU-IY-t53"/>
+                                    <constraint firstItem="QQc-QU-jOB" firstAttribute="centerY" secondItem="XUW-3g-XhG" secondAttribute="centerY" id="4CF-M3-nbG"/>
+                                    <constraint firstItem="HRo-Na-vkN" firstAttribute="centerX" secondItem="Syt-jq-PrI" secondAttribute="centerX" id="5xw-BS-2cH"/>
+                                    <constraint firstItem="bls-w2-ygM" firstAttribute="centerY" secondItem="Iag-CB-FFj" secondAttribute="centerY" id="9GC-OQ-IXg"/>
+                                    <constraint firstItem="JBp-sS-VYI" firstAttribute="top" secondItem="kdJ-sE-bt4" secondAttribute="bottom" constant="32" id="9mV-1y-hse"/>
+                                    <constraint firstItem="I3f-47-fb3" firstAttribute="centerY" secondItem="Syt-jq-PrI" secondAttribute="centerY" multiplier="0.5" id="DlW-2q-Wrw"/>
+                                    <constraint firstItem="XUW-3g-XhG" firstAttribute="centerX" secondItem="Syt-jq-PrI" secondAttribute="centerX" id="DxV-6Y-D2N"/>
+                                    <constraint firstItem="QQc-QU-jOB" firstAttribute="leading" secondItem="XUW-3g-XhG" secondAttribute="trailing" constant="8" id="EOb-S9-auA"/>
+                                    <constraint firstItem="Br2-KL-9Wb" firstAttribute="centerY" secondItem="HRo-Na-vkN" secondAttribute="centerY" id="ES4-4s-Vya"/>
+                                    <constraint firstItem="kdJ-sE-bt4" firstAttribute="centerX" secondItem="Syt-jq-PrI" secondAttribute="centerX" id="FDV-4h-ely"/>
+                                    <constraint firstItem="HRo-Na-vkN" firstAttribute="top" secondItem="JBp-sS-VYI" secondAttribute="bottom" constant="32" id="Jog-nU-Ydq"/>
+                                    <constraint firstItem="Iag-CB-FFj" firstAttribute="top" secondItem="HRo-Na-vkN" secondAttribute="bottom" constant="8" id="P0T-rY-b1U"/>
+                                    <constraint firstItem="Iag-CB-FFj" firstAttribute="centerX" secondItem="Syt-jq-PrI" secondAttribute="centerX" id="W2h-Xj-KUg"/>
+                                    <constraint firstItem="kdJ-sE-bt4" firstAttribute="top" secondItem="I3f-47-fb3" secondAttribute="bottom" constant="32" id="ZcW-93-cLX"/>
+                                    <constraint firstAttribute="bottom" secondItem="6YC-h3-Ius" secondAttribute="bottom" constant="16" id="abh-mW-GKA"/>
+                                    <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="JBp-sS-VYI" secondAttribute="trailing" constant="16" id="cFd-H9-tq7"/>
+                                    <constraint firstItem="bls-w2-ygM" firstAttribute="leading" secondItem="Iag-CB-FFj" secondAttribute="trailing" constant="8" id="cRV-5r-9IL"/>
+                                    <constraint firstItem="JBp-sS-VYI" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Syt-jq-PrI" secondAttribute="leadingMargin" constant="16" id="dJo-88-uWC"/>
+                                    <constraint firstItem="Br2-KL-9Wb" firstAttribute="leading" secondItem="HRo-Na-vkN" secondAttribute="trailing" constant="8" id="fXE-69-qyG"/>
+                                    <constraint firstAttribute="trailing" secondItem="kdJ-sE-bt4" secondAttribute="trailing" constant="16" id="i64-E3-FfI"/>
+                                    <constraint firstItem="XUW-3g-XhG" firstAttribute="top" secondItem="Iag-CB-FFj" secondAttribute="bottom" constant="8" id="kBy-gP-jTe"/>
+                                    <constraint firstItem="6YC-h3-Ius" firstAttribute="top" secondItem="XUW-3g-XhG" secondAttribute="bottom" constant="8" id="nKL-Vy-kxL"/>
+                                    <constraint firstItem="XMZ-87-lfL" firstAttribute="leading" secondItem="6YC-h3-Ius" secondAttribute="trailing" constant="8" id="qxo-UC-wwb"/>
+                                    <constraint firstItem="I3f-47-fb3" firstAttribute="centerX" secondItem="Syt-jq-PrI" secondAttribute="centerX" id="rPh-c5-vWi"/>
+                                    <constraint firstItem="XMZ-87-lfL" firstAttribute="centerY" secondItem="6YC-h3-Ius" secondAttribute="centerY" id="rda-Mf-5Xn"/>
+                                    <constraint firstItem="kdJ-sE-bt4" firstAttribute="leading" secondItem="Syt-jq-PrI" secondAttribute="leading" constant="16" id="vl5-OW-9Gt"/>
+                                </constraints>
+                            </scrollView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Version 1.0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oJn-M9-dFc">
+                                <rect key="frame" x="156.5" y="644" width="62" height="15"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="Syt-jq-PrI" firstAttribute="top" secondItem="ht1-Ck-QXC" secondAttribute="top" id="CVp-37-oip"/>
+                            <constraint firstItem="AKf-PC-JHL" firstAttribute="centerY" secondItem="ht1-Ck-QXC" secondAttribute="centerY" multiplier="1.7" id="HiH-OU-dDJ"/>
+                            <constraint firstItem="ht1-Ck-QXC" firstAttribute="bottom" secondItem="oJn-M9-dFc" secondAttribute="bottom" constant="8" id="LPJ-Oa-WvI"/>
+                            <constraint firstItem="Syt-jq-PrI" firstAttribute="leading" secondItem="ht1-Ck-QXC" secondAttribute="leading" id="TCJ-BQ-Umm"/>
+                            <constraint firstItem="oJn-M9-dFc" firstAttribute="centerX" secondItem="Gtv-jk-dtO" secondAttribute="centerX" id="WgZ-Nc-s8m"/>
+                            <constraint firstItem="AKf-PC-JHL" firstAttribute="centerX" secondItem="Gtv-jk-dtO" secondAttribute="centerX" id="piJ-h6-a0T"/>
+                            <constraint firstItem="AKf-PC-JHL" firstAttribute="top" secondItem="Syt-jq-PrI" secondAttribute="bottom" constant="38.666666666666629" id="rt8-l6-f3R"/>
+                            <constraint firstItem="Syt-jq-PrI" firstAttribute="trailing" secondItem="ht1-Ck-QXC" secondAttribute="trailing" id="znb-0B-bs8"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="ht1-Ck-QXC"/>
+                    </view>
+                    <connections>
+                        <outlet property="versionLabel" destination="oJn-M9-dFc" id="X1F-rC-0GT"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="pCR-0b-dII" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="567" y="-612"/>
+        </scene>
         <!--Root View Controller-->
         <scene sceneID="fl8-sU-CFG">
             <objects>
-                <navigationController id="lQf-1q-WvX" customClass="RootViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <navigationController id="lQf-1q-WvX" customClass="RootViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" barStyle="black" translucent="NO" largeTitles="YES" id="8Rs-aj-YFZ">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="96"/>
@@ -30,17 +201,17 @@
             </objects>
             <point key="canvasLocation" x="-258" y="251"/>
         </scene>
-        <!--Mcu Mgr Sample-->
+        <!--Device Manager-->
         <scene sceneID="fwp-u6-2m3">
             <objects>
-                <tableViewController id="brr-jW-Ynb" customClass="ScannerViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="brr-jW-Ynb" customClass="ScannerViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="50" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="ryb-XZ-8kR">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleAspectFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="deviceItem" id="fwW-dh-uj8" userLabel="Device Item" customClass="ScannerTableViewCell" customModule="Example" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleAspectFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="deviceItem" id="fwW-dh-uj8" userLabel="Device Item" customClass="ScannerTableViewCell" customModule="Device_Manager" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="55.5" width="375" height="50"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" tableViewCell="fwW-dh-uj8" id="6bp-sO-eho">
@@ -83,7 +254,7 @@
                             <outlet property="delegate" destination="brr-jW-Ynb" id="uy9-2g-OV5"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Mcu Mgr Sample" id="JgL-aj-vMP">
+                    <navigationItem key="navigationItem" title="Device Manager" id="JgL-aj-vMP">
                         <barButtonItem key="backBarButtonItem" title="Scanner" id="XAL-Mr-ksZ"/>
                         <barButtonItem key="leftBarButtonItem" systemItem="organize" id="59U-yJ-RRu">
                             <connections>
@@ -92,22 +263,29 @@
                                 </segue>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" id="9n2-3j-DCY">
-                            <view key="customView" contentMode="scaleToFill" id="X9s-eL-VOJ">
-                                <rect key="frame" x="276" y="0.0" width="83" height="44"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <subviews>
-                                    <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="X3v-MD-Kn9">
-                                        <rect key="frame" x="63" y="12" width="20" height="20"/>
-                                    </activityIndicatorView>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="X3v-MD-Kn9" secondAttribute="trailing" id="Awa-yx-ax6"/>
-                                    <constraint firstItem="X3v-MD-Kn9" firstAttribute="centerY" secondItem="X9s-eL-VOJ" secondAttribute="centerY" id="FiM-5k-1qL"/>
-                                </constraints>
-                            </view>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem title="About" id="aWy-Ct-4js">
+                                <connections>
+                                    <action selector="aboutTapped:" destination="brr-jW-Ynb" id="gBH-Vq-fZn"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem id="9n2-3j-DCY">
+                                <view key="customView" contentMode="scaleToFill" id="X9s-eL-VOJ">
+                                    <rect key="frame" x="221.5" y="0.0" width="83" height="44"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <subviews>
+                                        <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="X3v-MD-Kn9">
+                                            <rect key="frame" x="47" y="12" width="20" height="20"/>
+                                        </activityIndicatorView>
+                                    </subviews>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="X3v-MD-Kn9" secondAttribute="trailing" constant="16" id="Awa-yx-ax6"/>
+                                        <constraint firstItem="X3v-MD-Kn9" firstAttribute="centerY" secondItem="X9s-eL-VOJ" secondAttribute="centerY" id="FiM-5k-1qL"/>
+                                    </constraints>
+                                </view>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="activityIndicator" destination="X3v-MD-Kn9" id="8Yg-MV-JhD"/>
@@ -207,7 +385,7 @@
         <!--Device-->
         <scene sceneID="iYa-Ku-3q1">
             <objects>
-                <tableViewController title="Device" id="JPt-7E-9lH" customClass="DeviceController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Device" id="JPt-7E-9lH" customClass="DeviceController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="e6F-6W-hpD">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -228,7 +406,7 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Jgr-Dh-KA4" customClass="ConnectionStateLabel" customModule="Example" customModuleProvider="target">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Jgr-Dh-KA4" customClass="ConnectionStateLabel" customModule="Device_Manager" customModuleProvider="target">
                                                     <rect key="frame" x="168" y="11" width="134.5" height="28"/>
                                                     <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -268,7 +446,6 @@
                                                         <constraint firstAttribute="width" constant="40" id="2jc-lL-dvp"/>
                                                         <constraint firstAttribute="height" constant="40" id="vy4-lj-J75"/>
                                                     </constraints>
-                                                    <color key="tintColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
                                                     <state key="normal" image="ic_send">
                                                         <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     </state>
@@ -347,13 +524,12 @@
         <!--Base View Controller-->
         <scene sceneID="kvH-Bp-M1y">
             <objects>
-                <tabBarController id="1dQ-jk-NPB" customClass="BaseViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <tabBarController id="1dQ-jk-NPB" customClass="BaseViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="TcB-Y8-CRY">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <color key="barTintColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                        <color key="selectedImageTintColor" red="0.0" green="0.50588235290000005" blue="0.71764705880000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </tabBar>
                     <connections>
                         <segue destination="JPt-7E-9lH" kind="relationship" relationship="viewControllers" id="iw3-ns-kWG"/>
@@ -369,9 +545,9 @@
         <!--Image-->
         <scene sceneID="URt-ni-pll">
             <objects>
-                <tableViewController title="Image" id="SO7-PQ-cvq" customClass="ImageController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
+                <tableViewController title="Image" id="SO7-PQ-cvq" customClass="ImageController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                         <sections>
@@ -390,7 +566,7 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QCq-OE-I5p" customClass="ConnectionStateLabel" customModule="Example" customModuleProvider="target">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QCq-OE-I5p" customClass="ConnectionStateLabel" customModule="Device_Manager" customModuleProvider="target">
                                                     <rect key="frame" x="168" y="11" width="134.5" height="28"/>
                                                     <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -532,7 +708,7 @@
         <!--Files-->
         <scene sceneID="rQ6-65-8EL">
             <objects>
-                <tableViewController title="Files" id="LfJ-Od-S9L" customClass="FilesController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Files" id="LfJ-Od-S9L" customClass="FilesController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="zUC-67-YRk">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -553,7 +729,7 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZUd-0P-hJK" customClass="ConnectionStateLabel" customModule="Example" customModuleProvider="target">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZUd-0P-hJK" customClass="ConnectionStateLabel" customModule="Device_Manager" customModuleProvider="target">
                                                     <rect key="frame" x="168" y="11" width="134.5" height="28"/>
                                                     <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -643,7 +819,7 @@
         <!--Logs & Stats-->
         <scene sceneID="5iX-Tj-0q4">
             <objects>
-                <tableViewController title="Logs &amp; Stats" id="HbD-Bf-mkl" customClass="LogsStatsController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Logs &amp; Stats" id="HbD-Bf-mkl" customClass="LogsStatsController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="Xnv-fZ-89I">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -664,7 +840,7 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JkP-8K-szu" customClass="ConnectionStateLabel" customModule="Example" customModuleProvider="target">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DISCONNECTED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JkP-8K-szu" customClass="ConnectionStateLabel" customModule="Device_Manager" customModuleProvider="target">
                                                     <rect key="frame" x="168" y="11" width="134.5" height="28"/>
                                                     <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -709,9 +885,7 @@
                                                 </view>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WMt-WT-pR6">
                                                     <rect key="frame" x="298" y="65" width="53" height="30"/>
-                                                    <state key="normal" title="Refresh">
-                                                        <color key="titleColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                                    </state>
+                                                    <state key="normal" title="Refresh"/>
                                                     <connections>
                                                         <action selector="refreshTapped:" destination="HbD-Bf-mkl" eventType="touchUpInside" id="Pet-gB-yeB"/>
                                                     </connections>
@@ -752,7 +926,7 @@
         <!--Filter-->
         <scene sceneID="Vyr-7A-LFt">
             <objects>
-                <viewController title="Filter" id="Gmt-mw-TXu" customClass="ScannerFilterViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Filter" id="Gmt-mw-TXu" customClass="ScannerFilterViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="01s-A2-QUR">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="106"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -813,7 +987,7 @@
         <!--Firmware Upgrade-->
         <scene sceneID="Hmk-EH-IcV">
             <objects>
-                <viewController title="Firmware Upgrade" id="iEC-sa-48q" customClass="FirmwareUpgradeViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Firmware Upgrade" id="iEC-sa-48q" customClass="FirmwareUpgradeViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="r1I-lh-Yqh">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="169"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -829,9 +1003,7 @@
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jRc-Hw-Wdb">
                                 <rect key="frame" x="288" y="11.5" width="71" height="30"/>
-                                <state key="normal" title="Select File">
-                                    <color key="titleColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
+                                <state key="normal" title="Select File"/>
                                 <connections>
                                     <action selector="selectFirmware:" destination="iEC-sa-48q" eventType="touchUpInside" id="exC-Yh-XIT"/>
                                 </connections>
@@ -915,9 +1087,7 @@
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="55" id="9rg-86-mBx"/>
                                     <constraint firstAttribute="height" constant="30" id="FAh-7u-CNL"/>
                                 </constraints>
-                                <state key="normal" title="Pause">
-                                    <color key="titleColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
+                                <state key="normal" title="Pause"/>
                                 <state key="disabled">
                                     <color key="titleColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -931,9 +1101,7 @@
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="55" id="Jfe-Rg-Yh5"/>
                                     <constraint firstAttribute="height" constant="30" id="Z8x-8k-Mlh"/>
                                 </constraints>
-                                <state key="normal" title="Resume">
-                                    <color key="titleColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
+                                <state key="normal" title="Resume"/>
                                 <state key="disabled">
                                     <color key="titleColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -1023,7 +1191,7 @@
         <!--Firmware Upload-->
         <scene sceneID="5mV-eT-TXk">
             <objects>
-                <viewController title="Firmware Upload" id="xg9-8C-9qN" customClass="FirmwareUploadViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Firmware Upload" id="xg9-8C-9qN" customClass="FirmwareUploadViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Ngt-CN-ZoO">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="169"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1039,9 +1207,7 @@
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="djo-iN-lMc">
                                 <rect key="frame" x="288" y="11.5" width="71" height="30"/>
-                                <state key="normal" title="Select File">
-                                    <color key="titleColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
+                                <state key="normal" title="Select File"/>
                                 <connections>
                                     <action selector="selectFirmware:" destination="xg9-8C-9qN" eventType="touchUpInside" id="cmr-TB-ihO"/>
                                 </connections>
@@ -1227,7 +1393,7 @@
         <!--Reset View Controller-->
         <scene sceneID="xe9-Vo-LsE">
             <objects>
-                <viewController id="AQx-Yv-Ia3" customClass="ResetViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="AQx-Yv-Ia3" customClass="ResetViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="f8x-hR-7lO">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="50"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1264,7 +1430,7 @@
         <!--Images View Controller-->
         <scene sceneID="eHc-wP-aT5">
             <objects>
-                <viewController id="kcO-Bb-r8z" customClass="ImagesViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="kcO-Bb-r8z" customClass="ImagesViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="z5n-w9-bRA">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="110"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1304,9 +1470,7 @@
                                     <constraint firstAttribute="height" constant="30" id="Pcy-Z2-Oln"/>
                                     <constraint firstAttribute="width" constant="70" id="sWt-wk-iVY"/>
                                 </constraints>
-                                <state key="normal" title="Confirm">
-                                    <color key="titleColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
+                                <state key="normal" title="Confirm"/>
                                 <state key="disabled">
                                     <color key="titleColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -1320,9 +1484,7 @@
                                     <constraint firstAttribute="width" constant="55" id="6HL-vY-nRH"/>
                                     <constraint firstAttribute="height" constant="30" id="fVy-Xk-RWh"/>
                                 </constraints>
-                                <state key="normal" title="Test">
-                                    <color key="titleColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
+                                <state key="normal" title="Test"/>
                                 <state key="disabled">
                                     <color key="titleColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -1336,9 +1498,7 @@
                                     <constraint firstAttribute="width" constant="55" id="FIk-uy-c46"/>
                                     <constraint firstAttribute="height" constant="30" id="On2-XA-o5n"/>
                                 </constraints>
-                                <state key="normal" title="Read">
-                                    <color key="titleColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
+                                <state key="normal" title="Read"/>
                                 <state key="disabled">
                                     <color key="titleColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -1382,7 +1542,7 @@
         <!--Upload-->
         <scene sceneID="OqD-0B-QPm">
             <objects>
-                <viewController title="Upload" id="ZG1-GB-bgc" customClass="FileUploadViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Upload" id="ZG1-GB-bgc" customClass="FileUploadViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="yVO-JE-3UU">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="169"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1398,10 +1558,7 @@
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WHq-jC-JWr">
                                 <rect key="frame" x="288" y="11.5" width="71" height="30"/>
-                                <color key="tintColor" red="0.0" green="0.50196078430000002" blue="0.71764705880000002" alpha="1" colorSpace="calibratedRGB"/>
-                                <state key="normal" title="Select File">
-                                    <color key="titleColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
+                                <state key="normal" title="Select File"/>
                                 <connections>
                                     <action selector="selectFile:" destination="ZG1-GB-bgc" eventType="touchUpInside" id="I4s-lj-NEh"/>
                                 </connections>
@@ -1485,9 +1642,7 @@
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="55" id="6Nn-TU-Lnl"/>
                                     <constraint firstAttribute="height" constant="30" id="87B-eH-vWE"/>
                                 </constraints>
-                                <state key="normal" title="Pause">
-                                    <color key="titleColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
+                                <state key="normal" title="Pause"/>
                                 <state key="disabled">
                                     <color key="titleColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -1501,9 +1656,7 @@
                                     <constraint firstAttribute="height" constant="30" id="Ekc-fy-ZZF"/>
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="55" id="yMo-uB-wRc"/>
                                 </constraints>
-                                <state key="normal" title="Resume">
-                                    <color key="titleColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
+                                <state key="normal" title="Resume"/>
                                 <state key="disabled">
                                     <color key="titleColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -1593,7 +1746,7 @@
         <!--Download-->
         <scene sceneID="r5o-Rc-5HP">
             <objects>
-                <viewController title="Download" id="J7J-Lw-L5u" customClass="FileDownloadViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Download" id="J7J-Lw-L5u" customClass="FileDownloadViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="E1t-48-JdD">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="157"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1616,7 +1769,6 @@
                                     <constraint firstAttribute="width" constant="40" id="B99-JO-Nrj"/>
                                     <constraint firstAttribute="height" constant="40" id="Z4K-b0-Pp0"/>
                                 </constraints>
-                                <color key="tintColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
                                 <state key="normal" image="ic_recents"/>
                                 <connections>
                                     <action selector="openRecents:" destination="J7J-Lw-L5u" eventType="touchUpInside" id="RWe-cC-rM2"/>
@@ -1628,7 +1780,6 @@
                                     <constraint firstAttribute="width" constant="40" id="6JA-Dc-zmp"/>
                                     <constraint firstAttribute="height" constant="40" id="Er8-qh-TdJ"/>
                                 </constraints>
-                                <color key="tintColor" red="0.0" green="0.54800000000000004" blue="0.82499999999999996" alpha="1" colorSpace="calibratedRGB"/>
                                 <state key="normal" image="ic_download"/>
                                 <connections>
                                     <action selector="download:" destination="J7J-Lw-L5u" eventType="touchUpInside" id="j59-zQ-2pt"/>
@@ -1721,12 +1872,13 @@
         <image name="baseline_developer_board_black_24dp" width="24" height="24"/>
         <image name="baseline_folder_open_black_24dp" width="24" height="24"/>
         <image name="baseline_get_app_black_24dp" width="24" height="24"/>
+        <image name="baseline_open_in_new_black_18dp" width="18" height="18"/>
         <image name="baseline_poll_black_24dp" width="24" height="24"/>
+        <image name="device_manager" width="180" height="180"/>
         <image name="ic_bluetooth_searching_48pt" width="48" height="48"/>
         <image name="ic_download" width="30" height="30"/>
         <image name="ic_recents" width="30" height="30"/>
         <image name="ic_send" width="30" height="30"/>
         <image name="rssi_4" width="128" height="128"/>
     </resources>
-    <color key="tintColor" red="0.0" green="0.50196078430000002" blue="0.71764705880000002" alpha="1" colorSpace="calibratedRGB"/>
 </document>
