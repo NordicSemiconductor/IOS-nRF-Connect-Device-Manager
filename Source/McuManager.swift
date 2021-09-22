@@ -245,6 +245,8 @@ public enum McuMgrGroup {
     case run
     /// File System command group (FileSystemManager).
     case fs
+    /// Basic command group (BasicManager).
+    case basic
     /// Per user command group, value must be >= 64.
     case peruser(value: UInt16)
     
@@ -259,6 +261,7 @@ public enum McuMgrGroup {
         case .split: return 6
         case .run: return 7
         case .fs: return 8
+        case .basic: return 63
         case .peruser(let value): return value
         }
     }

@@ -10,6 +10,7 @@ import CoreBluetooth
 public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObserver {
     private let imageManager: ImageManager
     private let defaultManager: DefaultManager
+    private let basicManager: BasicManager
     private weak var delegate: FirmwareUpgradeDelegate?
     
     /// Cyclic reference is used to prevent from releasing the manager
@@ -19,6 +20,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     
     private var i: Int!
     private var images: [FirmwareUpgradeImage]!
+    private var eraseAppSettings: Bool!
     
     private var state: FirmwareUpgradeState
     private var paused: Bool = false
@@ -47,6 +49,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     public init(transporter: McuMgrTransport, delegate: FirmwareUpgradeDelegate?) {
         self.imageManager = ImageManager(transporter: transporter)
         self.defaultManager = DefaultManager(transporter: transporter)
+        self.basicManager = BasicManager(transporter: transporter)
         self.delegate = delegate
         self.state = .none
     }
@@ -56,21 +59,34 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     //**************************************************************************
     
     /// Start the firmware upgrade.
-    public func start(data: Data) throws {
-        try start(images: [(0, data)])
+    ///
+    /// Use this convenience call of ``start(images:erasingAppSettings:)`` if you're only
+    /// updating the App Core (i.e. no Multi-Image).
+    /// - parameter data: `Data` to upload to App Core (Image 0).
+    /// - parameter eraseAppSettings: If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
+    public func start(data: Data, erasingAppSettings eraseAppSettings: Bool = true) throws {
+        try start(images: [(0, data)], erasingAppSettings: eraseAppSettings)
     }
     
-    public func start(images: [(Int, Data)]) throws {
+    /// Start the firmware upgrade.
+    ///
+    /// This is the full-featured API to start DFU update, including support for Multi-Image uploads.
+    /// - parameter images: An Array of (Image, `Data`) pairs with the Image Core/Index and its corresponding `Data` to upload.
+    /// - parameter eraseAppSettings: If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
+    public func start(images: [(Int, Data)], erasingAppSettings eraseAppSettings: Bool = true) throws {
         objc_sync_enter(self)
-        if state != .none {
+        defer {
+            objc_sync_exit(self)
+        }
+        
+        guard state == .none else {
             log(msg: "Firmware upgrade is already in progress", atLevel: .warning)
             return
         }
         
         i = 0
-        self.images = try images.map {
-            try FirmwareUpgradeImage(slot: $0.0, image: $0.1)
-        }
+        self.images = try images.map { try FirmwareUpgradeImage($0) }
+        self.eraseAppSettings = eraseAppSettings
         
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
@@ -80,7 +96,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             atLevel: .application)
         delegate?.upgradeDidStart(controller: self)
         validate()
-        objc_sync_exit(self)
     }
     
     public func cancel() {
@@ -161,7 +176,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         if !paused {
             let imagesToUpload = images
                 .filter({ !$0.uploaded })
-                .map({ ImageManager.Image($0.slot, $0.image) })
+                .map({ ImageManager.Image($0.image, $0.data) })
             _ = imageManager.upload(images: imagesToUpload, delegate: self)
         }
     }
@@ -465,6 +480,32 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.reset()
     }
     
+    /// Callback for Erase App Settings Command.
+    private lazy var eraseAppSettingsCallback: McuMgrCallback<McuMgrResponse> = { [weak self] (response: McuMgrResponse?, error: Error?) in
+        guard let self = self else { return }
+        
+        if let error = error {
+            self.fail(error: error)
+            return
+        }
+        
+        guard let response = response else {
+            self.fail(error: FirmwareUpgradeError.unknown("Erase App Settings Response was nil!"))
+            return
+        }
+        
+        // rc != 0 is expected, DFU should continue.
+        guard response.isSuccess() || response.rc != 0 else {
+            self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
+            return
+        }
+        
+        self.log(msg: "Erase App Settings Succesful. Proceeding.", atLevel: .application)
+        // Set to false so uploadDidFinish() doesn't loop forever.
+        self.eraseAppSettings = false
+        self.uploadDidFinish()
+    }
+    
     /// Callback for the RESET state.
     ///
     /// This callback will fail the upgrade on error. On success, the reset
@@ -671,7 +712,15 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     }
     
     public func uploadDidFinish() {
-        // On a successful upload move to the next state.
+        // Before we can move on, we must check whether the user requested for App Core Settings
+        // to be erased.
+        if eraseAppSettings {
+            log(msg: "'Erase App Settings' Enabled. Sending command...", atLevel: .info)
+            basicManager.eraseAppSettings(callback: eraseAppSettingsCallback)
+            return
+        }
+        
+        // If eraseAppSettings command was sent or was not requested, we can continue.
         switch mode {
         case .confirmOnly:
             guard let firstUnconfirmedImage = self.images.first(where: { !$0.confirmed }) else {
@@ -811,8 +860,8 @@ fileprivate struct FirmwareUpgradeImage {
     
     // MARK: Properties
     
-    let slot: Int
-    let image: Data
+    let image: Int
+    let data: Data
     let hash: Data
     var uploaded: Bool
     var tested: Bool
@@ -820,10 +869,10 @@ fileprivate struct FirmwareUpgradeImage {
     
     // MARK: Init
     
-    init(slot: Int, image: Data) throws {
-        self.slot = slot
-        self.image = image
-        self.hash = try McuMgrImage(data: image).hash
+    init(_ image: (index: Int, data: Data)) throws {
+        self.image = image.index
+        self.data = image.data
+        self.hash = try McuMgrImage(data: image.data).hash
         self.uploaded = false
         self.tested = false
         self.confirmed = false
@@ -835,7 +884,7 @@ fileprivate struct FirmwareUpgradeImage {
 extension FirmwareUpgradeImage: Hashable {
     
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(slot)
+        hasher.combine(image)
         hasher.combine(hash)
     }
 }
