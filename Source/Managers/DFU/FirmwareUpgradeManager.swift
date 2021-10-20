@@ -300,11 +300,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             if primary != nil {
                 if Data(primary.hash) == self.images[j].hash {
                     self.images[j].uploaded = true
-                    self.log(msg: "Image \(j)'s primary slot is already uploaded. Skipping Image \(j).", atLevel: .application)
+                    self.log(msg: "Image \(j)'s primary slot is already uploaded.", atLevel: .application)
                     
-                    if primary.confirmed {
+                    if primary.confirmed || primary.permanent {
                         // The new firmware is already active and confirmed.
-                        // No need to do anything.
+                        self.log(msg: "Image \(j)'s is already confirmed.", atLevel: .application)
+                        self.images[j].confirmed = true
                         continue
                     } else {
                         // The new firmware is in test mode.
@@ -628,15 +629,29 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         for j in 0..<self.images.count {
             switch self.mode {
             case .confirmOnly:
-                // The new image should be in slot 1.
+                guard self.images[j].confirmed else {
+                    self.log(msg: "Skipping Image \(j)'s confirm step since it is already confirmed.", atLevel: .debug)
+                    continue
+                }
+                
+                // If not already confirmed/uploaded, the new image should be in slot 1.
                 guard let secondary = responseImages.first(where: { $0.image == j && $0.slot == 1 }) else {
-                    self.fail(error: FirmwareUpgradeError.invalidResponse(response))
-                    return
+                    self.log(msg: "Unable to find secondary slot for Image \(j) in Image listing.", atLevel: .debug)
+                    
+                    guard let primary = responseImages.first(where: { $0.image == j && $0.slot == 0 }) else {
+                        self.fail(error: FirmwareUpgradeError.invalidResponse(response))
+                        return
+                    }
+                    
+                    self.images[j].confirmed = true
+                    self.log(msg: "Image \(j) does not require confirm command since it is already present and confirmed in its respective slot zero.", atLevel: .debug)
+                    continue
                 }
                 
                 // Check that the new image is in permanent state.
                 guard secondary.permanent else {
                     guard self.images[j].confirmed else {
+                        self.log(msg: "Sending CONFIRM Command for Image \(secondary.image).", atLevel: .debug)
                         self.confirm(self.images[j])
                         return
                     }
@@ -645,13 +660,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     self.fail(error: FirmwareUpgradeError.unknown("Image \(secondary.image) Slot \(secondary.slot) is not in a permanent state."))
                     return
                 }
-                self.images[j].confirmed = true
                 
-                if j == self.images.indices.last {
-                    // Image was confirmed, reset the device.
-                    self.log(msg: "Image \(secondary.image) was confirmed in Slot \(secondary.slot). Resetting device.", atLevel: .application)
-                    self.reset()
-                }
+                self.log(msg: "Image \(secondary.image) was confirmed in Slot \(secondary.slot).", atLevel: .debug)
+                self.images[j].confirmed = true
             case .testAndConfirm:
                 if let primary = responseImages.first(where: { $0.image == j && $0.slot == 0 }) {
                     // If Primary is available, check that the upgrade image has successfully booted.
@@ -668,16 +679,14 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 } else {
                     self.log(msg: "Skipping Image \(j) hash verification since primary is not available.", atLevel: .info)
                 }
-                
-                guard j == self.images.indices.last else { continue }
-                // Confirm successful.
-                self.log(msg: "Upgrade complete.", atLevel: .application)
-                self.success()
             case .testOnly:
                 // Impossible state. Ignore.
-                break
+                return
             }
         }
+        
+        self.log(msg: "Upgrade complete.", atLevel: .application)
+        self.reset()
     }
 }
 
@@ -686,7 +695,6 @@ private extension FirmwareUpgradeManager {
     func log(msg: String, atLevel level: McuMgrLogLevel) {
         logDelegate?.log(msg, ofCategory: .dfu, atLevel: level)
     }
-    
 }
 
 //******************************************************************************
