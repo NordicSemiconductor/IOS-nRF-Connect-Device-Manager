@@ -18,7 +18,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// when upgrade was started and released on success, error or cancel.
     private var cyclicReferenceHolder: (() -> FirmwareUpgradeManager)?
     
-    private var i: Int!
     private var images: [FirmwareUpgradeImage]!
     private var eraseAppSettings: Bool!
     
@@ -84,7 +83,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        i = 0
         self.images = try images.map { try FirmwareUpgradeImage($0) }
         self.eraseAppSettings = eraseAppSettings
         
@@ -176,6 +174,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         if !paused {
             let imagesToUpload = images
                 .filter({ !$0.uploaded })
+                .sorted(by: <)
                 .map({ ImageManager.Image($0.image, $0.data) })
             _ = imageManager.upload(images: imagesToUpload, delegate: self)
         }
@@ -294,8 +293,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         for j in 0..<self.images.count {
-            self.i = j
-            
             let primary: McuMgrImageStateResponse.ImageSlot! = responseImages.first(where: { $0.image == j && $0.slot == 0 })
             if primary != nil {
                 if Data(primary.hash) == self.images[j].hash {
@@ -894,5 +891,19 @@ extension FirmwareUpgradeImage: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(image)
         hasher.combine(hash)
+    }
+}
+
+// MARK: - FirmwareUpgradeImage Comparable
+
+extension FirmwareUpgradeImage: Comparable {
+    
+    public static func < (lhs: FirmwareUpgradeImage, rhs: FirmwareUpgradeImage) -> Bool {
+        if lhs.image < rhs.image {
+            return true
+        } else if lhs.image > rhs.image {
+            return false
+        }
+        return lhs.hashValue < rhs.hashValue
     }
 }
