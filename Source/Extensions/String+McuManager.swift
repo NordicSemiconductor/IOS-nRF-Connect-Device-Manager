@@ -6,6 +6,8 @@
 
 import Foundation
 
+// MARK: - String
+
 internal extension String {
     
     func replaceFirst(of pattern:String, with replacement:String) -> String {
@@ -22,5 +24,17 @@ internal extension String {
         } else {
             return self
         }
+    }
+}
+
+// MARK: - StringInterpolation
+
+internal extension String.StringInterpolation {
+
+    /**
+     Fix for SwiftLint warning when printing an Optional value.
+     */
+    mutating func appendInterpolation<T: CustomStringConvertible>(_ value: T?) {
+        appendInterpolation(value ?? "nil" as CustomStringConvertible)
     }
 }

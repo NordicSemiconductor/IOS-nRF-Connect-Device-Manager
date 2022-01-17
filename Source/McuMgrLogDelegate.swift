@@ -49,6 +49,7 @@ public enum McuMgrLogCategory: String {
     case runTest   = "RunTestManager"
     case stats     = "StatsManager"
     case dfu       = "DFU"
+    case basic     = "BasicManager"
 }
 
 /// The Logger delegate.

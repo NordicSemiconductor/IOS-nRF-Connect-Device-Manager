@@ -367,36 +367,65 @@ public class McuMgrImageStateResponse: McuMgrResponse {
             self.images = try CBOR.toObjectArray(array: images)
         }
     }
+}
+
+// MARK: - ImageSlot
+
+extension McuMgrImageStateResponse {
     
     public class ImageSlot: CBORMappable {
-        /// The (zero) index of this image slot.
-        public var slot: UInt64!
+        
+        // MARK: Properties
+        
+        /// The (zero) index of this image.
+        public var image: UInt64! { unsignedUInt64(defaultValue: 0) }
+        /// The (zero) index of this image slot (0 for primary, 1 for secondary).
+        public var slot: UInt64! { unsignedUInt64() }
         /// The verison of the image.
-        public var version: String!
+        public var version: String! { utf8String() }
         /// The sha256 hash of the image.
-        public var hash: [UInt8]!
+        public var hash: [UInt8]! { byteString() }
         /// Bootable flag.
-        public var bootable: Bool!
+        public var bootable: Bool! { boolean() }
         /// Pending flag. A pending image will be booted into on reset.
-        public var pending: Bool!
+        public var pending: Bool! { boolean() }
         /// Confired flag. A confirmed image will always be booted into (unless
         /// another image is pending.
-        public var confirmed: Bool!
+        public var confirmed: Bool! { boolean() }
         /// Active flag. Set if the image in this slot is active.
-        public var active: Bool!
+        public var active: Bool! { boolean() }
         /// Permanent flag. Set if this image is permanent.
-        public var permanent: Bool!
+        public var permanent: Bool! { boolean() }
+        
+        // MARK: Init
+        
+        private let cbor: CBOR?
         
         public required init(cbor: CBOR?) throws {
+            self.cbor = cbor
             try super.init(cbor: cbor)
-            if case let CBOR.unsignedInt(slot)? = cbor?["slot"] {self.slot = slot}
-            if case let CBOR.utf8String(version)? = cbor?["version"] {self.version = version}
-            if case let CBOR.byteString(hash)? = cbor?["hash"] {self.hash = hash}
-            if case let CBOR.boolean(bootable)? = cbor?["bootable"] {self.bootable = bootable}
-            if case let CBOR.boolean(pending)? = cbor?["pending"] {self.pending = pending}
-            if case let CBOR.boolean(confirmed)? = cbor?["confirmed"] {self.confirmed = confirmed}
-            if case let CBOR.boolean(active)? = cbor?["active"] {self.active = active}
-            if case let CBOR.boolean(permanent)? = cbor?["permanent"] {self.permanent = permanent}
+        }
+        
+        // MARK: Private
+        
+        private func unsignedUInt64(forKey key: String = #function, defaultValue: UInt64? = nil) -> UInt64! {
+            guard case let CBOR.unsignedInt(int)? = cbor?[.utf8String(key)] else { return defaultValue }
+            return int
+        }
+        
+        private func utf8String(forKey key: String = #function) -> String! {
+            guard case let CBOR.utf8String(string)? = cbor?[.utf8String(key)] else { return nil }
+            return string
+        }
+        
+        private func byteString(forKey key: String = #function) -> [UInt8]! {
+            guard case let CBOR.byteString(cString)? = cbor?[.utf8String(key)] else { return nil }
+            return cString
+        }
+        
+        private func boolean(forKey key: String = #function) -> Bool! {
+            guard case let CBOR.boolean(bool)? = cbor?[.utf8String(key)] else { return nil }
+            return bool
         }
     }
 }
