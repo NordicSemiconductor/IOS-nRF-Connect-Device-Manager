@@ -1,6 +1,7 @@
 platform :ios, '9.0'
 use_frameworks!
 
+project 'nRF Connect Device Manager'
 target 'nRF Connect Device Manager' do
   pod 'McuManager', :path => '../'
 end
