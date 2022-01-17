@@ -21,7 +21,8 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var progress: UIProgressView!
     
     @IBAction func selectFirmware(_ sender: UIButton) {
-        let importMenu = UIDocumentMenuViewController(documentTypes: ["public.data", "public.content"],
+        let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive"]
+        let importMenu = UIDocumentMenuViewController(documentTypes: supportedDocumentTypes,
                                                       in: .import)
         importMenu.delegate = self
         importMenu.popoverPresentationController?.sourceView = actionSelect
