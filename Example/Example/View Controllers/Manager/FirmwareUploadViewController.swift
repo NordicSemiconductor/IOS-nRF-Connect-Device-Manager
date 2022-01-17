@@ -7,6 +7,8 @@
 import UIKit
 import McuManager
 
+// MARK: - FirmwareUploadViewController
+
 class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
     @IBOutlet weak var actionSelect: UIButton!
@@ -26,6 +28,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         importMenu.popoverPresentationController?.sourceView = actionSelect
         present(importMenu, animated: true, completion: nil)
     }
+    
     @IBAction func start(_ sender: UIButton) {
         actionStart.isHidden = true
         actionPause.isHidden = false
@@ -33,8 +36,10 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         actionSelect.isEnabled = false
         status.textColor = .primary
         status.text = "UPLOADING..."
-        _ = imageManager.upload(data: imageData!, delegate: self)
+        _ = imageManager.upload(images: [ImageManager.Image(image: 0, data: imageData!)],
+                                delegate: self)
     }
+    
     @IBAction func pause(_ sender: UIButton) {
         status.textColor = .primary
         status.text = "PAUSED"
@@ -42,6 +47,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         actionResume.isHidden = false
         imageManager.pauseUpload()
     }
+    
     @IBAction func resume(_ sender: UIButton) {
         status.textColor = .primary
         status.text = "UPLOADING..."
@@ -62,6 +68,8 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         }
     }
 }
+
+// MARK: - ImageUploadDelegate
 
 extension FirmwareUploadViewController: ImageUploadDelegate {
     
@@ -106,6 +114,7 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
 }
 
 // MARK: - Document Picker
+
 extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPickerDelegate {
     
     func documentMenu(_ documentMenu: UIDocumentMenuViewController, didPickDocumentPicker documentPicker: UIDocumentPickerViewController) {
