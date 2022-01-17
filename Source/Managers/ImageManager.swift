@@ -333,7 +333,7 @@ public class ImageManager: McuManager {
             return
         }
         // Make sure the image data is set.
-        guard let imageData = self.imageData else {
+        guard let currentImageData = self.imageData, let images = self.uploadImages else {
             self.cancelUpload(error: ImageUploadError.invalidData)
             return
         }
@@ -351,7 +351,7 @@ public class ImageManager: McuManager {
         if let offset = response.off {
             // Set the image upload offset.
             self.offset = offset
-            self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: imageData.count, timestamp: Date())
+            self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: currentImageData.count, timestamp: Date())
             
             if self.uploadState == .none {
                 self.log(msg: "Upload cancelled", atLevel: .application)
@@ -364,8 +364,8 @@ public class ImageManager: McuManager {
             }
             
             // Check if the upload has completed.
-            if offset == imageData.count {
-                if let images = self.uploadImages, self.uploadIndex == images.count - 1 {
+            if offset == currentImageData.count {
+                if self.uploadIndex == images.count - 1 {
                     self.log(msg: "Upload finished (\(self.uploadIndex + 1) of \(images.count))", atLevel: .application)
                     self.resetUploadVariables()
                     self.uploadDelegate?.uploadDidFinish()
@@ -373,12 +373,11 @@ public class ImageManager: McuManager {
                     // Release cyclic reference.
                     self.cyclicReferenceHolder = nil
                 } else {
-                    self.log(msg: "Finished uploading image \(self.uploadIndex)!", atLevel: .application)
-                    // Move to the next image.
+                    self.log(msg: "Uploaded image \(self.uploadIndex) (\(self.uploadIndex + 1) of \(images.count))", atLevel: .application)
+                    // Move on to the next image.
                     self.uploadIndex += 1
-                    let imageSlot = self.uploadImages?[self.uploadIndex].image
-                    self.imageData = self.uploadImages?[self.uploadIndex].data
-                    self.log(msg: "Uploading image \(imageSlot) of \(imageData.count) bytes...", atLevel: .application)
+                    self.imageData = images[self.uploadIndex].data
+                    self.log(msg: "Uploading image \(images[self.uploadIndex].image) (\(self.imageData?.count) bytes)...", atLevel: .application)
                     self.sendNext(from: UInt(0))
                 }
                 return
