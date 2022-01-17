@@ -1,24 +1,20 @@
 # nRF Connect Device Manager
 
-This repository extends the [McuManager iOS Library](https://github.com/JuulLabs-OSS/mcumgr-ios).
-It contains the iOS library for nRF Connect Device Manager and a sample app, called nRF Connect Device Manager.
-All changes in the *nordic* branch modify only to the app, to which Nordic look & feel has been applied. 
-The underlying library, as of now, is 1 to 1 copy of the original. All PRs should be submitted to 
-the original repository.
+nRF Connect Device Manager library is compatible with Mcu Manager, a management subsystem supported by nRF Connect SDK, Zephyr and Apache Mynewt.
 
-nRF Connect Device Manager is compatible with Mcu Manager that is supported by Apache Mynewt and Zephyr.
+The library provides a transport agnostic implementation of the McuManager protocol. It contains a default implementation for BLE transport.
 
-Below find the original documentation from the forked repository.
+> Minimum required iOS version is 9.0, originally released in Fall of 2015.
 
----
+### Note
 
-A transport agnostic implementation of the McuManager protocol (aka Newt Manager (NMP), Simple Management Protocol (SMP)) for iOS. 
+This repository is a fork of the [McuManager iOS Library](https://github.com/JuulLabs-OSS/mcumgr-ios), which is no longer being supported by its original maintainer. As of 2021, we have taken ownership of the library,  so all new features and bug fixes will be added here. Please, migrate your projects to point to this Git repsository in order to get future updates. See [migration guide](https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager#migration-from-the-original-repo).
 
 ## Install
 
 ### Swift Package Manager
 
-In Xcode, go to *File → Swift Packages → Add Package Dependency...* and add `https://github.com/JuulLabs-OSS/mcumgr-ios.git`.
+In Xcode, go to *File → Swift Packages → Add Package Dependency...* and add `https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.git`.
 
 ### CocoaPods
 
@@ -42,6 +38,7 @@ McuManager are organized by functionality into command groups. In _mcumgr-ios_, 
 * **`CrashManager`**: Run crash tests on the device.
 * **`RunTestManager`**: Runs tests on the device.
 * **`FileSystemManager`**: Download/upload files from the device file system.
+* **`BasicManager`**: Send 'Erase App Settings' command to the device.
 
 # Firmware Upgrade
 
@@ -93,7 +90,7 @@ bleTransporter.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
 let deviceManager = DeviceManager(bleTransport, delegate)
 deviceManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
 
-// Send acho
+// Send echo
 deviceManger.echo("Hello World!", callback)
 ```
 
@@ -106,10 +103,10 @@ deviceManger.echo("Hello World!", callback)
 Clone the repository, install pods.
 
 ```
-git clone https://github.com/JuulLabs-OSS/mcumgr-ios.git
-cd mcumgr-ios/Example
+git clone https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.git
+cd IOS-nRF-Connect-Device-Manager/Example
 pod install
 ```
 
-In Xcode (or other IDE) open the `mcumgr-ios/Example/Example.xcworkspace`. The development pod for McuManager should be under `Pods -> Development Pods -> McuManager`.
+In Xcode (or other IDE) open the `IOS-nRF-Connect-Device-Manager/Example/Example.xcworkspace`. The development pod for McuManager should be under `Pods -> Development Pods -> McuManager`.
 
