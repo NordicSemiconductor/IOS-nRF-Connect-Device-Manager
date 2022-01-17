@@ -13,8 +13,8 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            url: "https://github.com/unrelentingtech/SwiftCBOR.git", 
-            .branch("master")
+            url: "https://github.com/unrelentingtech/SwiftCBOR.git",
+            .exact("0.4.4")
         ),
     ],
     targets: [
