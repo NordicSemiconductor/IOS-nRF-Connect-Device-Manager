@@ -18,6 +18,7 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var fileName: UILabel!
     @IBOutlet weak var fileSize: UILabel!
     @IBOutlet weak var fileHash: UILabel!
+    @IBOutlet weak var eraseSwitch: UISwitch!
     @IBOutlet weak var progress: UIProgressView!
     
     @IBAction func selectFirmware(_ sender: UIButton) {
@@ -80,9 +81,9 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
     
         // If the device is an ipad set the popover presentation controller
         if let presenter = alertController.popoverPresentationController {
-        presenter.sourceView = self.view
-        presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
-        presenter.permittedArrowDirections = []
+            presenter.sourceView = self.view
+            presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+            presenter.permittedArrowDirections = []
         }
         present(alertController, animated: true)
     }
@@ -107,6 +108,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionPause.isHidden = false
         actionCancel.isHidden = false
         actionSelect.isEnabled = false
+        eraseSwitch.isEnabled = false
     }
     
     func upgradeStateDidChange(from previousState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
@@ -137,6 +139,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionStart.isHidden = false
         actionStart.isEnabled = false
         actionSelect.isEnabled = true
+        eraseSwitch.isEnabled = true
         imageData = nil
     }
     
@@ -147,6 +150,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionCancel.isHidden = true
         actionStart.isHidden = false
         actionSelect.isEnabled = true
+        eraseSwitch.isEnabled = true
         status.textColor = .systemRed
         status.text = "\(error.localizedDescription)"
     }
@@ -158,6 +162,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionCancel.isHidden = true
         actionStart.isHidden = false
         actionSelect.isEnabled = true
+        eraseSwitch.isEnabled = true
         status.textColor = .primary
         status.text = "CANCELLED"
     }
