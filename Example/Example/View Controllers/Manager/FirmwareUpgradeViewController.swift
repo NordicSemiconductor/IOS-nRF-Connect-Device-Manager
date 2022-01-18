@@ -30,7 +30,7 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
         present(importMenu, animated: true, completion: nil)
     }
     @IBAction func start(_ sender: UIButton) {
-        selectMode(for: imageData!)
+        selectMode(for: images!)
     }
     @IBAction func pause(_ sender: UIButton) {
         dfuManager.pause()
@@ -48,7 +48,7 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
         dfuManager.cancel()
     }
     
-    private var imageData: Data?
+    private var images: [ImageManager.Image]?
     private var dfuManager: FirmwareUpgradeManager!
     var transporter: McuMgrTransport! {
         didSet {
@@ -60,22 +60,22 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
         }
     }
     
-    private func selectMode(for imageData: Data) {
+    private func selectMode(for images: [ImageManager.Image]) {
         let alertController = UIAlertController(title: "Select mode", message: nil, preferredStyle: .actionSheet)
         alertController.addAction(UIAlertAction(title: "Test and confirm", style: .default) {
             action in
             self.dfuManager!.mode = .testAndConfirm
-            self.startFirmwareUpgrade(imageData: imageData)
+            self.startFirmwareUpgrade(images: images)
         })
         alertController.addAction(UIAlertAction(title: "Test only", style: .default) {
             action in
             self.dfuManager!.mode = .testOnly
-            self.startFirmwareUpgrade(imageData: imageData)
+            self.startFirmwareUpgrade(images: images)
         })
         alertController.addAction(UIAlertAction(title: "Confirm only", style: .default) {
             action in
             self.dfuManager!.mode = .confirmOnly
-            self.startFirmwareUpgrade(imageData: imageData)
+            self.startFirmwareUpgrade(images: images)
         })
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
     
@@ -88,9 +88,9 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
         present(alertController, animated: true)
     }
     
-    private func startFirmwareUpgrade(imageData: Data) {
+    private func startFirmwareUpgrade(images: [ImageManager.Image]) {
         do {
-            try dfuManager.start(data: imageData)
+            try dfuManager.start(images: images)
         } catch {
             print("Error reading hash: \(error)")
             status.textColor = .systemRed
@@ -140,7 +140,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionStart.isEnabled = false
         actionSelect.isEnabled = true
         eraseSwitch.isEnabled = true
-        imageData = nil
+        images = nil
     }
     
     func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
@@ -181,25 +181,38 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
     }
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
-        if let data = dataFrom(url: url) {
+        do {
+            let images = try url.extractImages()
             fileName.text = url.lastPathComponent
-            fileSize.text = "\(data.count) bytes"
-            
-            do {
-                let hash = try McuMgrImage(data: data).hash
+            var fileSizeString = ""
+            var fileHashString = ""
+            for image in images {
+                let coreString: String
+                switch image.image {
+                case 0: coreString = "(app core)"
+                case 1: coreString = "(net core)"
+                default: coreString = ""
+                }
                 
-                imageData = data
-                fileHash.text = hash.hexEncodedString(options: .upperCase)
-                status.textColor = .primary
-                status.text = "READY"
-                actionStart.isEnabled = true
-            } catch {
-                print("Error reading hash: \(error)")
-                fileHash.text = ""
-                status.textColor = .systemRed
-                status.text = "INVALID FILE"
-                actionStart.isEnabled = false
+                fileSizeString += "\(image.data.count) bytes \(coreString) \n"
+                
+                let hash = try McuMgrImage(data: image.data).hash
+                fileHashString = "\(hash.hexEncodedString(options: .upperCase)) \(coreString) \n"
             }
+            fileSize.text = fileSizeString
+            fileSize.numberOfLines = 0
+            fileHash.text = fileHashString
+            fileHash.numberOfLines = 0
+            
+            status.textColor = .primary
+            status.text = "READY"
+            actionStart.isEnabled = true
+        } catch {
+            print("Error reading hash: \(error)")
+            fileHash.text = ""
+            status.textColor = .systemRed
+            status.text = "INVALID FILE"
+            actionStart.isEnabled = false
         }
     }
     
