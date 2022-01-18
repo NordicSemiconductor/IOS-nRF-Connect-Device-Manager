@@ -173,6 +173,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
 }
 
 // MARK: - Document Picker
+
 extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPickerDelegate {
     
     func documentMenu(_ documentMenu: UIDocumentMenuViewController, didPickDocumentPicker documentPicker: UIDocumentPickerViewController) {
@@ -186,7 +187,7 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             fileName.text = url.lastPathComponent
             var fileSizeString = ""
             var fileHashString = ""
-            for image in images {
+            for (i, image) in images.enumerated() {
                 let coreString: String
                 switch image.image {
                 case 0: coreString = "(app core)"
@@ -194,10 +195,14 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
                 default: coreString = ""
                 }
                 
-                fileSizeString += "\(image.data.count) bytes \(coreString) \n"
+                fileSizeString += "\(image.data.count) bytes \(coreString)"
                 
                 let hash = try McuMgrImage(data: image.data).hash
-                fileHashString = "\(hash.hexEncodedString(options: .upperCase)) \(coreString) \n"
+                fileHashString += "\(hash.hexEncodedString(options: .upperCase).prefix(6)) \(coreString)"
+                
+                guard i != images.count - 1 else { continue }
+                fileSizeString += "\n"
+                fileHashString += "\n"
             }
             fileSize.text = fileSizeString
             fileSize.numberOfLines = 0
@@ -209,22 +214,11 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             actionStart.isEnabled = true
         } catch {
             print("Error reading hash: \(error)")
+            fileSize.text = ""
             fileHash.text = ""
             status.textColor = .systemRed
             status.text = "INVALID FILE"
             actionStart.isEnabled = false
-        }
-    }
-    
-    /// Get the image data from the document URL
-    private func dataFrom(url: URL) -> Data? {
-        do {
-            return try Data(contentsOf: url)
-        } catch {
-            print("Error reading file: \(error)")
-            status.textColor = .systemRed
-            status.text = "COULD NOT OPEN FILE"
-            return nil
         }
     }
 }
