@@ -36,8 +36,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         actionSelect.isEnabled = false
         status.textColor = .primary
         status.text = "UPLOADING..."
-        _ = imageManager.upload(images: [ImageManager.Image(image: 0, data: imageData!)],
-                                delegate: self)
+        _ = imageManager.upload(images: package!.images, delegate: self)
     }
     
     @IBAction func pause(_ sender: UIButton) {
@@ -59,7 +58,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         imageManager.cancelUpload()
     }
     
-    private var imageData: Data?
+    private var package: McuMgrPackage?
     private var imageManager: ImageManager!
     var transporter: McuMgrTransport! {
         didSet {
@@ -109,7 +108,7 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
         actionSelect.isEnabled = true
         status.textColor = .primary
         status.text = "UPLOAD COMPLETE"
-        imageData = nil
+        package = nil
     }
 }
 
@@ -123,37 +122,23 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
     }
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
-        if let data = dataFrom(url: url) {
-            fileName.text = url.lastPathComponent
-            fileSize.text = "\(data.count) bytes"
-            
-            do {
-                let hash = try McuMgrImage(data: data).hash
-                
-                imageData = data
-                fileHash.text = hash.hexEncodedString(options: .upperCase)
-                status.textColor = .primary
-                status.text = "READY"
-                actionStart.isEnabled = true
-            } catch {
-                print("Error reading hash: \(error)")
-                fileHash.text = ""
-                status.textColor = .systemRed
-                status.text = "INVALID FILE"
-                actionStart.isEnabled = false
-            }
-        }
-    }
-    
-    /// Get the image data from the document URL
-    private func dataFrom(url: URL) -> Data? {
         do {
-            return try Data(contentsOf: url)
+            let package = try McuMgrPackage(from: url)
+            fileSize.text = package.sizeString()
+            fileSize.numberOfLines = 0
+            fileHash.text = try package.hashString()
+            fileHash.numberOfLines = 0
+            
+            status.textColor = .primary
+            status.text = "READY"
+            actionStart.isEnabled = true
         } catch {
-            print("Error reading file: \(error)")
+            print("Error reading hash: \(error)")
+            fileSize.text = ""
+            fileHash.text = ""
             status.textColor = .systemRed
-            status.text = "COULD NOT OPEN FILE"
-            return nil
+            status.text = "INVALID FILE"
+            actionStart.isEnabled = false
         }
     }
 }

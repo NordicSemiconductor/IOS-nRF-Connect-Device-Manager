@@ -25,4 +25,12 @@ enum UTI: String, CaseIterable {
             return ["com.apple.macbinary-archive"]
         }
     }
+    
+    // MARK: - from()
+    
+    static func from(_ fileType: String) -> UTI? {
+        return UTI.allCases.first {
+            $0.typeIdentifiers.contains(fileType)
+        }
+    }
 }

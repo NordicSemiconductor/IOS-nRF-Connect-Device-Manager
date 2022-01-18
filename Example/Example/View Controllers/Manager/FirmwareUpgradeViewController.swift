@@ -30,7 +30,7 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
         present(importMenu, animated: true, completion: nil)
     }
     @IBAction func start(_ sender: UIButton) {
-        selectMode(for: images!)
+        selectMode(for: package!)
     }
     @IBAction func pause(_ sender: UIButton) {
         dfuManager.pause()
@@ -48,7 +48,7 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
         dfuManager.cancel()
     }
     
-    private var images: [ImageManager.Image]?
+    private var package: McuMgrPackage?
     private var dfuManager: FirmwareUpgradeManager!
     var transporter: McuMgrTransport! {
         didSet {
@@ -60,22 +60,22 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
         }
     }
     
-    private func selectMode(for images: [ImageManager.Image]) {
+    private func selectMode(for package: McuMgrPackage) {
         let alertController = UIAlertController(title: "Select mode", message: nil, preferredStyle: .actionSheet)
         alertController.addAction(UIAlertAction(title: "Test and confirm", style: .default) {
             action in
             self.dfuManager!.mode = .testAndConfirm
-            self.startFirmwareUpgrade(images: images)
+            self.startFirmwareUpgrade(package: package)
         })
         alertController.addAction(UIAlertAction(title: "Test only", style: .default) {
             action in
             self.dfuManager!.mode = .testOnly
-            self.startFirmwareUpgrade(images: images)
+            self.startFirmwareUpgrade(package: package)
         })
         alertController.addAction(UIAlertAction(title: "Confirm only", style: .default) {
             action in
             self.dfuManager!.mode = .confirmOnly
-            self.startFirmwareUpgrade(images: images)
+            self.startFirmwareUpgrade(package: package)
         })
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
     
@@ -88,9 +88,9 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
         present(alertController, animated: true)
     }
     
-    private func startFirmwareUpgrade(images: [ImageManager.Image]) {
+    private func startFirmwareUpgrade(package: McuMgrPackage) {
         do {
-            try dfuManager.start(images: images)
+            try dfuManager.start(images: package.images)
         } catch {
             print("Error reading hash: \(error)")
             status.textColor = .systemRed
@@ -140,7 +140,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionStart.isEnabled = false
         actionSelect.isEnabled = true
         eraseSwitch.isEnabled = true
-        images = nil
+        package = nil
     }
     
     func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
@@ -183,30 +183,10 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
         do {
-            let images = try url.extractImages()
-            fileName.text = url.lastPathComponent
-            var fileSizeString = ""
-            var fileHashString = ""
-            for (i, image) in images.enumerated() {
-                let coreString: String
-                switch image.image {
-                case 0: coreString = "(app core)"
-                case 1: coreString = "(net core)"
-                default: coreString = ""
-                }
-                
-                fileSizeString += "\(image.data.count) bytes \(coreString)"
-                
-                let hash = try McuMgrImage(data: image.data).hash
-                fileHashString += "\(hash.hexEncodedString(options: .upperCase).prefix(6)) \(coreString)"
-                
-                guard i != images.count - 1 else { continue }
-                fileSizeString += "\n"
-                fileHashString += "\n"
-            }
-            fileSize.text = fileSizeString
+            package = try McuMgrPackage(from: url)
+            fileSize.text = package?.sizeString()
             fileSize.numberOfLines = 0
-            fileHash.text = fileHashString
+            fileHash.text = try package?.hashString()
             fileHash.numberOfLines = 0
             
             status.textColor = .primary
