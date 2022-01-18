@@ -69,7 +69,7 @@ class ImageController: UITableViewController {
     
     override func tableView(_ tableView: UITableView,
                             heightForHeaderInSection section: Int) -> CGFloat {
-        if (advancedMode && section == 1) || (!advancedMode && 2...4 ~= section) {
+        if (advancedMode && section == 1) || (!advancedMode && 2...5 ~= section) {
             return 0.1
         }
         return super.tableView(tableView, heightForHeaderInSection: section)
@@ -77,21 +77,21 @@ class ImageController: UITableViewController {
     
     override func tableView(_ tableView: UITableView,
                             heightForFooterInSection section: Int) -> CGFloat {
-        if (advancedMode && section == 1) || (!advancedMode && 2...4 ~= section) {
+        if (advancedMode && section == 1) || (!advancedMode && 2...5 ~= section) {
             return 0.1
         }
         return super.tableView(tableView, heightForFooterInSection: section)
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if (advancedMode && section == 1) || (!advancedMode && 2...4 ~= section) {
+        if (advancedMode && section == 1) || (!advancedMode && 2...5 ~= section) {
             return 0
         }
         return super.tableView(tableView, numberOfRowsInSection: section)
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        if (advancedMode && section == 1) || (!advancedMode && 2...4 ~= section) {
+        if (advancedMode && section == 1) || (!advancedMode && 2...5 ~= section) {
             return nil
         }
         return super.tableView(tableView, titleForHeaderInSection: section)

@@ -547,8 +547,8 @@
         <scene sceneID="URt-ni-pll">
             <objects>
                 <tableViewController title="Image" id="SO7-PQ-cvq" customClass="ImageController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <sections>
@@ -590,7 +590,7 @@
                             <tableViewSection headerTitle="Image Upgrade" id="H49-2w-bvA">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="235" id="K8B-ak-IaR">
-                                        <rect key="frame" x="0.0" y="132" width="375" height="235"/>
+                                        <rect key="frame" x="0.0" y="117" width="375" height="235"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="K8B-ak-IaR" id="tdv-im-Ef2">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="235"/>
@@ -616,7 +616,7 @@
                             <tableViewSection headerTitle="Image Upload" id="fMB-WD-o4j">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="169" id="91Z-au-ApB">
-                                        <rect key="frame" x="0.0" y="417" width="375" height="169"/>
+                                        <rect key="frame" x="0.0" y="402" width="375" height="169"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="91Z-au-ApB" id="fGj-CQ-r6P">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="169"/>
@@ -642,13 +642,13 @@
                             <tableViewSection headerTitle="Images" id="fVY-9S-Tce">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="110" id="uJU-Js-TUj">
-                                        <rect key="frame" x="0.0" y="636" width="375" height="110"/>
+                                        <rect key="frame" x="0.0" y="621" width="375" height="110"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="uJU-Js-TUj" id="Vnd-mi-K9a">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="110"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <containerView opaque="NO" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0sy-ZJ-BDd">
+                                                <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0sy-ZJ-BDd">
                                                     <rect key="frame" x="0.0" y="0.0" width="375" height="110"/>
                                                     <connections>
                                                         <segue destination="kcO-Bb-r8z" kind="embed" identifier="images" id="ZiJ-hj-mJO"/>
@@ -665,17 +665,43 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
+                            <tableViewSection headerTitle="Settings" id="7Qb-Cv-5tV" userLabel="Settings">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="110" id="waY-IH-yhn">
+                                        <rect key="frame" x="0.0" y="781" width="375" height="110"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="waY-IH-yhn" id="SdL-HG-3nN">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="110"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rBg-vd-Sbr">
+                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="110"/>
+                                                    <connections>
+                                                        <segue destination="ybJ-Ok-uX5" kind="embed" id="r9h-Gh-c9E"/>
+                                                    </connections>
+                                                </containerView>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="rBg-vd-Sbr" firstAttribute="leading" secondItem="SdL-HG-3nN" secondAttribute="leading" id="5Oe-zv-Xwz"/>
+                                                <constraint firstAttribute="trailing" secondItem="rBg-vd-Sbr" secondAttribute="trailing" id="5h7-e7-Bff"/>
+                                                <constraint firstAttribute="bottom" secondItem="rBg-vd-Sbr" secondAttribute="bottom" id="OU0-xe-uS7"/>
+                                                <constraint firstItem="rBg-vd-Sbr" firstAttribute="top" secondItem="SdL-HG-3nN" secondAttribute="top" id="vmx-SF-PRU"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
                             <tableViewSection headerTitle="Reset" id="OEr-en-6if">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="50" id="Dph-Th-Ivm">
-                                        <rect key="frame" x="0.0" y="796" width="375" height="50"/>
+                                        <rect key="frame" x="0.0" y="941" width="375" height="50"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Dph-Th-Ivm" id="BoL-pg-khF">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="50"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <containerView opaque="NO" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RQ8-Ym-6Bo">
-                                                    <rect key="frame" x="0.0" y="0.0" width="414" height="50"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="50"/>
                                                     <connections>
                                                         <segue destination="AQx-Yv-Ia3" kind="embed" identifier="reset" id="KaR-ME-aOA"/>
                                                     </connections>
@@ -1408,11 +1434,11 @@
             <objects>
                 <viewController id="AQx-Yv-Ia3" customClass="ResetViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="f8x-hR-7lO">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="50"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="50"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="g5X-EB-8z1">
-                                <rect key="frame" x="126" y="10" width="162" height="30"/>
+                                <rect key="frame" x="106.5" y="10" width="162" height="30"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                                 <state key="normal" title="Send Reset Command">
                                     <color key="titleColor" systemColor="systemRedColor"/>
@@ -1438,7 +1464,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iIR-8p-8hU" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3278" y="531"/>
+            <point key="canvasLocation" x="3277" y="695"/>
         </scene>
         <!--Images View Controller-->
         <scene sceneID="eHc-wP-aT5">
@@ -1879,6 +1905,66 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="vcP-fJ-rWz" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="3277.5999999999999" y="1183.3583208395803"/>
+        </scene>
+        <!--Settings View Controller-->
+        <scene sceneID="oY3-cZ-d9D">
+            <objects>
+                <viewController id="ybJ-Ok-uX5" customClass="SettingsViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="nqE-jI-OzR">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="110"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap FACTORY RESET button to erase application storage." textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YU3-OM-W6Q">
+                                <rect key="frame" x="16" y="16" width="343" height="33.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" systemColor="secondaryLabelColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="E7c-OD-5u0">
+                                <rect key="frame" x="16" y="63.5" width="359" height="1"/>
+                                <color key="backgroundColor" systemColor="separatorColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="1" id="g2j-kJ-CAl"/>
+                                </constraints>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="V7p-zg-afd">
+                                <rect key="frame" x="259" y="72" width="100" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="G1z-h6-8N3"/>
+                                    <constraint firstAttribute="width" constant="100" id="mz9-CU-UfU"/>
+                                </constraints>
+                                <state key="normal" title="Factory Reset">
+                                    <color key="titleColor" systemColor="systemRedColor"/>
+                                </state>
+                                <state key="disabled">
+                                    <color key="titleColor" red="0.96078431369999995" green="0.70744344869999998" blue="0.7120465936" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="factoryReset:" destination="ybJ-Ok-uX5" eventType="touchUpInside" id="imu-Pa-6a8"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="RYO-Dh-C0I"/>
+                        <color key="backgroundColor" systemColor="tableCellGroupedBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="E7c-OD-5u0" firstAttribute="top" secondItem="YU3-OM-W6Q" secondAttribute="bottom" constant="14" id="2eT-rq-4z8"/>
+                            <constraint firstItem="E7c-OD-5u0" firstAttribute="leading" secondItem="nqE-jI-OzR" secondAttribute="leading" constant="16" id="7ZN-wp-Apm"/>
+                            <constraint firstItem="YU3-OM-W6Q" firstAttribute="top" secondItem="nqE-jI-OzR" secondAttribute="topMargin" constant="16" id="Bsj-lj-tOt"/>
+                            <constraint firstItem="YU3-OM-W6Q" firstAttribute="leading" secondItem="nqE-jI-OzR" secondAttribute="leadingMargin" id="CiG-YY-ra2"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="V7p-zg-afd" secondAttribute="bottom" constant="8" id="W9H-jU-P5r"/>
+                            <constraint firstItem="V7p-zg-afd" firstAttribute="top" secondItem="E7c-OD-5u0" secondAttribute="bottom" constant="7.5" id="Zhx-MB-e0O"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="YU3-OM-W6Q" secondAttribute="trailing" id="qCB-EP-KjD"/>
+                            <constraint firstAttribute="trailing" secondItem="E7c-OD-5u0" secondAttribute="trailing" id="rO1-at-DBn"/>
+                            <constraint firstItem="V7p-zg-afd" firstAttribute="trailing" secondItem="nqE-jI-OzR" secondAttribute="trailingMargin" id="uo0-1Z-6T8"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="factoryResetButton" destination="V7p-zg-afd" id="CdF-Ne-dcq"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Eiu-ld-B6r" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3278" y="501"/>
         </scene>
     </scenes>
     <resources>
