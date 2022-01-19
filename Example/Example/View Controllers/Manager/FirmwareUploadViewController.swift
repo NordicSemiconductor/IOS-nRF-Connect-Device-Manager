@@ -46,7 +46,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         
         let alertController = UIAlertController(title: "Select Core Slot", message: nil, preferredStyle: .actionSheet)
         for image in package.images {
-            alertController.addAction(UIAlertAction(title: package.imageName(at: image.image), style: .default) { [weak self]
+            alertController.addAction(UIAlertAction(title: McuMgrPackage.imageName(at: image.image), style: .default) { [weak self]
                 action in
                 self?.actionStart.isHidden = true
                 self?.actionPause.isHidden = false
@@ -54,7 +54,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
                 self?.actionSelect.isEnabled = false
                 self?.imageSlot = image.image
                 self?.status.textColor = .primary
-                self?.status.text = "UPLOADING \(package.imageName(at: image.image))..."
+                self?.status.text = "UPLOADING \(McuMgrPackage.imageName(at: image.image))..."
                 _ = self?.imageManager.upload(images: [ImageManager.Image(image: image.image, data: image.data)], delegate: self)
             })
         }
@@ -79,8 +79,8 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
     @IBAction func resume(_ sender: UIButton) {
         status.textColor = .primary
-        if let package = package, let image = self.imageSlot {
-            status.text = "UPLOADING IMAGE \(package.imageName(at: image))..."
+        if let image = self.imageSlot {
+            status.text = "UPLOADING IMAGE \(McuMgrPackage.imageName(at: image))..."
         } else {
             status.text = "UPLOADING..."
         }
