@@ -184,6 +184,7 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
         do {
             package = try McuMgrPackage(from: url)
+            fileName.text = url.lastPathComponent
             fileSize.text = package?.sizeString()
             fileSize.numberOfLines = 0
             fileHash.text = try package?.hashString()

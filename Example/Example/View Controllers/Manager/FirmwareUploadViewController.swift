@@ -30,13 +30,43 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     }
     
     @IBAction func start(_ sender: UIButton) {
-        actionStart.isHidden = true
-        actionPause.isHidden = false
-        actionCancel.isHidden = false
-        actionSelect.isEnabled = false
-        status.textColor = .primary
-        status.text = "UPLOADING..."
-        _ = imageManager.upload(images: package!.images, delegate: self)
+        guard let package = package else { return }
+        
+        guard package.images.count > 1 else {
+            actionStart.isHidden = true
+            actionPause.isHidden = false
+            actionCancel.isHidden = false
+            actionSelect.isEnabled = false
+            imageSlot = 0
+            status.textColor = .primary
+            status.text = "UPLOADING..."
+            _ = imageManager.upload(images: [ImageManager.Image(image: 0, data: package.images[0].data)], delegate: self)
+            return
+        }
+        
+        let alertController = UIAlertController(title: "Select Core Slot", message: nil, preferredStyle: .actionSheet)
+        for image in package.images {
+            alertController.addAction(UIAlertAction(title: package.imageName(at: image.image), style: .default) { [weak self]
+                action in
+                self?.actionStart.isHidden = true
+                self?.actionPause.isHidden = false
+                self?.actionCancel.isHidden = false
+                self?.actionSelect.isEnabled = false
+                self?.imageSlot = image.image
+                self?.status.textColor = .primary
+                self?.status.text = "UPLOADING \(package.imageName(at: image.image))..."
+                _ = self?.imageManager.upload(images: [ImageManager.Image(image: image.image, data: image.data)], delegate: self)
+            })
+        }
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+    
+        // If the device is an iPad set the popover presentation controller
+        if let presenter = alertController.popoverPresentationController {
+            presenter.sourceView = self.view
+            presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+            presenter.permittedArrowDirections = []
+        }
+        present(alertController, animated: true)
     }
     
     @IBAction func pause(_ sender: UIButton) {
@@ -49,7 +79,11 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
     @IBAction func resume(_ sender: UIButton) {
         status.textColor = .primary
-        status.text = "UPLOADING..."
+        if let package = package, let image = self.imageSlot {
+            status.text = "UPLOADING IMAGE \(package.imageName(at: image))..."
+        } else {
+            status.text = "UPLOADING..."
+        }
         actionPause.isHidden = false
         actionResume.isHidden = true
         imageManager.continueUpload()
@@ -58,6 +92,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         imageManager.cancelUpload()
     }
     
+    private var imageSlot: Int?
     private var package: McuMgrPackage?
     private var imageManager: ImageManager!
     var transporter: McuMgrTransport! {
@@ -124,6 +159,8 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
         do {
             let package = try McuMgrPackage(from: url)
+            self.package = package
+            fileName.text = url.lastPathComponent
             fileSize.text = package.sizeString()
             fileSize.numberOfLines = 0
             fileHash.text = try package.hashString()

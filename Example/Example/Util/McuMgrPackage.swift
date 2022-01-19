@@ -36,17 +36,18 @@ struct McuMgrPackage {
     
     // MARK: - API
     
+    func imageName(at index: Int) -> String {
+        switch index {
+        case 0: return "App Core"
+        case 1: return "Net Core"
+        default: return "Image \(index)"
+        }
+    }
+    
     func sizeString() -> String {
         var sizeString = ""
         for (i, image) in images.enumerated() {
-            let coreString: String
-            switch image.image {
-            case 0: coreString = "(app core)"
-            case 1: coreString = "(net core)"
-            default: coreString = ""
-            }
-            
-            sizeString += "\(image.data.count) bytes \(coreString)"
+            sizeString += "\(image.data.count) bytes (\(imageName(at: i)))"
             guard i != images.count - 1 else { continue }
             sizeString += "\n"
         }
@@ -56,15 +57,8 @@ struct McuMgrPackage {
     func hashString() throws -> String {
         var hashString = ""
         for (i, image) in images.enumerated() {
-            let coreString: String
-            switch image.image {
-            case 0: coreString = "(app core)"
-            case 1: coreString = "(net core)"
-            default: coreString = ""
-            }
-            
             let hash = try McuMgrImage(data: image.data).hash
-            hashString += "\(hash.hexEncodedString(options: .upperCase).prefix(6)) \(coreString)"
+            hashString += "\(hash.hexEncodedString(options: .upperCase).prefix(6)) (\(imageName(at: i)))"
             guard i != images.count - 1 else { continue }
             hashString += "\n"
         }
