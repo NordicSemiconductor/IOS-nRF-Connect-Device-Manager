@@ -683,7 +683,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         self.log(msg: "Upgrade complete.", atLevel: .application)
-        self.reset()
+        self.success()
     }
 }
 
