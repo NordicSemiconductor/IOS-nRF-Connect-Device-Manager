@@ -1,0 +1,1016 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 51;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0090EEB9A542A3591C983544A6370B12 /* McuMgrHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150EEFC8A1D2F33828CA535183F2365D /* McuMgrHeader.swift */; };
+		08F8A16D4A8FE3CE3BDB63E9E8A144AC /* FixedWidthInteger+Bytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA5169130256CBA200977DA8DB3C4F62 /* FixedWidthInteger+Bytes.swift */; };
+		24FE4B73D06479EE1EB9700253A4D11B /* McuMgrResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC16525DAEEDC943FA069551E16B04E /* McuMgrResponse.swift */; };
+		2A49E25151D987B68128A38120C333FE /* KeyedEncodingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F72D7C957236F0920032DDA21872C18B /* KeyedEncodingContainer.swift */; };
+		310C3EC5D25889366F58C7EF512F1E0C /* McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E32FE80F8B04EFF80C691678CBBD01 /* McuManager.swift */; };
+		33E22C53B67A31789A3C66D74CD85ADA /* McuManager-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 97DBFBFE5C1FE754D9A7A072AE555279 /* McuManager-dummy.m */; };
+		33FA492D8DBAD5942E686DCF21726D3F /* ImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 026E7F242A17586E4F52079079E7720B /* ImageManager.swift */; };
+		3BCA533103C26995F0679B7865BDA8B3 /* SwiftCBOR-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = AD216CB7EF5A30365A37B6CC58BA8E1D /* SwiftCBOR-dummy.m */; };
+		3D2740252812FAA5155DF266EF92D975 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166546B7C0BF8BBD9BB0C9E7472FD6F7 /* LogManager.swift */; };
+		40F2D80E308BCF819FB8DB4055825A79 /* Util.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B93DBF79CB28400A885EB9E36428F0 /* Util.swift */; };
+		4123F9840C5B81D8433E222F8CA5B0CC /* CBOR+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DC809FF0B5E5E3DB73509A6BE179EB /* CBOR+McuManager.swift */; };
+		4135CDE43DE095BA11E007F9AE7BAD79 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */; };
+		4C7E8E91A62030F760B6B2609DE5F9AE /* FileSystemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73CA8375B5DC68155CE852C871865AD9 /* FileSystemManager.swift */; };
+		4E86992BC74C0C5AA4E4F0BDEECA1173 /* StatsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADE21201DE5CD65E886C12904CEBBAD /* StatsManager.swift */; };
+		510CE0C4335B9E14B02266F94483C1AD /* Pods-nRF Connect Device Manager-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 5D2AA438261C2A6C486441FFBDD0E4FD /* Pods-nRF Connect Device Manager-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5A051D4F3E88017800472B63B4E7EF28 /* CBOREncodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0656E9327407FA9C80393D06EE65CC4E /* CBOREncodable.swift */; };
+		62D29B9B93B0F454F2786F2C9ED5B16F /* CrashManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16C85B76FDA8B225DE077BE7BDB73DCA /* CrashManager.swift */; };
+		67D62AE64CA53FCBE1427B7C4D04CE85 /* KeyedDecodingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B9EE080557ED14C0E3C15A01409C3BE /* KeyedDecodingContainer.swift */; };
+		69131E9A15FCB8B75A8F3EC5A2C5F0BC /* CodableCBORDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA5F2A5AFC339653D1DCB19D7F94F745 /* CodableCBORDecoder.swift */; };
+		7574E123B3E4A6FCEC65E0B4AB73DA0A /* McuMgrTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2023A6208B19ADF97CDF3340F2653FB8 /* McuMgrTransport.swift */; };
+		8378449C4C7AEBBF71EE10478720B107 /* McuMgrBleTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00819793DAB10FBAA3757B164A0A5CAE /* McuMgrBleTransport.swift */; };
+		87652A67E9B8ADA67ED03ECBC099D21F /* SingleValueEncodingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45CFE8AF6CD2E5D2C63590A82D7B27F0 /* SingleValueEncodingContainer.swift */; };
+		8A90D0B43009F835D0FBCC430FAEEB5C /* McuMgrLogDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9BC4C83813064EA77EC74F9678E539 /* McuMgrLogDelegate.swift */; };
+		8FF956AE8E04AADAB7E331A1B167F8A4 /* AnyCodingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E0B1E70AA4015E744566F375DA7739F /* AnyCodingKey.swift */; };
+		93C90063DD63F979C3401C256423F174 /* DefaultManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF5167EF10A3359EE4AF14CBAD5D9E2B /* DefaultManager.swift */; };
+		982B917FE47268AD2F884991D6E2BA56 /* RunTestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 995A230CCE3814759F5A95A5568AEB50 /* RunTestManager.swift */; };
+		9A6DBDD7C6ADC08233AD24736C1A4F16 /* SingleValueDecodingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA93F92B98FCE35234F61D6F0EEAF2F /* SingleValueDecodingContainer.swift */; };
+		9AD9DB36BCFFEB8B793757004662A4EB /* String+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3924F3EF8673A169E95DCCE9597643D /* String+McuManager.swift */; };
+		9DA8417624016E49AE487799E2E80357 /* SwiftCBOR-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 368A2348B007E1D1327A06302392DF07 /* SwiftCBOR-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A05F22EB209113E3CAA6DE99E42EB4B8 /* FirmwareUpgradeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00C22C983A6356B0E68272EC766F93C9 /* FirmwareUpgradeManager.swift */; };
+		A0EBB023025944FBC929338E5AA0E23F /* BasicManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A4D28525BB334DE404D163CE7F8308 /* BasicManager.swift */; };
+		A92F266CFF5FB0F0AD5AC399FB4F26EB /* CodableCBOREncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E26DE4001235D71742D85F2684C881BA /* CodableCBOREncoder.swift */; };
+		B95C4B85DEDA7F3E4876733324D34996 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */; };
+		CC2CF7BCAE0009BC8517CBC1F0B6B54E /* McuMgrImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1538207442F5CF07CF7AB17CDA18693F /* McuMgrImage.swift */; };
+		CDC10034817373FC7C66DE86333D8296 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */; };
+		D2088A01864FDB2971D4CD0DA1E2E900 /* CBORDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 864BEE720296B976767B696029F85D3F /* CBORDecoder.swift */; };
+		D454F896FABC611AFD8D248889C5DF7E /* Data+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD48A91209E51295E0C0AA91E8F283E /* Data+McuManager.swift */; };
+		D6DBA9D7B09FDABC73E96A155E6A1DE6 /* Pods-nRF Connect Device Manager-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 80785405BAFCBCC3423335C699FBEB4D /* Pods-nRF Connect Device Manager-dummy.m */; };
+		DB80C4A5A6B9F90CC6DF6A1222E0D56D /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22F940146EBD675A8CAFC2C7DD81843 /* ConfigManager.swift */; };
+		DEBFFE7D258C3E1D4545D3E9DE727674 /* FirmwareUpgradeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF38934FC46652FBB98AEACC1FC755E3 /* FirmwareUpgradeController.swift */; };
+		E0E03D70C7E933420ED5377B2EE044C8 /* McuManager-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = CBEF521D9E64EF59E47EEAE7A64CC2A6 /* McuManager-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E37F3F18D7A641A5C3D0DE6E5FEF615C /* CBOR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87E4EF63F5A5291F238D4385AFB8859B /* CBOR.swift */; };
+		E75AD99E6292CE9E274C3A8EEE7EF6E5 /* UnkeyedEncodingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE82C8EC3CD7B4046FFB80C881CC6C7 /* UnkeyedEncodingContainer.swift */; };
+		EE3263BBC67FC0CC8C34BD94FA69D0A7 /* CBOR+String.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC6364242A412ECA30473D97E964FB13 /* CBOR+String.swift */; };
+		EF38134C1596E3D1CBFF6EE1A1913B8A /* CBORInputStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C31F07024B859D0138F04689F941854 /* CBORInputStream.swift */; };
+		F754513429A6A4F413BA5F56F8D6F869 /* CBOREncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E28ADF3ABE20A9A68C7CF275A97DC2F /* CBOREncoder.swift */; };
+		F7FE1F79A4BEAAE0D83D0A4928025638 /* ResultLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBD63902CB807A10199F0112B10E406F /* ResultLock.swift */; };
+		FA4DF565501526BB3ECEACC9BDED4881 /* UnkeyedDecodingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C40EE828B515CFE6DBC16057343241 /* UnkeyedDecodingContainer.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		49B24C19BD5FFEB0281B9A3D7287F24E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 83AB5031998E119DFDFFDA70C3749F33;
+			remoteInfo = SwiftCBOR;
+		};
+		4DF68ECA6085E9373FF1CC6B6449E974 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 13C31EBA37B27CC447C2782137411552;
+			remoteInfo = McuManager;
+		};
+		7F6262E242F384D2A939CD4964B06574 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 83AB5031998E119DFDFFDA70C3749F33;
+			remoteInfo = SwiftCBOR;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		00819793DAB10FBAA3757B164A0A5CAE /* McuMgrBleTransport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = McuMgrBleTransport.swift; sourceTree = "<group>"; };
+		00C22C983A6356B0E68272EC766F93C9 /* FirmwareUpgradeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeManager.swift; sourceTree = "<group>"; };
+		026E7F242A17586E4F52079079E7720B /* ImageManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageManager.swift; sourceTree = "<group>"; };
+		0656E9327407FA9C80393D06EE65CC4E /* CBOREncodable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBOREncodable.swift; path = Sources/SwiftCBOR/CBOREncodable.swift; sourceTree = "<group>"; };
+		067BD14339B48C5AF2EADC2BEF07F358 /* SwiftCBOR.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = SwiftCBOR.debug.xcconfig; sourceTree = "<group>"; };
+		07DC809FF0B5E5E3DB73509A6BE179EB /* CBOR+McuManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CBOR+McuManager.swift"; sourceTree = "<group>"; };
+		150EEFC8A1D2F33828CA535183F2365D /* McuMgrHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = McuMgrHeader.swift; path = Source/McuMgrHeader.swift; sourceTree = "<group>"; };
+		1538207442F5CF07CF7AB17CDA18693F /* McuMgrImage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = McuMgrImage.swift; path = Source/McuMgrImage.swift; sourceTree = "<group>"; };
+		166546B7C0BF8BBD9BB0C9E7472FD6F7 /* LogManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
+		16C85B76FDA8B225DE077BE7BDB73DCA /* CrashManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CrashManager.swift; sourceTree = "<group>"; };
+		1DE82C8EC3CD7B4046FFB80C881CC6C7 /* UnkeyedEncodingContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UnkeyedEncodingContainer.swift; path = Sources/SwiftCBOR/Encoder/UnkeyedEncodingContainer.swift; sourceTree = "<group>"; };
+		2023A6208B19ADF97CDF3340F2653FB8 /* McuMgrTransport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = McuMgrTransport.swift; path = Source/McuMgrTransport.swift; sourceTree = "<group>"; };
+		204BCAB8C282EC4D484ACF37ADFC5110 /* Pods-nRF Connect Device Manager-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-nRF Connect Device Manager-frameworks.sh"; sourceTree = "<group>"; };
+		2573F5A8F8BE58B03FE595BBB0D4B1D8 /* McuManager-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "McuManager-Info.plist"; sourceTree = "<group>"; };
+		303CA05C32C05255B2EFF18E8DFCDF2B /* McuManager.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = McuManager.modulemap; sourceTree = "<group>"; };
+		368A2348B007E1D1327A06302392DF07 /* SwiftCBOR-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "SwiftCBOR-umbrella.h"; sourceTree = "<group>"; };
+		3E0B1E70AA4015E744566F375DA7739F /* AnyCodingKey.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnyCodingKey.swift; path = Sources/SwiftCBOR/AnyCodingKey.swift; sourceTree = "<group>"; };
+		43F4040F10DFB7425D936CF9B47C397A /* SwiftCBOR-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "SwiftCBOR-prefix.pch"; sourceTree = "<group>"; };
+		45CFE8AF6CD2E5D2C63590A82D7B27F0 /* SingleValueEncodingContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SingleValueEncodingContainer.swift; path = Sources/SwiftCBOR/Encoder/SingleValueEncodingContainer.swift; sourceTree = "<group>"; };
+		46596A5CE12BFF17F8E5821796B848A8 /* Pods-nRF Connect Device Manager */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = "Pods-nRF Connect Device Manager"; path = Pods_nRF_Connect_Device_Manager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E28ADF3ABE20A9A68C7CF275A97DC2F /* CBOREncoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBOREncoder.swift; path = Sources/SwiftCBOR/CBOREncoder.swift; sourceTree = "<group>"; };
+		4F95A39E01667ADBC90695F7614923F2 /* Pods-nRF Connect Device Manager-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-nRF Connect Device Manager-acknowledgements.markdown"; sourceTree = "<group>"; };
+		4F99F5A01E42B2B881686C5373626DC1 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE; sourceTree = "<group>"; };
+		51C28725915C92A4A75B2B31A59D3B2A /* McuManager.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = McuManager.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		5D2AA438261C2A6C486441FFBDD0E4FD /* Pods-nRF Connect Device Manager-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-nRF Connect Device Manager-umbrella.h"; sourceTree = "<group>"; };
+		68E32FE80F8B04EFF80C691678CBBD01 /* McuManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = McuManager.swift; path = Source/McuManager.swift; sourceTree = "<group>"; };
+		6A0DEDFE8DDD1F5044D4829093A6DE90 /* McuManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = McuManager.release.xcconfig; sourceTree = "<group>"; };
+		6B9EE080557ED14C0E3C15A01409C3BE /* KeyedDecodingContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KeyedDecodingContainer.swift; path = Sources/SwiftCBOR/Decoder/KeyedDecodingContainer.swift; sourceTree = "<group>"; };
+		6DE05C880299B9FD012CBE2BE1E1CAD4 /* SwiftCBOR.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = SwiftCBOR.release.xcconfig; sourceTree = "<group>"; };
+		6EC16525DAEEDC943FA069551E16B04E /* McuMgrResponse.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = McuMgrResponse.swift; path = Source/McuMgrResponse.swift; sourceTree = "<group>"; };
+		73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		73CA8375B5DC68155CE852C871865AD9 /* FileSystemManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileSystemManager.swift; sourceTree = "<group>"; };
+		7615D0C10280FD43E6308ED2637CEAA7 /* McuManager */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = McuManager; path = McuManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7BB6305D8243A34803D32845FEEF8306 /* SwiftCBOR.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = SwiftCBOR.modulemap; sourceTree = "<group>"; };
+		7C31F07024B859D0138F04689F941854 /* CBORInputStream.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBORInputStream.swift; path = Sources/SwiftCBOR/CBORInputStream.swift; sourceTree = "<group>"; };
+		7CD48A91209E51295E0C0AA91E8F283E /* Data+McuManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Data+McuManager.swift"; sourceTree = "<group>"; };
+		80785405BAFCBCC3423335C699FBEB4D /* Pods-nRF Connect Device Manager-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-nRF Connect Device Manager-dummy.m"; sourceTree = "<group>"; };
+		864BEE720296B976767B696029F85D3F /* CBORDecoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBORDecoder.swift; path = Sources/SwiftCBOR/CBORDecoder.swift; sourceTree = "<group>"; };
+		87E4EF63F5A5291F238D4385AFB8859B /* CBOR.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBOR.swift; path = Sources/SwiftCBOR/CBOR.swift; sourceTree = "<group>"; };
+		8E8D46ED6D55505FAA9B648C09DAA465 /* Pods-nRF Connect Device Manager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-nRF Connect Device Manager.debug.xcconfig"; sourceTree = "<group>"; };
+		93FEEDA749047D3B9635E55DCE76A214 /* Pods-nRF Connect Device Manager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-nRF Connect Device Manager.release.xcconfig"; sourceTree = "<group>"; };
+		97DBFBFE5C1FE754D9A7A072AE555279 /* McuManager-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "McuManager-dummy.m"; sourceTree = "<group>"; };
+		995A230CCE3814759F5A95A5568AEB50 /* RunTestManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunTestManager.swift; sourceTree = "<group>"; };
+		997096D5334C277417409ED2D9794217 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
+		9C1659E67C8394B85E43602F1A8BB837 /* Pods-nRF Connect Device Manager-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-nRF Connect Device Manager-acknowledgements.plist"; sourceTree = "<group>"; };
+		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		9DA93F92B98FCE35234F61D6F0EEAF2F /* SingleValueDecodingContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SingleValueDecodingContainer.swift; path = Sources/SwiftCBOR/Decoder/SingleValueDecodingContainer.swift; sourceTree = "<group>"; };
+		A3924F3EF8673A169E95DCCE9597643D /* String+McuManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "String+McuManager.swift"; sourceTree = "<group>"; };
+		A996FC97FD844D0B454B0C52DD2440EE /* Pods-nRF Connect Device Manager-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-nRF Connect Device Manager-Info.plist"; sourceTree = "<group>"; };
+		AC6364242A412ECA30473D97E964FB13 /* CBOR+String.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "CBOR+String.swift"; sourceTree = "<group>"; };
+		AD216CB7EF5A30365A37B6CC58BA8E1D /* SwiftCBOR-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "SwiftCBOR-dummy.m"; sourceTree = "<group>"; };
+		BBD63902CB807A10199F0112B10E406F /* ResultLock.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ResultLock.swift; sourceTree = "<group>"; };
+		BC9BC4C83813064EA77EC74F9678E539 /* McuMgrLogDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = McuMgrLogDelegate.swift; path = Source/McuMgrLogDelegate.swift; sourceTree = "<group>"; };
+		C07FA50B00F933035E03391A536540D9 /* Pods-nRF Connect Device Manager.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-nRF Connect Device Manager.modulemap"; sourceTree = "<group>"; };
+		CADE21201DE5CD65E886C12904CEBBAD /* StatsManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatsManager.swift; sourceTree = "<group>"; };
+		CBEF521D9E64EF59E47EEAE7A64CC2A6 /* McuManager-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "McuManager-umbrella.h"; sourceTree = "<group>"; };
+		CE09E24D8F193EB05E20CB2CD76EA1A7 /* SwiftCBOR */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = SwiftCBOR; path = SwiftCBOR.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CF38934FC46652FBB98AEACC1FC755E3 /* FirmwareUpgradeController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeController.swift; sourceTree = "<group>"; };
+		D1B93DBF79CB28400A885EB9E36428F0 /* Util.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Util.swift; path = Sources/SwiftCBOR/Util.swift; sourceTree = "<group>"; };
+		D5A4D28525BB334DE404D163CE7F8308 /* BasicManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BasicManager.swift; sourceTree = "<group>"; };
+		DD836E091D107609C9BAD40DD4D5B28D /* SwiftCBOR-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "SwiftCBOR-Info.plist"; sourceTree = "<group>"; };
+		E22F940146EBD675A8CAFC2C7DD81843 /* ConfigManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
+		E26DE4001235D71742D85F2684C881BA /* CodableCBOREncoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CodableCBOREncoder.swift; path = Sources/SwiftCBOR/Encoder/CodableCBOREncoder.swift; sourceTree = "<group>"; };
+		EA5169130256CBA200977DA8DB3C4F62 /* FixedWidthInteger+Bytes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "FixedWidthInteger+Bytes.swift"; path = "Sources/SwiftCBOR/FixedWidthInteger+Bytes.swift"; sourceTree = "<group>"; };
+		ECAF959971DF5EA32C5A618CA1EB3322 /* McuManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = McuManager.debug.xcconfig; sourceTree = "<group>"; };
+		EF5167EF10A3359EE4AF14CBAD5D9E2B /* DefaultManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DefaultManager.swift; sourceTree = "<group>"; };
+		F3C40EE828B515CFE6DBC16057343241 /* UnkeyedDecodingContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UnkeyedDecodingContainer.swift; path = Sources/SwiftCBOR/Decoder/UnkeyedDecodingContainer.swift; sourceTree = "<group>"; };
+		F3C4C31A04A2AAE487584463C49B0D96 /* McuManager-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "McuManager-prefix.pch"; sourceTree = "<group>"; };
+		F72D7C957236F0920032DDA21872C18B /* KeyedEncodingContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KeyedEncodingContainer.swift; path = Sources/SwiftCBOR/Encoder/KeyedEncodingContainer.swift; sourceTree = "<group>"; };
+		FA5F2A5AFC339653D1DCB19D7F94F745 /* CodableCBORDecoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CodableCBORDecoder.swift; path = Sources/SwiftCBOR/Decoder/CodableCBORDecoder.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		27A2E27FB7DE0E87BE91C4B1D2FE5D08 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4135CDE43DE095BA11E007F9AE7BAD79 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A5A236A8C7781507AA6E3B670E74E35F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B95C4B85DEDA7F3E4876733324D34996 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ED00ADD53CB45B8B4207E1D0E1D1C6CE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CDC10034817373FC7C66DE86333D8296 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		110A36649F68FF354BE402B5F7CD1E58 /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				7BB6305D8243A34803D32845FEEF8306 /* SwiftCBOR.modulemap */,
+				AD216CB7EF5A30365A37B6CC58BA8E1D /* SwiftCBOR-dummy.m */,
+				DD836E091D107609C9BAD40DD4D5B28D /* SwiftCBOR-Info.plist */,
+				43F4040F10DFB7425D936CF9B47C397A /* SwiftCBOR-prefix.pch */,
+				368A2348B007E1D1327A06302392DF07 /* SwiftCBOR-umbrella.h */,
+				067BD14339B48C5AF2EADC2BEF07F358 /* SwiftCBOR.debug.xcconfig */,
+				6DE05C880299B9FD012CBE2BE1E1CAD4 /* SwiftCBOR.release.xcconfig */,
+			);
+			name = "Support Files";
+			path = "../Target Support Files/SwiftCBOR";
+			sourceTree = "<group>";
+		};
+		1242A612312EFA15008B1643D6C66E92 /* Targets Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				92B976E6A77AB2A04B26FF863AADD610 /* Pods-nRF Connect Device Manager */,
+			);
+			name = "Targets Support Files";
+			sourceTree = "<group>";
+		};
+		1ABFFB985A38F10E616F4CF91D611AD3 /* McuManager */ = {
+			isa = PBXGroup;
+			children = (
+				68E32FE80F8B04EFF80C691678CBBD01 /* McuManager.swift */,
+				150EEFC8A1D2F33828CA535183F2365D /* McuMgrHeader.swift */,
+				1538207442F5CF07CF7AB17CDA18693F /* McuMgrImage.swift */,
+				BC9BC4C83813064EA77EC74F9678E539 /* McuMgrLogDelegate.swift */,
+				6EC16525DAEEDC943FA069551E16B04E /* McuMgrResponse.swift */,
+				2023A6208B19ADF97CDF3340F2653FB8 /* McuMgrTransport.swift */,
+				C87B98438B01BD5E4E72312CB46291D5 /* Bluetooth */,
+				28EE73591AEFE642B409084D86D765C1 /* Extensions */,
+				3EF1CA0F835602CF616C82ED1ADD73BE /* Managers */,
+				B137C93EC725DF236FA2F7058E3A95BE /* Pod */,
+				A31249A37B4B5D4B07D6885A8D402C17 /* Support Files */,
+				D33955A5EC3C2F7FD73778AC56C40DFE /* Utils */,
+			);
+			name = McuManager;
+			path = ../..;
+			sourceTree = "<group>";
+		};
+		28EE73591AEFE642B409084D86D765C1 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				07DC809FF0B5E5E3DB73509A6BE179EB /* CBOR+McuManager.swift */,
+				7CD48A91209E51295E0C0AA91E8F283E /* Data+McuManager.swift */,
+				A3924F3EF8673A169E95DCCE9597643D /* String+McuManager.swift */,
+			);
+			name = Extensions;
+			path = Source/Extensions;
+			sourceTree = "<group>";
+		};
+		3EF1CA0F835602CF616C82ED1ADD73BE /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				D5A4D28525BB334DE404D163CE7F8308 /* BasicManager.swift */,
+				E22F940146EBD675A8CAFC2C7DD81843 /* ConfigManager.swift */,
+				16C85B76FDA8B225DE077BE7BDB73DCA /* CrashManager.swift */,
+				EF5167EF10A3359EE4AF14CBAD5D9E2B /* DefaultManager.swift */,
+				73CA8375B5DC68155CE852C871865AD9 /* FileSystemManager.swift */,
+				026E7F242A17586E4F52079079E7720B /* ImageManager.swift */,
+				166546B7C0BF8BBD9BB0C9E7472FD6F7 /* LogManager.swift */,
+				995A230CCE3814759F5A95A5568AEB50 /* RunTestManager.swift */,
+				CADE21201DE5CD65E886C12904CEBBAD /* StatsManager.swift */,
+				66D027FC383AF50F7EC2FB7A3D606EC9 /* DFU */,
+			);
+			name = Managers;
+			path = Source/Managers;
+			sourceTree = "<group>";
+		};
+		578452D2E740E91742655AC8F1636D1F /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		66D027FC383AF50F7EC2FB7A3D606EC9 /* DFU */ = {
+			isa = PBXGroup;
+			children = (
+				CF38934FC46652FBB98AEACC1FC755E3 /* FirmwareUpgradeController.swift */,
+				00C22C983A6356B0E68272EC766F93C9 /* FirmwareUpgradeManager.swift */,
+			);
+			name = DFU;
+			path = DFU;
+			sourceTree = "<group>";
+		};
+		776C3C4EE6FF4C678C077A13ADDB6B29 /* SwiftCBOR */ = {
+			isa = PBXGroup;
+			children = (
+				3E0B1E70AA4015E744566F375DA7739F /* AnyCodingKey.swift */,
+				87E4EF63F5A5291F238D4385AFB8859B /* CBOR.swift */,
+				864BEE720296B976767B696029F85D3F /* CBORDecoder.swift */,
+				0656E9327407FA9C80393D06EE65CC4E /* CBOREncodable.swift */,
+				4E28ADF3ABE20A9A68C7CF275A97DC2F /* CBOREncoder.swift */,
+				7C31F07024B859D0138F04689F941854 /* CBORInputStream.swift */,
+				FA5F2A5AFC339653D1DCB19D7F94F745 /* CodableCBORDecoder.swift */,
+				E26DE4001235D71742D85F2684C881BA /* CodableCBOREncoder.swift */,
+				EA5169130256CBA200977DA8DB3C4F62 /* FixedWidthInteger+Bytes.swift */,
+				6B9EE080557ED14C0E3C15A01409C3BE /* KeyedDecodingContainer.swift */,
+				F72D7C957236F0920032DDA21872C18B /* KeyedEncodingContainer.swift */,
+				9DA93F92B98FCE35234F61D6F0EEAF2F /* SingleValueDecodingContainer.swift */,
+				45CFE8AF6CD2E5D2C63590A82D7B27F0 /* SingleValueEncodingContainer.swift */,
+				F3C40EE828B515CFE6DBC16057343241 /* UnkeyedDecodingContainer.swift */,
+				1DE82C8EC3CD7B4046FFB80C881CC6C7 /* UnkeyedEncodingContainer.swift */,
+				D1B93DBF79CB28400A885EB9E36428F0 /* Util.swift */,
+				110A36649F68FF354BE402B5F7CD1E58 /* Support Files */,
+			);
+			name = SwiftCBOR;
+			path = SwiftCBOR;
+			sourceTree = "<group>";
+		};
+		92B976E6A77AB2A04B26FF863AADD610 /* Pods-nRF Connect Device Manager */ = {
+			isa = PBXGroup;
+			children = (
+				C07FA50B00F933035E03391A536540D9 /* Pods-nRF Connect Device Manager.modulemap */,
+				4F95A39E01667ADBC90695F7614923F2 /* Pods-nRF Connect Device Manager-acknowledgements.markdown */,
+				9C1659E67C8394B85E43602F1A8BB837 /* Pods-nRF Connect Device Manager-acknowledgements.plist */,
+				80785405BAFCBCC3423335C699FBEB4D /* Pods-nRF Connect Device Manager-dummy.m */,
+				204BCAB8C282EC4D484ACF37ADFC5110 /* Pods-nRF Connect Device Manager-frameworks.sh */,
+				A996FC97FD844D0B454B0C52DD2440EE /* Pods-nRF Connect Device Manager-Info.plist */,
+				5D2AA438261C2A6C486441FFBDD0E4FD /* Pods-nRF Connect Device Manager-umbrella.h */,
+				8E8D46ED6D55505FAA9B648C09DAA465 /* Pods-nRF Connect Device Manager.debug.xcconfig */,
+				93FEEDA749047D3B9635E55DCE76A214 /* Pods-nRF Connect Device Manager.release.xcconfig */,
+			);
+			name = "Pods-nRF Connect Device Manager";
+			path = "Target Support Files/Pods-nRF Connect Device Manager";
+			sourceTree = "<group>";
+		};
+		93EDFE3BD44C3B07D4B3F5756470A5AA /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				776C3C4EE6FF4C678C077A13ADDB6B29 /* SwiftCBOR */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		A31249A37B4B5D4B07D6885A8D402C17 /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				303CA05C32C05255B2EFF18E8DFCDF2B /* McuManager.modulemap */,
+				97DBFBFE5C1FE754D9A7A072AE555279 /* McuManager-dummy.m */,
+				2573F5A8F8BE58B03FE595BBB0D4B1D8 /* McuManager-Info.plist */,
+				F3C4C31A04A2AAE487584463C49B0D96 /* McuManager-prefix.pch */,
+				CBEF521D9E64EF59E47EEAE7A64CC2A6 /* McuManager-umbrella.h */,
+				ECAF959971DF5EA32C5A618CA1EB3322 /* McuManager.debug.xcconfig */,
+				6A0DEDFE8DDD1F5044D4829093A6DE90 /* McuManager.release.xcconfig */,
+			);
+			name = "Support Files";
+			path = "Example/Pods/Target Support Files/McuManager";
+			sourceTree = "<group>";
+		};
+		B137C93EC725DF236FA2F7058E3A95BE /* Pod */ = {
+			isa = PBXGroup;
+			children = (
+				4F99F5A01E42B2B881686C5373626DC1 /* LICENSE */,
+				51C28725915C92A4A75B2B31A59D3B2A /* McuManager.podspec */,
+				997096D5334C277417409ED2D9794217 /* README.md */,
+			);
+			name = Pod;
+			sourceTree = "<group>";
+		};
+		C87B98438B01BD5E4E72312CB46291D5 /* Bluetooth */ = {
+			isa = PBXGroup;
+			children = (
+				00819793DAB10FBAA3757B164A0A5CAE /* McuMgrBleTransport.swift */,
+			);
+			name = Bluetooth;
+			path = Source/Bluetooth;
+			sourceTree = "<group>";
+		};
+		CF1408CF629C7361332E53B88F7BD30C = {
+			isa = PBXGroup;
+			children = (
+				9D940727FF8FB9C785EB98E56350EF41 /* Podfile */,
+				F562EB0DA2B81301DB3C085CFCBB500F /* Development Pods */,
+				D210D550F4EA176C3123ED886F8F87F5 /* Frameworks */,
+				93EDFE3BD44C3B07D4B3F5756470A5AA /* Pods */,
+				D51D58424F83F493F4664D46A150B339 /* Products */,
+				1242A612312EFA15008B1643D6C66E92 /* Targets Support Files */,
+			);
+			sourceTree = "<group>";
+		};
+		D210D550F4EA176C3123ED886F8F87F5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				578452D2E740E91742655AC8F1636D1F /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D33955A5EC3C2F7FD73778AC56C40DFE /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				AC6364242A412ECA30473D97E964FB13 /* CBOR+String.swift */,
+				BBD63902CB807A10199F0112B10E406F /* ResultLock.swift */,
+			);
+			name = Utils;
+			path = Source/Utils;
+			sourceTree = "<group>";
+		};
+		D51D58424F83F493F4664D46A150B339 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7615D0C10280FD43E6308ED2637CEAA7 /* McuManager */,
+				46596A5CE12BFF17F8E5821796B848A8 /* Pods-nRF Connect Device Manager */,
+				CE09E24D8F193EB05E20CB2CD76EA1A7 /* SwiftCBOR */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F562EB0DA2B81301DB3C085CFCBB500F /* Development Pods */ = {
+			isa = PBXGroup;
+			children = (
+				1ABFFB985A38F10E616F4CF91D611AD3 /* McuManager */,
+			);
+			name = "Development Pods";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		40410884ACECC3FBFDAA2086D3BEE9A6 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				510CE0C4335B9E14B02266F94483C1AD /* Pods-nRF Connect Device Manager-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F6275E3B951F2B43CCCC0C09F349AE47 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9DA8417624016E49AE487799E2E80357 /* SwiftCBOR-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB4FC264611AAC534763D242BF3F23A4 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E0E03D70C7E933420ED5377B2EE044C8 /* McuManager-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		13C31EBA37B27CC447C2782137411552 /* McuManager */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 61EE64E278610B209815841E1C2D3176 /* Build configuration list for PBXNativeTarget "McuManager" */;
+			buildPhases = (
+				FB4FC264611AAC534763D242BF3F23A4 /* Headers */,
+				329F3E6A17CAD4B9A3D59DCD2F93B417 /* Sources */,
+				ED00ADD53CB45B8B4207E1D0E1D1C6CE /* Frameworks */,
+				DD6EB19ABB2A73DB7E09CFD80691D952 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0FCDA6B6C369F83ACD6B7E74C3E96672 /* PBXTargetDependency */,
+			);
+			name = McuManager;
+			productName = McuManager;
+			productReference = 7615D0C10280FD43E6308ED2637CEAA7 /* McuManager */;
+			productType = "com.apple.product-type.framework";
+		};
+		468F01194852E7E61B1E5DE6D95173D6 /* Pods-nRF Connect Device Manager */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4C0F62D8591CB4C91C1C23386922600E /* Build configuration list for PBXNativeTarget "Pods-nRF Connect Device Manager" */;
+			buildPhases = (
+				40410884ACECC3FBFDAA2086D3BEE9A6 /* Headers */,
+				F9CE6DCD0913F3A7A793A77A44912CC4 /* Sources */,
+				A5A236A8C7781507AA6E3B670E74E35F /* Frameworks */,
+				D35179444C143AD37DC45C469778C408 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7EABCA2EFD703E8BAD74ED4CAA9F6548 /* PBXTargetDependency */,
+				6FF32ECC273D177E5093832B46C5D356 /* PBXTargetDependency */,
+			);
+			name = "Pods-nRF Connect Device Manager";
+			productName = Pods_nRF_Connect_Device_Manager;
+			productReference = 46596A5CE12BFF17F8E5821796B848A8 /* Pods-nRF Connect Device Manager */;
+			productType = "com.apple.product-type.framework";
+		};
+		83AB5031998E119DFDFFDA70C3749F33 /* SwiftCBOR */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6275E663107B059E60F77169CBD38472 /* Build configuration list for PBXNativeTarget "SwiftCBOR" */;
+			buildPhases = (
+				F6275E3B951F2B43CCCC0C09F349AE47 /* Headers */,
+				3BA5271358BC03842E391573BA25259E /* Sources */,
+				27A2E27FB7DE0E87BE91C4B1D2FE5D08 /* Frameworks */,
+				FDF8AF3F6734949CBCF7B3358763DC65 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SwiftCBOR;
+			productName = SwiftCBOR;
+			productReference = CE09E24D8F193EB05E20CB2CD76EA1A7 /* SwiftCBOR */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BFDFE7DC352907FC980B868725387E98 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1240;
+				LastUpgradeCheck = 1240;
+			};
+			buildConfigurationList = 4821239608C13582E20E6DA73FD5F1F9 /* Build configuration list for PBXProject "Pods" */;
+			compatibilityVersion = "Xcode 10.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = CF1408CF629C7361332E53B88F7BD30C;
+			productRefGroup = D51D58424F83F493F4664D46A150B339 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				13C31EBA37B27CC447C2782137411552 /* McuManager */,
+				468F01194852E7E61B1E5DE6D95173D6 /* Pods-nRF Connect Device Manager */,
+				83AB5031998E119DFDFFDA70C3749F33 /* SwiftCBOR */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D35179444C143AD37DC45C469778C408 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD6EB19ABB2A73DB7E09CFD80691D952 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FDF8AF3F6734949CBCF7B3358763DC65 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		329F3E6A17CAD4B9A3D59DCD2F93B417 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0EBB023025944FBC929338E5AA0E23F /* BasicManager.swift in Sources */,
+				4123F9840C5B81D8433E222F8CA5B0CC /* CBOR+McuManager.swift in Sources */,
+				EE3263BBC67FC0CC8C34BD94FA69D0A7 /* CBOR+String.swift in Sources */,
+				DB80C4A5A6B9F90CC6DF6A1222E0D56D /* ConfigManager.swift in Sources */,
+				62D29B9B93B0F454F2786F2C9ED5B16F /* CrashManager.swift in Sources */,
+				D454F896FABC611AFD8D248889C5DF7E /* Data+McuManager.swift in Sources */,
+				93C90063DD63F979C3401C256423F174 /* DefaultManager.swift in Sources */,
+				4C7E8E91A62030F760B6B2609DE5F9AE /* FileSystemManager.swift in Sources */,
+				DEBFFE7D258C3E1D4545D3E9DE727674 /* FirmwareUpgradeController.swift in Sources */,
+				A05F22EB209113E3CAA6DE99E42EB4B8 /* FirmwareUpgradeManager.swift in Sources */,
+				33FA492D8DBAD5942E686DCF21726D3F /* ImageManager.swift in Sources */,
+				3D2740252812FAA5155DF266EF92D975 /* LogManager.swift in Sources */,
+				310C3EC5D25889366F58C7EF512F1E0C /* McuManager.swift in Sources */,
+				33E22C53B67A31789A3C66D74CD85ADA /* McuManager-dummy.m in Sources */,
+				8378449C4C7AEBBF71EE10478720B107 /* McuMgrBleTransport.swift in Sources */,
+				0090EEB9A542A3591C983544A6370B12 /* McuMgrHeader.swift in Sources */,
+				CC2CF7BCAE0009BC8517CBC1F0B6B54E /* McuMgrImage.swift in Sources */,
+				8A90D0B43009F835D0FBCC430FAEEB5C /* McuMgrLogDelegate.swift in Sources */,
+				24FE4B73D06479EE1EB9700253A4D11B /* McuMgrResponse.swift in Sources */,
+				7574E123B3E4A6FCEC65E0B4AB73DA0A /* McuMgrTransport.swift in Sources */,
+				F7FE1F79A4BEAAE0D83D0A4928025638 /* ResultLock.swift in Sources */,
+				982B917FE47268AD2F884991D6E2BA56 /* RunTestManager.swift in Sources */,
+				4E86992BC74C0C5AA4E4F0BDEECA1173 /* StatsManager.swift in Sources */,
+				9AD9DB36BCFFEB8B793757004662A4EB /* String+McuManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3BA5271358BC03842E391573BA25259E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8FF956AE8E04AADAB7E331A1B167F8A4 /* AnyCodingKey.swift in Sources */,
+				E37F3F18D7A641A5C3D0DE6E5FEF615C /* CBOR.swift in Sources */,
+				D2088A01864FDB2971D4CD0DA1E2E900 /* CBORDecoder.swift in Sources */,
+				5A051D4F3E88017800472B63B4E7EF28 /* CBOREncodable.swift in Sources */,
+				F754513429A6A4F413BA5F56F8D6F869 /* CBOREncoder.swift in Sources */,
+				EF38134C1596E3D1CBFF6EE1A1913B8A /* CBORInputStream.swift in Sources */,
+				69131E9A15FCB8B75A8F3EC5A2C5F0BC /* CodableCBORDecoder.swift in Sources */,
+				A92F266CFF5FB0F0AD5AC399FB4F26EB /* CodableCBOREncoder.swift in Sources */,
+				08F8A16D4A8FE3CE3BDB63E9E8A144AC /* FixedWidthInteger+Bytes.swift in Sources */,
+				67D62AE64CA53FCBE1427B7C4D04CE85 /* KeyedDecodingContainer.swift in Sources */,
+				2A49E25151D987B68128A38120C333FE /* KeyedEncodingContainer.swift in Sources */,
+				9A6DBDD7C6ADC08233AD24736C1A4F16 /* SingleValueDecodingContainer.swift in Sources */,
+				87652A67E9B8ADA67ED03ECBC099D21F /* SingleValueEncodingContainer.swift in Sources */,
+				3BCA533103C26995F0679B7865BDA8B3 /* SwiftCBOR-dummy.m in Sources */,
+				FA4DF565501526BB3ECEACC9BDED4881 /* UnkeyedDecodingContainer.swift in Sources */,
+				E75AD99E6292CE9E274C3A8EEE7EF6E5 /* UnkeyedEncodingContainer.swift in Sources */,
+				40F2D80E308BCF819FB8DB4055825A79 /* Util.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F9CE6DCD0913F3A7A793A77A44912CC4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D6DBA9D7B09FDABC73E96A155E6A1DE6 /* Pods-nRF Connect Device Manager-dummy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0FCDA6B6C369F83ACD6B7E74C3E96672 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SwiftCBOR;
+			target = 83AB5031998E119DFDFFDA70C3749F33 /* SwiftCBOR */;
+			targetProxy = 7F6262E242F384D2A939CD4964B06574 /* PBXContainerItemProxy */;
+		};
+		6FF32ECC273D177E5093832B46C5D356 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SwiftCBOR;
+			target = 83AB5031998E119DFDFFDA70C3749F33 /* SwiftCBOR */;
+			targetProxy = 49B24C19BD5FFEB0281B9A3D7287F24E /* PBXContainerItemProxy */;
+		};
+		7EABCA2EFD703E8BAD74ED4CAA9F6548 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = McuManager;
+			target = 13C31EBA37B27CC447C2782137411552 /* McuManager */;
+			targetProxy = 4DF68ECA6085E9373FF1CC6B6449E974 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		05E0B804F76FCFAF5932D4A809576B81 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = ECAF959971DF5EA32C5A618CA1EB3322 /* McuManager.debug.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/McuManager/McuManager-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/McuManager/McuManager-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/McuManager/McuManager.modulemap";
+				PRODUCT_MODULE_NAME = McuManager;
+				PRODUCT_NAME = McuManager;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		23D176A6E8B0016A882DD932911A67A6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6A0DEDFE8DDD1F5044D4829093A6DE90 /* McuManager.release.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/McuManager/McuManager-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/McuManager/McuManager-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/McuManager/McuManager.modulemap";
+				PRODUCT_MODULE_NAME = McuManager;
+				PRODUCT_NAME = McuManager;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		25AD9454612BF454A1E3DC4CD4FA8C6D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"POD_CONFIGURATION_DEBUG=1",
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				SYMROOT = "${SRCROOT}/../build";
+			};
+			name = Debug;
+		};
+		5399F80C3237682A91028680B5C8F177 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 93FEEDA749047D3B9635E55DCE76A214 /* Pods-nRF Connect Device Manager.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager.modulemap";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		8CFA15ADCF4CE33F26F1C69CF859B380 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8E8D46ED6D55505FAA9B648C09DAA465 /* Pods-nRF Connect Device Manager.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager.modulemap";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		9D8144723E943F74E92DF592BA794F4B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6DE05C880299B9FD012CBE2BE1E1CAD4 /* SwiftCBOR.release.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/SwiftCBOR/SwiftCBOR-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/SwiftCBOR/SwiftCBOR-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/SwiftCBOR/SwiftCBOR.modulemap";
+				PRODUCT_MODULE_NAME = SwiftCBOR;
+				PRODUCT_NAME = SwiftCBOR;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		CA547D2C7E9A8A153DC2B27FBE00B112 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"POD_CONFIGURATION_RELEASE=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				SYMROOT = "${SRCROOT}/../build";
+			};
+			name = Release;
+		};
+		CC2DE528205652FECEC605459230D2D9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 067BD14339B48C5AF2EADC2BEF07F358 /* SwiftCBOR.debug.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/SwiftCBOR/SwiftCBOR-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/SwiftCBOR/SwiftCBOR-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/SwiftCBOR/SwiftCBOR.modulemap";
+				PRODUCT_MODULE_NAME = SwiftCBOR;
+				PRODUCT_NAME = SwiftCBOR;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4821239608C13582E20E6DA73FD5F1F9 /* Build configuration list for PBXProject "Pods" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				25AD9454612BF454A1E3DC4CD4FA8C6D /* Debug */,
+				CA547D2C7E9A8A153DC2B27FBE00B112 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4C0F62D8591CB4C91C1C23386922600E /* Build configuration list for PBXNativeTarget "Pods-nRF Connect Device Manager" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8CFA15ADCF4CE33F26F1C69CF859B380 /* Debug */,
+				5399F80C3237682A91028680B5C8F177 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		61EE64E278610B209815841E1C2D3176 /* Build configuration list for PBXNativeTarget "McuManager" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				05E0B804F76FCFAF5932D4A809576B81 /* Debug */,
+				23D176A6E8B0016A882DD932911A67A6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6275E663107B059E60F77169CBD38472 /* Build configuration list for PBXNativeTarget "SwiftCBOR" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CC2DE528205652FECEC605459230D2D9 /* Debug */,
+				9D8144723E943F74E92DF592BA794F4B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+}
