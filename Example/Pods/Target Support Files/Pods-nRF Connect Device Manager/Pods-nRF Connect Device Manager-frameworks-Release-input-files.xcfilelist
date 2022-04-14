@@ -1,0 +1,3 @@
+${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks.sh
+${BUILT_PRODUCTS_DIR}/McuManager/McuManager.framework
+${BUILT_PRODUCTS_DIR}/SwiftCBOR/SwiftCBOR.framework

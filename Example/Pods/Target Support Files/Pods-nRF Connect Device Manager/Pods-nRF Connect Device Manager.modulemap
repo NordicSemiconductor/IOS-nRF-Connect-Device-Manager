@@ -1,0 +1,6 @@
+framework module Pods_nRF_Connect_Device_Manager {
+  umbrella header "Pods-nRF Connect Device Manager-umbrella.h"
+
+  export *
+  module * { export * }
+}
