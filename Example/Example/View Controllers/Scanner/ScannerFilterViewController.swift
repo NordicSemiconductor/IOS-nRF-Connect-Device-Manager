@@ -6,10 +6,14 @@
 
 import UIKit
 
-protocol ScannerFilterDelegate : class {
+// MARK: - ScannerFilterDelegate
+
+protocol ScannerFilterDelegate: AnyObject {
     /// Called when user modifies the filter.
     func filterSettingsDidChange(filterByUuid: Bool, filterByRssi: Bool)
 }
+
+// MARK: - ScannerFilterViewController
 
 class ScannerFilterViewController: UIViewController {
     

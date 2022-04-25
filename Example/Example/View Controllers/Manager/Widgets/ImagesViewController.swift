@@ -18,19 +18,26 @@ class ImagesViewController: UIViewController , McuMgrViewController{
     @IBAction func read(_ sender: UIButton) {
         busy()
         imageManager.list { (response, error) in
+            self.lastResponse = response
             self.handle(response, error)
         }
     }
     @IBAction func test(_ sender: UIButton) {
-        busy()
-        imageManager.test(hash: imageHash!) { (response, error) in
-            self.handle(response, error)
+        selectImageCore() { [weak self] imageHash in
+            self?.busy()
+            self?.imageManager.test(hash: imageHash) { (response, error) in
+                self?.lastResponse = response
+                self?.handle(response, error)
+            }
         }
     }
     @IBAction func confirm(_ sender: UIButton) {
-        busy()
-        imageManager.confirm(hash: imageHash!) { (response, error) in
-            self.handle(response, error)
+        selectImageCore() { [weak self] imageHash in
+            self?.busy()
+            self?.imageManager.confirm(hash: imageHash) { (response, error) in
+                self?.lastResponse = response
+                self?.handle(response, error)
+            }
         }
     }
     @IBAction func erase(_ sender: UIButton) {
@@ -46,7 +53,7 @@ class ImagesViewController: UIViewController , McuMgrViewController{
         }
     }
     
-    private var imageHash: [UInt8]?
+    private var lastResponse: McuMgrImageStateResponse?
     private var imageManager: ImageManager!
     var transporter: McuMgrTransport! {
         didSet {
@@ -57,6 +64,33 @@ class ImagesViewController: UIViewController , McuMgrViewController{
     var height: CGFloat = 110
     var tableView: UITableView!
     
+    private func selectImageCore(callback: @escaping (([UInt8]) -> Void)) {
+        guard let responseImages = lastResponse?.images, responseImages.count > 1 else {
+            if let image = lastResponse?.images?.first, !image.confirmed {
+                callback(image.hash)
+            }
+            return
+        }
+        
+        let alertController = UIAlertController(title: "Select Image", message: nil, preferredStyle: .actionSheet)
+        for image in responseImages {
+            guard !image.confirmed else { continue }
+            let title = "Image \(image.image!), Slot \(image.slot!)"
+            alertController.addAction(UIAlertAction(title: title, style: .default) { action in
+                callback(image.hash)
+            })
+        }
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+    
+        // If the device is an iPad set the popover presentation controller
+        if let presenter = alertController.popoverPresentationController {
+            presenter.sourceView = self.view
+            presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+            presenter.permittedArrowDirections = []
+        }
+        present(alertController, animated: true)
+    }
+    
     private func handle(_ response: McuMgrImageStateResponse?, _ error: Error?) {
         let bounds = CGSize(width: message.frame.width, height: CGFloat.greatestFiniteMagnitude)
         let oldRect = message.sizeThatFits(bounds)
@@ -65,8 +99,9 @@ class ImagesViewController: UIViewController , McuMgrViewController{
             if response.isSuccess(), let images = response.images {
                 var info = "Split status: \(response.splitStatus ?? 0)"
                 
-                for (i, image) in images.enumerated() {
-                    info += "\nSlot \(i)\n" +
+                for image in images {
+                    info += "\nImage \(image.image!)\n" +
+                        "• Slot: \(image.slot!)\n" +
                         "• Version: \(image.version!)\n" +
                         "• Hash: \(Data(image.hash).hexEncodedString(options: .upperCase))\n" +
                         "• Flags: "
@@ -89,10 +124,6 @@ class ImagesViewController: UIViewController , McuMgrViewController{
                         info += "None"
                     } else {
                         info = String(info.dropLast(2))
-                    }
-                    
-                    if !image.confirmed {
-                        imageHash = image.hash
                     }
                 }
                 readAction.isEnabled = true
