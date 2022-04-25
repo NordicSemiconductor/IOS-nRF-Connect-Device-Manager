@@ -7,7 +7,9 @@
 import UIKit
 import iOSMcuManagerLibrary
 
-class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
+final class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
+    
+    // MARK: - IBOutlet(s)
     
     @IBOutlet weak var actionSwap: UIButton!
     @IBOutlet weak var actionBuffers: UIButton!
@@ -24,6 +26,8 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var eraseSwitch: UISwitch!
     @IBOutlet weak var progress: UIProgressView!
     
+    // MARK: - IBAction(s)
+    
     @IBAction func selectFirmware(_ sender: UIButton) {
         let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive"]
         let importMenu = UIDocumentMenuViewController(documentTypes: supportedDocumentTypes,
@@ -34,12 +38,15 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
     }
     
     @IBAction func swapTime(_ sender: UIButton) {
+        setSwapTime()
     }
     
-    @IBAction func numbeOfBuffers(_ sender: UIButton) {
+    @IBAction func numberOfBuffers(_ sender: UIButton) {
+        setNumberOfBuffers()
     }
     
     @IBAction func byteAlignment(_ sender: UIButton) {
+        setByteAlignment()
     }
     
     @IBAction func start(_ sender: UIButton) {
@@ -74,6 +81,38 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
             // Adjust this parameter for your device.
             dfuManager.estimatedSwapTime = 10.0
         }
+    }
+    
+    // MARK: - Logic
+    
+    private func setSwapTime() {
+        let alertController = UIAlertController(title: "Swap Time (in seconds)", message: nil, preferredStyle: .actionSheet)
+        
+        let seconds = [0, 5, 10, 15, 20]
+        seconds.forEach { numberOfSeconds in
+            alertController.addAction(UIAlertAction(title: "\(numberOfSeconds) seconds", style: .default) {
+                action in
+                self.dfuManager!.estimatedSwapTime = TimeInterval(numberOfSeconds)
+            })
+        }
+        
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+    
+        // If the device is an ipad set the popover presentation controller
+        if let presenter = alertController.popoverPresentationController {
+            presenter.sourceView = self.view
+            presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+            presenter.permittedArrowDirections = []
+        }
+        present(alertController, animated: true)
+    }
+    
+    private func setNumberOfBuffers() {
+        
+    }
+    
+    private func setByteAlignment() {
+        
     }
     
     private func selectMode(for package: McuMgrPackage) {
@@ -117,6 +156,7 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
 }
 
 // MARK: - Firmware Upgrade Delegate
+
 extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
     
     func upgradeDidStart(controller: FirmwareUpgradeController) {

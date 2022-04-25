@@ -1144,7 +1144,7 @@
                                     <color key="titleColor" systemColor="secondaryLabelColor"/>
                                 </state>
                                 <connections>
-                                    <action selector="numbeOfBuffers:" destination="iEC-sa-48q" eventType="touchUpInside" id="UwH-El-DqC"/>
+                                    <action selector="numberOfBuffers:" destination="iEC-sa-48q" eventType="touchUpInside" id="1Is-GU-hY4"/>
                                 </connections>
                             </button>
                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pqc-Sr-chf">
