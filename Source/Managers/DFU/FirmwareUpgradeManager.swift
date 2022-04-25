@@ -683,7 +683,17 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         self.log(msg: "Upgrade complete.", atLevel: .application)
-        self.success()
+        switch self.mode {
+        case .confirmOnly:
+            self.log(msg: "Mode set to 'Confirm Only'. Finishing with call to reset().", atLevel: .debug)
+            self.reset()
+        case .testAndConfirm:
+            self.log(msg: "Mode set to 'Test and Confirm'. Finishing with call to success().", atLevel: .debug)
+            self.success()
+        case .testOnly:
+            // Impossible!
+            return
+        }
     }
 }
 
