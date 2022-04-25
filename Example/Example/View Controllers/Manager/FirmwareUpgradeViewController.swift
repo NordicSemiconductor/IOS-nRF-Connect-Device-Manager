@@ -9,6 +9,9 @@ import iOSMcuManagerLibrary
 
 class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
     
+    @IBOutlet weak var actionSwap: UIButton!
+    @IBOutlet weak var actionBuffers: UIButton!
+    @IBOutlet weak var actionAlignment: UIButton!
     @IBOutlet weak var actionSelect: UIButton!
     @IBOutlet weak var actionStart: UIButton!
     @IBOutlet weak var actionPause: UIButton!
@@ -29,21 +32,34 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
         importMenu.popoverPresentationController?.sourceView = actionSelect
         present(importMenu, animated: true, completion: nil)
     }
+    
+    @IBAction func swapTime(_ sender: UIButton) {
+    }
+    
+    @IBAction func numbeOfBuffers(_ sender: UIButton) {
+    }
+    
+    @IBAction func byteAlignment(_ sender: UIButton) {
+    }
+    
     @IBAction func start(_ sender: UIButton) {
         selectMode(for: package!)
     }
+    
     @IBAction func pause(_ sender: UIButton) {
         dfuManager.pause()
         actionPause.isHidden = true
         actionResume.isHidden = false
         status.text = "PAUSED"
     }
+    
     @IBAction func resume(_ sender: UIButton) {
         dfuManager.resume()
         actionPause.isHidden = false
         actionResume.isHidden = true
         status.text = "UPLOADING..."
     }
+    
     @IBAction func cancel(_ sender: UIButton) {
         dfuManager.cancel()
     }
@@ -104,7 +120,11 @@ class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
 extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
     
     func upgradeDidStart(controller: FirmwareUpgradeController) {
+        actionSwap.isHidden = true
+        actionBuffers.isHidden = true
+        actionAlignment.isHidden = true
         actionStart.isHidden = true
+        
         actionPause.isHidden = false
         actionCancel.isHidden = false
         actionSelect.isEnabled = false
@@ -136,7 +156,11 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionPause.isHidden = true
         actionResume.isHidden = true
         actionCancel.isHidden = true
+        actionSwap.isHidden = false
+        actionBuffers.isHidden = false
+        actionAlignment.isHidden = false
         actionStart.isHidden = false
+        
         actionStart.isEnabled = false
         actionSelect.isEnabled = true
         eraseSwitch.isEnabled = true
@@ -148,7 +172,11 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionPause.isHidden = true
         actionResume.isHidden = true
         actionCancel.isHidden = true
+        actionSwap.isHidden = false
+        actionBuffers.isHidden = false
+        actionAlignment.isHidden = false
         actionStart.isHidden = false
+        
         actionSelect.isEnabled = true
         eraseSwitch.isEnabled = true
         status.textColor = .systemRed
