@@ -23,6 +23,9 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     @IBOutlet weak var fileName: UILabel!
     @IBOutlet weak var fileSize: UILabel!
     @IBOutlet weak var fileHash: UILabel!
+    @IBOutlet weak var dfuSwapTime: UILabel!
+    @IBOutlet weak var dfuPipelineLength: UILabel!
+    @IBOutlet weak var dfuByteAlignment: UILabel!
     @IBOutlet weak var eraseSwitch: UISwitch!
     @IBOutlet weak var progress: UIProgressView!
     
@@ -92,6 +95,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         seconds.forEach { numberOfSeconds in
             alertController.addAction(UIAlertAction(title: "\(numberOfSeconds) seconds", style: .default) {
                 action in
+                self.dfuSwapTime.text = "\(numberOfSeconds)s"
                 self.dfuManager!.estimatedSwapTime = TimeInterval(numberOfSeconds)
             })
         }
@@ -261,6 +265,13 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             status.textColor = .primary
             status.text = "READY"
             actionStart.isEnabled = true
+            
+            dfuSwapTime.text = "\(dfuManager.estimatedSwapTime)s"
+            dfuSwapTime.numberOfLines = 0
+            dfuPipelineLength.text = "1"
+            dfuPipelineLength.numberOfLines = 0
+            dfuByteAlignment.text = "Disabled"
+            dfuByteAlignment.numberOfLines = 0
         } catch {
             print("Error reading hash: \(error)")
             fileSize.text = ""
