@@ -52,9 +52,11 @@ public class ImageManager: McuManager {
     ///
     /// - parameter data: The image data.
     /// - parameter image: The image number / slot number for DFU.
-    /// - parameter offset: The offset from this data will be sent.
+    /// - parameter offset: The offset from which this data will be sent.
+    /// - parameter alignment: The byte alignment to apply to the data (if any).
     /// - parameter callback: The callback.
-    public func upload(data: Data, image: Int, offset: UInt64, callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
+    public func upload(data: Data, image: Int, offset: UInt, alignment: ImageUploadAlignment,
+                       callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
         // Calculate the number of remaining bytes.
         let remainingBytes: UInt64 = UInt64(data.count) - offset
         
@@ -63,8 +65,11 @@ public class ImageManager: McuManager {
         let packetOverhead = calculatePacketOverhead(data: data, image: image, offset: UInt64(offset))
         
         // Get the length of image data to send.
-        let maxDataLength: UInt64 = UInt64(mtu) - UInt64(packetOverhead)
-        let dataLength: UInt64 = min(maxDataLength, remainingBytes)
+        var maxDataLength: UInt = UInt(mtu) - UInt(packetOverhead)
+        if alignment != .disabled {
+            maxDataLength = (maxDataLength / alignment.rawValue) * alignment.rawValue
+        }
+        let dataLength: UInt = min(maxDataLength, remainingBytes)
         
         // Build the request payload.
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[offset..<(offset+dataLength)])),
@@ -124,10 +129,12 @@ public class ImageManager: McuManager {
     /// asynchronously to the delegate provided in this method.
     ///
     /// - parameter images: The images to upload.
+    /// - parameter alignment: Use in conjunction with pipelining if the image data needs to be sent byte-aligned. Disabled by default.
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
-    public func upload(images: [Image], delegate: ImageUploadDelegate?) -> Bool {
+    public func upload(images: [Image], alignment: ImageUploadAlignment = .disabled,
+                       delegate: ImageUploadDelegate?) -> Bool {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         defer {
@@ -153,6 +160,8 @@ public class ImageManager: McuManager {
         
         uploadImages = images
         
+        uploadAlignment = alignment
+        
         // Set image data.
         imageData = firstImage.data
         
@@ -162,7 +171,7 @@ public class ImageManager: McuManager {
         uploadIndex = 0
         
         log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .application)
-        upload(data: firstImage.data, image: firstImage.image, offset: 0, callback: uploadCallback)
+        upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: uploadAlignment, callback: uploadCallback)
         return true
     }
 
@@ -231,6 +240,8 @@ public class ImageManager: McuManager {
     private var uploadIndex: Int = 0
     /// The sequence of images we want to send to the device.
     private var uploadImages: [Image]?
+    /// When using SMP Pipelining, the Data in each packet sent (or 'chunk') might need to be byte-aligned.
+    private var uploadAlignment: ImageUploadAlignment = .disabled
     /// Delegate to send image upload updates to.
     private weak var uploadDelegate: ImageUploadDelegate?
     
@@ -304,7 +315,7 @@ public class ImageManager: McuManager {
             let image: Int! = self.uploadImages?[self.uploadIndex].image
             log(msg: "Continuing upload from \(offset)/\(imageData.count) to image \(image)...", atLevel: .application)
             uploadState = .uploading
-            upload(data: imageData, image: image, offset: offset, callback: uploadCallback)
+            upload(data: imageData, image: image, offset: UInt(offset), alignment: uploadAlignment, callback: uploadCallback)
         } else {
             log(msg: "Upload has not been previously paused", atLevel: .warning)
         }
@@ -396,7 +407,7 @@ public class ImageManager: McuManager {
         }
         let nextImageData: Data! = self.uploadImages?[uploadIndex].data
         let nextImageSlot: Int! = self.uploadImages?[uploadIndex].image
-        upload(data: nextImageData, image: nextImageSlot, offset: offset, callback: uploadCallback)
+        upload(data: nextImageData, image: nextImageSlot, offset: offset, alignment: uploadAlignment, callback: uploadCallback)
     }
     
     private func resetUploadVariables() {
@@ -454,6 +465,19 @@ public class ImageManager: McuManager {
         return packetOverhead
     }
 }
+
+// MARK: - ImageUploadAlignment
+
+public enum ImageUploadAlignment: UInt, CaseIterable {
+    
+    case disabled = 0
+    case twoByte = 2
+    case fourByte = 4
+    case eightByte = 8
+    case sixteenByte = 16
+}
+
+// MARK: - ImageUploadError
 
 public enum ImageUploadError: Error {
     /// Response payload values do not exist.
