@@ -7,7 +7,10 @@
 import Foundation
 import CoreBluetooth
 
+// MARK: - FirmwareUpgradeManager
+
 public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObserver {
+    
     private let imageManager: ImageManager
     private let defaultManager: DefaultManager
     private let basicManager: BasicManager
@@ -19,7 +22,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private var cyclicReferenceHolder: (() -> FirmwareUpgradeManager)?
     
     private var images: [FirmwareUpgradeImage]!
-    private var eraseAppSettings: Bool!
+    private var configuration: FirmwareUpgradeConfiguration!
     
     private var state: FirmwareUpgradeState
     private var paused: Bool = false
@@ -59,20 +62,20 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     
     /// Start the firmware upgrade.
     ///
-    /// Use this convenience call of ``start(images:erasingAppSettings:)`` if you're only
+    /// Use this convenience call of ``start(images:using:)`` if you're only
     /// updating the App Core (i.e. no Multi-Image).
     /// - parameter data: `Data` to upload to App Core (Image 0).
-    /// - parameter eraseAppSettings: If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
-    public func start(data: Data, erasingAppSettings eraseAppSettings: Bool = true) throws {
-        try start(images: [(0, data)], erasingAppSettings: eraseAppSettings)
+    /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
+    public func start(data: Data, using configuration: FirmwareUpgradeConfiguration = .standard) throws {
+        try start(images: [(0, data)], using: configuration)
     }
     
     /// Start the firmware upgrade.
     ///
     /// This is the full-featured API to start DFU update, including support for Multi-Image uploads.
     /// - parameter images: An Array of (Image, `Data`) pairs with the Image Core/Index and its corresponding `Data` to upload.
-    /// - parameter eraseAppSettings: If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
-    public func start(images: [(Int, Data)], erasingAppSettings eraseAppSettings: Bool = true) throws {
+    /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
+    public func start(images: [(Int, Data)], using configuration: FirmwareUpgradeConfiguration = .standard) throws {
         objc_sync_enter(self)
         defer {
             objc_sync_exit(self)
@@ -84,7 +87,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         self.images = try images.map { try FirmwareUpgradeImage($0) }
-        self.eraseAppSettings = eraseAppSettings
+        self.configuration = configuration
         
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
@@ -500,7 +503,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         
         self.log(msg: "Erase App Settings Succesful. Proceeding.", atLevel: .application)
         // Set to false so uploadDidFinish() doesn't loop forever.
-        self.eraseAppSettings = false
+        self.configuration.eraseAppSettings = false
         self.uploadDidFinish()
     }
     
@@ -702,6 +705,18 @@ private extension FirmwareUpgradeManager {
     }
 }
 
+// MARK: - FirmwareUpgradeConfiguration
+
+public struct FirmwareUpgradeConfiguration {
+    
+    public static let standard = FirmwareUpgradeConfiguration(eraseAppSettings: true, byteAlignment: .disabled)
+    
+    /// If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
+    var eraseAppSettings: Bool
+    /// Might be necessary to set when Pipeline Length is larger than 1.
+    var byteAlignment: ImageUploadAlignment
+}
+
 //******************************************************************************
 // MARK: - ImageUploadDelegate
 //******************************************************************************
@@ -727,7 +742,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     public func uploadDidFinish() {
         // Before we can move on, we must check whether the user requested for App Core Settings
         // to be erased.
-        if eraseAppSettings {
+        if configuration.eraseAppSettings {
             log(msg: "'Erase App Settings' Enabled. Sending command...", atLevel: .info)
             basicManager.eraseAppSettings(callback: eraseAppSettingsCallback)
             return
