@@ -712,9 +712,9 @@ public struct FirmwareUpgradeConfiguration {
     public static let standard = FirmwareUpgradeConfiguration(eraseAppSettings: true, byteAlignment: .disabled)
     
     /// If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
-    var eraseAppSettings: Bool
+    public var eraseAppSettings: Bool
     /// Might be necessary to set when Pipeline Length is larger than 1.
-    var byteAlignment: ImageUploadAlignment
+    public var byteAlignment: ImageUploadAlignment
 }
 
 //******************************************************************************

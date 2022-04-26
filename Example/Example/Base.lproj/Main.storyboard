@@ -1202,6 +1202,9 @@
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V9A-pQ-qOh">
                                 <rect key="frame" x="310" y="134.5" width="51" height="31"/>
                                 <color key="onTintColor" systemColor="tintColor"/>
+                                <connections>
+                                    <action selector="setEraseApplicationSettings:" destination="iEC-sa-48q" eventType="valueChanged" id="bwg-Qp-UoE"/>
+                                </connections>
                             </switch>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BA2-rA-n1u">
                                 <rect key="frame" x="142" y="254" width="70" height="30"/>

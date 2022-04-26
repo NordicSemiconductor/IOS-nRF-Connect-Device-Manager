@@ -85,6 +85,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             dfuManager.estimatedSwapTime = 10.0
         }
     }
+    private var dfuManagerConfiguration: FirmwareUpgradeConfiguration = .standard
     
     // MARK: - Logic
     
@@ -116,7 +117,27 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private func setByteAlignment() {
-        
+        let alertController = UIAlertController(title: "Byte Alignment", message: nil, preferredStyle: .actionSheet)
+        ImageUploadAlignment.allCases.forEach { alignmentValue in
+            alertController.addAction(UIAlertAction(title: alignmentValue.description, style: .default) {
+                action in
+                self.dfuByteAlignment.text = alignmentValue.description
+                self.dfuManagerConfiguration.byteAlignment = alignmentValue
+            })
+        }
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+    
+        // If the device is an ipad set the popover presentation controller
+        if let presenter = alertController.popoverPresentationController {
+            presenter.sourceView = self.view
+            presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+            presenter.permittedArrowDirections = []
+        }
+        present(alertController, animated: true)
+    }
+    
+    @IBAction func setEraseApplicationSettings(_ sender: UISwitch) {
+        dfuManagerConfiguration.eraseAppSettings = sender.isOn
     }
     
     private func selectMode(for package: McuMgrPackage) {
@@ -149,7 +170,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     private func startFirmwareUpgrade(package: McuMgrPackage) {
         do {
-            try dfuManager.start(images: package.images)
+            try dfuManager.start(images: package.images, using: dfuManagerConfiguration)
         } catch {
             print("Error reading hash: \(error)")
             status.textColor = .systemRed
@@ -270,7 +291,7 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             dfuSwapTime.numberOfLines = 0
             dfuPipelineLength.text = "1"
             dfuPipelineLength.numberOfLines = 0
-            dfuByteAlignment.text = "Disabled"
+            dfuByteAlignment.text = dfuManagerConfiguration.byteAlignment.description
             dfuByteAlignment.numberOfLines = 0
         } catch {
             print("Error reading hash: \(error)")

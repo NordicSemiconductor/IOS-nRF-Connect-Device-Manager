@@ -468,13 +468,18 @@ public class ImageManager: McuManager {
 
 // MARK: - ImageUploadAlignment
 
-public enum ImageUploadAlignment: UInt, CaseIterable {
+public enum ImageUploadAlignment: UInt, CaseIterable, CustomStringConvertible {
     
     case disabled = 0
     case twoByte = 2
     case fourByte = 4
     case eightByte = 8
     case sixteenByte = 16
+    
+    public var description: String {
+        guard self != .disabled else { return "Disabled" }
+        return "\(rawValue)-Byte"
+    }
 }
 
 // MARK: - ImageUploadError
