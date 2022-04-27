@@ -56,10 +56,11 @@ open class McuManager {
     //**************************************************************************
 
     public func send<T: McuMgrResponse>(op: McuMgrOperation,
+                                        sequenceNumber: UInt8 = 0,
                                         commandId: UInt8,
                                         payload: [String:CBOR]?,
                                         callback: @escaping McuMgrCallback<T>) {
-        send(op: op, flags: 0, sequenceNumber: 0, commandId: commandId,
+        send(op: op, flags: 0, sequenceNumber: sequenceNumber, commandId: commandId,
              payload: payload, callback: callback)
     }
     
@@ -68,16 +69,16 @@ open class McuManager {
                                         commandId: UInt8,
                                         payload: [String:CBOR]?,
                                         callback: @escaping McuMgrCallback<T>) {
-        log(msg: "Sending \(op) command (Group: \(group), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
+        log(msg: "Sending \(op) SEQ No. \(sequenceNumber) command (Group: \(group), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
             atLevel: .verbose)
-        let data = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
-                                          flags: flags, group: group.uInt16Value,
-                                          sequenceNumber: sequenceNumber,
-                                          commandId: commandId, payload: payload)
+        let mcuPacketData = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
+                                                   flags: flags, group: group.uInt16Value,
+                                                   sequenceNumber: sequenceNumber,
+                                                   commandId: commandId, payload: payload)
         let _callback: McuMgrCallback<T> = logDelegate == nil ? callback : { [weak self] (response, error) in
             if let self = self {
                 if let response = response {
-                    self.log(msg: "Response (Group: \(self.group), ID: \(response.header!.commandId!)): \(response)",
+                    self.log(msg: "Response (Group: \(self.group), SEQ No. \(sequenceNumber), ID: \(response.header!.commandId!)): \(response)",
                              atLevel: .verbose)
                 } else if let error = error {
                     self.log(msg: "Request failed: \(error.localizedDescription)",
@@ -86,7 +87,7 @@ open class McuManager {
             }
             callback(response, error)
         }
-        send(data: data, callback: _callback)
+        send(data: mcuPacketData, callback: _callback)
     }
     
     public func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) {
