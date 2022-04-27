@@ -99,8 +99,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
                 self.dfuManager!.estimatedSwapTime = TimeInterval(numberOfSeconds)
             })
         }
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        present(alertController)
+        present(alertController, addingCancelAction: true)
     }
     
     private func setNumberOfBuffers() {
@@ -116,8 +115,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
                 self.dfuManagerConfiguration.byteAlignment = alignmentValue
             })
         }
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        present(alertController)
+        present(alertController, addingCancelAction: true)
     }
     
     @IBAction func setEraseApplicationSettings(_ sender: UISwitch) {
@@ -133,11 +131,14 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
                 self.startFirmwareUpgrade(package: package)
             })
         }
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        present(alertController)
+        present(alertController, addingCancelAction: true)
     }
     
-    private func present(_ alertViewController: UIAlertController) {
+    private func present(_ alertViewController: UIAlertController, addingCancelAction addCancelAction: Bool = false) {
+        if addCancelAction {
+            alertViewController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        }
+        
         // If the device is an ipad set the popover presentation controller
         if let presenter = alertViewController.popoverPresentationController {
             presenter.sourceView = self.view
