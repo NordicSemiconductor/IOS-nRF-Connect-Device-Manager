@@ -709,10 +709,12 @@ private extension FirmwareUpgradeManager {
 
 public struct FirmwareUpgradeConfiguration {
     
-    public static let standard = FirmwareUpgradeConfiguration(eraseAppSettings: true, byteAlignment: .disabled)
+    public static let standard = FirmwareUpgradeConfiguration(eraseAppSettings: true, pipelineLength: 1, byteAlignment: .disabled)
     
     /// If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
     public var eraseAppSettings: Bool
+    /// If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.
+    public var pipelineLength: Int
     /// Might be necessary to set when Pipeline Length is larger than 1.
     public var byteAlignment: ImageUploadAlignment
 }

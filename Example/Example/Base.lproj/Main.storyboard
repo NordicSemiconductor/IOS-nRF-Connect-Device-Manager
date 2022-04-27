@@ -530,8 +530,8 @@
         <scene sceneID="URt-ni-pll">
             <objects>
                 <tableViewController title="Image" id="SO7-PQ-cvq" customClass="ImageController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <sections>
@@ -1175,12 +1175,12 @@
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="55" id="B29-DR-4eR"/>
                                     <constraint firstAttribute="height" constant="30" id="Ntk-Dp-7R5"/>
                                 </constraints>
-                                <state key="normal" title="Buffers"/>
+                                <state key="normal" title="Pipeline"/>
                                 <state key="disabled">
                                     <color key="titleColor" systemColor="secondaryLabelColor"/>
                                 </state>
                                 <connections>
-                                    <action selector="numberOfBuffers:" destination="iEC-sa-48q" eventType="touchUpInside" id="1Is-GU-hY4"/>
+                                    <action selector="setPipelineLength:" destination="iEC-sa-48q" eventType="touchUpInside" id="u4x-ba-VUz"/>
                                 </connections>
                             </button>
                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pqc-Sr-chf">
@@ -1312,9 +1312,9 @@
                     <size key="freeformSize" width="375" height="292"/>
                     <connections>
                         <outlet property="actionAlignment" destination="BA2-rA-n1u" id="KyS-j0-93L"/>
-                        <outlet property="actionBuffers" destination="uI0-Yo-RdJ" id="rek-nA-TUt"/>
                         <outlet property="actionCancel" destination="Pqc-Sr-chf" id="683-o1-qxI"/>
                         <outlet property="actionPause" destination="9d4-vk-tFT" id="vPi-wL-EFp"/>
+                        <outlet property="actionPipeline" destination="uI0-Yo-RdJ" id="3ra-GK-Jh2"/>
                         <outlet property="actionResume" destination="2MQ-cF-JGT" id="Kky-44-iW1"/>
                         <outlet property="actionSelect" destination="jRc-Hw-Wdb" id="gLm-10-8KN"/>
                         <outlet property="actionStart" destination="9nR-KA-sXF" id="99z-jG-pBR"/>

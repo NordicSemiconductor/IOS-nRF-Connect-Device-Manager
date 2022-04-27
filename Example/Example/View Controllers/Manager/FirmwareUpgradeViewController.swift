@@ -12,7 +12,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     // MARK: - IBOutlet(s)
     
     @IBOutlet weak var actionSwap: UIButton!
-    @IBOutlet weak var actionBuffers: UIButton!
+    @IBOutlet weak var actionPipeline: UIButton!
     @IBOutlet weak var actionAlignment: UIButton!
     @IBOutlet weak var actionSelect: UIButton!
     @IBOutlet weak var actionStart: UIButton!
@@ -44,8 +44,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         setSwapTime()
     }
     
-    @IBAction func numberOfBuffers(_ sender: UIButton) {
-        setNumberOfBuffers()
+    @IBAction func setPipelineLength(_ sender: Any) {
+        setPipelineLength()
     }
     
     @IBAction func byteAlignment(_ sender: UIButton) {
@@ -95,15 +95,25 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         seconds.forEach { numberOfSeconds in
             alertController.addAction(UIAlertAction(title: "\(numberOfSeconds) seconds", style: .default) {
                 action in
-                self.dfuSwapTime.text = "\(numberOfSeconds)s"
                 self.dfuManager!.estimatedSwapTime = TimeInterval(numberOfSeconds)
+                self.dfuSwapTime.text = "\(self.dfuManager!.estimatedSwapTime)s"
             })
         }
         present(alertController, addingCancelAction: true)
     }
     
-    private func setNumberOfBuffers() {
-        
+    private func setPipelineLength() {
+        let alertController = UIAlertController(title: "Pipeline Length", message: nil, preferredStyle: .actionSheet)
+        let values = [1, 2, 3, 4]
+        values.forEach { value in
+            let title = value == values.first ? "1 (no Pipelining)" : "\(value)"
+            alertController.addAction(UIAlertAction(title: title, style: .default) {
+                action in
+                self.dfuPipelineLength.text = "\(value)"
+                self.dfuManagerConfiguration.pipelineLength = value
+            })
+        }
+        present(alertController, addingCancelAction: true)
     }
     
     private func setByteAlignment() {
@@ -166,7 +176,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
     
     func upgradeDidStart(controller: FirmwareUpgradeController) {
         actionSwap.isHidden = true
-        actionBuffers.isHidden = true
+        actionPipeline.isHidden = true
         actionAlignment.isHidden = true
         actionStart.isHidden = true
         
@@ -202,7 +212,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionResume.isHidden = true
         actionCancel.isHidden = true
         actionSwap.isHidden = false
-        actionBuffers.isHidden = false
+        actionPipeline.isHidden = false
         actionAlignment.isHidden = false
         actionStart.isHidden = false
         
@@ -218,7 +228,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionResume.isHidden = true
         actionCancel.isHidden = true
         actionSwap.isHidden = false
-        actionBuffers.isHidden = false
+        actionPipeline.isHidden = false
         actionAlignment.isHidden = false
         actionStart.isHidden = false
         
@@ -269,7 +279,7 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             
             dfuSwapTime.text = "\(dfuManager.estimatedSwapTime)s"
             dfuSwapTime.numberOfLines = 0
-            dfuPipelineLength.text = "1"
+            dfuPipelineLength.text = "\(dfuManagerConfiguration.pipelineLength)"
             dfuPipelineLength.numberOfLines = 0
             dfuByteAlignment.text = dfuManagerConfiguration.byteAlignment.description
             dfuByteAlignment.numberOfLines = 0
