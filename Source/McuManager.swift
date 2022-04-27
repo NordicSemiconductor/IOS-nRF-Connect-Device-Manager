@@ -41,6 +41,8 @@ open class McuManager {
     /// Logger delegate will receive logs.
     public weak var logDelegate: McuMgrLogDelegate?
     
+    private var sequenceNumber: UInt8
+    
     //**************************************************************************
     // MARK: Initializers
     //**************************************************************************
@@ -48,6 +50,7 @@ open class McuManager {
     public init(group: McuMgrGroup, transporter: McuMgrTransport) {
         self.group = group
         self.transporter = transporter
+        self.sequenceNumber = 0
         self.mtu = McuManager.getDefaultMtu(scheme: transporter.getScheme())
     }
     
@@ -56,20 +59,20 @@ open class McuManager {
     //**************************************************************************
 
     public func send<T: McuMgrResponse>(op: McuMgrOperation,
-                                        sequenceNumber: UInt8 = 0,
                                         commandId: UInt8,
                                         payload: [String:CBOR]?,
                                         callback: @escaping McuMgrCallback<T>) {
-        send(op: op, flags: 0, sequenceNumber: sequenceNumber, commandId: commandId,
-             payload: payload, callback: callback)
+        send(op: op, flags: 0, commandId: commandId, payload: payload, callback: callback)
     }
     
     public func send<T: McuMgrResponse>(op: McuMgrOperation, flags: UInt8,
-                                        sequenceNumber: UInt8,
                                         commandId: UInt8,
                                         payload: [String:CBOR]?,
                                         callback: @escaping McuMgrCallback<T>) {
-        log(msg: "Sending \(op) SEQ No. \(sequenceNumber) command (Group: \(group), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
+        let currentPacketSequenceNumber = sequenceNumber
+        sequenceNumber = sequenceNumber.next()
+        
+        log(msg: "Sending \(op) command (Group: \(group), SEQ No. \(currentPacketSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
             atLevel: .verbose)
         let mcuPacketData = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
                                                    flags: flags, group: group.uInt16Value,
@@ -78,7 +81,7 @@ open class McuManager {
         let _callback: McuMgrCallback<T> = logDelegate == nil ? callback : { [weak self] (response, error) in
             if let self = self {
                 if let response = response {
-                    self.log(msg: "Response (Group: \(self.group), SEQ No. \(sequenceNumber), ID: \(response.header!.commandId!)): \(response)",
+                    self.log(msg: "Response (Group: \(self.group), SEQ No. \(currentPacketSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
                              atLevel: .verbose)
                 } else if let error = error {
                     self.log(msg: "Request failed: \(error.localizedDescription)",
@@ -223,6 +226,8 @@ extension McuManager {
 /// McuManager callback
 public typealias McuMgrCallback<T: McuMgrResponse> = (T?, Error?) -> Void
 
+// MARK: - McuMgrGroup
+
 /// The defined groups for Mcu Manager commands.
 ///
 /// Each group has its own manager class which contains the specific subcommands
@@ -268,6 +273,8 @@ public enum McuMgrGroup {
     }
 }
 
+// MARK: - McuMgrOperation
+
 /// The mcu manager operation defines whether the packet sent is a read/write
 /// and request/response.
 public enum McuMgrOperation: UInt8 {
@@ -276,6 +283,8 @@ public enum McuMgrOperation: UInt8 {
     case write          = 2
     case writeResponse  = 3
 }
+
+// MARK: - McuMgrReturnCode
 
 /// Return codes for Mcu Manager responses.
 ///
@@ -321,5 +330,15 @@ extension McuMgrReturnCode: CustomStringConvertible {
         default:
             return "Unrecognized (\(rawValue))"
         }
+    }
+}
+
+// MARK: - UInt8
+
+extension UInt8 {
+    
+    func next() -> UInt8 {
+        guard self != .max else { return 0}
+        return self + 1
     }
 }
