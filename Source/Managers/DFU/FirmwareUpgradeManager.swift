@@ -811,7 +811,7 @@ public enum FirmwareUpgradeState {
 // MARK: - FirmwareUpgradeMode
 //******************************************************************************
 
-public enum FirmwareUpgradeMode {
+public enum FirmwareUpgradeMode: CustomStringConvertible, CaseIterable {
     /// When this mode is set, the manager will send the test and reset commands
     /// to the device after the upload is complete. The device will reboot and
     /// will run the new image on its next boot. If the new image supports
@@ -837,6 +837,17 @@ public enum FirmwareUpgradeMode {
     /// Use this mode when the new image supports SMP service and you want to
     /// test it before confirming.
     case testAndConfirm
+    
+    public var description: String {
+        switch self {
+        case .testOnly:
+            return "Test Only"
+        case .confirmOnly:
+            return "Confirm Only"
+        case .testAndConfirm:
+            return "Test And Confirm"
+        }
+    }
 }
 
 //******************************************************************************

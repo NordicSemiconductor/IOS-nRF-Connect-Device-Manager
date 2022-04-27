@@ -91,7 +91,6 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     private func setSwapTime() {
         let alertController = UIAlertController(title: "Swap Time (in seconds)", message: nil, preferredStyle: .actionSheet)
-        
         let seconds = [0, 5, 10, 15, 20]
         seconds.forEach { numberOfSeconds in
             alertController.addAction(UIAlertAction(title: "\(numberOfSeconds) seconds", style: .default) {
@@ -100,16 +99,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
                 self.dfuManager!.estimatedSwapTime = TimeInterval(numberOfSeconds)
             })
         }
-        
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-    
-        // If the device is an ipad set the popover presentation controller
-        if let presenter = alertController.popoverPresentationController {
-            presenter.sourceView = self.view
-            presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
-            presenter.permittedArrowDirections = []
-        }
-        present(alertController, animated: true)
+        present(alertController)
     }
     
     private func setNumberOfBuffers() {
@@ -126,14 +117,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             })
         }
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-    
-        // If the device is an ipad set the popover presentation controller
-        if let presenter = alertController.popoverPresentationController {
-            presenter.sourceView = self.view
-            presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
-            presenter.permittedArrowDirections = []
-        }
-        present(alertController, animated: true)
+        present(alertController)
     }
     
     @IBAction func setEraseApplicationSettings(_ sender: UISwitch) {
@@ -142,30 +126,25 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     private func selectMode(for package: McuMgrPackage) {
         let alertController = UIAlertController(title: "Select mode", message: nil, preferredStyle: .actionSheet)
-        alertController.addAction(UIAlertAction(title: "Test and confirm", style: .default) {
-            action in
-            self.dfuManager!.mode = .testAndConfirm
-            self.startFirmwareUpgrade(package: package)
-        })
-        alertController.addAction(UIAlertAction(title: "Test only", style: .default) {
-            action in
-            self.dfuManager!.mode = .testOnly
-            self.startFirmwareUpgrade(package: package)
-        })
-        alertController.addAction(UIAlertAction(title: "Confirm only", style: .default) {
-            action in
-            self.dfuManager!.mode = .confirmOnly
-            self.startFirmwareUpgrade(package: package)
-        })
+        FirmwareUpgradeMode.allCases.forEach { upgradeMode in
+            alertController.addAction(UIAlertAction(title: upgradeMode.description, style: .default) {
+                action in
+                self.dfuManager!.mode = upgradeMode
+                self.startFirmwareUpgrade(package: package)
+            })
+        }
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alertController)
+    }
     
+    private func present(_ alertViewController: UIAlertController) {
         // If the device is an ipad set the popover presentation controller
-        if let presenter = alertController.popoverPresentationController {
+        if let presenter = alertViewController.popoverPresentationController {
             presenter.sourceView = self.view
-            presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+            presenter.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
             presenter.permittedArrowDirections = []
         }
-        present(alertController, animated: true)
+        present(alertViewController, animated: true)
     }
     
     private func startFirmwareUpgrade(package: McuMgrPackage) {
