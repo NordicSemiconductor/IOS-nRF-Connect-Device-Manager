@@ -134,7 +134,7 @@ public class ImageManager: McuManager {
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
     public func upload(images: [Image], alignment: ImageUploadAlignment = .disabled,
-                       delegate: ImageUploadDelegate?) -> Bool {
+                       pipelineDepth: Int = 1, delegate: ImageUploadDelegate?) -> Bool {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         defer {
@@ -159,8 +159,8 @@ public class ImageManager: McuManager {
         uploadDelegate = delegate
         
         uploadImages = images
-        
         uploadAlignment = alignment
+        uploadPipeline = Pipeline(depth: 1)
         
         // Set image data.
         imageData = firstImage.data
@@ -248,7 +248,7 @@ public class ImageManager: McuManager {
     /// Delegate to send image upload updates to.
     private weak var uploadDelegate: ImageUploadDelegate?
     /// In order to implement SMP Pipelining without breaking the logic too much, an in intermediary is needed to organise the upload() calls as necessary. It is written to be as reusable as possible.
-    private var uploadPipeline = Pipeline(depth: 1)
+    private var uploadPipeline: Pipeline!
     
     /// Cyclic reference is used to prevent from releasing the manager
     /// in the middle of an update. The reference cycle will be set
@@ -446,7 +446,8 @@ public class ImageManager: McuManager {
         let tempDelegate = uploadDelegate
         resetUploadVariables()
         let remainingImages = tempUploadImages.filter({ $0.image >= tempUploadIndex })
-        _ = upload(images: remainingImages, delegate: tempDelegate)
+        _ = upload(images: remainingImages, alignment: uploadAlignment,
+                   pipelineDepth: uploadPipeline.depth, delegate: tempDelegate)
         objc_sync_exit(self)
     }
     
