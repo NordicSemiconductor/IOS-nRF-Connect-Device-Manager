@@ -12,26 +12,20 @@ import Dispatch
 
 struct Pipeline {
     
-    private let depth: Int
-    
     private let pipelineSemaphore: DispatchSemaphore
     private var pipelineQueue: DispatchQueue
     
     init(depth: Int) {
         let correctedDepth = max(depth, 1)
-        self.depth = correctedDepth
-//        self.pipelineSemaphore = DispatchSemaphore(value: correctedLength)
-//        self.pipelineQueue = DispatchQueue(label: String(describing: Self.Type.self), attributes: .concurrent)
-        
         self.pipelineSemaphore = DispatchSemaphore(value: correctedDepth)
-        self.pipelineQueue = DispatchQueue(label: String(describing: Self.Type.self))
+        self.pipelineQueue = DispatchQueue(label: String(describing: Self.Type.self), attributes: .concurrent)
     }
     
     func submit(_ item: PipelineItem) {
         pipelineQueue.async {
-//            pipelineSemaphore.wait()
+            pipelineSemaphore.wait()
             item.perform()
-//            pipelineSemaphore.signal()
+            pipelineSemaphore.signal()
         }
     }
 }
