@@ -171,7 +171,10 @@ public class ImageManager: McuManager {
         uploadIndex = 0
         
         log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .application)
-        upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: uploadAlignment, callback: uploadCallback)
+        uploadPipeline.submit(PipelineItem({
+            self.upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: self.uploadAlignment,
+                        callback: self.uploadCallback)
+        }))
         return true
     }
 
@@ -244,6 +247,8 @@ public class ImageManager: McuManager {
     private var uploadAlignment: ImageUploadAlignment = .disabled
     /// Delegate to send image upload updates to.
     private weak var uploadDelegate: ImageUploadDelegate?
+    /// In order to implement SMP Pipelining without breaking the logic too much, an in intermediary is needed to organise the upload() calls as necessary. It is written to be as reusable as possible.
+    private var uploadPipeline = Pipeline(depth: 1)
     
     /// Cyclic reference is used to prevent from releasing the manager
     /// in the middle of an update. The reference cycle will be set
@@ -315,7 +320,10 @@ public class ImageManager: McuManager {
             let image: Int! = self.uploadImages?[self.uploadIndex].image
             log(msg: "Continuing upload from \(offset)/\(imageData.count) to image \(image)...", atLevel: .application)
             uploadState = .uploading
-            upload(data: imageData, image: image, offset: UInt(offset), alignment: uploadAlignment, callback: uploadCallback)
+            uploadPipeline.submit(PipelineItem({
+                self.upload(data: imageData, image: image, offset: UInt(self.offset), alignment: self.uploadAlignment,
+                            callback: self.uploadCallback)
+            }))
         } else {
             log(msg: "Upload has not been previously paused", atLevel: .warning)
         }
@@ -401,13 +409,15 @@ public class ImageManager: McuManager {
         }
     }
     
-    private func sendNext(from offset: UInt64) {
-        if uploadState != .uploading {
-            return
-        }
+    private func sendNext(from offset: UInt) {
+        guard uploadState == .uploading else { return }
+        
         let nextImageData: Data! = self.uploadImages?[uploadIndex].data
         let nextImageSlot: Int! = self.uploadImages?[uploadIndex].image
-        upload(data: nextImageData, image: nextImageSlot, offset: offset, alignment: uploadAlignment, callback: uploadCallback)
+        uploadPipeline.submit(PipelineItem({
+            self.upload(data: nextImageData, image: nextImageSlot, offset: offset, alignment: self.uploadAlignment,
+                        callback: self.uploadCallback)
+        }))
     }
     
     private func resetUploadVariables() {
