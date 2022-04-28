@@ -170,8 +170,8 @@ public class ImageManager: McuManager {
         cyclicReferenceHolder = { return self }
         uploadIndex = 0
         
-        log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .application)
         uploadPipeline.submit(PipelineItem({
+            self.log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .application)
             self.upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: self.uploadAlignment,
                         callback: self.uploadCallback)
         }))
@@ -318,9 +318,9 @@ public class ImageManager: McuManager {
         }
         if uploadState == .paused {
             let image: Int! = self.uploadImages?[self.uploadIndex].image
-            log(msg: "Continuing upload from \(offset)/\(imageData.count) to image \(image)...", atLevel: .application)
             uploadState = .uploading
             uploadPipeline.submit(PipelineItem({
+                self.log(msg: "[Continue] Uploading image \(image) from \(self.offset)/\(imageData.count)...", atLevel: .application)
                 self.upload(data: imageData, image: image, offset: UInt(self.offset), alignment: self.uploadAlignment,
                             callback: self.uploadCallback)
             }))
@@ -415,6 +415,7 @@ public class ImageManager: McuManager {
         let nextImageData: Data! = self.uploadImages?[uploadIndex].data
         let nextImageSlot: Int! = self.uploadImages?[uploadIndex].image
         uploadPipeline.submit(PipelineItem({
+            self.log(msg: "[Next] Uploading image \(nextImageSlot) from \(offset)/\(nextImageData.count)...", atLevel: .application)
             self.upload(data: nextImageData, image: nextImageSlot, offset: offset, alignment: self.uploadAlignment,
                         callback: self.uploadCallback)
         }))
