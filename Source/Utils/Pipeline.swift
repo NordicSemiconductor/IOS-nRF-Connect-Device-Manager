@@ -18,7 +18,7 @@ struct Pipeline {
     private var pipelineQueue: DispatchQueue
     
     init(depth: Int) {
-        let correctedDepth = max(depth, 1)
+        let correctedDepth = max(abs(depth), 1)
         self.depth = correctedDepth
         self.pipelineSemaphore = DispatchSemaphore(value: correctedDepth)
         self.pipelineQueue = DispatchQueue(label: String(describing: Self.Type.self), attributes: .concurrent)

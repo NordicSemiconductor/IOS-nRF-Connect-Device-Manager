@@ -160,7 +160,7 @@ public class ImageManager: McuManager {
         
         uploadImages = images
         uploadAlignment = alignment
-        uploadPipeline = Pipeline(depth: 1)
+        uploadPipeline = Pipeline(depth: pipelineDepth)
         
         // Set image data.
         imageData = firstImage.data
@@ -397,28 +397,33 @@ public class ImageManager: McuManager {
                     self.uploadIndex += 1
                     self.imageData = images[self.uploadIndex].data
                     self.log(msg: "Uploading image \(images[self.uploadIndex].image) (\(self.imageData?.count) bytes)...", atLevel: .application)
-                    self.sendNext(from: UInt64(0))
+                    self.sendNext(from: UInt(0), inChunksOf: currentImageData.count)
                 }
                 return
             }
             
             // Send the next packet of data.
-            self.sendNext(from: offset)
+            self.sendNext(from: UInt(offset), inChunksOf: currentImageData.count)
         } else {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
         }
     }
     
-    private func sendNext(from offset: UInt) {
+    private func sendNext(from offset: UInt, inChunksOf chunkSize: Int) {
         guard uploadState == .uploading else { return }
         
-        let nextImageData: Data! = self.uploadImages?[uploadIndex].data
-        let nextImageSlot: Int! = self.uploadImages?[uploadIndex].image
-        uploadPipeline.submit(PipelineItem({
-            self.log(msg: "[Next] Uploading image \(nextImageSlot) from \(offset)/\(nextImageData.count)...", atLevel: .application)
-            self.upload(data: nextImageData, image: nextImageSlot, offset: offset, alignment: self.uploadAlignment,
-                        callback: self.uploadCallback)
-        }))
+        let imageData: Data! = self.uploadImages?[uploadIndex].data
+        let imageSlot: Int! = self.uploadImages?[uploadIndex].image
+        for i in 0..<uploadPipeline.depth {
+            let chunkOffset = offset + UInt(i * chunkSize)
+            guard chunkOffset < imageData.count else { break }
+            uploadPipeline.submit(PipelineItem({
+                self.log(msg: "[Next] Uploading image \(imageSlot) from \(chunkOffset)/\(imageData.count)...", atLevel: .application)
+                self.upload(data: imageData, image: imageSlot, offset: chunkOffset, alignment: self.uploadAlignment,
+                            callback: self.uploadCallback)
+                self.log(msg: "[Next-End] Uploading image \(imageSlot) from \(chunkOffset)/\(imageData.count)...", atLevel: .application)
+            }))
+        }
     }
     
     private func resetUploadVariables() {
