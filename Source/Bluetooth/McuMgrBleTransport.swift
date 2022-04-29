@@ -312,9 +312,6 @@ extension McuMgrBleTransport: McuMgrTransport {
             return false
         }
         
-        // Close the lock.
-        lock.close(key: Keys.awaitingResponse)
-        
         // Check that data length does not exceed the mtu.
         let mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
         if data.count > mtu {
@@ -324,6 +321,8 @@ extension McuMgrBleTransport: McuMgrTransport {
             return false
         }
         
+        // Close the lock.
+        lock.close(key: Keys.awaitingResponse)
         
         // Write the value to the characteristic.
         log(msg: "-> \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
