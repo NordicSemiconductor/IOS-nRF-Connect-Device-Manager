@@ -220,7 +220,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             targetPeripheral = existing
         } else {
             // Close the lock.
-            setupLock.close(key: Keys.awaitingCentralManager)
+            setupLock.close(key: McuMgrBleTransportKey.awaitingCentralManager.rawValue)
             
             // Wait for the setup process to complete.
             let result = setupLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransport.CONNECTION_TIMEOUT))
@@ -250,7 +250,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         // Wait until the peripheral is ready.
         if smpCharacteristic == nil {
             // Close the lock.
-            setupLock.close(key: Keys.discoveringSmpCharacteristic)
+            setupLock.close(key: McuMgrBleTransportKey.discoveringSmpCharacteristic.rawValue)
             
             switch targetPeripheral.state {
             case .connected:
@@ -392,7 +392,7 @@ extension McuMgrBleTransport: CBCentralManagerDelegate {
                 .retrievePeripherals(withIdentifiers: [identifier])
                 .first {
                 self.peripheral = peripheral
-                setupLock.open(key: Keys.awaitingCentralManager)
+                setupLock.open(key: McuMgrBleTransportKey.awaitingCentralManager.rawValue)
             } else {
                 setupLock.open(McuMgrBleTransportError.centralManagerNotReady)
             }
@@ -526,7 +526,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         
         // The SMP Service and characateristic have now been discovered and set
         // up. Signal the dispatch semaphore to continue to send the request.
-        setupLock.open(key: Keys.discoveringSmpCharacteristic)
+        setupLock.open(key: McuMgrBleTransportKey.discoveringSmpCharacteristic.rawValue)
     }
     
     public func peripheral(_ peripheral: CBPeripheral,
@@ -569,17 +569,11 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
     }
 }
 
-//******************************************************************************
-// MARK: Result Lock Keys
-//******************************************************************************
+// MARK: - McuMgrBleTransportKey
 
-extension McuMgrBleTransport {
-    
-    /// Keys for ResultLock
-    private struct Keys {
-        static let awaitingCentralManager: ResultLockKey = "McuMgrBleTransport.awaitingCentralManager"
-        static let discoveringSmpCharacteristic: ResultLockKey = "McuMgrBleTransport.discoveringSmpCharacteristic"
-    }
+fileprivate enum McuMgrBleTransportKey: ResultLockKey {
+    case awaitingCentralManager = "McuMgrBleTransport.awaitingCentralManager"
+    case discoveringSmpCharacteristic = "McuMgrBleTransport.discoveringSmpCharacteristic"
 }
 
 /// Errors specific to BLE transport.
