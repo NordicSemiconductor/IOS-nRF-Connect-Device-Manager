@@ -7,6 +7,8 @@
 import Foundation
 import CoreBluetooth
 
+// MARK: - PeripheralState
+
 public enum PeripheralState {
     /// State set when the manager starts connecting with the
     /// peripheral.
@@ -23,22 +25,16 @@ public enum PeripheralState {
     case disconnected
 }
 
+// MARK: - PeripheralDelegate
+
 public protocol PeripheralDelegate: AnyObject {
     /// Callback called whenever peripheral state changes.
     func peripheral(_ peripheral: CBPeripheral, didChangeStateTo state: PeripheralState)
 }
 
+// MARK: - McuMgrBleTransport
+
 public class McuMgrBleTransport: NSObject {
-    
-    public static let SMP_SERVICE = CBUUID(string: "8D53DC1D-1DB7-4CD3-868B-8A527460AA84")
-    public static let SMP_CHARACTERISTIC = CBUUID(string: "DA2E7828-FBCE-4E01-AE9E-261174997C48")
-    
-    /// Max number of retries until the transaction is failed.
-    private static let MAX_RETRIES = 3
-    /// Connection timeout in seconds.
-    private static let CONNECTION_TIMEOUT = 20
-    /// Transaction timout in seconds.
-    private static let TRANSACTION_TIMEOUT = 30
     
     /// The CBPeripheral for this transport to communicate with.
     private var peripheral: CBPeripheral?
@@ -141,9 +137,7 @@ public class McuMgrBleTransport: NSObject {
     }
 }
 
-//******************************************************************************
-// MARK: McuMgrTransport
-//******************************************************************************
+// MARK: - McuMgrTransport
 
 extension McuMgrBleTransport: McuMgrTransport {
     
@@ -157,7 +151,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             // executed one after another. A new one will be started when the
             // queue is empty, or the when the last operation finishes.
             self.operationQueue.addOperation {
-                for i in 0..<McuMgrBleTransport.MAX_RETRIES {
+                for i in 0..<McuMgrBleTransportConstant.MAX_RETRIES {
                     let retry = self._send(data: data, callback: callback)
                     guard retry else { break }
                     self.log(msg: "Retry \(i)", atLevel: .verbose)
@@ -223,7 +217,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             setupLock.close(key: McuMgrBleTransportKey.awaitingCentralManager.rawValue)
             
             // Wait for the setup process to complete.
-            let result = setupLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransport.CONNECTION_TIMEOUT))
+            let result = setupLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.CONNECTION_TIMEOUT))
             
             // Check for timeout, failure, or success.
             switch result {
@@ -262,7 +256,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 log(msg: "Discovering services...", atLevel: .verbose)
                 state = .connecting
                 targetPeripheral.delegate = self
-                targetPeripheral.discoverServices([McuMgrBleTransport.SMP_SERVICE])
+                targetPeripheral.discoverServices([McuMgrBleTransportConstant.SMP_SERVICE])
             case .disconnected:
                 // If the peripheral is disconnected, begin the setup process by
                 // connecting to the device. Once the characteristic's
@@ -287,7 +281,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             }
             
             // Wait for the setup process to complete.
-            let result = setupLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransport.CONNECTION_TIMEOUT))
+            let result = setupLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.CONNECTION_TIMEOUT))
             
             // Check for timeout, failure, or success.
             switch result {
@@ -331,7 +325,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         targetPeripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
 
         // Wait for the didUpdateValueFor(characteristic:) to open the lock.
-        let result = writeLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransport.TRANSACTION_TIMEOUT))
+        let result = writeLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
         
         switch result {
         case .timeout:
@@ -379,9 +373,7 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
 }
 
-//******************************************************************************
-// MARK: Central Manager Delegate
-//******************************************************************************
+// MARK: - CBCentralManagerDelegate
 
 extension McuMgrBleTransport: CBCentralManagerDelegate {
     
@@ -409,7 +401,7 @@ extension McuMgrBleTransport: CBCentralManagerDelegate {
         state = .initializing
         log(msg: "Discovering services...", atLevel: .verbose)
         peripheral.delegate = self
-        peripheral.discoverServices([McuMgrBleTransport.SMP_SERVICE])
+        peripheral.discoverServices([McuMgrBleTransportConstant.SMP_SERVICE])
     }
     
     public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
@@ -433,9 +425,7 @@ extension McuMgrBleTransport: CBCentralManagerDelegate {
     }
 }
 
-//******************************************************************************
-// MARK: Peripheral Delegate
-//******************************************************************************
+// MARK: - CBPeripheralDelegate Delegate
 
 extension McuMgrBleTransport: CBPeripheralDelegate {
     
@@ -459,9 +449,9 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         }
         // Find the service matching the SMP service UUID.
         for service in services {
-            if service.uuid == McuMgrBleTransport.SMP_SERVICE {
+            if service.uuid == McuMgrBleTransportConstant.SMP_SERVICE {
                 log(msg: "Discovering characteristics...", atLevel: .verbose)
-                peripheral.discoverCharacteristics([McuMgrBleTransport.SMP_CHARACTERISTIC],
+                peripheral.discoverCharacteristics([McuMgrBleTransportConstant.SMP_CHARACTERISTIC],
                                                    for: service)
                 return
             }
@@ -491,7 +481,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         }
         // Find the characteristic matching the SMP characteristic UUID.
         for characteristic in characteristics {
-            if characteristic.uuid == McuMgrBleTransport.SMP_CHARACTERISTIC {
+            if characteristic.uuid == McuMgrBleTransportConstant.SMP_CHARACTERISTIC {
                 // Set the characteristic notification if available.
                 if characteristic.properties.contains(.notify) {
                     log(msg: "Enabling notifications...", atLevel: .verbose)
@@ -508,7 +498,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral,
                            didUpdateNotificationStateFor characteristic: CBCharacteristic,
                            error: Error?) {
-        guard characteristic.uuid == McuMgrBleTransport.SMP_CHARACTERISTIC else {
+        guard characteristic.uuid == McuMgrBleTransportConstant.SMP_CHARACTERISTIC else {
             return
         }
         // Check for error.
@@ -532,7 +522,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral,
                            didUpdateValueFor characteristic: CBCharacteristic,
                            error: Error?) {
-        guard characteristic.uuid == McuMgrBleTransport.SMP_CHARACTERISTIC else {
+        guard characteristic.uuid == McuMgrBleTransportConstant.SMP_CHARACTERISTIC else {
             return
         }
         // Check for error.
@@ -567,6 +557,21 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             writeLock.open()
         }
     }
+}
+
+// MARK: - McuMgrBleTransportConstant
+
+public enum McuMgrBleTransportConstant {
+    
+    public static let SMP_SERVICE = CBUUID(string: "8D53DC1D-1DB7-4CD3-868B-8A527460AA84")
+    public static let SMP_CHARACTERISTIC = CBUUID(string: "DA2E7828-FBCE-4E01-AE9E-261174997C48")
+    
+    /// Max number of retries until the transaction is failed.
+    fileprivate static let MAX_RETRIES = 3
+    /// Connection timeout in seconds.
+    fileprivate static let CONNECTION_TIMEOUT = 20
+    /// Transaction timout in seconds.
+    fileprivate static let TRANSACTION_TIMEOUT = 30
 }
 
 // MARK: - McuMgrBleTransportKey

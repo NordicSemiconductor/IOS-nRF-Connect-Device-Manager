@@ -218,7 +218,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
     /// - returns: True, if the peripheral matches the filter,
     ///   false otherwise.
     private func matchesFilters(_ discoveredPeripheral: DiscoveredPeripheral) -> Bool {
-        if filterByUuid && discoveredPeripheral.advertisedServices?.contains(McuMgrBleTransport.SMP_SERVICE) != true {
+        if filterByUuid && discoveredPeripheral.advertisedServices?.contains(McuMgrBleTransportConstant.SMP_SERVICE) != true {
             return false
         }
         if filterByRssi && discoveredPeripheral.highestRSSI.decimalValue < -50 {
