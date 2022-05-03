@@ -263,9 +263,8 @@ extension McuMgrBleTransport: McuMgrTransport {
                 // Do nothing. It will switch to .connected or .disconnected.
             case .disconnecting:
                 log(msg: "Device is disconnecting. Wait...", atLevel: .info)
-                // If the peripheral's connection state is transitioning, wait
-                // and retry
-                sleep(10)
+                // If the peripheral's connection state is transitioning, wait and retry
+                sleep(UInt32(McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL))
                 log(msg: "Retry send request...", atLevel: .verbose)
                 return true
             @unknown default:
@@ -579,6 +578,8 @@ public enum McuMgrBleTransportConstant {
     
     /// Max number of retries until the transaction is failed.
     fileprivate static let MAX_RETRIES = 3
+    /// The interval to wait before attempting a transaction again in seconds.
+    fileprivate static let WAIT_AND_RETRY_INTERVAL = 10
     /// Connection timeout in seconds.
     fileprivate static let CONNECTION_TIMEOUT = 20
     /// Transaction timout in seconds.
