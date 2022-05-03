@@ -49,14 +49,13 @@ public class McuMgrBleTransport: NSObject {
     private let connectionLock: ResultLock
     /// Lock used to wait for callbacks before continuing write requests.
     private var writeLocks: [UInt8: ResultLock]
+    /// Used to store fragmented response data.
+    private var writeState: [UInt8: (chunk: Data, totalChunkSize: Int)]
     
     /// SMP Characteristic object. Used to write requests and receive
     /// notificaitons.
     private var smpCharacteristic: CBCharacteristic?
     
-    /// Used to store fragmented response data.
-    private var responseData: Data?
-    private var responseLength: Int?
     /// An array of observers.
     private var observers: [ConnectionObserver]
     /// BLE transport delegate.
@@ -111,6 +110,7 @@ public class McuMgrBleTransport: NSObject {
         self.identifier = targetIdentifier
         self.connectionLock = ResultLock(isOpen: false)
         self.writeLocks = [UInt8: ResultLock]()
+        self.writeState = [UInt8: (Data, Int)]()
         self.observers = []
         self.operationQueue = OperationQueue()
         self.operationQueue.maxConcurrentOperationCount = 1
@@ -149,7 +149,6 @@ extension McuMgrBleTransport: McuMgrTransport {
                 case .failure(McuMgrTransportError.waitAndRetry):
                     sleep(UInt32(McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL))
                     self.log(msg: "Retry \(i)", atLevel: .info)
-                    break
                 case .failure(let error):
                     self.log(msg: error.localizedDescription, atLevel: .error)
                     DispatchQueue.main.async {
@@ -322,9 +321,9 @@ extension McuMgrBleTransport: McuMgrTransport {
         case .failure(let error):
             return .failure(error)
         case .success:
-            log(msg: "<- \(responseData?.hexEncodedString(options: .prepend0x) ?? "0 bytes")",
+            log(msg: "<- \(writeState[sequenceNumber]?.chunk.hexEncodedString(options: .prepend0x) ?? "0 bytes")",
                 atLevel: .debug)
-            return .success(responseData ?? Data())
+            return .success(writeState[sequenceNumber]?.chunk ?? Data())
         }
     }
     
@@ -339,8 +338,7 @@ extension McuMgrBleTransport: McuMgrTransport {
     
     private func clearState(for sequenceNumber: UInt8) {
         writeLocks[sequenceNumber] = nil
-        responseData = nil
-        responseLength = nil
+        writeState[sequenceNumber] = nil
     }
     
     private func log(msg: String, atLevel level: McuMgrLogLevel) {
@@ -500,13 +498,14 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         guard characteristic.uuid == McuMgrBleTransportConstant.SMP_CHARACTERISTIC else {
             return
         }
-        // Check for error.
+        
         guard error == nil else {
             writeLocks.values.forEach {
                 $0.open(error)
             }
             return
         }
+        
         guard let data = characteristic.value else {
             writeLocks.values.forEach {
                 $0.open(McuMgrTransportError.badResponse)
@@ -522,26 +521,27 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         }
         
         // Get the expected length from the response data.
-        if responseData == nil {
+        if writeState[sequenceNumber] == nil {
             // If we do not have any current response data, this is the initial
             // packet in a potentially fragmented response. Get the expected
             // length of the full response and initialize the responseData with
             // the expected capacity.
-            guard let len = McuMgrResponse.getExpectedLength(scheme: getScheme(), responseData: data) else {
+            guard let dataSize = McuMgrResponse.getExpectedLength(scheme: .ble, responseData: data) else {
                 writeLocks[sequenceNumber]?.open(McuMgrTransportError.badResponse)
                 return
             }
-            responseData = Data(capacity: len)
-            responseLength = len
+            writeState[sequenceNumber] = (Data(capacity: dataSize), dataSize)
         }
                 
         // Append the response data.
-        responseData!.append(data)
+        writeState[sequenceNumber]?.chunk.append(data)
         
         // If we have recevied all the bytes, signal the waiting lock.
-        if responseData!.count >= responseLength! {
-            writeLocks[sequenceNumber]?.open()
-        }
+        guard let chunkSize = writeState[sequenceNumber]?.chunk.count,
+              let expectedChunkSize = writeState[sequenceNumber]?.totalChunkSize,
+              chunkSize >= expectedChunkSize else { return }
+        
+        writeLocks[sequenceNumber]?.open()
     }
 }
 
@@ -569,16 +569,14 @@ fileprivate enum McuMgrBleTransportKey: ResultLockKey {
     case discoveringSmpCharacteristic = "McuMgrBleTransport.discoveringSmpCharacteristic"
 }
 
-/// Errors specific to BLE transport.
-public enum McuMgrBleTransportError: Error {
+// MARK: - McuMgrBleTransportError
+
+public enum McuMgrBleTransportError: Error, LocalizedError {
     case centralManagerPoweredOff
     case centralManagerNotReady
     case missingService
     case missingCharacteristic
     case missingNotifyProperty
-}
-
-extension McuMgrBleTransportError: LocalizedError {
     
     public var errorDescription: String? {
         switch self {
@@ -594,5 +592,4 @@ extension McuMgrBleTransportError: LocalizedError {
             return "SMP characteristic does not have notify property."
         }
     }
-    
 }
