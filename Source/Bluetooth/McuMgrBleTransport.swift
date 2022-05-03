@@ -229,9 +229,8 @@ extension McuMgrBleTransport: McuMgrTransport {
             let result = connectionLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.CONNECTION_TIMEOUT))
             resetConnectionLock()
             
-            // Check for timeout, failure, or success.
             switch result {
-            case let .error(error):
+            case let .failure(error):
                 return .failure(error)
             case .success:
                 guard let target = self.peripheral else {
@@ -283,9 +282,8 @@ extension McuMgrBleTransport: McuMgrTransport {
             let result = connectionLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.CONNECTION_TIMEOUT))
             resetConnectionLock()
             
-            // Check for timeout, failure, or success.
             switch result {
-            case let .error(error):
+            case let .failure(error):
                 state = .disconnected
                 return .failure(error)
             case .success:
@@ -321,7 +319,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         }
         
         switch result {
-        case .error(let error):
+        case .failure(let error):
             return .failure(error)
         case .success:
             log(msg: "<- \(responseData?.hexEncodedString(options: .prepend0x) ?? "0 bytes")",

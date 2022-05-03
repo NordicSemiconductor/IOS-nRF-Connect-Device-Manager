@@ -6,11 +6,6 @@
 
 import Foundation
 
-public enum LockResult {
-    case success
-    case error(Error)
-}
-
 public typealias ResultLockKey = String
 
 public class ResultLock {
@@ -29,34 +24,32 @@ public class ResultLock {
     /// Block the current thread until the condition is opened.
     ///
     /// If the condition is already opened, return immediately.
-    public func block() -> LockResult {
+    public func block() -> Result<Void, Error> {
         if !isOpen {
             semaphore.wait()
         }
-        if error != nil {
-            return .error(error!)
-        } else {
-            return .success
-        }
+        
+        guard let error = error else { return .success(()) }
+        return .failure(error)
     }
     
     /// Block the current thread until the condition is opened or until timeout.
     ///
     /// If the condition is opened, return immediately.
-    public func block(timeout: DispatchTime) -> LockResult {
-        let dispatchTimeoutResult: DispatchTimeoutResult
+    public func block(timeout: DispatchTime) -> Result<Void, Error> {
+        let dispatchResult: DispatchTimeoutResult
         if !isOpen {
-            dispatchTimeoutResult = semaphore.wait(timeout: timeout)
+            dispatchResult = semaphore.wait(timeout: timeout)
         } else {
-            dispatchTimeoutResult = .success
+            dispatchResult = .success
         }
         
-        if dispatchTimeoutResult == .timedOut {
-            return .error(McuMgrTransportError.sendTimeout)
-        } else if error != nil {
-            return .error(error!)
+        if dispatchResult == .timedOut {
+            return .failure(McuMgrTransportError.sendTimeout)
+        } else if let error = error {
+            return .failure(error)
         } else {
-            return .success
+            return .success(())
         }
     }
     
