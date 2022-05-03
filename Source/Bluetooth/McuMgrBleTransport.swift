@@ -41,8 +41,6 @@ public class McuMgrBleTransport: NSObject {
     /// The CBCentralManager instance from which the peripheral was obtained.
     /// This is used to connect and cancel connection.
     private let centralManager: CBCentralManager
-    /// Dispatch queue for queuing requests.
-    private let dispatchQueue: DispatchQueue
     /// The queue used to buffer reqeusts when another one is in progress.
     private let operationQueue: OperationQueue
     /// Lock used to wait for callbacks before continuing the request. This lock
@@ -111,7 +109,6 @@ public class McuMgrBleTransport: NSObject {
     public init(_ targetIdentifier: UUID) {
         self.centralManager = CBCentralManager(delegate: nil, queue: nil)
         self.identifier = targetIdentifier
-        self.dispatchQueue = DispatchQueue(label: "McuMgrBleTransport")
         self.setupLock = ResultLock(isOpen: false)
         self.writeLocks = [UInt8: ResultLock]()
         self.observers = []
@@ -146,16 +143,11 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
     
     public func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) {
-        dispatchQueue.async {
-            // Max concurrent opertaion count is set to 1, so operations are
-            // executed one after another. A new one will be started when the
-            // queue is empty, or the when the last operation finishes.
-            self.operationQueue.addOperation {
-                for i in 0..<McuMgrBleTransportConstant.MAX_RETRIES {
-                    let retry = self._send(data: data, callback: callback)
-                    guard retry else { break }
-                    self.log(msg: "Retry \(i)", atLevel: .verbose)
-                }
+        operationQueue.addOperation {
+            for i in 0..<McuMgrBleTransportConstant.MAX_RETRIES {
+                let retry = self._send(data: data, callback: callback)
+                guard retry else { break }
+                self.log(msg: "Retry \(i)", atLevel: .verbose)
             }
         }
     }
