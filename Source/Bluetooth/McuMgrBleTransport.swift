@@ -50,7 +50,7 @@ public class McuMgrBleTransport: NSObject {
     /// and the device to be received.
     private let setupLock: ResultLock
     /// Lock used to wait for callbacks before continuing write requests.
-    private let writeLock: ResultLock
+    private var writeLocks: [UInt8: ResultLock]
     
     /// SMP Characteristic object. Used to write requests and receive
     /// notificaitons.
@@ -113,7 +113,7 @@ public class McuMgrBleTransport: NSObject {
         self.identifier = targetIdentifier
         self.dispatchQueue = DispatchQueue(label: "McuMgrBleTransport")
         self.setupLock = ResultLock(isOpen: false)
-        self.writeLock = ResultLock(isOpen: false)
+        self.writeLocks = [UInt8: ResultLock]()
         self.observers = []
         self.operationQueue = OperationQueue()
         self.operationQueue.maxConcurrentOperationCount = 1
@@ -317,15 +317,20 @@ extension McuMgrBleTransport: McuMgrTransport {
             return false
         }
         
-        // Close write lock.
-        writeLock.close()
+        guard let sequenceNumber = readSequenceNumber(from: data) else {
+            fail(error: McuMgrTransportError.badHeader as Error, callback: callback)
+            return true
+        }
+        
+        writeLocks[sequenceNumber] = ResultLock(isOpen: false)
         
         // Write the value to the characteristic.
         log(msg: "-> \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
         targetPeripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
 
         // Wait for the didUpdateValueFor(characteristic:) to open the lock.
-        let result = writeLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
+        let result = writeLocks[sequenceNumber]!.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
+        writeLocks[sequenceNumber] = nil
         
         switch result {
         case .timeout:
@@ -348,11 +353,15 @@ extension McuMgrBleTransport: McuMgrTransport {
         return false
     }
     
+    private func readSequenceNumber(from data: Data) -> UInt8? {
+        guard data.count > McuMgrHeader.HEADER_LENGTH else { return nil }
+        return data.read(offset: 6) as UInt8
+    }
+    
     private func success<T: McuMgrResponse>(response: T, callback: @escaping McuMgrCallback<T>) {
         responseData = nil
         responseLength = nil
         setupLock.close()
-        writeLock.close()
         DispatchQueue.main.async {
             callback(response, nil)
         }
@@ -362,7 +371,6 @@ extension McuMgrBleTransport: McuMgrTransport {
         responseData = nil
         responseLength = nil
         setupLock.close()
-        writeLock.close()
         DispatchQueue.main.async {
             callback(nil, error)
         }
@@ -527,11 +535,22 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         }
         // Check for error.
         guard error == nil else {
-            writeLock.open(error)
+            writeLocks.values.forEach {
+                $0.open(error)
+            }
             return
         }
         guard let data = characteristic.value else {
-            writeLock.open(McuMgrTransportError.badResponse)
+            writeLocks.values.forEach {
+                $0.open(McuMgrTransportError.badResponse)
+            }
+            return
+        }
+        
+        guard let sequenceNumber = readSequenceNumber(from: data) else {
+            writeLocks.values.forEach {
+                $0.open(McuMgrTransportError.badHeader)
+            }
             return
         }
         
@@ -542,7 +561,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             // length of the full response and initialize the responseData with
             // the expected capacity.
             guard let len = McuMgrResponse.getExpectedLength(scheme: getScheme(), responseData: data) else {
-                writeLock.open(McuMgrTransportError.badResponse)
+                writeLocks[sequenceNumber]?.open(McuMgrTransportError.badResponse)
                 return
             }
             responseData = Data(capacity: len)
@@ -554,7 +573,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         
         // If we have recevied all the bytes, signal the waiting lock.
         if responseData!.count >= responseLength! {
-            writeLock.open()
+            writeLocks[sequenceNumber]?.open()
         }
     }
 }

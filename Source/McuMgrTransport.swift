@@ -55,6 +55,8 @@ public enum McuMgrTransportError: Error {
     /// The transport MTU is insufficient to send the request. The transport's
     /// MTU must be sent back as this case's argument.
     case insufficientMtu(mtu: Int)
+    /// McuMgrPacket is smaller than the McuMgrHeader Size.
+    case badHeader
     /// The response received was bad.
     case badResponse
 }
@@ -75,6 +77,8 @@ extension McuMgrTransportError: LocalizedError {
             return "Sending the request failed."
         case .insufficientMtu(mtu: let mtu):
             return "Insufficient MTU: \(mtu)."
+        case .badHeader:
+            return "Bad header received. Maybe packet size is smaller than minimum header size?"
         case .badResponse:
             return "Bad response received."
         }
