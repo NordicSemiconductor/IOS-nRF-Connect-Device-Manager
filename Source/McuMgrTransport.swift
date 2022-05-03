@@ -59,6 +59,8 @@ public enum McuMgrTransportError: Error {
     case badHeader
     /// The response received was bad.
     case badResponse
+    /// Device is busy, so we sleep for a few seconds and try again.
+    case waitAndRetry
 }
 
 extension McuMgrTransportError: LocalizedError {
@@ -81,6 +83,8 @@ extension McuMgrTransportError: LocalizedError {
             return "Bad header received. Maybe packet size is smaller than minimum header size?"
         case .badResponse:
             return "Bad response received."
+        case .waitAndRetry:
+            return "Device Busy. Will retry after a short wait..."
         }
     }
 }

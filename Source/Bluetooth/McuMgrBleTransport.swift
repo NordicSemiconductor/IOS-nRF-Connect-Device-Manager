@@ -145,9 +145,31 @@ extension McuMgrBleTransport: McuMgrTransport {
     public func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) {
         operationQueue.addOperation {
             for i in 0..<McuMgrBleTransportConstant.MAX_RETRIES {
-                let retry = self._send(data: data, callback: callback)
-                guard retry else { break }
-                self.log(msg: "Retry \(i)", atLevel: .verbose)
+                switch self._send(data: data) {
+                case .failure(McuMgrTransportError.waitAndRetry):
+                    sleep(UInt32(McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL))
+                    self.log(msg: "Retry \(i)", atLevel: .info)
+                    break
+                case .failure(let error):
+                    self.log(msg: error.localizedDescription, atLevel: .error)
+                    DispatchQueue.main.async {
+                        callback(nil, error)
+                    }
+                    return
+                case .success(let responseData):
+                    do {
+                        let response: T = try McuMgrResponse.buildResponse(scheme: .ble, data: responseData)
+                        DispatchQueue.main.async {
+                            callback(response, nil)
+                        }
+                    } catch {
+                        self.log(msg: error.localizedDescription, atLevel: .error)
+                        DispatchQueue.main.async {
+                            callback(nil, error)
+                        }
+                    }
+                    return
+                }
             }
         }
     }
@@ -187,14 +209,10 @@ extension McuMgrBleTransport: McuMgrTransport {
     /// CBCentralManager is ready and the peripheral is connected.
     /// The peripheral will automatically be connected when it's not.
     ///
-    /// - returns: True if the send should be retried until the max retries
-    ///   has been met, false if it has been handled.
-    private func _send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) -> Bool {
-        // Is Bluetooth operational?
+    /// - returns: A `Result` containing the full response `Data` if successful, `Error` if not. Note that if `McuMgrTransportError.waitAndRetry` is returned, said operation needs to be done externally to this call.
+    private func _send(data: Data) -> Result<Data, Error> {
         if centralManager.state == .poweredOff || centralManager.state == .unsupported {
-            log(msg: "Central Manager powered off", atLevel: .warning)
-            fail(error: McuMgrBleTransportError.centralManagerPoweredOff, callback: callback)
-            return false
+            return .failure(McuMgrBleTransportError.centralManagerPoweredOff)
         }
 
         // We might not have a peripheral instance yet, if the Central Manager has not
@@ -214,18 +232,12 @@ extension McuMgrBleTransport: McuMgrTransport {
             // Check for timeout, failure, or success.
             switch result {
             case .timeout:
-                log(msg: "Central Manager timed out", atLevel: .warning)
-                fail(error: McuMgrTransportError.connectionTimeout, callback: callback)
-                return false
+                return .failure(McuMgrTransportError.connectionTimeout)
             case let .error(error):
-                log(msg: "Central Manager failed to start: \(error)", atLevel: .warning)
-                fail(error: error, callback: callback)
-                return false
+                return .failure(error)
             case .success:
                 guard let target = self.peripheral else {
-                    log(msg: "Central Manager timed out", atLevel: .warning)
-                    fail(error: McuMgrTransportError.connectionTimeout, callback: callback)
-                    return false
+                    return .failure(McuMgrTransportError.connectionTimeout)
                 }
                 // continue
                 log(msg: "Central Manager  ready", atLevel: .verbose)
@@ -264,9 +276,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             case .disconnecting:
                 log(msg: "Device is disconnecting. Wait...", atLevel: .info)
                 // If the peripheral's connection state is transitioning, wait and retry
-                sleep(UInt32(McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL))
-                log(msg: "Retry send request...", atLevel: .verbose)
-                return true
+                return .failure(McuMgrTransportError.waitAndRetry)
             @unknown default:
                 log(msg: "Unknown state", atLevel: .warning)
             }
@@ -279,14 +289,10 @@ extension McuMgrBleTransport: McuMgrTransport {
             switch result {
             case .timeout:
                 state = .disconnected
-                log(msg: "Connection timed out", atLevel: .warning)
-                fail(error: McuMgrTransportError.connectionTimeout, callback: callback)
-                return false
+                return .failure(McuMgrTransportError.connectionTimeout)
             case let .error(error):
                 state = .disconnected
-                log(msg: "Connection failed: \(error)", atLevel: .warning)
-                fail(error: error, callback: callback)
-                return false
+                return .failure(error)
             case .success:
                 log(msg: "Device ready", atLevel: .info)
                 // Continue.
@@ -295,23 +301,17 @@ extension McuMgrBleTransport: McuMgrTransport {
         
         // Make sure the SMP characteristic is not nil.
         guard let smpCharacteristic = smpCharacteristic else {
-            log(msg: "Missing the SMP characteristic after connection setup.", atLevel: .error)
-            fail(error: McuMgrBleTransportError.missingCharacteristic, callback: callback)
-            return false
+            return .failure(McuMgrBleTransportError.missingCharacteristic)
         }
         
         // Check that data length does not exceed the mtu.
         let mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
         if data.count > mtu {
-            log(msg: "Length of data to send exceeds MTU", atLevel: .error)
-            // Fail with an insufficient MTU error.
-            fail(error: McuMgrTransportError.insufficientMtu(mtu: mtu) as Error, callback: callback)
-            return false
+            return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
         }
         
         guard let sequenceNumber = readSequenceNumber(from: data) else {
-            fail(error: McuMgrTransportError.badHeader as Error, callback: callback)
-            return true
+            return .failure(McuMgrTransportError.badHeader)
         }
         
         writeLocks[sequenceNumber] = ResultLock(isOpen: false)
@@ -328,23 +328,14 @@ extension McuMgrBleTransport: McuMgrTransport {
         
         switch result {
         case .timeout:
-            log(msg: "Request timed out", atLevel: .error)
-            fail(error: McuMgrTransportError.sendTimeout, callback: callback)
+            return .failure(McuMgrTransportError.sendTimeout)
         case .error(let error):
-            log(msg: "Request failed: \(error)", atLevel: .error)
-            fail(error: error, callback: callback)
+            return .failure(error)
         case .success:
-            do {
-                // Build the McuMgrResponse.
-                log(msg: "<- \(responseData?.hexEncodedString(options: .prepend0x) ?? "0 bytes")",
-                    atLevel: .debug)
-                let response: T = try McuMgrResponse.buildResponse(scheme: getScheme(), data: responseData)
-                success(response: response, callback: callback)
-            } catch {
-                fail(error: error, callback: callback)
-            }
+            log(msg: "<- \(responseData?.hexEncodedString(options: .prepend0x) ?? "0 bytes")",
+                atLevel: .debug)
+            return .success(responseData ?? Data())
         }
-        return false
     }
     
     private func readSequenceNumber(from data: Data) -> UInt8? {
@@ -360,18 +351,6 @@ extension McuMgrBleTransport: McuMgrTransport {
         writeLocks[sequenceNumber] = nil
         responseData = nil
         responseLength = nil
-    }
-    
-    private func success<T: McuMgrResponse>(response: T, callback: @escaping McuMgrCallback<T>) {
-        DispatchQueue.main.async {
-            callback(response, nil)
-        }
-    }
-    
-    private func fail<T: McuMgrResponse>(error: Error, callback: @escaping McuMgrCallback<T>) {
-        DispatchQueue.main.async {
-            callback(nil, error)
-        }
     }
     
     private func log(msg: String, atLevel level: McuMgrLogLevel) {
