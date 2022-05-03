@@ -205,7 +205,6 @@ extension McuMgrBleTransport: McuMgrTransport {
         if let existing = peripheral, centralManager.state == .poweredOn {
             targetPeripheral = existing
         } else {
-            // Close the lock.
             connectionLock.close(key: McuMgrBleTransportKey.awaitingCentralManager.rawValue)
             
             // Wait for the setup process to complete.
@@ -323,7 +322,9 @@ extension McuMgrBleTransport: McuMgrTransport {
 
         // Wait for the didUpdateValueFor(characteristic:) to open the lock.
         let result = writeLocks[sequenceNumber]!.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
-        writeLocks[sequenceNumber] = nil
+        defer {
+            clearState(for: sequenceNumber)
+        }
         
         switch result {
         case .timeout:
@@ -355,17 +356,19 @@ extension McuMgrBleTransport: McuMgrTransport {
         connectionLock.close()
     }
     
-    private func success<T: McuMgrResponse>(response: T, callback: @escaping McuMgrCallback<T>) {
+    private func clearState(for sequenceNumber: UInt8) {
+        writeLocks[sequenceNumber] = nil
         responseData = nil
         responseLength = nil
+    }
+    
+    private func success<T: McuMgrResponse>(response: T, callback: @escaping McuMgrCallback<T>) {
         DispatchQueue.main.async {
             callback(response, nil)
         }
     }
     
     private func fail<T: McuMgrResponse>(error: Error, callback: @escaping McuMgrCallback<T>) {
-        responseData = nil
-        responseLength = nil
         DispatchQueue.main.async {
             callback(nil, error)
         }
