@@ -231,8 +231,6 @@ extension McuMgrBleTransport: McuMgrTransport {
             
             // Check for timeout, failure, or success.
             switch result {
-            case .timeout:
-                return .failure(McuMgrTransportError.connectionTimeout)
             case let .error(error):
                 return .failure(error)
             case .success:
@@ -287,15 +285,11 @@ extension McuMgrBleTransport: McuMgrTransport {
             
             // Check for timeout, failure, or success.
             switch result {
-            case .timeout:
-                state = .disconnected
-                return .failure(McuMgrTransportError.connectionTimeout)
             case let .error(error):
                 state = .disconnected
                 return .failure(error)
             case .success:
                 log(msg: "Device ready", atLevel: .info)
-                // Continue.
             }
         }
         
@@ -327,8 +321,6 @@ extension McuMgrBleTransport: McuMgrTransport {
         }
         
         switch result {
-        case .timeout:
-            return .failure(McuMgrTransportError.sendTimeout)
         case .error(let error):
             return .failure(error)
         case .success:

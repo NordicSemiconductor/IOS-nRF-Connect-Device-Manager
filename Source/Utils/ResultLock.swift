@@ -7,7 +7,6 @@
 import Foundation
 
 public enum LockResult {
-    case timeout
     case success
     case error(Error)
 }
@@ -53,7 +52,7 @@ public class ResultLock {
         }
         
         if dispatchTimeoutResult == .timedOut {
-            return .timeout
+            return .error(McuMgrTransportError.sendTimeout)
         } else if error != nil {
             return .error(error!)
         } else {
