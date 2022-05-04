@@ -251,6 +251,9 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionPause.isHidden = true
         actionResume.isHidden = true
         actionCancel.isHidden = true
+        actionSwap.isHidden = false
+        actionPipeline.isHidden = false
+        actionAlignment.isHidden = false
         actionStart.isHidden = false
         actionSelect.isEnabled = true
         eraseSwitch.isEnabled = true
