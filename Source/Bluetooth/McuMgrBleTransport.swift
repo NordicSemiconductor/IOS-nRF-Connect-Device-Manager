@@ -46,15 +46,15 @@ public class McuMgrBleTransport: NSObject {
     /// Lock used to wait for callbacks before continuing the request. This lock
     /// is used to wait for the device to setup (i.e. connection, descriptor)
     /// and the device to be received.
-    private let connectionLock: ResultLock
+    internal let connectionLock: ResultLock
     /// Lock used to wait for callbacks before continuing write requests.
-    private var writeLocks: [UInt8: ResultLock]
+    internal var writeLocks: [UInt8: ResultLock]
     /// Used to store fragmented response data.
-    private var writeState: [UInt8: (chunk: Data, totalChunkSize: Int)]
+    internal var writeState: [UInt8: (chunk: Data, totalChunkSize: Int)]
     
     /// SMP Characteristic object. Used to write requests and receive
     /// notificaitons.
-    private var smpCharacteristic: CBCharacteristic?
+    internal var smpCharacteristic: CBCharacteristic?
     
     /// An array of observers.
     private var observers: [ConnectionObserver]
@@ -69,7 +69,7 @@ public class McuMgrBleTransport: NSObject {
     /// The log delegate will receive transport logs.
     public weak var logDelegate: McuMgrLogDelegate?
     
-    public private(set) var state: PeripheralState = .disconnected {
+    public internal(set) var state: PeripheralState = .disconnected {
         didSet {
             DispatchQueue.main.async {
                 self.notifyPeripheralDelegate()
@@ -195,7 +195,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         }
     }
     
-    private func notifyStateChanged(_ state: McuMgrTransportState) {
+    internal func notifyStateChanged(_ state: McuMgrTransportState) {
         // The list of observers may be modified by each observer.
         // Better iterate a copy of it.
         let array = [ConnectionObserver](observers)
@@ -327,21 +327,21 @@ extension McuMgrBleTransport: McuMgrTransport {
         }
     }
     
-    private func readSequenceNumber(from data: Data) -> UInt8? {
+    internal func readSequenceNumber(from data: Data) -> UInt8? {
         guard data.count > McuMgrHeader.HEADER_LENGTH else { return nil }
         return data.read(offset: 6) as UInt8
     }
     
-    private func resetConnectionLock() {
+    internal func resetConnectionLock() {
         connectionLock.close()
     }
     
-    private func clearState(for sequenceNumber: UInt8) {
+    internal func clearState(for sequenceNumber: UInt8) {
         writeLocks[sequenceNumber] = nil
         writeState[sequenceNumber] = nil
     }
     
-    private func log(msg: String, atLevel level: McuMgrLogLevel) {
+    internal func log(msg: String, atLevel level: McuMgrLogLevel) {
         logDelegate?.log(msg, ofCategory: .transport, atLevel: level)
     }
 }
@@ -398,153 +398,6 @@ extension McuMgrBleTransport: CBCentralManagerDelegate {
     }
 }
 
-// MARK: - CBPeripheralDelegate Delegate
-
-extension McuMgrBleTransport: CBPeripheralDelegate {
-    
-    public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        // Check for error.
-        guard error == nil else {
-            connectionLock.open(error)
-            return
-        }
-        
-        let s = peripheral.services?
-            .map({ $0.uuid.uuidString })
-            .joined(separator: ", ")
-            ?? "none"
-        log(msg: "Services discovered: \(s)", atLevel: .verbose)
-        
-        // Get peripheral's services.
-        guard let services = peripheral.services else {
-            connectionLock.open(McuMgrBleTransportError.missingService)
-            return
-        }
-        // Find the service matching the SMP service UUID.
-        for service in services {
-            if service.uuid == McuMgrBleTransportConstant.SMP_SERVICE {
-                log(msg: "Discovering characteristics...", atLevel: .verbose)
-                peripheral.discoverCharacteristics([McuMgrBleTransportConstant.SMP_CHARACTERISTIC],
-                                                   for: service)
-                return
-            }
-        }
-        connectionLock.open(McuMgrBleTransportError.missingService)
-    }
-    
-    public func peripheral(_ peripheral: CBPeripheral,
-                           didDiscoverCharacteristicsFor service: CBService,
-                           error: Error?) {
-        // Check for error.
-        guard error == nil else {
-            connectionLock.open(error)
-            return
-        }
-        
-        let c = service.characteristics?
-            .map({ $0.uuid.uuidString })
-            .joined(separator: ", ")
-            ?? "none"
-        log(msg: "Characteristics discovered: \(c)", atLevel: .verbose)
-        
-        // Get service's characteristics.
-        guard let characteristics = service.characteristics else {
-            connectionLock.open(McuMgrBleTransportError.missingCharacteristic)
-            return
-        }
-        // Find the characteristic matching the SMP characteristic UUID.
-        for characteristic in characteristics {
-            if characteristic.uuid == McuMgrBleTransportConstant.SMP_CHARACTERISTIC {
-                // Set the characteristic notification if available.
-                if characteristic.properties.contains(.notify) {
-                    log(msg: "Enabling notifications...", atLevel: .verbose)
-                    peripheral.setNotifyValue(true, for: characteristic)
-                } else {
-                    connectionLock.open(McuMgrBleTransportError.missingNotifyProperty)
-                }
-                return
-            }
-        }
-        connectionLock.open(McuMgrBleTransportError.missingCharacteristic)
-    }
-    
-    public func peripheral(_ peripheral: CBPeripheral,
-                           didUpdateNotificationStateFor characteristic: CBCharacteristic,
-                           error: Error?) {
-        guard characteristic.uuid == McuMgrBleTransportConstant.SMP_CHARACTERISTIC else {
-            return
-        }
-        // Check for error.
-        guard error == nil else {
-            connectionLock.open(error)
-            return
-        }
-        
-        log(msg: "Notifications enabled", atLevel: .verbose)
-        
-        // Set the SMP characteristic.
-        smpCharacteristic = characteristic
-        state = .connected
-        notifyStateChanged(.connected)
-        
-        // The SMP Service and characateristic have now been discovered and set
-        // up. Signal the dispatch semaphore to continue to send the request.
-        connectionLock.open(key: McuMgrBleTransportKey.discoveringSmpCharacteristic.rawValue)
-    }
-    
-    public func peripheral(_ peripheral: CBPeripheral,
-                           didUpdateValueFor characteristic: CBCharacteristic,
-                           error: Error?) {
-        guard characteristic.uuid == McuMgrBleTransportConstant.SMP_CHARACTERISTIC else {
-            return
-        }
-        
-        guard error == nil else {
-            writeLocks.values.forEach {
-                $0.open(error)
-            }
-            return
-        }
-        
-        guard let data = characteristic.value else {
-            writeLocks.values.forEach {
-                $0.open(McuMgrTransportError.badResponse)
-            }
-            return
-        }
-        
-        guard let sequenceNumber = readSequenceNumber(from: data) else {
-            writeLocks.values.forEach {
-                $0.open(McuMgrTransportError.badHeader)
-            }
-            return
-        }
-        
-        // Get the expected length from the response data.
-        if writeState[sequenceNumber] == nil {
-            // If we do not have any current response data, this is the initial
-            // packet in a potentially fragmented response. Get the expected
-            // length of the full response and initialize the responseData with
-            // the expected capacity.
-            guard let dataSize = McuMgrResponse.getExpectedLength(scheme: .ble, responseData: data) else {
-                writeLocks[sequenceNumber]?.open(McuMgrTransportError.badResponse)
-                return
-            }
-            writeState[sequenceNumber] = (Data(capacity: dataSize), dataSize)
-        }
-                
-        // Append the response data.
-        writeState[sequenceNumber]?.chunk.append(data)
-        
-        // If we have recevied all the bytes, signal the waiting lock.
-        guard let chunkSize = writeState[sequenceNumber]?.chunk.count,
-              let expectedChunkSize = writeState[sequenceNumber]?.totalChunkSize,
-              chunkSize >= expectedChunkSize else { return }
-        
-        writeLocks[sequenceNumber]?.open()
-    }
-}
-
 // MARK: - McuMgrBleTransportConstant
 
 public enum McuMgrBleTransportConstant {
@@ -553,18 +406,18 @@ public enum McuMgrBleTransportConstant {
     public static let SMP_CHARACTERISTIC = CBUUID(string: "DA2E7828-FBCE-4E01-AE9E-261174997C48")
     
     /// Max number of retries until the transaction is failed.
-    fileprivate static let MAX_RETRIES = 3
+    internal static let MAX_RETRIES = 3
     /// The interval to wait before attempting a transaction again in seconds.
-    fileprivate static let WAIT_AND_RETRY_INTERVAL = 10
+    internal static let WAIT_AND_RETRY_INTERVAL = 10
     /// Connection timeout in seconds.
-    fileprivate static let CONNECTION_TIMEOUT = 20
+    internal static let CONNECTION_TIMEOUT = 20
     /// Transaction timout in seconds.
-    fileprivate static let TRANSACTION_TIMEOUT = 30
+    internal static let TRANSACTION_TIMEOUT = 30
 }
 
 // MARK: - McuMgrBleTransportKey
 
-fileprivate enum McuMgrBleTransportKey: ResultLockKey {
+internal enum McuMgrBleTransportKey: ResultLockKey {
     case awaitingCentralManager = "McuMgrBleTransport.awaitingCentralManager"
     case discoveringSmpCharacteristic = "McuMgrBleTransport.discoveringSmpCharacteristic"
 }
