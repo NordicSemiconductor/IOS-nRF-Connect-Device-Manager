@@ -89,6 +89,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         }
     }
     private var dfuManagerConfiguration: FirmwareUpgradeConfiguration = .standard
+    private var initialBytes: Int = 0
+    private var uploadTimestamp: Date!
     
     // MARK: - Logic
     
@@ -187,6 +189,8 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionCancel.isHidden = false
         actionSelect.isEnabled = false
         eraseSwitch.isEnabled = false
+        
+        initialBytes = 0
     }
     
     func upgradeStateDidChange(from previousState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
@@ -223,7 +227,6 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionSelect.isEnabled = true
         eraseSwitch.isEnabled = true
         package = nil
-        dfuSpeed.isHidden = true
     }
     
     func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
@@ -257,9 +260,29 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
     }
     
     func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
-        progress.setProgress(Float(bytesSent) / Float(imageSize), animated: true)
         dfuSpeed.isHidden = false
-        dfuSpeed.text = "Some number here"
+        
+        if initialBytes == 0 {
+            uploadTimestamp = timestamp
+            initialBytes = bytesSent
+            progress.setProgress(Float(bytesSent) / Float(imageSize), animated: false)
+        } else {
+            progress.setProgress(Float(bytesSent) / Float(imageSize), animated: true)
+        }
+        
+        // Date.timeIntervalSince1970 returns seconds
+        let msSinceUploadBegan = (timestamp.timeIntervalSince1970 - uploadTimestamp.timeIntervalSince1970) * 1000
+        
+        guard bytesSent < imageSize else {
+            let averageSpeedInKiloBytesPerSecond = Double(imageSize - initialBytes) / msSinceUploadBegan
+            dfuSpeed.text = "\(imageSize - initialBytes) bytes sent (avg \(String(format: "%.2f kB/s", averageSpeedInKiloBytesPerSecond)))"
+            return
+        }
+        
+        let bytesSentSinceUploadBegan = bytesSent - initialBytes
+        // bytes / ms = kB/s
+        let speedInKiloBytesPerSecond = Double(bytesSentSinceUploadBegan) / msSinceUploadBegan
+        dfuSpeed.text = String(format: "%.2f kB/s", speedInKiloBytesPerSecond)
     }
 }
 
