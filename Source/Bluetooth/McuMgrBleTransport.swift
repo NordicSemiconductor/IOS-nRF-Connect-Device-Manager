@@ -37,10 +37,10 @@ public protocol PeripheralDelegate: AnyObject {
 public class McuMgrBleTransport: NSObject {
     
     /// The CBPeripheral for this transport to communicate with.
-    private var peripheral: CBPeripheral?
+    internal var peripheral: CBPeripheral?
     /// The CBCentralManager instance from which the peripheral was obtained.
     /// This is used to connect and cancel connection.
-    private let centralManager: CBCentralManager
+    internal let centralManager: CBCentralManager
     /// The queue used to buffer reqeusts when another one is in progress.
     private let operationQueue: OperationQueue
     /// Lock used to wait for callbacks before continuing the request. This lock
@@ -338,58 +338,6 @@ extension McuMgrBleTransport: McuMgrTransport {
     
     internal func log(msg: String, atLevel level: McuMgrLogLevel) {
         logDelegate?.log(msg, ofCategory: .transport, atLevel: level)
-    }
-}
-
-// MARK: - CBCentralManagerDelegate
-
-extension McuMgrBleTransport: CBCentralManagerDelegate {
-    
-    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        switch central.state {
-        case .poweredOn:
-            if let peripheral = centralManager
-                .retrievePeripherals(withIdentifiers: [identifier])
-                .first {
-                self.peripheral = peripheral
-                connectionLock.open(key: McuMgrBleTransportKey.awaitingCentralManager.rawValue)
-            } else {
-                connectionLock.open(McuMgrBleTransportError.centralManagerNotReady)
-            }
-        default:
-            connectionLock.open(McuMgrBleTransportError.centralManagerNotReady)
-        }
-    }
-    
-    public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        guard self.identifier == peripheral.identifier else {
-            return
-        }
-        log(msg: "Peripheral connected", atLevel: .info)
-        state = .initializing
-        log(msg: "Discovering services...", atLevel: .verbose)
-        peripheral.delegate = self
-        peripheral.discoverServices([McuMgrBleTransportConstant.SMP_SERVICE])
-    }
-    
-    public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        guard self.identifier == peripheral.identifier else {
-            return
-        }
-        log(msg: "Peripheral disconnected", atLevel: .info)
-        peripheral.delegate = nil
-        smpCharacteristic = nil
-        connectionLock.open(McuMgrTransportError.disconnected)
-        state = .disconnected
-        notifyStateChanged(.disconnected)
-    }
-    
-    public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        guard self.identifier == peripheral.identifier else {
-            return
-        }
-        log(msg: "Peripheral failed to connect", atLevel: .warning)
-        connectionLock.open(McuMgrTransportError.connectionFailed)
     }
 }
 
