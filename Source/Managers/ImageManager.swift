@@ -403,7 +403,7 @@ public class ImageManager: McuManager {
             }
             
             // Send the next packet of data.
-            self.sendNext(from: UInt(offset), inChunksOf: currentImageData.count)
+            self.sendNext(from: UInt(offset), inChunksOf: self.mtu)
         } else {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
         }
