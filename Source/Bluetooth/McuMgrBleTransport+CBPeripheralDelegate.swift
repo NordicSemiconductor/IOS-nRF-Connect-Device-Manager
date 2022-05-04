@@ -123,7 +123,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             return
         }
         
-        guard let sequenceNumber = readSequenceNumber(from: data) else {
+        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() else {
             writeLocks.values.forEach {
                 $0.open(McuMgrTransportError.badHeader)
             }

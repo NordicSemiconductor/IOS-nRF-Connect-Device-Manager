@@ -301,7 +301,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
         }
         
-        guard let sequenceNumber = readSequenceNumber(from: data) else {
+        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() else {
             return .failure(McuMgrTransportError.badHeader)
         }
         
@@ -325,11 +325,6 @@ extension McuMgrBleTransport: McuMgrTransport {
                 atLevel: .debug)
             return .success(writeState[sequenceNumber]?.chunk ?? Data())
         }
-    }
-    
-    internal func readSequenceNumber(from data: Data) -> UInt8? {
-        guard data.count > McuMgrHeader.HEADER_LENGTH else { return nil }
-        return data.read(offset: 6) as UInt8
     }
     
     internal func resetConnectionLock() {
