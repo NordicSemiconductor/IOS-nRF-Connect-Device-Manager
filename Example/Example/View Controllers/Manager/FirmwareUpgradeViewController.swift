@@ -27,6 +27,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     @IBOutlet weak var dfuPipelineLength: UILabel!
     @IBOutlet weak var dfuByteAlignment: UILabel!
     @IBOutlet weak var eraseSwitch: UISwitch!
+    @IBOutlet weak var dfuSpeed: UILabel!
     @IBOutlet weak var progress: UIProgressView!
     
     // MARK: - IBAction(s)
@@ -61,6 +62,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         actionPause.isHidden = true
         actionResume.isHidden = false
         status.text = "PAUSED"
+        dfuSpeed.isHidden = true
     }
     
     @IBAction func resume(_ sender: UIButton) {
@@ -68,6 +70,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         actionPause.isHidden = false
         actionResume.isHidden = true
         status.text = "UPLOADING..."
+        dfuSpeed.isHidden = false
     }
     
     @IBAction func cancel(_ sender: UIButton) {
@@ -220,6 +223,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionSelect.isEnabled = true
         eraseSwitch.isEnabled = true
         package = nil
+        dfuSpeed.isHidden = true
     }
     
     func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
@@ -236,6 +240,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         eraseSwitch.isEnabled = true
         status.textColor = .systemRed
         status.text = "\(error.localizedDescription)"
+        dfuSpeed.isHidden = true
     }
     
     func upgradeDidCancel(state: FirmwareUpgradeState) {
@@ -248,10 +253,13 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         eraseSwitch.isEnabled = true
         status.textColor = .primary
         status.text = "CANCELLED"
+        dfuSpeed.isHidden = true
     }
     
     func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
         progress.setProgress(Float(bytesSent) / Float(imageSize), animated: true)
+        dfuSpeed.isHidden = false
+        dfuSpeed.text = "Some number here"
     }
 }
 
