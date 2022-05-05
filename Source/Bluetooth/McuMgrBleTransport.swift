@@ -113,7 +113,6 @@ public class McuMgrBleTransport: NSObject {
         self.writeState = [UInt8: (Data, Int)]()
         self.observers = []
         self.operationQueue = OperationQueue()
-        self.operationQueue.maxConcurrentOperationCount = 1
         super.init()
         self.centralManager.delegate = self
         if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [targetIdentifier]).first {
@@ -127,6 +126,15 @@ public class McuMgrBleTransport: NSObject {
     
     public private(set) var identifier: UUID
 
+    public var pipelineDepth: Int {
+        get {
+            operationQueue.maxConcurrentOperationCount
+        }
+        set {
+            operationQueue.maxConcurrentOperationCount = newValue
+        }
+    }
+    
     private func notifyPeripheralDelegate() {
         if let peripheral = self.peripheral {
             delegate?.peripheral(peripheral, didChangeStateTo: state)
@@ -143,7 +151,14 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
     
     public func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) {
+        let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() ?? .max
+        self.log(msg: "Adding sendOperation SEQ No. \(sequenceNumber)", atLevel: .debug)
         operationQueue.addOperation {
+            self.log(msg: "sendOperation SEQ No. \(sequenceNumber)", atLevel: .debug)
+            defer {
+                self.log(msg: "sendOperation-end SEQ No. \(sequenceNumber)", atLevel: .debug)
+            }
+            
             for i in 0..<McuMgrBleTransportConstant.MAX_RETRIES {
                 switch self._send(data: data) {
                 case .failure(McuMgrTransportError.waitAndRetry):
@@ -305,25 +320,34 @@ extension McuMgrBleTransport: McuMgrTransport {
             return .failure(McuMgrTransportError.badHeader)
         }
         
-        writeLocks[sequenceNumber] = ResultLock(isOpen: false)
+        objc_sync_enter(self)
+        let lock = ResultLock(isOpen: false)
+        writeLocks[sequenceNumber] = lock
+        objc_sync_exit(self)
         
         // Write the value to the characteristic.
         log(msg: "-> \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
         targetPeripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
 
         // Wait for the didUpdateValueFor(characteristic:) to open the lock.
-        let result = writeLocks[sequenceNumber]!.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
+        let result = lock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
+        
         defer {
+            objc_sync_enter(self)
             clearState(for: sequenceNumber)
+            objc_sync_exit(self)
         }
         
         switch result {
         case .failure(let error):
             return .failure(error)
         case .success:
-            log(msg: "<- \(writeState[sequenceNumber]?.chunk.hexEncodedString(options: .prepend0x) ?? "0 bytes")",
-                atLevel: .debug)
-            return .success(writeState[sequenceNumber]?.chunk ?? Data())
+            objc_sync_enter(self)
+            let returnData = writeState[sequenceNumber]?.chunk ?? Data()
+            objc_sync_exit(self)
+            
+            log(msg: "<- \(returnData.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+            return .success(returnData)
         }
     }
     
@@ -332,6 +356,7 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
     
     internal func clearState(for sequenceNumber: UInt8) {
+        writeLocks[sequenceNumber]?.close() // = nil
         writeLocks[sequenceNumber] = nil
         writeState[sequenceNumber] = nil
     }

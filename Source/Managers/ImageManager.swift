@@ -57,19 +57,7 @@ public class ImageManager: McuManager {
     /// - parameter callback: The callback.
     public func upload(data: Data, image: Int, offset: UInt, alignment: ImageUploadAlignment,
                        callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
-        // Calculate the number of remaining bytes.
-        let remainingBytes: UInt64 = UInt64(data.count) - offset
-        
-        // Data length to end is the minimum of the max data lenght and the
-        // number of remaining bytes.
-        let packetOverhead = calculatePacketOverhead(data: data, image: image, offset: UInt64(offset))
-        
-        // Get the length of image data to send.
-        var maxDataLength: UInt = UInt(mtu) - UInt(packetOverhead)
-        if alignment != .disabled {
-            maxDataLength = (maxDataLength / alignment.rawValue) * alignment.rawValue
-        }
-        let dataLength: UInt = min(maxDataLength, remainingBytes)
+        let dataLength = maxDataPacketLengthFor(data: data, image: image, offset: offset)
         
         // Build the request payload.
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[offset..<(offset+dataLength)])),
@@ -169,9 +157,14 @@ public class ImageManager: McuManager {
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
         uploadIndex = 0
+        uploadRequestsInFlight = 0
+        if let pipelinedTransport = transporter as? McuMgrBleTransport {
+            pipelinedTransport.pipelineDepth = pipelineDepth
+        }
         
+        uploadRequestsInFlight += 1
         uploadPipeline.submit(PipelineItem({
-            self.log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .application)
+            self.log(msg: "Uploading image \(firstImage.image) from 0/\(firstImage.data.count)...", atLevel: .application)
             self.upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: self.uploadAlignment,
                         callback: self.uploadCallback)
         }))
@@ -249,6 +242,7 @@ public class ImageManager: McuManager {
     private weak var uploadDelegate: ImageUploadDelegate?
     /// In order to implement SMP Pipelining without breaking the logic too much, an in intermediary is needed to organise the upload() calls as necessary. It is written to be as reusable as possible.
     private var uploadPipeline: Pipeline!
+    private var uploadRequestsInFlight: UInt!
     
     /// Cyclic reference is used to prevent from releasing the manager
     /// in the middle of an update. The reference cycle will be set
@@ -338,6 +332,9 @@ public class ImageManager: McuManager {
         guard let self = self else {
             return
         }
+        
+        self.uploadRequestsInFlight -= 1
+        
         // Check for an error.
         if let error = error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
@@ -368,7 +365,6 @@ public class ImageManager: McuManager {
         }
         // Get the offset from the response.
         if let offset = response.off {
-            // Set the image upload offset.
             self.offset = offset
             self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: currentImageData.count, timestamp: Date())
             
@@ -395,28 +391,32 @@ public class ImageManager: McuManager {
                     self.log(msg: "Uploaded image \(self.uploadIndex) (\(self.uploadIndex + 1) of \(images.count))", atLevel: .application)
                     // Move on to the next image.
                     self.uploadIndex += 1
+                    self.offset = 0
                     self.imageData = images[self.uploadIndex].data
                     self.log(msg: "Uploading image \(images[self.uploadIndex].image) (\(self.imageData?.count) bytes)...", atLevel: .application)
-                    self.sendNext(from: UInt(0), inChunksOf: currentImageData.count)
+                    self.sendNext(from: UInt(0))
                 }
                 return
             }
             
-            // Send the next packet of data.
-            self.sendNext(from: UInt(offset), inChunksOf: self.mtu)
+            guard self.uploadRequestsInFlight == 0 else { return }
+            self.sendNext(from: UInt(self.offset))
         } else {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
         }
     }
     
-    private func sendNext(from offset: UInt, inChunksOf chunkSize: Int) {
+    private func sendNext(from offset: UInt) {
         guard uploadState == .uploading else { return }
         
         let imageData: Data! = self.uploadImages?[uploadIndex].data
         let imageSlot: Int! = self.uploadImages?[uploadIndex].image
+        let chunkSize = maxDataPacketLengthFor(data: imageData, image: imageSlot, offset: offset) - UInt(McuMgrHeader.HEADER_LENGTH)
         for i in 0..<uploadPipeline.depth {
-            let chunkOffset = offset + UInt(i * chunkSize)
+            let chunkOffset = offset + UInt(i) * chunkSize
             guard chunkOffset < imageData.count else { break }
+            log(msg: "[Next] Submitting image \(imageSlot) from offset \(chunkOffset) chunk \(i)", atLevel: .application)
+            uploadRequestsInFlight += 1
             uploadPipeline.submit(PipelineItem({
                 self.log(msg: "[Next] Uploading image \(imageSlot) from \(chunkOffset)/\(imageData.count)...", atLevel: .application)
                 self.upload(data: imageData, image: imageSlot, offset: chunkOffset, alignment: self.uploadAlignment,
@@ -455,6 +455,23 @@ public class ImageManager: McuManager {
         _ = upload(images: remainingImages, alignment: uploadAlignment,
                    pipelineDepth: uploadPipeline.depth, delegate: tempDelegate)
         objc_sync_exit(self)
+    }
+    
+    private func maxDataPacketLengthFor(data: Data, image: Int, offset: UInt) -> UInt {
+        guard offset < data.count else { return UInt(McuMgrHeader.HEADER_LENGTH) }
+        // Calculate the number of remaining bytes.
+        let remainingBytes: UInt = UInt(data.count) - offset
+        
+        // Data length to end is the minimum of the max data lenght and the
+        // number of remaining bytes.
+        let packetOverhead = calculatePacketOverhead(data: data, image: image, offset: UInt64(offset))
+        
+        // Get the length of image data to send.
+        var maxDataLength: UInt = UInt(mtu) - UInt(packetOverhead)
+        if uploadAlignment != .disabled {
+            maxDataLength = (maxDataLength / uploadAlignment.rawValue) * uploadAlignment.rawValue
+        }
+        return min(maxDataLength, remainingBytes)
     }
     
     private func calculatePacketOverhead(data: Data, image: Int, offset: UInt64) -> Int {

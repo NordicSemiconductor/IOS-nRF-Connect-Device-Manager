@@ -109,6 +109,11 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             return
         }
         
+        objc_sync_enter(self)
+        defer {
+            objc_sync_exit(self)
+        }
+        
         guard error == nil else {
             writeLocks.values.forEach {
                 $0.open(error)
@@ -129,6 +134,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             }
             return
         }
+        log(msg: "peripheralDidUpdateValueFor() SEQ No. \(sequenceNumber))", atLevel: .debug)
         
         // Get the expected length from the response data.
         if writeState[sequenceNumber] == nil {
@@ -140,15 +146,19 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
                 writeLocks[sequenceNumber]?.open(McuMgrTransportError.badResponse)
                 return
             }
+//            objc_sync_enter(self)
             writeState[sequenceNumber] = (Data(capacity: dataSize), dataSize)
+//            objc_sync_exit(self)
         }
-                
-        // Append the response data.
+        
+//        objc_sync_enter(self)
         writeState[sequenceNumber]?.chunk.append(data)
+        let chunk = writeState[sequenceNumber]?.chunk
+        let totalChunkSize = writeState[sequenceNumber]?.totalChunkSize
+//        objc_sync_exit(self)
         
         // If we have recevied all the bytes, signal the waiting lock.
-        guard let chunkSize = writeState[sequenceNumber]?.chunk.count,
-              let expectedChunkSize = writeState[sequenceNumber]?.totalChunkSize,
+        guard let chunkSize = chunk?.count, let expectedChunkSize = totalChunkSize,
               chunkSize >= expectedChunkSize else { return }
         
         writeLocks[sequenceNumber]?.open()

@@ -69,22 +69,24 @@ open class McuManager {
                                         commandId: UInt8,
                                         payload: [String:CBOR]?,
                                         callback: @escaping McuMgrCallback<T>) {
-        let currentPacketSequenceNumber = sequenceNumber
+        objc_sync_enter(self)
+        let packetPacketSequenceNumber = sequenceNumber
         sequenceNumber = sequenceNumber.next()
+        objc_sync_exit(self)
         
-        log(msg: "Sending \(op) command (Group: \(group), SEQ No. \(currentPacketSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
+        log(msg: "Sending \(op) command (Group: \(group), SEQ No. \(packetPacketSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
             atLevel: .verbose)
         let mcuPacketData = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
                                                    flags: flags, group: group.uInt16Value,
-                                                   sequenceNumber: sequenceNumber,
+                                                   sequenceNumber: packetPacketSequenceNumber,
                                                    commandId: commandId, payload: payload)
         let _callback: McuMgrCallback<T> = logDelegate == nil ? callback : { [weak self] (response, error) in
             if let self = self {
                 if let response = response {
-                    self.log(msg: "Response (Group: \(self.group), SEQ No. \(currentPacketSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
+                    self.log(msg: "Response (Group: \(self.group), SEQ No. \(packetPacketSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
                              atLevel: .verbose)
                 } else if let error = error {
-                    self.log(msg: "Request failed: \(error.localizedDescription)",
+                    self.log(msg: "Request (Group: \(self.group), SEQ No. \(packetPacketSequenceNumber)) failed: \(error.localizedDescription))",
                              atLevel: .error)
                 }
             }
