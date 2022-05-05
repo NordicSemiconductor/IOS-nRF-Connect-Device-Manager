@@ -75,7 +75,9 @@ public class ImageManager: McuManager {
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
             payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
         }
+        
         // Build request and send.
+        uploadRequestsInFlight += 1
         send(op: .write, commandId: ID_UPLOAD, payload: payload, callback: callback)
     }
     
@@ -148,7 +150,6 @@ public class ImageManager: McuManager {
         
         uploadImages = images
         uploadAlignment = alignment
-        uploadPipeline = Pipeline(depth: pipelineDepth)
         
         // Set image data.
         imageData = firstImage.data
@@ -162,12 +163,9 @@ public class ImageManager: McuManager {
             pipelinedTransport.pipelineDepth = pipelineDepth
         }
         
-        uploadRequestsInFlight += 1
-        uploadPipeline.submit(PipelineItem({
-            self.log(msg: "Uploading image \(firstImage.image) from 0/\(firstImage.data.count)...", atLevel: .application)
-            self.upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: self.uploadAlignment,
-                        callback: self.uploadCallback)
-        }))
+        log(msg: "Uploading image \(firstImage.image) from 0/\(firstImage.data.count)...", atLevel: .application)
+        upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: uploadAlignment,
+                    callback: uploadCallback)
         return true
     }
 
@@ -241,8 +239,13 @@ public class ImageManager: McuManager {
     /// Delegate to send image upload updates to.
     private weak var uploadDelegate: ImageUploadDelegate?
     /// In order to implement SMP Pipelining without breaking the logic too much, an in intermediary is needed to organise the upload() calls as necessary. It is written to be as reusable as possible.
-    private var uploadPipeline: Pipeline!
+    
     private var uploadRequestsInFlight: UInt!
+    
+    private var pipelineDepth: Int {
+        guard let pipelinedTransport = transporter as? McuMgrBleTransport else { return 1 }
+        return pipelinedTransport.pipelineDepth
+    }
     
     /// Cyclic reference is used to prevent from releasing the manager
     /// in the middle of an update. The reference cycle will be set
@@ -313,11 +316,9 @@ public class ImageManager: McuManager {
         if uploadState == .paused {
             let image: Int! = self.uploadImages?[self.uploadIndex].image
             uploadState = .uploading
-            uploadPipeline.submit(PipelineItem({
-                self.log(msg: "[Continue] Uploading image \(image) from \(self.offset)/\(imageData.count)...", atLevel: .application)
-                self.upload(data: imageData, image: image, offset: UInt(self.offset), alignment: self.uploadAlignment,
-                            callback: self.uploadCallback)
-            }))
+            log(msg: "[Continue] Uploading image \(image) from \(offset)/\(imageData.count)...", atLevel: .application)
+            upload(data: imageData, image: image, offset: UInt(offset), alignment: uploadAlignment,
+                        callback: uploadCallback)
         } else {
             log(msg: "Upload has not been previously paused", atLevel: .warning)
         }
@@ -392,6 +393,7 @@ public class ImageManager: McuManager {
                     // Move on to the next image.
                     self.uploadIndex += 1
                     self.offset = 0
+                    self.uploadRequestsInFlight = 0
                     self.imageData = images[self.uploadIndex].data
                     self.log(msg: "Uploading image \(images[self.uploadIndex].image) (\(self.imageData?.count) bytes)...", atLevel: .application)
                     self.sendNext(from: UInt(0))
@@ -412,17 +414,13 @@ public class ImageManager: McuManager {
         let imageData: Data! = self.uploadImages?[uploadIndex].data
         let imageSlot: Int! = self.uploadImages?[uploadIndex].image
         let chunkSize = maxDataPacketLengthFor(data: imageData, image: imageSlot, offset: offset) - UInt(McuMgrHeader.HEADER_LENGTH)
-        for i in 0..<uploadPipeline.depth {
+        for i in 0..<pipelineDepth {
             let chunkOffset = offset + UInt(i) * chunkSize
             guard chunkOffset < imageData.count else { break }
-            log(msg: "[Next] Submitting image \(imageSlot) from offset \(chunkOffset) chunk \(i)", atLevel: .application)
-            uploadRequestsInFlight += 1
-            uploadPipeline.submit(PipelineItem({
-                self.log(msg: "[Next] Uploading image \(imageSlot) from \(chunkOffset)/\(imageData.count)...", atLevel: .application)
-                self.upload(data: imageData, image: imageSlot, offset: chunkOffset, alignment: self.uploadAlignment,
-                            callback: self.uploadCallback)
-                self.log(msg: "[Next-End] Uploading image \(imageSlot) from \(chunkOffset)/\(imageData.count)...", atLevel: .application)
-            }))
+            log(msg: "[Next] Uploading image \(imageSlot) from \(chunkOffset)/\(imageData.count)...", atLevel: .application)
+            upload(data: imageData, image: imageSlot, offset: chunkOffset, alignment: uploadAlignment,
+                        callback: uploadCallback)
+            log(msg: "[Next-End] Uploading image \(imageSlot) from \(chunkOffset)/\(imageData.count)...", atLevel: .application)
         }
     }
     
@@ -453,7 +451,7 @@ public class ImageManager: McuManager {
         resetUploadVariables()
         let remainingImages = tempUploadImages.filter({ $0.image >= tempUploadIndex })
         _ = upload(images: remainingImages, alignment: uploadAlignment,
-                   pipelineDepth: uploadPipeline.depth, delegate: tempDelegate)
+                   pipelineDepth: pipelineDepth, delegate: tempDelegate)
         objc_sync_exit(self)
     }
     
