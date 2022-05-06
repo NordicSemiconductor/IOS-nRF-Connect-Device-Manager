@@ -369,6 +369,8 @@ public class ImageManager: McuManager {
             self.offset = offset
             self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: currentImageData.count, timestamp: Date())
             
+            guard self.uploadRequestsInFlight == 0 else { return }
+            
             if self.uploadState == .none {
                 self.log(msg: "Upload cancelled", atLevel: .application)
                 self.resetUploadVariables()
@@ -392,8 +394,6 @@ public class ImageManager: McuManager {
                     self.log(msg: "Uploaded image \(self.uploadIndex) (\(self.uploadIndex + 1) of \(images.count))", atLevel: .application)
                     // Move on to the next image.
                     self.uploadIndex += 1
-                    self.offset = 0
-                    self.uploadRequestsInFlight = 0
                     self.imageData = images[self.uploadIndex].data
                     self.log(msg: "Uploading image \(images[self.uploadIndex].image) (\(self.imageData?.count) bytes)...", atLevel: .application)
                     self.sendNext(from: UInt(0))
@@ -401,7 +401,6 @@ public class ImageManager: McuManager {
                 return
             }
             
-            guard self.uploadRequestsInFlight == 0 else { return }
             self.sendNext(from: UInt(self.offset))
         } else {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
@@ -419,8 +418,7 @@ public class ImageManager: McuManager {
             guard chunkOffset < imageData.count else { break }
             log(msg: "[Next] Uploading image \(imageSlot) from \(chunkOffset)/\(imageData.count)...", atLevel: .application)
             upload(data: imageData, image: imageSlot, offset: chunkOffset, alignment: uploadAlignment,
-                        callback: uploadCallback)
-            log(msg: "[Next-End] Uploading image \(imageSlot) from \(chunkOffset)/\(imageData.count)...", atLevel: .application)
+                   callback: uploadCallback)
         }
     }
     
