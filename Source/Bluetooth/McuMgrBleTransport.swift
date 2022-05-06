@@ -106,14 +106,14 @@ public class McuMgrBleTransport: NSObject {
     /// - parameter targetIdentifier: The UUID of the peripheral with Simple Managerment
     ///   Protocol (SMP) service.
     public init(_ targetIdentifier: UUID) {
-        let concurrentBluetoothQueue = DispatchQueue(label: "McuMgrBleTransport", attributes: .concurrent)
-        self.centralManager = CBCentralManager(delegate: nil, queue: concurrentBluetoothQueue)
+        self.centralManager = CBCentralManager(delegate: nil, queue: .global(qos: .userInitiated))
         self.identifier = targetIdentifier
         self.connectionLock = ResultLock(isOpen: false)
         self.writeLocks = [UInt8: ResultLock]()
         self.writeState = [UInt8: (Data, Int)]()
         self.observers = []
         self.operationQueue = OperationQueue()
+        self.operationQueue.maxConcurrentOperationCount = 1
         super.init()
         self.centralManager.delegate = self
         if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [targetIdentifier]).first {
@@ -127,15 +127,6 @@ public class McuMgrBleTransport: NSObject {
     
     public private(set) var identifier: UUID
 
-    public var pipelineDepth: Int {
-        get {
-            operationQueue.maxConcurrentOperationCount
-        }
-        set {
-            operationQueue.maxConcurrentOperationCount = newValue
-        }
-    }
-    
     private func notifyPeripheralDelegate() {
         if let peripheral = self.peripheral {
             delegate?.peripheral(peripheral, didChangeStateTo: state)
@@ -151,16 +142,10 @@ extension McuMgrBleTransport: McuMgrTransport {
         return .ble
     }
     
-    public func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) {
-        let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() ?? .max
+    public func send<T: McuMgrResponse>(dataPackets: [Data], callback: @escaping McuMgrCallback<T>) {
         operationQueue.addOperation {
-            self.log(msg: "sendOperation SEQ No. \(sequenceNumber)", atLevel: .debug)
-            defer {
-                self.log(msg: "sendOperation-end SEQ No. \(sequenceNumber)", atLevel: .debug)
-            }
-            
             for i in 0..<McuMgrBleTransportConstant.MAX_RETRIES {
-                switch self._send(data: data) {
+                switch self._send(data: dataPackets) {
                 case .failure(McuMgrTransportError.waitAndRetry):
                     sleep(UInt32(McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL))
                     self.log(msg: "Retry \(i)", atLevel: .info)
@@ -224,7 +209,7 @@ extension McuMgrBleTransport: McuMgrTransport {
     /// The peripheral will automatically be connected when it's not.
     ///
     /// - returns: A `Result` containing the full response `Data` if successful, `Error` if not. Note that if `McuMgrTransportError.waitAndRetry` is returned, said operation needs to be done externally to this call.
-    private func _send(data: Data) -> Result<Data, Error> {
+    private func _send(data: [Data]) -> Result<Data, Error> {
         if centralManager.state == .poweredOff || centralManager.state == .unsupported {
             return .failure(McuMgrBleTransportError.centralManagerPoweredOff)
         }
@@ -312,11 +297,11 @@ extension McuMgrBleTransport: McuMgrTransport {
         
         // Check that data length does not exceed the mtu.
         let mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
-        if data.count > mtu {
+        guard data.allSatisfy({ $0.count <= mtu }) else {
             return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
         }
         
-        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() else {
+        guard let sequenceNumber = data.first?.readMcuMgrHeaderSequenceNumber() else {
             return .failure(McuMgrTransportError.badHeader)
         }
         
@@ -325,9 +310,12 @@ extension McuMgrBleTransport: McuMgrTransport {
         writeLocks[sequenceNumber] = lock
         objc_sync_exit(self)
         
-        // Write the value to the characteristic.
-        log(msg: "-> \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
-        targetPeripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
+        for packet in data {
+            let sequenceNumber = packet.readMcuMgrHeaderSequenceNumber() ?? .max
+            // Write the value to the characteristic.
+            log(msg: "-> (SEQ No. \(sequenceNumber)) \(packet.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+            targetPeripheral.writeValue(packet, for: smpCharacteristic, type: .withoutResponse)
+        }
 
         // Wait for the didUpdateValueFor(characteristic:) to open the lock.
         let result = lock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
