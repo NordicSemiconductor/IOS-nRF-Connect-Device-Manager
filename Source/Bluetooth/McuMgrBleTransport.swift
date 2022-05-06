@@ -106,7 +106,8 @@ public class McuMgrBleTransport: NSObject {
     /// - parameter targetIdentifier: The UUID of the peripheral with Simple Managerment
     ///   Protocol (SMP) service.
     public init(_ targetIdentifier: UUID) {
-        self.centralManager = CBCentralManager(delegate: nil, queue: nil)
+        let concurrentBluetoothQueue = DispatchQueue(label: "McuMgrBleTransport", attributes: .concurrent)
+        self.centralManager = CBCentralManager(delegate: nil, queue: concurrentBluetoothQueue)
         self.identifier = targetIdentifier
         self.connectionLock = ResultLock(isOpen: false)
         self.writeLocks = [UInt8: ResultLock]()
