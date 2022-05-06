@@ -153,7 +153,6 @@ extension McuMgrBleTransport: McuMgrTransport {
     
     public func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) {
         let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() ?? .max
-        self.log(msg: "Adding sendOperation SEQ No. \(sequenceNumber)", atLevel: .debug)
         operationQueue.addOperation {
             self.log(msg: "sendOperation SEQ No. \(sequenceNumber)", atLevel: .debug)
             defer {
@@ -321,8 +320,8 @@ extension McuMgrBleTransport: McuMgrTransport {
             return .failure(McuMgrTransportError.badHeader)
         }
         
-        objc_sync_enter(self)
         let lock = ResultLock(isOpen: false)
+        objc_sync_enter(self)
         writeLocks[sequenceNumber] = lock
         objc_sync_exit(self)
         
@@ -357,7 +356,6 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
     
     internal func clearState(for sequenceNumber: UInt8) {
-        writeLocks[sequenceNumber]?.close() // = nil
         writeLocks[sequenceNumber] = nil
         writeState[sequenceNumber] = nil
     }

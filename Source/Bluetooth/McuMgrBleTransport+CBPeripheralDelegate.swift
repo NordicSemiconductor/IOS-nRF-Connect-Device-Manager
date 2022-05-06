@@ -146,16 +146,12 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
                 writeLocks[sequenceNumber]?.open(McuMgrTransportError.badResponse)
                 return
             }
-//            objc_sync_enter(self)
             writeState[sequenceNumber] = (Data(capacity: dataSize), dataSize)
-//            objc_sync_exit(self)
         }
         
-//        objc_sync_enter(self)
         writeState[sequenceNumber]?.chunk.append(data)
         let chunk = writeState[sequenceNumber]?.chunk
         let totalChunkSize = writeState[sequenceNumber]?.totalChunkSize
-//        objc_sync_exit(self)
         
         // If we have recevied all the bytes, signal the waiting lock.
         guard let chunkSize = chunk?.count, let expectedChunkSize = totalChunkSize,
