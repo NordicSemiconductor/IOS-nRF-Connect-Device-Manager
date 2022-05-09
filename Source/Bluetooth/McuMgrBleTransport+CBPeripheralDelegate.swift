@@ -124,14 +124,15 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             return
         }
         
-        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() else {
+        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber(),
+              let writeStateIndex = writeState.firstIndex(where: { $0.sequenceNumber == sequenceNumber }) else {
             writeLock.open(McuMgrTransportError.badHeader)
             return
         }
         log(msg: "peripheralDidUpdateValueFor() SEQ No. \(sequenceNumber))", atLevel: .debug)
         
         // Get the expected length from the response data.
-        if writeState[sequenceNumber] == nil {
+        if  writeState[writeStateIndex].chunk == nil {
             // If we do not have any current response data, this is the initial
             // packet in a potentially fragmented response. Get the expected
             // length of the full response and initialize the responseData with
@@ -140,16 +141,18 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
                 writeLock.open(McuMgrTransportError.badResponse)
                 return
             }
-            writeState[sequenceNumber] = (Data(capacity: dataSize), dataSize)
+            writeState[writeStateIndex].chunk = Data(capacity: dataSize)
+            writeState[writeStateIndex].totalChunkSize = dataSize
         }
         
-        writeState[sequenceNumber]?.chunk.append(data)
-        let chunk = writeState[sequenceNumber]?.chunk
-        let totalChunkSize = writeState[sequenceNumber]?.totalChunkSize
+        writeState[writeStateIndex].chunk?.append(data)
         
-        // If we have recevied all the bytes, signal the waiting lock.
-        guard let chunkSize = chunk?.count, let expectedChunkSize = totalChunkSize,
-              chunkSize >= expectedChunkSize else { return }
+        let allPacketsCompleted = writeState.allSatisfy({
+            guard let chunk = $0.chunk,
+                  let expectedChunkSize = $0.totalChunkSize else { return false }
+            return chunk.count >= expectedChunkSize
+        })
+        guard allPacketsCompleted else { return }
         
         writeLock.open()
     }

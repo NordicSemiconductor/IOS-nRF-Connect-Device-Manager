@@ -50,7 +50,7 @@ public class McuMgrBleTransport: NSObject {
     /// Lock used to wait for callbacks before continuing write requests.
     internal var writeLock: ResultLock
     /// Used to store fragmented response data.
-    internal var writeState: [UInt8: (chunk: Data, totalChunkSize: Int)]
+    internal var writeState: [(sequenceNumber: UInt8, chunk: Data?, totalChunkSize: Int?)]
     
     /// SMP Characteristic object. Used to write requests and receive
     /// notificaitons.
@@ -110,7 +110,7 @@ public class McuMgrBleTransport: NSObject {
         self.identifier = targetIdentifier
         self.connectionLock = ResultLock(isOpen: false)
         self.writeLock = ResultLock(isOpen: false)
-        self.writeState = [UInt8: (Data, Int)]()
+        self.writeState = [(UInt8, Data?, Int?)]()
         self.observers = []
         self.operationQueue = OperationQueue()
         self.operationQueue.maxConcurrentOperationCount = 1
@@ -301,14 +301,22 @@ extension McuMgrBleTransport: McuMgrTransport {
             return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
         }
         
-        guard let sequenceNumber = data.first?.readMcuMgrHeaderSequenceNumber() else {
-            return .failure(McuMgrTransportError.badHeader)
-        }
-        
         writeLock.close()
         
+        var writeSequenceNumbers = ""
         for packet in data {
-            let sequenceNumber = packet.readMcuMgrHeaderSequenceNumber() ?? .max
+            guard let sequenceNumber = packet.readMcuMgrHeaderSequenceNumber() else {
+                return .failure(McuMgrTransportError.badHeader)
+            }
+            
+            if writeSequenceNumbers.isEmpty {
+                writeSequenceNumbers += "\(sequenceNumber)"
+            } else {
+                writeSequenceNumbers += "-\(sequenceNumber)"
+            }
+            
+            writeState.append((sequenceNumber, nil, nil))
+            
             // Write the value to the characteristic.
             log(msg: "-> (SEQ No. \(sequenceNumber)) \(packet.hexEncodedString(options: .prepend0x))", atLevel: .debug)
             targetPeripheral.writeValue(packet, for: smpCharacteristic, type: .withoutResponse)
@@ -319,7 +327,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         
         defer {
             objc_sync_enter(self)
-            clearState(for: sequenceNumber)
+            clearState()
             objc_sync_exit(self)
         }
         
@@ -328,10 +336,15 @@ extension McuMgrBleTransport: McuMgrTransport {
             return .failure(error)
         case .success:
             objc_sync_enter(self)
-            let returnData = writeState[sequenceNumber]?.chunk ?? Data()
+            let returnData = writeState.last?.chunk ?? Data()
             objc_sync_exit(self)
             
-            log(msg: "<- \(returnData.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+            for writeRequest in writeState {
+                let writeResponse = try! McuMgrResponse.buildResponse(scheme: .ble, data: writeRequest.chunk!)
+                log(msg: "<- (SEQ No. \(writeRequest.sequenceNumber)) Response: \(writeResponse))", atLevel: .debug)
+            }
+            
+            log(msg: "<- (SEQ No(s). \(writeSequenceNumbers)) \(returnData.hexEncodedString(options: .prepend0x))", atLevel: .debug)
             return .success(returnData)
         }
     }
@@ -340,9 +353,9 @@ extension McuMgrBleTransport: McuMgrTransport {
         connectionLock.close()
     }
     
-    internal func clearState(for sequenceNumber: UInt8) {
+    internal func clearState() {
         writeLock.close()
-        writeState[sequenceNumber] = nil
+        writeState.removeAll()
     }
     
     internal func log(msg: String, atLevel level: McuMgrLogLevel) {

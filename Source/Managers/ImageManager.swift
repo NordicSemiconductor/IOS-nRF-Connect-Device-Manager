@@ -57,15 +57,15 @@ public class ImageManager: McuManager {
     /// - parameter callback: The callback.
     public func upload(data: Data, image: Int, offset: UInt, alignment: ImageUploadAlignment,
                        callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
-        let dataLength = maxDataPacketLengthFor(data: data, image: image, offset: offset)
+        let payloadLength = maxDataPacketLengthFor(data: data, image: image, offset: offset)
         
         var payloads = [[String: CBOR]]()
         for i in 0..<uploadPipelineDepth {
-            let chunkOffset = offset + (UInt(i) * dataLength)
+            let chunkOffset = offset + (UInt(i) * payloadLength)
             guard chunkOffset < data.count else { break }
             
-            let chunkSize = min(chunkOffset + dataLength, UInt(data.count))
-            var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkSize])),
+            let chunkEnd = min(chunkOffset + payloadLength, UInt(data.count))
+            var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
                                           "off": CBOR.unsignedInt(UInt64(chunkOffset))]
             if chunkOffset == 0 {
                 // 0 is Default behaviour, so we can ignore adding it and
