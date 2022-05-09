@@ -115,23 +115,17 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         }
         
         guard error == nil else {
-            writeLocks.values.forEach {
-                $0.open(error)
-            }
+            writeLock.open(error)
             return
         }
         
         guard let data = characteristic.value else {
-            writeLocks.values.forEach {
-                $0.open(McuMgrTransportError.badResponse)
-            }
+            writeLock.open(McuMgrTransportError.badResponse)
             return
         }
         
         guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() else {
-            writeLocks.values.forEach {
-                $0.open(McuMgrTransportError.badHeader)
-            }
+            writeLock.open(McuMgrTransportError.badHeader)
             return
         }
         log(msg: "peripheralDidUpdateValueFor() SEQ No. \(sequenceNumber))", atLevel: .debug)
@@ -143,7 +137,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             // length of the full response and initialize the responseData with
             // the expected capacity.
             guard let dataSize = McuMgrResponse.getExpectedLength(scheme: .ble, responseData: data) else {
-                writeLocks[sequenceNumber]?.open(McuMgrTransportError.badResponse)
+                writeLock.open(McuMgrTransportError.badResponse)
                 return
             }
             writeState[sequenceNumber] = (Data(capacity: dataSize), dataSize)
@@ -157,6 +151,6 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         guard let chunkSize = chunk?.count, let expectedChunkSize = totalChunkSize,
               chunkSize >= expectedChunkSize else { return }
         
-        writeLocks[sequenceNumber]?.open()
+        writeLock.open()
     }
 }

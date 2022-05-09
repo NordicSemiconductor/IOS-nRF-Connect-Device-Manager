@@ -48,7 +48,7 @@ public class McuMgrBleTransport: NSObject {
     /// and the device to be received.
     internal let connectionLock: ResultLock
     /// Lock used to wait for callbacks before continuing write requests.
-    internal var writeLocks: [UInt8: ResultLock]
+    internal var writeLock: ResultLock
     /// Used to store fragmented response data.
     internal var writeState: [UInt8: (chunk: Data, totalChunkSize: Int)]
     
@@ -109,7 +109,7 @@ public class McuMgrBleTransport: NSObject {
         self.centralManager = CBCentralManager(delegate: nil, queue: .global(qos: .userInitiated))
         self.identifier = targetIdentifier
         self.connectionLock = ResultLock(isOpen: false)
-        self.writeLocks = [UInt8: ResultLock]()
+        self.writeLock = ResultLock(isOpen: false)
         self.writeState = [UInt8: (Data, Int)]()
         self.observers = []
         self.operationQueue = OperationQueue()
@@ -305,10 +305,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             return .failure(McuMgrTransportError.badHeader)
         }
         
-        let lock = ResultLock(isOpen: false)
-        objc_sync_enter(self)
-        writeLocks[sequenceNumber] = lock
-        objc_sync_exit(self)
+        writeLock.close()
         
         for packet in data {
             let sequenceNumber = packet.readMcuMgrHeaderSequenceNumber() ?? .max
@@ -318,7 +315,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         }
 
         // Wait for the didUpdateValueFor(characteristic:) to open the lock.
-        let result = lock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
+        let result = writeLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
         
         defer {
             objc_sync_enter(self)
@@ -344,7 +341,7 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
     
     internal func clearState(for sequenceNumber: UInt8) {
-        writeLocks[sequenceNumber] = nil
+        writeLock.close()
         writeState[sequenceNumber] = nil
     }
     
