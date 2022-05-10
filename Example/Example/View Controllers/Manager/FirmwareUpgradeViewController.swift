@@ -90,6 +90,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     private var dfuManagerConfiguration: FirmwareUpgradeConfiguration = .standard
     private var initialBytes: Int = 0
+    private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
     
     // MARK: - Logic
@@ -191,6 +192,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         eraseSwitch.isEnabled = false
         
         initialBytes = 0
+        uploadImageSize = nil
     }
     
     func upgradeStateDidChange(from previousState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
@@ -265,8 +267,9 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
     func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
         dfuSpeed.isHidden = false
         
-        if initialBytes == 0 {
+        if uploadImageSize == nil || uploadImageSize != imageSize {
             uploadTimestamp = timestamp
+            uploadImageSize = imageSize
             initialBytes = bytesSent
             progress.setProgress(Float(bytesSent) / Float(imageSize), animated: false)
         } else {
