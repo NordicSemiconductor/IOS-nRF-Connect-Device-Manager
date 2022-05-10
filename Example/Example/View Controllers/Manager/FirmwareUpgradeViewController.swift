@@ -24,7 +24,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     @IBOutlet weak var fileSize: UILabel!
     @IBOutlet weak var fileHash: UILabel!
     @IBOutlet weak var dfuSwapTime: UILabel!
-    @IBOutlet weak var dfuPipelineLength: UILabel!
+    @IBOutlet weak var dfuPipelineDepth: UILabel!
     @IBOutlet weak var dfuByteAlignment: UILabel!
     @IBOutlet weak var eraseSwitch: UISwitch!
     @IBOutlet weak var dfuSpeed: UILabel!
@@ -45,7 +45,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         setSwapTime()
     }
     
-    @IBAction func setPipelineLength(_ sender: Any) {
+    @IBAction func setPipelienDepth(_ sender: UIButton) {
         setPipelineDepth()
     }
     
@@ -116,7 +116,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             let title = value == values.first ? "1 (no Pipelining)" : "\(value)"
             alertController.addAction(UIAlertAction(title: title, style: .default) {
                 action in
-                self.dfuPipelineLength.text = "\(value)"
+                self.dfuPipelineDepth.text = "\(value)"
                 self.dfuManagerConfiguration.pipelineDepth = value
             })
         }
@@ -317,8 +317,8 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             
             dfuSwapTime.text = "\(dfuManager.estimatedSwapTime)s"
             dfuSwapTime.numberOfLines = 0
-            dfuPipelineLength.text = "\(dfuManagerConfiguration.pipelineDepth)"
-            dfuPipelineLength.numberOfLines = 0
+            dfuPipelineDepth.text = "\(dfuManagerConfiguration.pipelineDepth)"
+            dfuPipelineDepth.numberOfLines = 0
             dfuByteAlignment.text = dfuManagerConfiguration.byteAlignment.description
             dfuByteAlignment.numberOfLines = 0
         } catch {

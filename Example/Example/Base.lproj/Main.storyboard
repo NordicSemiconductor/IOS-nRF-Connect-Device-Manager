@@ -1073,7 +1073,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iej-We-FU5">
-                                <rect key="frame" x="134" y="198" width="0.0" height="18"/>
+                                <rect key="frame" x="128" y="198" width="0.0" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="YFq-RG-7Id"/>
                                 </constraints>
@@ -1081,8 +1081,8 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Pipeline Length:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yVw-Wh-GgZ">
-                                <rect key="frame" x="16" y="198" width="110" height="18"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Pipeline Depth:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yVw-Wh-GgZ">
+                                <rect key="frame" x="16" y="198" width="104" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="S9I-nQ-ENa"/>
                                 </constraints>
@@ -1091,7 +1091,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Chm-QB-OvI">
-                                <rect key="frame" x="134" y="224" width="0.0" height="18"/>
+                                <rect key="frame" x="128" y="224" width="0.0" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="mxc-WK-tZl"/>
                                 </constraints>
@@ -1180,7 +1180,7 @@
                                     <color key="titleColor" systemColor="secondaryLabelColor"/>
                                 </state>
                                 <connections>
-                                    <action selector="setPipelineLength:" destination="iEC-sa-48q" eventType="touchUpInside" id="u4x-ba-VUz"/>
+                                    <action selector="setPipelienDepth:" destination="iEC-sa-48q" eventType="touchUpInside" id="iyz-KU-0RA"/>
                                 </connections>
                             </button>
                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pqc-Sr-chf">
@@ -1230,7 +1230,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Yl-Tu-sE0">
-                                <rect key="frame" x="134" y="172" width="0.0" height="18"/>
+                                <rect key="frame" x="128" y="172" width="0.0" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="8Db-Hw-X7f"/>
                                 </constraints>
@@ -1330,7 +1330,7 @@
                         <outlet property="actionStart" destination="9nR-KA-sXF" id="99z-jG-pBR"/>
                         <outlet property="actionSwap" destination="Yfx-uH-shb" id="5gJ-ny-L7V"/>
                         <outlet property="dfuByteAlignment" destination="Chm-QB-OvI" id="03v-HA-4d1"/>
-                        <outlet property="dfuPipelineLength" destination="iej-We-FU5" id="26U-c7-1KI"/>
+                        <outlet property="dfuPipelineDepth" destination="iej-We-FU5" id="Sdn-gU-9I0"/>
                         <outlet property="dfuSpeed" destination="ojS-eg-hT1" id="eNZ-iy-moe"/>
                         <outlet property="dfuSwapTime" destination="2Yl-Tu-sE0" id="4tr-pZ-4Pg"/>
                         <outlet property="eraseSwitch" destination="V9A-pQ-qOh" id="Kig-ww-bG2"/>
