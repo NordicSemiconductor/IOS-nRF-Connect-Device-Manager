@@ -96,7 +96,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     private func setSwapTime() {
         let alertController = UIAlertController(title: "Swap Time (in seconds)", message: nil, preferredStyle: .actionSheet)
-        let seconds = [0, 5, 10, 15, 20]
+        let seconds = [0, 5, 10, 20, 30, 40]
         seconds.forEach { numberOfSeconds in
             alertController.addAction(UIAlertAction(title: "\(numberOfSeconds) seconds", style: .default) {
                 action in
