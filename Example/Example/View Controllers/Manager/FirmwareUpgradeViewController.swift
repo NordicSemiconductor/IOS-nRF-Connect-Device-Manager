@@ -46,7 +46,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     @IBAction func setPipelineLength(_ sender: Any) {
-        setPipelineLength()
+        setPipelineDepth()
     }
     
     @IBAction func byteAlignment(_ sender: UIButton) {
@@ -88,7 +88,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             dfuManager.estimatedSwapTime = 10.0
         }
     }
-    private var dfuManagerConfiguration: FirmwareUpgradeConfiguration = .standard
+    private var dfuManagerConfiguration = FirmwareUpgradeConfiguration(
+        eraseAppSettings: true, pipelineDepth: 3, byteAlignment: .fourByte)
     private var initialBytes: Int = 0
     private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
@@ -108,15 +109,15 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         present(alertController, addingCancelAction: true)
     }
     
-    private func setPipelineLength() {
-        let alertController = UIAlertController(title: "Pipeline Length", message: nil, preferredStyle: .actionSheet)
+    private func setPipelineDepth() {
+        let alertController = UIAlertController(title: "Pipeline Depth", message: nil, preferredStyle: .actionSheet)
         let values = [1, 2, 3, 4]
         values.forEach { value in
             let title = value == values.first ? "1 (no Pipelining)" : "\(value)"
             alertController.addAction(UIAlertAction(title: title, style: .default) {
                 action in
                 self.dfuPipelineLength.text = "\(value)"
-                self.dfuManagerConfiguration.pipelineLength = value
+                self.dfuManagerConfiguration.pipelineDepth = value
             })
         }
         present(alertController, addingCancelAction: true)
@@ -316,7 +317,7 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             
             dfuSwapTime.text = "\(dfuManager.estimatedSwapTime)s"
             dfuSwapTime.numberOfLines = 0
-            dfuPipelineLength.text = "\(dfuManagerConfiguration.pipelineLength)"
+            dfuPipelineLength.text = "\(dfuManagerConfiguration.pipelineDepth)"
             dfuPipelineLength.numberOfLines = 0
             dfuByteAlignment.text = dfuManagerConfiguration.byteAlignment.description
             dfuByteAlignment.numberOfLines = 0

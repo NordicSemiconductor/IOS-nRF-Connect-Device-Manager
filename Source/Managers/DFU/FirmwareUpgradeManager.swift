@@ -66,7 +66,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// updating the App Core (i.e. no Multi-Image).
     /// - parameter data: `Data` to upload to App Core (Image 0).
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
-    public func start(data: Data, using configuration: FirmwareUpgradeConfiguration = .standard) throws {
+    public func start(data: Data, using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
         try start(images: [(0, data)], using: configuration)
     }
     
@@ -75,7 +75,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// This is the full-featured API to start DFU update, including support for Multi-Image uploads.
     /// - parameter images: An Array of (Image, `Data`) pairs with the Image Core/Index and its corresponding `Data` to upload.
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
-    public func start(images: [(Int, Data)], using configuration: FirmwareUpgradeConfiguration = .standard) throws {
+    public func start(images: [(Int, Data)], using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
         objc_sync_enter(self)
         defer {
             objc_sync_exit(self)
@@ -180,7 +180,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 .sorted(by: <)
                 .map({ ImageManager.Image($0.image, $0.data) })
             _ = imageManager.upload(images: imagesToUpload, alignment: configuration.byteAlignment,
-                                    pipelineDepth: configuration.pipelineLength, delegate: self)
+                                    pipelineDepth: configuration.pipelineDepth, delegate: self)
         }
     }
     
@@ -710,14 +710,18 @@ private extension FirmwareUpgradeManager {
 
 public struct FirmwareUpgradeConfiguration {
     
-    public static let standard = FirmwareUpgradeConfiguration(eraseAppSettings: true, pipelineLength: 1, byteAlignment: .disabled)
-    
     /// If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
     public var eraseAppSettings: Bool
     /// If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.
-    public var pipelineLength: Int
+    public var pipelineDepth: Int
     /// Might be necessary to set when Pipeline Length is larger than 1.
     public var byteAlignment: ImageUploadAlignment
+    
+    public init(eraseAppSettings: Bool = true, pipelineDepth: Int = 1, byteAlignment: ImageUploadAlignment = .disabled) {
+        self.eraseAppSettings = eraseAppSettings
+        self.pipelineDepth = pipelineDepth
+        self.byteAlignment = byteAlignment
+    }
 }
 
 //******************************************************************************
