@@ -6,7 +6,7 @@
 
 import UIKit
 import os.log
-import McuManager
+import iOSMcuManagerLibrary
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {

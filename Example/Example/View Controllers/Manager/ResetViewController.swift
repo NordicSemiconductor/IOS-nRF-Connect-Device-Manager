@@ -5,7 +5,7 @@
  */
 
 import UIKit
-import McuManager
+import iOSMcuManagerLibrary
 
 class ResetViewController: UIViewController, McuMgrViewController {
 

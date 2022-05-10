@@ -19,7 +19,7 @@ In Xcode, go to *File → Swift Packages → Add Package Dependency...* and add 
 ### CocoaPods
 
 ```
-pod 'McuManager', '~> 0.12.0'
+pod 'iOSMcuManagerLibrary', '~> 1.1.0'
 ```
 
 # Introduction

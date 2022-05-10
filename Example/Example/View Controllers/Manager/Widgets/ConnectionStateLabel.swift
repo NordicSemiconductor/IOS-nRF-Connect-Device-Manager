@@ -6,7 +6,7 @@
 
 import UIKit
 import CoreBluetooth
-import McuManager
+import iOSMcuManagerLibrary
 
 class ConnectionStateLabel: UILabel, PeripheralDelegate {
     

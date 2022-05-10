@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import McuManager
+import iOSMcuManagerLibrary
 import ZIPFoundation
 
 // MARK: - McuMgrPackage

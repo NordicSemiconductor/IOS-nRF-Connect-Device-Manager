@@ -6,7 +6,7 @@
 
 import UIKit
 import CoreBluetooth
-import McuManager
+import iOSMcuManagerLibrary
 
 class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UIPopoverPresentationControllerDelegate, ScannerFilterDelegate {
     

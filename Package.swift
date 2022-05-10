@@ -3,12 +3,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "McuManager",
+    name: "iOSMcuManagerLibrary",
     platforms: [.iOS(.v9), .macOS(.v10_13)],
     products: [
         .library(
-            name: "McuManager",
-            targets: ["McuManager"]
+            name: "iOSMcuManagerLibrary",
+            targets: ["iOSMcuManagerLibrary"]
         ),
     ],
     dependencies: [
@@ -19,7 +19,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "McuManager",
+            name: "iOSMcuManagerLibrary",
             dependencies: ["SwiftCBOR"],
             path: "Source",
             exclude:["Info.plist"]

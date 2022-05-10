@@ -5,7 +5,7 @@
  */
 
 import UIKit
-import McuManager
+import iOSMcuManagerLibrary
 
 class LogsStatsController: UITableViewController {
     @IBOutlet weak var connectionStatus: ConnectionStateLabel!
