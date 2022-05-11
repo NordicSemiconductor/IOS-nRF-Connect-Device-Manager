@@ -101,7 +101,7 @@ public protocol McuMgrTransport: AnyObject {
     ///
     /// - parameter data: The data to be sent.
     /// - parameter callback: The request callback.
-    func send<T: McuMgrResponse>(dataPackets: [Data], callback: @escaping McuMgrCallback<T>)
+    func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>)
     
     /// Set up a connection to the remote device.
     func connect(_ callback: @escaping ConnectionCallback)

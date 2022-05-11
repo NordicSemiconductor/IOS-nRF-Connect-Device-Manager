@@ -90,46 +90,11 @@ open class McuManager {
             }
             callback(response, error)
         }
-        send(data: [mcuPacketData], callback: _callback)
+        send(data: mcuPacketData, callback: _callback)
     }
     
-    public func pipelinedWrite<T: McuMgrResponse>(commandId: UInt8,
-                                                  payloads: [[String:CBOR]],
-                                                  callback: @escaping McuMgrCallback<T>) {
-        
-        var sequenceNumbers = ""
-        let mcuPackets = payloads.map { payload -> Data in
-            let packetPacketSequenceNumber = sequenceNumber
-            sequenceNumber = sequenceNumber.next()
-            if sequenceNumbers.isEmpty {
-                sequenceNumbers = "\(packetPacketSequenceNumber)"
-            } else {
-                sequenceNumbers += "-\(packetPacketSequenceNumber)"
-            }
-            log(msg: "Sending \(McuMgrOperation.write) command (Group: \(group), SEQ No. \(packetPacketSequenceNumber), ID: \(commandId)): \(payload.debugDescription)", atLevel: .verbose)
-            return McuManager.buildPacket(scheme: transporter.getScheme(), op: .write,
-                                          flags: 0, group: group.uInt16Value,
-                                          sequenceNumber: packetPacketSequenceNumber,
-                                          commandId: commandId, payload: payload)
-        }
-        
-        let _callback: McuMgrCallback<T> = logDelegate == nil ? callback : { [weak self] (response, error) in
-            if let self = self {
-                if let response = response {
-                    self.log(msg: "Response (Group: \(self.group), SEQ No(s). \(sequenceNumbers), ID: \(response.header!.commandId!)): \(response)",
-                             atLevel: .verbose)
-                } else if let error = error {
-                    self.log(msg: "Request (Group: \(self.group) SEQ No(s). (\(sequenceNumbers)) failed: \(error.localizedDescription))",
-                             atLevel: .error)
-                }
-            }
-            callback(response, error)
-        }
-        send(data: mcuPackets, callback: _callback)
-    }
-    
-    public func send<T: McuMgrResponse>(data: [Data], callback: @escaping McuMgrCallback<T>) {
-        transporter.send(dataPackets: data, callback: callback)
+    public func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) {
+        transporter.send(data: data, callback: callback)
     }
     
     //**************************************************************************

@@ -115,18 +115,24 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         }
         
         guard error == nil else {
-            writeLock.open(error)
+            writeState.forEach {
+                $0.writeLock.open(error)
+            }
             return
         }
         
         guard let data = characteristic.value else {
-            writeLock.open(McuMgrTransportError.badResponse)
+            writeState.forEach {
+                $0.writeLock.open(McuMgrTransportError.badResponse)
+            }
             return
         }
         
         guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber(),
               let writeStateIndex = writeState.firstIndex(where: { $0.sequenceNumber == sequenceNumber }) else {
-            writeLock.open(McuMgrTransportError.badHeader)
+            writeState.forEach {
+                $0.writeLock.open(McuMgrTransportError.badHeader)
+            }
             return
         }
         log(msg: "peripheralDidUpdateValueFor() SEQ No. \(sequenceNumber))", atLevel: .debug)
@@ -138,7 +144,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             // length of the full response and initialize the responseData with
             // the expected capacity.
             guard let dataSize = McuMgrResponse.getExpectedLength(scheme: .ble, responseData: data) else {
-                writeLock.open(McuMgrTransportError.badResponse)
+                writeState[writeStateIndex].writeLock.open(McuMgrTransportError.badResponse)
                 return
             }
             writeState[writeStateIndex].chunk = Data(capacity: dataSize)
@@ -147,13 +153,10 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         
         writeState[writeStateIndex].chunk?.append(data)
         
-        let allPacketsCompleted = writeState.allSatisfy({
-            guard let chunk = $0.chunk,
-                  let expectedChunkSize = $0.totalChunkSize else { return false }
-            return chunk.count >= expectedChunkSize
-        })
-        guard allPacketsCompleted else { return }
+        guard let chunk = writeState[writeStateIndex].chunk,
+              let expectedChunkSize = writeState[writeStateIndex].totalChunkSize,
+              chunk.count >= expectedChunkSize else { return }
         
-        writeLock.open()
+        writeState[writeStateIndex].writeLock.open()
     }
 }

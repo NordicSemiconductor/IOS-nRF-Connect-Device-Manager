@@ -59,28 +59,22 @@ public class ImageManager: McuManager {
                        callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
         let payloadLength = maxDataPacketLengthFor(data: data, image: image, offset: offset)
         
-        var payloads = [[String: CBOR]]()
-        for i in 0..<uploadPipelineDepth {
-            let chunkOffset = offset + (UInt(i) * payloadLength)
-            guard chunkOffset < data.count else { break }
-            
-            let chunkEnd = min(chunkOffset + payloadLength, UInt(data.count))
-            var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
-                                          "off": CBOR.unsignedInt(UInt64(chunkOffset))]
-            if chunkOffset == 0 {
-                // 0 is Default behaviour, so we can ignore adding it and
-                // the firmware will do the right thing.
-                if image > 0 {
-                    payload.updateValue(CBOR.unsignedInt(UInt64(image)), forKey: "image")
-                }
-                
-                payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
-                payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
+        let chunkOffset = offset
+        let chunkEnd = min(chunkOffset + payloadLength, UInt(data.count))
+        var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
+                                      "off": CBOR.unsignedInt(UInt64(chunkOffset))]
+        if chunkOffset == 0 {
+            // 0 is Default behaviour, so we can ignore adding it and
+            // the firmware will do the right thing.
+            if image > 0 {
+                payload.updateValue(CBOR.unsignedInt(UInt64(image)), forKey: "image")
             }
-            payloads.append(payload)
+            
+            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
+            payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
         }
         
-        pipelinedWrite(commandId: ID_UPLOAD, payloads: payloads, callback: callback)
+        send(op: .write, commandId: ID_UPLOAD, payload: payload, callback: callback)
     }
     
     /// Test the image with the provided hash.
