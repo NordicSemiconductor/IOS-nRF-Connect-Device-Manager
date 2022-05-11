@@ -154,9 +154,16 @@ public class ImageManager: McuManager {
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
         uploadIndex = 0
+        uploadOffsets = []
+        uploadLastOffset = 0
         uploadPipelineDepth = pipelineDepth
+        if let pipelinedTransport = transporter as? McuMgrBleTransport {
+            pipelinedTransport.numberOfParallelWrites = pipelineDepth
+        }
         
         log(msg: "Uploading image \(firstImage.image) from 0/\(firstImage.data.count)...", atLevel: .application)
+        let packetSize = mtu - calculatePacketOverhead(data: firstImage.data, image: firstImage.image, offset: UInt64(0))
+        self.uploadOffsets.append(0..<UInt(packetSize))
         upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: uploadAlignment,
                callback: uploadCallback)
         return true
@@ -217,14 +224,16 @@ public class ImageManager: McuManager {
     
     /// State of the image upload.
     private var uploadState: UploadState = .none
-    /// Current image byte offset to send from.
-    private var offset: UInt64 = 0
     
     /// Contains the current Image's data to send to the device.
     private var imageData: Data?
     /// Image 'slot' or core of the device we're sending data to.
     /// Default value, will be secondary slot of core 0.
     private var uploadIndex: Int = 0
+    /// Current image byte offset to send from.
+    private var uploadLastOffset: UInt!
+    
+    private var uploadOffsets: [Range<UInt>] = []
     /// The sequence of images we want to send to the device.
     private var uploadImages: [Image]?
     /// When using SMP Pipelining, the Data in each packet sent (or 'chunk') might need to be byte-aligned.
@@ -301,10 +310,13 @@ public class ImageManager: McuManager {
             return
         }
         if uploadState == .paused {
-            let image: Int! = self.uploadImages?[self.uploadIndex].image
+            let image: Int! = self.uploadImages?[uploadIndex].image
             uploadState = .uploading
+            let offset = uploadLastOffset ?? 0
             log(msg: "[Continue] Uploading image \(image) from \(offset)/\(imageData.count)...", atLevel: .application)
-            upload(data: imageData, image: image, offset: UInt(offset), alignment: uploadAlignment,
+            let packetSize = mtu - calculatePacketOverhead(data: imageData, image: image, offset: UInt64(offset))
+            self.uploadOffsets.append(offset..<offset + UInt(packetSize))
+            upload(data: imageData, image: image, offset: offset, alignment: uploadAlignment,
                         callback: uploadCallback)
         } else {
             log(msg: "Upload has not been previously paused", atLevel: .warning)
@@ -344,15 +356,32 @@ public class ImageManager: McuManager {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
             return
         }
-        // Check for an error return code.
+        
         guard response.isSuccess() else {
             self.cancelUpload(error: ImageUploadError.mcuMgrErrorCode(response.returnCode))
             return
         }
-        // Get the offset from the response.
+        
         if let offset = response.off {
-            self.offset = offset
-            self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: currentImageData.count, timestamp: Date())
+            if self.uploadPipelineDepth > 1 {
+                // Pipelining requires the use of byte-alignment, and byte-alignment is required
+                // because otherwise we can't predict how many bytes the firmware will accept.
+                if let uploadIndex = self.uploadOffsets.firstIndex(where: { $0.endIndex == UInt(offset) }) {
+                    self.log(msg: "ACK for offsets \(self.uploadOffsets[uploadIndex].startIndex)..<\(self.uploadOffsets[uploadIndex].endIndex) for image \(self.uploadIndex)", atLevel: .debug)
+                    self.uploadOffsets.remove(at: uploadIndex)
+                }
+                
+                self.uploadOffsets.removeAll(where: {
+                    offset >= $0.endIndex
+                })
+            } else {
+                // So if we're not pipelining, we usually don't apply byte alignment,
+                // and even if we did, we don't need to 'predict' offsets, so we don't care.
+                self.uploadOffsets.removeAll()
+            }
+            
+            self.uploadLastOffset = max(self.uploadLastOffset, UInt(offset))
+            self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(self.uploadLastOffset), imageSize: currentImageData.count, timestamp: Date())
             
             if self.uploadState == .none {
                 self.log(msg: "Upload cancelled", atLevel: .application)
@@ -379,12 +408,24 @@ public class ImageManager: McuManager {
                     self.uploadIndex += 1
                     self.imageData = images[self.uploadIndex].data
                     self.log(msg: "Uploading image \(images[self.uploadIndex].image) (\(self.imageData?.count) bytes)...", atLevel: .application)
+                    
+                    guard self.uploadOffsets.isEmpty else { return }
+                    let firstPacketSize = self.maxDataPacketLengthFor(data: images[self.uploadIndex].data, image: self.uploadIndex, offset: 0)
+                    self.uploadOffsets.append(0..<UInt(firstPacketSize))
+                    self.uploadLastOffset = 0
                     self.sendNext(from: UInt(0))
                 }
                 return
             }
             
-            self.sendNext(from: UInt(self.offset))
+            for i in 0..<(self.uploadPipelineDepth - self.uploadOffsets.count) {
+                guard let chunkOffset = self.uploadOffsets.last?.endIndex ?? self.uploadLastOffset,
+                      chunkOffset < self.imageData?.count ?? 0 else { return }
+                
+                let chunkSize = self.maxDataPacketLengthFor(data: images[self.uploadIndex].data, image: self.uploadIndex, offset: chunkOffset)
+                self.uploadOffsets.append(UInt(chunkOffset)..<UInt(chunkOffset + chunkSize))
+                self.sendNext(from: chunkOffset)
+            }
         } else {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
         }
@@ -411,7 +452,7 @@ public class ImageManager: McuManager {
         
         // Reset upload vars.
         uploadIndex = 0
-        offset = 0
+        uploadOffsets = []
         objc_sync_exit(self)
     }
     
@@ -433,15 +474,10 @@ public class ImageManager: McuManager {
     
     private func maxDataPacketLengthFor(data: Data, image: Int, offset: UInt) -> UInt {
         guard offset < data.count else { return UInt(McuMgrHeader.HEADER_LENGTH) }
-        // Calculate the number of remaining bytes.
-        let remainingBytes: UInt = UInt(data.count) - offset
         
-        // Data length to end is the minimum of the max data lenght and the
-        // number of remaining bytes.
+        let remainingBytes = UInt(data.count) - offset
         let packetOverhead = calculatePacketOverhead(data: data, image: image, offset: UInt64(offset))
-        
-        // Get the length of image data to send.
-        var maxDataLength: UInt = UInt(mtu) - UInt(packetOverhead)
+        var maxDataLength = UInt(mtu) - UInt(packetOverhead)
         if uploadAlignment != .disabled {
             maxDataLength = (maxDataLength / uploadAlignment.rawValue) * uploadAlignment.rawValue
         }

@@ -67,6 +67,15 @@ public class McuMgrBleTransport: NSObject {
     /// The log delegate will receive transport logs.
     public weak var logDelegate: McuMgrLogDelegate?
     
+    public var numberOfParallelWrites: Int {
+        set {
+            operationQueue.maxConcurrentOperationCount = newValue
+        }
+        get {
+            operationQueue.maxConcurrentOperationCount
+        }
+    }
+    
     public internal(set) var state: PeripheralState = .disconnected {
         didSet {
             DispatchQueue.main.async {
