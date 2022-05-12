@@ -20,68 +20,64 @@ final class McuMgrBleTransportWriteState {
     
     private let lockingQueue = DispatchQueue(label: "McuMgrBleTransportWriteState")
     
-    private var state = [McuMgrBleTransportWrite]()
+    private var state = [UInt8: McuMgrBleTransportWrite]()
     
     // MARK: - APIs
     
     subscript(sequenceNumber: UInt8) -> McuMgrBleTransportWrite? {
         get {
-            lockingQueue.sync { state.first(where: { $0.sequenceNumber == sequenceNumber }) }
+            lockingQueue.sync { state[sequenceNumber] }
         }
     }
     
     func newWrite(sequenceNumber: UInt8, lock: ResultLock) {
         lockingQueue.async {
-            self.state.append((sequenceNumber: sequenceNumber, writeLock: lock, nil, nil))
+            self.state[sequenceNumber] = (sequenceNumber: sequenceNumber, writeLock: lock, nil, nil)
         }
     }
     
     func received(sequenceNumber: UInt8, data: Data) {
         lockingQueue.async {
-            guard let i = self.state.firstIndex(where: { $0.sequenceNumber == sequenceNumber }) else {
-                return
-            }
-            
-            if  self.state[i].chunk == nil {
+            if  self.state[sequenceNumber]?.chunk == nil {
                 // If we do not have any current response data, this is the initial
                 // packet in a potentially fragmented response. Get the expected
                 // length of the full response and initialize the responseData with
                 // the expected capacity.
                 guard let dataSize = McuMgrResponse.getExpectedLength(scheme: .ble, responseData: data) else {
-                    self.state[i].writeLock.open(McuMgrTransportError.badResponse)
+                    self.state[sequenceNumber]?.writeLock.open(McuMgrTransportError.badResponse)
                     return
                 }
-                self.state[i].chunk = Data(capacity: dataSize)
-                self.state[i].totalChunkSize = dataSize
+                self.state[sequenceNumber]?.chunk = Data(capacity: dataSize)
+                self.state[sequenceNumber]?.totalChunkSize = dataSize
             }
             
-            self.state[i].chunk?.append(data)
+            self.state[sequenceNumber]?.chunk?.append(data)
             
-            guard let chunk = self.state[i].chunk,
-                  let expectedChunkSize = self.state[i].totalChunkSize,
+            guard let chunk = self.state[sequenceNumber]?.chunk,
+                  let expectedChunkSize = self.state[sequenceNumber]?.totalChunkSize,
                   chunk.count >= expectedChunkSize else { return }
             
-            self.state[i].writeLock.open()
+            self.state[sequenceNumber]?.writeLock.open()
         }
     }
     
     func completedWrite(sequenceNumber: UInt8) {
         lockingQueue.async {
-            self.state.removeAll(where: { $0.sequenceNumber == sequenceNumber })
+            self.state[sequenceNumber] = nil
         }
     }
     
     func onError(_ error: Error) {
         lockingQueue.async {
-            self.state.forEach {
-                $0.writeLock.open(error)
+            self.state.forEach { _, value in
+                value.writeLock.open(error)
             }
         }
     }
     
     func onWriteError(sequenceNumber: UInt8, error: Error) {
         lockingQueue.async {
-            self.state.first(where: { $0.sequenceNumber == sequenceNumber })?.writeLock.open(error)
+            self.state[sequenceNumber]?.writeLock.open(error)
         }
     }
 }
