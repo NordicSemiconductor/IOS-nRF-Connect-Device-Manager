@@ -48,7 +48,7 @@ public class McuMgrBleTransport: NSObject {
     /// and the device to be received.
     internal let connectionLock: ResultLock
     /// Used to track multiple write requests and their responses.
-    internal var writeState: [(sequenceNumber: UInt8, writeLock: ResultLock, chunk: Data?, totalChunkSize: Int?)]
+    internal var writeState: McuMgrBleTransportWriteState
     
     /// SMP Characteristic object. Used to write requests and receive
     /// notificaitons.
@@ -116,7 +116,7 @@ public class McuMgrBleTransport: NSObject {
         self.centralManager = CBCentralManager(delegate: nil, queue: .global(qos: .userInitiated))
         self.identifier = targetIdentifier
         self.connectionLock = ResultLock(isOpen: false)
-        self.writeState = [(UInt8, ResultLock, Data?, Int?)]()
+        self.writeState = McuMgrBleTransportWriteState()
         self.observers = []
         self.operationQueue = OperationQueue()
         self.operationQueue.maxConcurrentOperationCount = 1
@@ -314,9 +314,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             return .failure(McuMgrTransportError.badHeader)
         }
         
-        objc_sync_enter(self)
-        writeState.append((sequenceNumber, writeLock, nil, nil))
-        objc_sync_exit(self)
+        writeState.newWrite(sequenceNumber: sequenceNumber, lock: writeLock)
         
         // Write the value to the characteristic.
         log(msg: "-> (SEQ No. \(sequenceNumber)) \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
@@ -326,25 +324,20 @@ extension McuMgrBleTransport: McuMgrTransport {
         let result = writeLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
         
         defer {
-            objc_sync_enter(self)
-            clearState(for: sequenceNumber)
-            objc_sync_exit(self)
+            writeState.completedWrite(sequenceNumber: sequenceNumber)
         }
         
         switch result {
         case .failure(let error):
             return .failure(error)
         case .success:
-            objc_sync_enter(self)
-            guard let returnData = writeState.first(where: {
-                $0.sequenceNumber == sequenceNumber
-            })?.chunk else {
+            guard let returnData = writeState[sequenceNumber]?.chunk else {
                 return .failure(McuMgrTransportError.badHeader)
             }
+            
             if let writeResponse = try? McuMgrResponse.buildResponse(scheme: .ble, data: returnData) {
                 log(msg: "<- (SEQ No. \(sequenceNumber)) Response: \(writeResponse))", atLevel: .debug)
             }
-            objc_sync_exit(self)
             
             log(msg: "<- (SEQ No(s). \(sequenceNumber)) \(returnData.hexEncodedString(options: .prepend0x))", atLevel: .debug)
             return .success(returnData)
@@ -353,10 +346,6 @@ extension McuMgrBleTransport: McuMgrTransport {
     
     internal func resetConnectionLock() {
         connectionLock.close()
-    }
-    
-    internal func clearState(for sequenceNumber: UInt8) {
-        writeState.removeAll(where: { $0.sequenceNumber == sequenceNumber })
     }
     
     internal func log(msg: String, atLevel level: McuMgrLogLevel) {

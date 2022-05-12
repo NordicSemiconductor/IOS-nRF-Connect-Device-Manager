@@ -109,54 +109,22 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             return
         }
         
-        objc_sync_enter(self)
-        defer {
-            objc_sync_exit(self)
-        }
-        
-        guard error == nil else {
-            writeState.forEach {
-                $0.writeLock.open(error)
-            }
+        if let error = error {
+            writeState.onError(error)
             return
         }
         
         guard let data = characteristic.value else {
-            writeState.forEach {
-                $0.writeLock.open(McuMgrTransportError.badResponse)
-            }
+            writeState.onError(McuMgrTransportError.badResponse)
             return
         }
         
-        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber(),
-              let writeStateIndex = writeState.firstIndex(where: { $0.sequenceNumber == sequenceNumber }) else {
-            writeState.forEach {
-                $0.writeLock.open(McuMgrTransportError.badHeader)
-            }
+        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() else {
+            writeState.onError(McuMgrTransportError.badHeader)
             return
         }
+        
         log(msg: "peripheralDidUpdateValueFor() SEQ No. \(sequenceNumber))", atLevel: .debug)
-        
-        // Get the expected length from the response data.
-        if  writeState[writeStateIndex].chunk == nil {
-            // If we do not have any current response data, this is the initial
-            // packet in a potentially fragmented response. Get the expected
-            // length of the full response and initialize the responseData with
-            // the expected capacity.
-            guard let dataSize = McuMgrResponse.getExpectedLength(scheme: .ble, responseData: data) else {
-                writeState[writeStateIndex].writeLock.open(McuMgrTransportError.badResponse)
-                return
-            }
-            writeState[writeStateIndex].chunk = Data(capacity: dataSize)
-            writeState[writeStateIndex].totalChunkSize = dataSize
-        }
-        
-        writeState[writeStateIndex].chunk?.append(data)
-        
-        guard let chunk = writeState[writeStateIndex].chunk,
-              let expectedChunkSize = writeState[writeStateIndex].totalChunkSize,
-              chunk.count >= expectedChunkSize else { return }
-        
-        writeState[writeStateIndex].writeLock.open()
+        writeState.received(sequenceNumber: sequenceNumber, data: data)
     }
 }
