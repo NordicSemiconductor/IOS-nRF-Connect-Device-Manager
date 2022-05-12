@@ -314,8 +314,8 @@ public class ImageManager: McuManager {
             uploadState = .uploading
             let offset = uploadLastOffset ?? 0
             log(msg: "[Continue] Uploading image \(image) from \(offset)/\(imageData.count)...", atLevel: .application)
-            let packetSize = mtu - calculatePacketOverhead(data: imageData, image: image, offset: UInt64(offset))
-            self.uploadOffsets.append(offset..<offset + UInt(packetSize))
+            let firstPacketSize = maxDataPacketLengthFor(data: imageData, image: image, offset: offset)
+            uploadOffsets.append(offset..<offset + firstPacketSize)
             upload(data: imageData, image: image, offset: offset, alignment: uploadAlignment,
                         callback: uploadCallback)
         } else {
