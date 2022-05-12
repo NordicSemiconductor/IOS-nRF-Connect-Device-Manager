@@ -115,12 +115,14 @@ public class ImageManager: McuManager {
     /// asynchronously to the delegate provided in this method.
     ///
     /// - parameter images: The images to upload.
+    /// - parameter pipelineDepth: For values larger than 1, we consider pipelining to be enabled. Pipelining allows multiple write requests to be in flight at the same time, increasing upload speeds. Disabled by default.
     /// - parameter alignment: Use in conjunction with pipelining if the image data needs to be sent byte-aligned. Disabled by default.
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
-    public func upload(images: [Image], alignment: ImageUploadAlignment = .disabled,
-                       pipelineDepth: Int = 1, delegate: ImageUploadDelegate?) -> Bool {
+    public func upload(images: [Image], pipelineDepth: Int = 1,
+                       alignment: ImageUploadAlignment = .disabled,
+                       delegate: ImageUploadDelegate?) -> Bool {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         defer {
@@ -240,7 +242,8 @@ public class ImageManager: McuManager {
     private var uploadAlignment: ImageUploadAlignment = .disabled
     /// Delegate to send image upload updates to.
     private weak var uploadDelegate: ImageUploadDelegate?
-    /// In order to implement SMP Pipelining without breaking the logic too much, an in intermediary is needed to organise the upload() calls as necessary. It is written to be as reusable as possible.
+    /// For values larger than 1, SMP Pipelining is enabled. Otherwise, upload writes are sent
+    /// sequentially.
     private var uploadPipelineDepth: Int!
     
     /// Cyclic reference is used to prevent from releasing the manager
@@ -465,8 +468,8 @@ public class ImageManager: McuManager {
         let tempDelegate = uploadDelegate
         resetUploadVariables()
         let remainingImages = tempUploadImages.filter({ $0.image >= tempUploadIndex })
-        _ = upload(images: remainingImages, alignment: uploadAlignment,
-                   pipelineDepth: uploadPipelineDepth, delegate: tempDelegate)
+        _ = upload(images: remainingImages, pipelineDepth: uploadPipelineDepth,
+                   alignment: uploadAlignment, delegate: tempDelegate)
         objc_sync_exit(self)
     }
     

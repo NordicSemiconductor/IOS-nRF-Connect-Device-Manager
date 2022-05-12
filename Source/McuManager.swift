@@ -40,7 +40,8 @@ open class McuManager {
     
     /// Logger delegate will receive logs.
     public weak var logDelegate: McuMgrLogDelegate?
-    
+    /// Each Packet gets its own Sequence Number, which we will rotate for every
+    /// packet sent within the bounds of an unsigned UInt8, so 0...255 (inclusive).
     private var sequenceNumber: UInt8
     
     //**************************************************************************

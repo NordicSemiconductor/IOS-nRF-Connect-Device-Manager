@@ -179,8 +179,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 .filter({ !$0.uploaded })
                 .sorted(by: <)
                 .map({ ImageManager.Image($0.image, $0.data) })
-            _ = imageManager.upload(images: imagesToUpload, alignment: configuration.byteAlignment,
-                                    pipelineDepth: configuration.pipelineDepth, delegate: self)
+            _ = imageManager.upload(images: imagesToUpload, pipelineDepth: configuration.pipelineDepth,
+                                    alignment: configuration.byteAlignment, delegate: self)
         }
     }
     
