@@ -58,6 +58,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     @IBAction func start(_ sender: UIButton) {
+        guard canStartUpload() else { return }
         selectMode(for: package!)
     }
     
@@ -70,6 +71,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     @IBAction func resume(_ sender: UIButton) {
+        guard canStartUpload() else { return }
+        
         dfuManager.resume()
         actionPause.isHidden = false
         actionResume.isHidden = true
@@ -141,6 +144,22 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     @IBAction func setEraseApplicationSettings(_ sender: UISwitch) {
         dfuManagerConfiguration.eraseAppSettings = sender.isOn
+    }
+    
+    private func canStartUpload() -> Bool {
+        guard dfuManagerConfiguration.pipelineDepth == 1 || dfuManagerConfiguration.byteAlignment != .disabled else {
+            
+            dfuManagerConfiguration.byteAlignment = FirmwareUpgradeConfiguration().byteAlignment
+            dfuByteAlignment.text = dfuManagerConfiguration.byteAlignment.description
+            
+            let alert = UIAlertController(title: "Byte Alignment Setting Changed", message: """
+            Pipelining requires a Byte Alignment setting to be applied, otherwise chunk offsets can't be predicted as more Data is sent.
+            """, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            present(alert)
+            return false
+        }
+        return true
     }
     
     private func selectMode(for package: McuMgrPackage) {
