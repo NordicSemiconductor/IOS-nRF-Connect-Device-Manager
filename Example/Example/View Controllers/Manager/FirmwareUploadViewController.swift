@@ -34,6 +34,46 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         present(importMenu, animated: true, completion: nil)
     }
     
+    @IBAction func setDfuPipeline(_ sender: UIButton) {
+        let alertController = UIAlertController(title: "Pipeline Depth", message: nil, preferredStyle: .actionSheet)
+        let values = [1, 2, 3, 4]
+        values.forEach { value in
+            let title = value == values.first ? "1 (no Pipelining)" : "\(value)"
+            alertController.addAction(UIAlertAction(title: title, style: .default) {
+                action in
+                self.dfuPipelineDepth.text = "\(value)"
+                self.uploadPipelineDepth = value
+            })
+        }
+        present(alertController, addingCancelAction: true)
+    }
+    
+    @IBAction func setDfuAlignment(_ sender: UIButton) {
+        let alertController = UIAlertController(title: "Byte Alignment", message: nil, preferredStyle: .actionSheet)
+        ImageUploadAlignment.allCases.forEach { alignmentValue in
+            alertController.addAction(UIAlertAction(title: alignmentValue.description, style: .default) {
+                action in
+                self.dfuByteAlignment.text = alignmentValue.description
+                self.uploadByteAlignment = alignmentValue
+            })
+        }
+        present(alertController, addingCancelAction: true)
+    }
+    
+    private func present(_ alertViewController: UIAlertController, addingCancelAction addCancelAction: Bool = false) {
+        if addCancelAction {
+            alertViewController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        }
+        
+        // If the device is an ipad set the popover presentation controller
+        if let presenter = alertViewController.popoverPresentationController {
+            presenter.sourceView = self.view
+            presenter.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+            presenter.permittedArrowDirections = []
+        }
+        present(alertViewController, animated: true)
+    }
+    
     @IBAction func start(_ sender: UIButton) {
         guard let package = package else { return }
         uploadImageSize = nil

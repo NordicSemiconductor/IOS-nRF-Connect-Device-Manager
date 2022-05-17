@@ -1529,6 +1529,22 @@
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eP4-2I-Ibj">
+                                <rect key="frame" x="0.0" y="192" width="91" height="31"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Pipeline"/>
+                                <connections>
+                                    <action selector="setDfuPipeline:" destination="xg9-8C-9qN" eventType="touchUpInside" id="YE5-5p-yba"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dS0-qU-4za">
+                                <rect key="frame" x="83" y="192" width="90" height="31"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Alignment"/>
+                                <connections>
+                                    <action selector="setDfuAlignment:" destination="xg9-8C-9qN" eventType="touchUpInside" id="hbO-TK-Kw6"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="q5w-kH-cbv"/>
                         <color key="backgroundColor" systemColor="tableCellGroupedBackgroundColor"/>
@@ -1549,8 +1565,11 @@
                             <constraint firstItem="lil-Ea-asJ" firstAttribute="centerX" secondItem="re1-IC-2vf" secondAttribute="centerX" id="HDY-aQ-E9t"/>
                             <constraint firstItem="uea-jf-Rww" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Ngt-CN-ZoO" secondAttribute="leadingMargin" constant="32" id="HgL-Ti-bBp"/>
                             <constraint firstItem="djo-iN-lMc" firstAttribute="trailing" secondItem="Ngt-CN-ZoO" secondAttribute="trailingMargin" id="HuG-UM-2bC"/>
+                            <constraint firstItem="dS0-qU-4za" firstAttribute="firstBaseline" secondItem="eP4-2I-Ibj" secondAttribute="firstBaseline" id="JGq-gO-vxr"/>
+                            <constraint firstItem="eP4-2I-Ibj" firstAttribute="leading" secondItem="WcL-am-Aby" secondAttribute="leading" id="K56-Be-o5h"/>
                             <constraint firstItem="Mk8-UN-rvm" firstAttribute="top" secondItem="Z32-Wc-ztk" secondAttribute="bottom" id="KWe-Fy-FiH"/>
                             <constraint firstItem="Ye4-Al-i2r" firstAttribute="top" secondItem="3CJ-tJ-0lJ" secondAttribute="bottom" constant="8" symbolic="YES" id="Krc-sv-LMr"/>
+                            <constraint firstItem="eP4-2I-Ibj" firstAttribute="firstBaseline" secondItem="bNA-uO-3Vi" secondAttribute="firstBaseline" id="Kys-Wk-Jsu"/>
                             <constraint firstItem="Vxj-JJ-K89" firstAttribute="leading" secondItem="uea-jf-Rww" secondAttribute="trailing" constant="8" id="L0S-II-gmf"/>
                             <constraint firstItem="djo-iN-lMc" firstAttribute="centerY" secondItem="WcL-am-Aby" secondAttribute="centerY" id="MR0-Oa-b09"/>
                             <constraint firstItem="O7s-fs-kKY" firstAttribute="trailing" secondItem="Ngt-CN-ZoO" secondAttribute="trailingMargin" id="MSY-Ub-VMi"/>
@@ -1563,6 +1582,7 @@
                             <constraint firstAttribute="trailing" secondItem="re1-IC-2vf" secondAttribute="trailing" id="aKG-L1-tI8"/>
                             <constraint firstAttribute="bottomMargin" secondItem="bNA-uO-3Vi" secondAttribute="bottom" constant="8" id="avD-tF-ZQx"/>
                             <constraint firstItem="re1-IC-2vf" firstAttribute="top" secondItem="lil-Ea-asJ" secondAttribute="bottom" constant="4" id="btz-an-nyM"/>
+                            <constraint firstItem="dS0-qU-4za" firstAttribute="leading" secondItem="eP4-2I-Ibj" secondAttribute="trailing" constant="-8" id="cOB-dn-XLJ"/>
                             <constraint firstItem="7bB-XJ-JZn" firstAttribute="centerX" secondItem="q5w-kH-cbv" secondAttribute="centerX" id="d4e-3y-8RQ"/>
                             <constraint firstItem="Vxj-JJ-K89" firstAttribute="trailing" secondItem="Ngt-CN-ZoO" secondAttribute="trailingMargin" id="dAd-eX-5K7"/>
                             <constraint firstItem="bNA-uO-3Vi" firstAttribute="leading" secondItem="uea-jf-Rww" secondAttribute="trailing" constant="8" id="eFm-Ld-fjH"/>
@@ -1604,7 +1624,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="POl-uN-r4q" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3278" y="10"/>
+            <point key="canvasLocation" x="3277.5999999999999" y="9.8950524737631191"/>
         </scene>
         <!--Reset View Controller-->
         <scene sceneID="xe9-Vo-LsE">
