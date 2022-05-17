@@ -20,6 +20,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var fileHash: UILabel!
     @IBOutlet weak var fileSize: UILabel!
     @IBOutlet weak var fileName: UILabel!
+    @IBOutlet weak var dfuSpeed: UILabel!
     @IBOutlet weak var progress: UIProgressView!
     
     @IBAction func selectFirmware(_ sender: UIButton) {
@@ -31,6 +32,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
     @IBAction func start(_ sender: UIButton) {
         guard let package = package else { return }
+        uploadImageSize = nil
         
         guard package.images.count > 1 else {
             actionStart.isHidden = true
@@ -40,6 +42,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
             imageSlot = 0
             status.textColor = .primary
             status.text = "UPLOADING..."
+            
             _ = imageManager.upload(images: [ImageManager.Image(image: 0, data: package.images[0].data)], delegate: self)
             return
         }
@@ -74,6 +77,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         status.text = "PAUSED"
         actionPause.isHidden = true
         actionResume.isHidden = false
+        dfuSpeed.isHidden = true
         imageManager.pauseUpload()
     }
     
@@ -86,9 +90,11 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         }
         actionPause.isHidden = false
         actionResume.isHidden = true
+        uploadImageSize = nil
         imageManager.continueUpload()
     }
     @IBAction func cancel(_ sender: UIButton) {
+        dfuSpeed.isHidden = true
         imageManager.cancelUpload()
     }
     
@@ -101,6 +107,9 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
             imageManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
+    private var initialBytes: Int = 0
+    private var uploadImageSize: Int!
+    private var uploadTimestamp: Date!
 }
 
 // MARK: - ImageUploadDelegate
@@ -108,7 +117,30 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
 extension FirmwareUploadViewController: ImageUploadDelegate {
     
     func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
-        progress.setProgress(Float(bytesSent) / Float(imageSize), animated: true)
+        dfuSpeed.isHidden = false
+        
+        if uploadImageSize == nil || uploadImageSize != imageSize {
+            uploadTimestamp = timestamp
+            uploadImageSize = imageSize
+            initialBytes = bytesSent
+            progress.setProgress(Float(bytesSent) / Float(imageSize), animated: false)
+        } else {
+            progress.setProgress(Float(bytesSent) / Float(imageSize), animated: true)
+        }
+        
+        // Date.timeIntervalSince1970 returns seconds
+        let msSinceUploadBegan = (timestamp.timeIntervalSince1970 - uploadTimestamp.timeIntervalSince1970) * 1000
+        
+        guard bytesSent < imageSize else {
+            let averageSpeedInKiloBytesPerSecond = Double(imageSize - initialBytes) / msSinceUploadBegan
+            dfuSpeed.text = "\(imageSize - initialBytes) bytes sent (avg \(String(format: "%.2f kB/s", averageSpeedInKiloBytesPerSecond)))"
+            return
+        }
+        
+        let bytesSentSinceUploadBegan = bytesSent - initialBytes
+        // bytes / ms = kB/s
+        let speedInKiloBytesPerSecond = Double(bytesSentSinceUploadBegan) / msSinceUploadBegan
+        dfuSpeed.text = String(format: "%.2f kB/s", speedInKiloBytesPerSecond)
     }
     
     func uploadDidFail(with error: Error) {
