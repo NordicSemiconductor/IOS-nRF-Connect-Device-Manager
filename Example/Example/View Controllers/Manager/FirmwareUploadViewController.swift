@@ -20,11 +20,15 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var fileHash: UILabel!
     @IBOutlet weak var fileSize: UILabel!
     @IBOutlet weak var fileName: UILabel!
+    @IBOutlet weak var dfuPipelineDepth: UILabel!
+    @IBOutlet weak var dfuByteAlignment: UILabel!
     @IBOutlet weak var dfuSpeed: UILabel!
     @IBOutlet weak var progress: UIProgressView!
     
     @IBAction func selectFirmware(_ sender: UIButton) {
-        let importMenu = UIDocumentMenuViewController(documentTypes: ["public.data", "public.content"], in: .import)
+        let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive"]
+        let importMenu = UIDocumentMenuViewController(documentTypes: supportedDocumentTypes,
+                                                      in: .import)
         importMenu.delegate = self
         importMenu.popoverPresentationController?.sourceView = actionSelect
         present(importMenu, animated: true, completion: nil)
@@ -43,11 +47,14 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
             status.textColor = .primary
             status.text = "UPLOADING..."
             
-            _ = imageManager.upload(images: [ImageManager.Image(image: 0, data: package.images[0].data)], delegate: self)
+            _ = imageManager.upload(images: [ImageManager.Image(image: 0, data: package.images[0].data)],
+                                    pipelineDepth: uploadPipelineDepth, alignment: uploadByteAlignment, delegate: self)
             return
         }
         
         let alertController = UIAlertController(title: "Select Core Slot", message: nil, preferredStyle: .actionSheet)
+        let pipelineDepth = uploadPipelineDepth
+        let byteAlignment = uploadByteAlignment
         for image in package.images {
             alertController.addAction(UIAlertAction(title: McuMgrPackage.imageName(at: image.image), style: .default) { [weak self]
                 action in
@@ -58,7 +65,8 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
                 self?.imageSlot = image.image
                 self?.status.textColor = .primary
                 self?.status.text = "UPLOADING \(McuMgrPackage.imageName(at: image.image))..."
-                _ = self?.imageManager.upload(images: [ImageManager.Image(image: image.image, data: image.data)], delegate: self)
+                _ = self?.imageManager.upload(images: [ImageManager.Image(image: image.image, data: image.data)],
+                                              pipelineDepth: pipelineDepth, alignment: byteAlignment, delegate: self)
             })
         }
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -108,6 +116,8 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         }
     }
     private var initialBytes: Int = 0
+    private var uploadPipelineDepth: Int = 1
+    private var uploadByteAlignment: ImageUploadAlignment = .disabled
     private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
 }
@@ -197,6 +207,9 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
             fileSize.numberOfLines = 0
             fileHash.text = try package.hashString()
             fileHash.numberOfLines = 0
+            
+            dfuPipelineDepth.text = "\(uploadPipelineDepth)"
+            dfuByteAlignment.text = uploadByteAlignment.description
             
             status.textColor = .primary
             status.text = "READY"
