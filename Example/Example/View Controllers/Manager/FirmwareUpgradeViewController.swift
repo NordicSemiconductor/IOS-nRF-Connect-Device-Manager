@@ -41,6 +41,10 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         present(importMenu, animated: true, completion: nil)
     }
     
+    @IBAction func eraseApplicationSettingsChanged(_ sender: UISwitch) {
+        dfuManagerConfiguration.eraseAppSettings = sender.isOn
+    }
+    
     @IBAction func swapTime(_ sender: UIButton) {
         setSwapTime()
     }
