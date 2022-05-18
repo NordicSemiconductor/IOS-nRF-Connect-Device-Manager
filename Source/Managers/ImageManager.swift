@@ -121,8 +121,7 @@ public class ImageManager: McuManager {
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
     public func upload(images: [Image], pipelineDepth: Int = 1,
-                       alignment: ImageUploadAlignment = .disabled,
-                       delegate: ImageUploadDelegate?) -> Bool {
+                       alignment: ImageUploadAlignment = .disabled, delegate: ImageUploadDelegate?) -> Bool {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         defer {
