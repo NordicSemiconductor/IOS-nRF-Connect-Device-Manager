@@ -10,12 +10,11 @@ import SwiftCBOR
 public class ConfigManager: McuManager {
     override class var TAG: McuMgrLogCategory { .config }
     
-    //**************************************************************************
-    // MARK: Constants
-    //**************************************************************************
-
-    // Mcu Config Manager ids.
-    let ID_CONFIG = UInt8(0)
+    // MARK: - IDs
+    
+    enum ConfigID: UInt8 {
+        case Zero
+    }
     
     //**************************************************************************
     // MARK: Initializers
@@ -35,7 +34,7 @@ public class ConfigManager: McuManager {
     /// - parameter callback: The response callback.
     public func read(name: String, callback: @escaping McuMgrCallback<McuMgrConfigResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(name)]
-        send(op: .read, commandId: ID_CONFIG, payload: payload, callback: callback)
+        send(op: .read, commandId: ConfigID.Zero, payload: payload, callback: callback)
     }
 
     /// Write a system configuration variable on a device.
@@ -46,6 +45,6 @@ public class ConfigManager: McuManager {
     public func write(name: String, value: String, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(name),
                                       "val":  CBOR.utf8String(value)]
-        send(op: .write, commandId: ID_CONFIG, payload: payload, callback: callback)
+        send(op: .write, commandId: ConfigID.Zero, payload: payload, callback: callback)
     }
 }

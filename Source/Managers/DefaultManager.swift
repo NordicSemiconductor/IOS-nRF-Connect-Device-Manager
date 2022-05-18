@@ -12,7 +12,7 @@ public class DefaultManager: McuManager {
     
     // MARK: - Constants
 
-    public enum ID: UInt8 {
+    enum ID: UInt8 {
         case Echo
         case EchoControl, TaskStatistics, MemoryPoolStatatistics, DateTimeString, Reset
         case McuMgrParameters

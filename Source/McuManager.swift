@@ -55,28 +55,17 @@ open class McuManager {
         self.mtu = McuManager.getDefaultMtu(scheme: transporter.getScheme())
     }
     
-    //**************************************************************************
-    // MARK: Send Commands
-    //**************************************************************************
-
-    public func send<T: McuMgrResponse>(op: McuMgrOperation,
-                                        commandId: UInt8,
-                                        payload: [String:CBOR]?,
-                                        callback: @escaping McuMgrCallback<T>) {
+    // MARK: - Send
+    
+    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation,
+                                                             commandId: R, payload: [String:CBOR]?,
+                                                             callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
         send(op: op, flags: 0, commandId: commandId, payload: payload, callback: callback)
     }
     
-    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation,
-                                                             commandId: R,
-                                                             payload: [String:CBOR]?,
+    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, flags: UInt8,
+                                                             commandId: R, payload: [String:CBOR]?,
                                                              callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
-        send(op: op, flags: 0, commandId: commandId.rawValue, payload: payload, callback: callback)
-    }
-    
-    public func send<T: McuMgrResponse>(op: McuMgrOperation, flags: UInt8,
-                                        commandId: UInt8,
-                                        payload: [String:CBOR]?,
-                                        callback: @escaping McuMgrCallback<T>) {
         let packetPacketSequenceNumber = sequenceNumber
         sequenceNumber = sequenceNumber.next()
         
@@ -120,9 +109,9 @@ open class McuManager {
     /// - parameter payload: The request payload.
     ///
     /// - returns: The raw packet data to send to the transporter.
-    public static func buildPacket(scheme: McuMgrScheme, op: McuMgrOperation, flags: UInt8,
-                                   group: UInt16, sequenceNumber: UInt8,
-                                   commandId: UInt8, payload: [String:CBOR]?) -> Data {
+    public static func buildPacket<R: RawRepresentable>(scheme: McuMgrScheme, op: McuMgrOperation, flags: UInt8,
+                                                        group: UInt16, sequenceNumber: UInt8,
+                                                        commandId: R, payload: [String:CBOR]?) -> Data where R.RawValue == UInt8 {
         // If the payload map is nil, initialize an empty map.
         var payload = (payload == nil ? [:] : payload)!
         
@@ -137,7 +126,7 @@ open class McuManager {
         // Build header.
         let header = McuMgrHeader.build(op: op.rawValue, flags: flags, len: len,
                                         group: group, seq: sequenceNumber,
-                                        id: commandId)
+                                        id: commandId.rawValue)
         
         // Build the packet based on scheme.
         if scheme.isCoap() {

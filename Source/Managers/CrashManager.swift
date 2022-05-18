@@ -10,12 +10,13 @@ import SwiftCBOR
 public class CrashManager: McuManager {
     override class var TAG: McuMgrLogCategory { .crash }
     
-    //**************************************************************************
-    // MARK: Constants
-    //**************************************************************************
+    // MARK: - IDs
 
-    // Mcu Crash Manager ids.
-    let ID_TEST = UInt8(0)
+    enum CrashID: UInt8 {
+        case Test
+    }
+    
+    // MARK: - CrashTest
     
     public enum CrashTest: String {
         case div0 = "div0"
@@ -43,6 +44,6 @@ public class CrashManager: McuManager {
     /// - parameter callback: The response callback.
     public func test(crash: CrashTest, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["t": CBOR.utf8String(crash.rawValue)]
-        send(op: .write, commandId: ID_TEST, payload: payload, callback: callback)
+        send(op: .write, commandId: CrashID.Test, payload: payload, callback: callback)
     }
 }
