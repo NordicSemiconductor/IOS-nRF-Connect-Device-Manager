@@ -66,6 +66,13 @@ open class McuManager {
         send(op: op, flags: 0, commandId: commandId, payload: payload, callback: callback)
     }
     
+    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation,
+                                                             commandId: R,
+                                                             payload: [String:CBOR]?,
+                                                             callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
+        send(op: op, flags: 0, commandId: commandId.rawValue, payload: payload, callback: callback)
+    }
+    
     public func send<T: McuMgrResponse>(op: McuMgrOperation, flags: UInt8,
                                         commandId: UInt8,
                                         payload: [String:CBOR]?,

@@ -10,17 +10,13 @@ import SwiftCBOR
 public class DefaultManager: McuManager {
     override class var TAG: McuMgrLogCategory { .default }
     
-    //**************************************************************************
-    // MARK: Constants
-    //**************************************************************************
+    // MARK: - Constants
 
-    // Mcu Default Manager ids.
-    let ID_ECHO           = UInt8(0)
-    let ID_CONS_ECHO_CTRL = UInt8(1)
-    let ID_TASKSTATS      = UInt8(2)
-    let ID_MPSTAT         = UInt8(3)
-    let ID_DATETIME_STR   = UInt8(4)
-    let ID_RESET          = UInt8(5)
+    public enum ID: UInt8 {
+        case Echo
+        case EchoControl, TaskStatistics, MemoryPoolStatatistics, DateTimeString, Reset
+        case McuMgrParameters
+    }
     
     //**************************************************************************
     // MARK: Initializers
@@ -42,7 +38,7 @@ public class DefaultManager: McuManager {
     /// - parameter callback: The response callback.
     public func echo(_ echo: String, callback: @escaping McuMgrCallback<McuMgrEchoResponse>) {
         let payload: [String:CBOR] = ["d": CBOR.utf8String(echo)]
-        send(op: .write, commandId: ID_ECHO, payload: payload, callback: callback)
+        send(op: .write, commandId: ID.Echo, payload: payload, callback: callback)
     }
     
     /// Set console echoing on the device.
@@ -51,28 +47,28 @@ public class DefaultManager: McuManager {
     /// - parameter callback: The response callback.
     public func consoleEcho(_ echoOn: Bool, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["echo": CBOR.init(integerLiteral: echoOn ? 1 : 0)]
-        send(op: .write, commandId: ID_CONS_ECHO_CTRL, payload: payload, callback: callback)
+        send(op: .write, commandId: ID.EchoControl, payload: payload, callback: callback)
     }
     
     /// Read the task statistics for the device.
     ///
     /// - parameter callback: The response callback.
     public func taskStats(callback: @escaping McuMgrCallback<McuMgrTaskStatsResponse>) {
-        send(op: .read, commandId: ID_TASKSTATS, payload: nil, callback: callback)
+        send(op: .read, commandId: ID.TaskStatistics, payload: nil, callback: callback)
     }
     
     /// Read the memory pool statistics for the device.
     ///
     /// - parameter callback: The response callback.
     public func memoryPoolStats(callback: @escaping McuMgrCallback<McuMgrMemoryPoolStatsResponse>) {
-        send(op: .read, commandId: ID_MPSTAT, payload: nil, callback: callback)
+        send(op: .read, commandId: ID.MemoryPoolStatatistics, payload: nil, callback: callback)
     }
     
     /// Read the date and time on the device.
     ///
     /// - parameter callback: The response callback.
     public func readDatetime(callback: @escaping McuMgrCallback<McuMgrDateTimeResponse>) {
-        send(op: .read, commandId: ID_DATETIME_STR, payload: nil, callback: callback)
+        send(op: .read, commandId: ID.DateTimeString, payload: nil, callback: callback)
     }
     
     /// Set the date and time on the device.
@@ -87,14 +83,14 @@ public class DefaultManager: McuManager {
                               callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] =
             ["datetime": CBOR.utf8String(McuManager.dateToString(date: date, timeZone: timeZone))]
-        send(op: .write, commandId: ID_DATETIME_STR, payload: payload, callback: callback)
+        send(op: .write, commandId: ID.DateTimeString, payload: payload, callback: callback)
     }
     
     /// Trigger the device to soft reset.
     ///
     /// - parameter callback: The response callback.
     public func reset(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ID_RESET, payload: nil, callback: callback)
+        send(op: .write, commandId: ID.Reset, payload: nil, callback: callback)
     }
 }
 
