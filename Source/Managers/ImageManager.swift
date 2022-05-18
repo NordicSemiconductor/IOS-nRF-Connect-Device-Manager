@@ -54,17 +54,17 @@ public class ImageManager: McuManager {
     /// - parameter image: The image number / slot number for DFU.
     /// - parameter offset: The offset from this data will be sent.
     /// - parameter callback: The callback.
-    public func upload(data: Data, image: Int, offset: UInt, callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
+    public func upload(data: Data, image: Int, offset: UInt64, callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
         // Calculate the number of remaining bytes.
-        let remainingBytes: UInt = UInt(data.count) - offset
+        let remainingBytes: UInt64 = UInt64(data.count) - offset
         
         // Data length to end is the minimum of the max data lenght and the
         // number of remaining bytes.
         let packetOverhead = calculatePacketOverhead(data: data, image: image, offset: UInt64(offset))
         
         // Get the length of image data to send.
-        let maxDataLength: UInt = UInt(mtu) - UInt(packetOverhead)
-        let dataLength: UInt = min(maxDataLength, remainingBytes)
+        let maxDataLength: UInt64 = UInt64(mtu) - UInt64(packetOverhead)
+        let dataLength: UInt64 = min(maxDataLength, remainingBytes)
         
         // Build the request payload.
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[offset..<(offset+dataLength)])),
@@ -304,7 +304,7 @@ public class ImageManager: McuManager {
             let image: Int! = self.uploadImages?[self.uploadIndex].image
             log(msg: "Continuing upload from \(offset)/\(imageData.count) to image \(image)...", atLevel: .application)
             uploadState = .uploading
-            upload(data: imageData, image: image, offset: UInt(offset), callback: uploadCallback)
+            upload(data: imageData, image: image, offset: offset, callback: uploadCallback)
         } else {
             log(msg: "Upload has not been previously paused", atLevel: .warning)
         }
@@ -378,19 +378,19 @@ public class ImageManager: McuManager {
                     self.uploadIndex += 1
                     self.imageData = images[self.uploadIndex].data
                     self.log(msg: "Uploading image \(images[self.uploadIndex].image) (\(self.imageData?.count) bytes)...", atLevel: .application)
-                    self.sendNext(from: UInt(0))
+                    self.sendNext(from: UInt64(0))
                 }
                 return
             }
             
             // Send the next packet of data.
-            self.sendNext(from: UInt(offset))
+            self.sendNext(from: offset)
         } else {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
         }
     }
     
-    private func sendNext(from offset: UInt) {
+    private func sendNext(from offset: UInt64) {
         if uploadState != .uploading {
             return
         }
