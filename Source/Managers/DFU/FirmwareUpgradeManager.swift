@@ -526,6 +526,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         
         guard error == nil, let response = response else {
             self.log(msg: "Received Error or invalid McuMgrParameters Response. This is expected if the receiving firmware does not support McuMgrParameters. Proceeding as normal.", atLevel: .debug)
+            self.configuration.reassemblyBufferSize = 0
             self.validate() // Continue Upload
             return
         }

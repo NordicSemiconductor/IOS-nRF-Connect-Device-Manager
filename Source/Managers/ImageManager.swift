@@ -153,8 +153,9 @@ public class ImageManager: McuManager {
         uploadExpectedOffsets = []
         uploadLastOffset = 0
         uploadConfiguration = configuration
-        if let pipelinedTransport = transporter as? McuMgrBleTransport {
-            pipelinedTransport.numberOfParallelWrites = configuration.pipelineDepth
+        if let bleTransport = transporter as? McuMgrBleTransport {
+            bleTransport.numberOfParallelWrites = configuration.pipelineDepth
+            bleTransport.maxPacketSize = max(Int(configuration.reassemblyBufferSize), mtu)
         }
         
         log(msg: "Uploading image \(firstImage.image) from 0/\(firstImage.data.count)...", atLevel: .application)

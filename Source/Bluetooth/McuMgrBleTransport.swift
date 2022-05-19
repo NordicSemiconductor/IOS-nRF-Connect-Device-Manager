@@ -76,6 +76,8 @@ public class McuMgrBleTransport: NSObject {
         }
     }
     
+    public var maxPacketSize: Int!
+    
     public internal(set) var state: PeripheralState = .disconnected {
         didSet {
             DispatchQueue.main.async {
@@ -313,7 +315,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             dataChunks.append(data[(i * mtu)..<(i * mtu + chunkSize)])
         }
         
-        guard data.count <= mtu else {
+        guard data.count <= (maxPacketSize ?? mtu) else {
             return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
         }
         
