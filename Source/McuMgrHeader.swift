@@ -99,7 +99,7 @@ public enum McuMgrHeaderParseError: Error, LocalizedError {
 internal extension Data {
     
     func readMcuMgrHeaderSequenceNumber() -> UInt8? {
-        guard count > McuMgrHeader.HEADER_LENGTH else { return nil }
+        guard count >= McuMgrHeader.HEADER_LENGTH else { return nil }
         return read(offset: 6) as UInt8
     }
 }

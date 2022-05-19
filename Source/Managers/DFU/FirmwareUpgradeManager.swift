@@ -25,7 +25,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private var configuration: FirmwareUpgradeConfiguration!
     
     private var state: FirmwareUpgradeState
-    private var paused: Bool = false
+    private var paused: Bool
+    private var queriedForMcuManagerParameters: Bool
     
     /// Logger delegate may be used to obtain logs.
     public weak var logDelegate: McuMgrLogDelegate? {
@@ -54,6 +55,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.basicManager = BasicManager(transporter: transporter)
         self.delegate = delegate
         self.state = .none
+        self.paused = false
+        self.queriedForMcuManagerParameters = false
     }
     
     //**************************************************************************
@@ -96,6 +99,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         log(msg: "Upgrading with \(images.count) images in mode '\(mode)' (\(numberOfBytes) bytes)...",
             atLevel: .application)
         delegate?.upgradeDidStart(controller: self)
+        
+        guard queriedForMcuManagerParameters else {
+            log(msg: "Attempting to request McuMgr Parameters...", atLevel: .debug)
+            defaultManager.params(callback: mcuManagerParametersCallback)
+            return
+        }
         validate()
     }
     
@@ -506,6 +515,26 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         // Set to false so uploadDidFinish() doesn't loop forever.
         self.configuration.eraseAppSettings = false
         self.uploadDidFinish()
+    }
+    
+    /// Callback for devices running NCS firmware version 2.0 or later, which support McuMgrParameters call.
+    ///
+    /// Error handling here is not considered important because we don't expect many devices to support this.
+    private lazy var mcuManagerParametersCallback: McuMgrCallback<McuMgrParametersResponse> = { [weak self] (response: McuMgrParametersResponse?, error: Error?) in
+        
+        guard let self = self else { return }
+        self.queriedForMcuManagerParameters = true
+        
+        guard error == nil, let response = response else {
+            self.log(msg: "Received Error or invalid McuMgrParameters Response. This is expected if the receiving firmware does not support McuMgrParameters. Proceeding as normal.", atLevel: .debug)
+            self.validate() // Continue Upload
+            return
+        }
+        
+        print("Buffer Count: \(response.bufferCount)")
+        print("Buffer Size: \(response.bufferSize)")
+        
+        self.validate() // Continue Upload
     }
     
     /// Callback for the RESET state.

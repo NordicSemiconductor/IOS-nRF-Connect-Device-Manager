@@ -346,6 +346,22 @@ public class McuMgrDateTimeResponse: McuMgrResponse {
     }
 }
 
+// MARK: - McuMgrParametersResponse
+
+public final class McuMgrParametersResponse: McuMgrResponse {
+    
+    public var bufferSize: UInt64!
+    
+    public var bufferCount: UInt64!
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        
+        if case let CBOR.unsignedInt(bufferSize)? = cbor?["buf_size"] { self.bufferSize = bufferSize }
+        if case let CBOR.unsignedInt(bufferCount)? = cbor?["buf_count"] { self.bufferCount = bufferCount }
+    }
+}
+
 //******************************************************************************
 // MARK: Image Responses
 //******************************************************************************

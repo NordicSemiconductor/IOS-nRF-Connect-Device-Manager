@@ -81,8 +81,9 @@ public class DefaultManager: McuManager {
     /// - parameter callback: The response callback.
     public func writeDatetime(date: Date = Date(), timeZone: TimeZone? = nil,
                               callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        let payload: [String:CBOR] =
-            ["datetime": CBOR.utf8String(McuManager.dateToString(date: date, timeZone: timeZone))]
+        let payload: [String:CBOR] = [
+            "datetime": CBOR.utf8String(McuManager.dateToString(date: date, timeZone: timeZone))
+        ]
         send(op: .write, commandId: ID.DateTimeString, payload: payload, callback: callback)
     }
     
@@ -91,6 +92,21 @@ public class DefaultManager: McuManager {
     /// - parameter callback: The response callback.
     public func reset(callback: @escaping McuMgrCallback<McuMgrResponse>) {
         send(op: .write, commandId: ID.Reset, payload: nil, callback: callback)
+    }
+    
+    /// Reads McuMgr Parameters
+    ///
+    /// - parameter callback: The response callback.
+    public func params(callback: @escaping McuMgrCallback<McuMgrParametersResponse>) {
+        let readMcuManagerParametersData = Data([
+            McuMgrOperation.read.rawValue,
+            0, // Flags
+            0, 0, // Length
+            0, 0, // McuMaanger.GROUP_DEFAULT
+            0, // Sequence Number
+            ID.McuMgrParameters.rawValue
+        ])
+        send(data: readMcuManagerParametersData, callback: callback)
     }
 }
 
