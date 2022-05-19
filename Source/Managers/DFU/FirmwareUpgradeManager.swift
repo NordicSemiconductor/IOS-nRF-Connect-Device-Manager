@@ -188,8 +188,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 .filter({ !$0.uploaded })
                 .sorted(by: <)
                 .map({ ImageManager.Image($0.image, $0.data) })
-            _ = imageManager.upload(images: imagesToUpload, pipelineDepth: configuration.pipelineDepth,
-                                    alignment: configuration.byteAlignment, delegate: self)
+            _ = imageManager.upload(images: imagesToUpload, using: configuration, delegate: self)
         }
     }
     
@@ -531,9 +530,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        print("Buffer Count: \(response.bufferCount)")
-        print("Buffer Size: \(response.bufferSize)")
-        
+        self.configuration.reassemblyBufferSize = response.bufferSize
         self.validate() // Continue Upload
     }
     
@@ -743,13 +740,22 @@ public struct FirmwareUpgradeConfiguration {
     public var eraseAppSettings: Bool
     /// If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.
     public var pipelineDepth: Int
-    /// Might be necessary to set when Pipeline Length is larger than 1.
+    /// Necessary to set when Pipeline Length is larger than 1 (SMP Pipelining Enabled) to predict offset jumps as multiple
+    /// packets are sent.
     public var byteAlignment: ImageUploadAlignment
+    /// If set, it is used instead of the MTU Size as the maximum size of the packet. It is designed to be used with a size
+    /// larger than the MTU, meaning larger Data chunks per Sequence Number, trusting the reassembly Buffer on the receiving
+    /// side to merge it all back. Thus, increasing transfer speeds.
+    ///
+    /// Can be used in conjunction with SMP Pipelining. Off (value `0`) by default.
+    public var reassemblyBufferSize: UInt64
     
-    public init(eraseAppSettings: Bool = true, pipelineDepth: Int = 1, byteAlignment: ImageUploadAlignment = .disabled) {
+    public init(eraseAppSettings: Bool = true, pipelineDepth: Int = 1, byteAlignment: ImageUploadAlignment = .disabled,
+                reassemblyBufferSize: UInt64 = 0) {
         self.eraseAppSettings = eraseAppSettings
         self.pipelineDepth = pipelineDepth
         self.byteAlignment = byteAlignment
+        self.reassemblyBufferSize = reassemblyBufferSize
     }
 }
 

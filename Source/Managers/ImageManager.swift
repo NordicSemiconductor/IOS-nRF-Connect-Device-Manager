@@ -116,8 +116,8 @@ public class ImageManager: McuManager {
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
-    public func upload(images: [Image], pipelineDepth: Int = 1,
-                       alignment: ImageUploadAlignment = .disabled, delegate: ImageUploadDelegate?) -> Bool {
+    public func upload(images: [Image], using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration(),
+                       delegate: ImageUploadDelegate?) -> Bool {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         defer {
@@ -142,7 +142,6 @@ public class ImageManager: McuManager {
         uploadDelegate = delegate
         
         uploadImages = images
-        uploadAlignment = alignment
         
         // Set image data.
         imageData = firstImage.data
@@ -153,15 +152,15 @@ public class ImageManager: McuManager {
         uploadIndex = 0
         uploadExpectedOffsets = []
         uploadLastOffset = 0
-        uploadPipelineDepth = pipelineDepth
+        uploadConfiguration = configuration
         if let pipelinedTransport = transporter as? McuMgrBleTransport {
-            pipelinedTransport.numberOfParallelWrites = pipelineDepth
+            pipelinedTransport.numberOfParallelWrites = configuration.pipelineDepth
         }
         
         log(msg: "Uploading image \(firstImage.image) from 0/\(firstImage.data.count)...", atLevel: .application)
         let firstOffset = maxDataPacketLengthFor(data: firstImage.data, image: firstImage.image, offset: 0)
         uploadExpectedOffsets.append(firstOffset)
-        upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: uploadAlignment,
+        upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: configuration.byteAlignment,
                callback: uploadCallback)
         return true
     }
@@ -233,13 +232,11 @@ public class ImageManager: McuManager {
     private var uploadExpectedOffsets: [UInt64] = []
     /// The sequence of images we want to send to the device.
     private var uploadImages: [Image]?
-    /// When using SMP Pipelining, the Data in each packet sent (or 'chunk') might need to be byte-aligned.
-    private var uploadAlignment: ImageUploadAlignment = .disabled
     /// Delegate to send image upload updates to.
     private weak var uploadDelegate: ImageUploadDelegate?
-    /// For values larger than 1, SMP Pipelining is enabled. Otherwise, upload writes are sent
-    /// sequentially.
-    private var uploadPipelineDepth: Int!
+    /// Groups multiple Settings regarding DFU Upload, such as enabling Pipelining,
+    /// Byte Alignment and/or SMP Reassembly.
+    private var uploadConfiguration: FirmwareUpgradeConfiguration!
     
     /// Cyclic reference is used to prevent from releasing the manager
     /// in the middle of an update. The reference cycle will be set
@@ -314,7 +311,7 @@ public class ImageManager: McuManager {
             log(msg: "[Continue] Uploading image \(image) from \(offset)/\(imageData.count)...", atLevel: .application)
             let firstResumeOffset = offset + maxDataPacketLengthFor(data: imageData, image: image, offset: offset)
             uploadExpectedOffsets.append(firstResumeOffset)
-            upload(data: imageData, image: image, offset: offset, alignment: uploadAlignment,
+            upload(data: imageData, image: image, offset: offset, alignment: uploadConfiguration.byteAlignment,
                         callback: uploadCallback)
         } else {
             log(msg: "Upload has not been previously paused", atLevel: .warning)
@@ -361,7 +358,7 @@ public class ImageManager: McuManager {
         }
         
         if let offset = response.off {
-            if self.uploadPipelineDepth > 1 {
+            if self.uploadConfiguration.pipelineDepth > 1 {
                 // Pipelining requires the use of byte-alignment, and byte-alignment is required
                 // because otherwise we can't predict how many bytes the firmware will accept.
                 if let uploadIndex = self.uploadExpectedOffsets.firstIndex(of: UInt64(offset)) {
@@ -414,7 +411,7 @@ public class ImageManager: McuManager {
                 return
             }
             
-            for i in 0..<(self.uploadPipelineDepth - self.uploadExpectedOffsets.count) {
+            for i in 0..<(self.uploadConfiguration.pipelineDepth - self.uploadExpectedOffsets.count) {
                 guard let chunkOffset = self.uploadExpectedOffsets.last ?? self.uploadLastOffset,
                       chunkOffset < self.imageData?.count ?? 0 else { return }
                 
@@ -433,7 +430,7 @@ public class ImageManager: McuManager {
         let imageData: Data! = self.uploadImages?[uploadIndex].data
         let imageSlot: Int! = self.uploadImages?[uploadIndex].image
         log(msg: "[Next] Uploading image \(imageSlot) from \(offset)/\(imageData.count)...", atLevel: .application)
-        upload(data: imageData, image: imageSlot, offset: offset, alignment: uploadAlignment,
+        upload(data: imageData, image: imageSlot, offset: offset, alignment: uploadConfiguration.byteAlignment,
                callback: uploadCallback)
     }
     
@@ -463,8 +460,7 @@ public class ImageManager: McuManager {
         let tempDelegate = uploadDelegate
         resetUploadVariables()
         let remainingImages = tempUploadImages.filter({ $0.image >= tempUploadIndex })
-        _ = upload(images: remainingImages, pipelineDepth: uploadPipelineDepth,
-                   alignment: uploadAlignment, delegate: tempDelegate)
+        _ = upload(images: remainingImages, using: uploadConfiguration, delegate: tempDelegate)
         objc_sync_exit(self)
     }
     
@@ -473,9 +469,10 @@ public class ImageManager: McuManager {
         
         let remainingBytes = UInt64(data.count) - offset
         let packetOverhead = calculatePacketOverhead(data: data, image: image, offset: UInt64(offset))
-        var maxDataLength = UInt64(mtu) - UInt64(packetOverhead)
-        if uploadAlignment != .disabled {
-            maxDataLength = (maxDataLength / uploadAlignment.rawValue) * uploadAlignment.rawValue
+        let maxPacketSize = max(uploadConfiguration.reassemblyBufferSize, UInt64(mtu))
+        var maxDataLength = maxPacketSize - UInt64(packetOverhead)
+        if uploadConfiguration.byteAlignment != .disabled {
+            maxDataLength = (maxDataLength / uploadConfiguration.byteAlignment.rawValue) * uploadConfiguration.byteAlignment.rawValue
         }
         return min(maxDataLength, remainingBytes)
     }

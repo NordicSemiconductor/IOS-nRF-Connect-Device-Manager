@@ -303,6 +303,16 @@ extension McuMgrBleTransport: McuMgrTransport {
         
         // Check that data length does not exceed the mtu.
         let mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
+        
+        var dataChunks = [Data]()
+        var dataChunkSize = 0
+        while dataChunkSize < data.count {
+            let i = dataChunks.count
+            let chunkSize = min(data.count - dataChunkSize, mtu)
+            dataChunkSize += chunkSize
+            dataChunks.append(data[(i * mtu)..<(i * mtu + chunkSize)])
+        }
+        
         guard data.count <= mtu else {
             return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
         }
@@ -317,8 +327,10 @@ extension McuMgrBleTransport: McuMgrTransport {
         writeState.newWrite(sequenceNumber: sequenceNumber, lock: writeLock)
         
         // Write the value to the characteristic.
-        log(msg: "-> (SEQ No. \(sequenceNumber)) \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
-        targetPeripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
+        for (i, chunk) in dataChunks.enumerated() {
+            log(msg: "-> (SEQ No. \(sequenceNumber) Chunk \(i) \(chunk.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+            targetPeripheral.writeValue(chunk, for: smpCharacteristic, type: .withoutResponse)
+        }
 
         // Wait for the didUpdateValueFor(characteristic:) to open the lock.
         let result = writeLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
