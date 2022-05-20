@@ -150,10 +150,10 @@ extension McuMgrBleTransport: McuMgrTransport {
         return .ble
     }
     
-    public func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) {
+    public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {
         operationQueue.addOperation {
             for i in 0..<McuMgrBleTransportConstant.MAX_RETRIES {
-                switch self._send(data: data) {
+                switch self._send(data: data, timeoutInSeconds: timeout) {
                 case .failure(McuMgrTransportError.waitAndRetry):
                     sleep(UInt32(McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL))
                     self.log(msg: "Retry \(i)", atLevel: .info)
@@ -217,7 +217,7 @@ extension McuMgrBleTransport: McuMgrTransport {
     /// The peripheral will automatically be connected when it's not.
     ///
     /// - returns: A `Result` containing the full response `Data` if successful, `Error` if not. Note that if `McuMgrTransportError.waitAndRetry` is returned, said operation needs to be done externally to this call.
-    private func _send(data: Data) -> Result<Data, Error> {
+    private func _send(data: Data, timeoutInSeconds: Int) -> Result<Data, Error> {
         if centralManager.state == .poweredOff || centralManager.state == .unsupported {
             return .failure(McuMgrBleTransportError.centralManagerPoweredOff)
         }
@@ -286,7 +286,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             }
             
             // Wait for the setup process to complete.
-            let result = connectionLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.CONNECTION_TIMEOUT))
+            let result = connectionLock.block(timeout: DispatchTime.now() + .seconds(timeoutInSeconds))
             resetConnectionLock()
             
             switch result {
@@ -341,7 +341,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         }
 
         // Wait for the didUpdateValueFor(characteristic:) to open the lock.
-        let result = writeLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.TRANSACTION_TIMEOUT))
+        let result = writeLock.block(timeout: DispatchTime.now() + .seconds(timeoutInSeconds))
         
         defer {
             writeState.completedWrite(sequenceNumber: sequenceNumber)
@@ -386,8 +386,6 @@ public enum McuMgrBleTransportConstant {
     internal static let WAIT_AND_RETRY_INTERVAL = 10
     /// Connection timeout in seconds.
     internal static let CONNECTION_TIMEOUT = 20
-    /// Transaction timout in seconds.
-    internal static let TRANSACTION_TIMEOUT = 30
 }
 
 // MARK: - McuMgrBleTransportKey

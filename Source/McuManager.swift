@@ -87,11 +87,11 @@ open class McuManager {
             }
             callback(response, error)
         }
-        send(data: mcuPacketData, callback: _callback)
+        send(data: mcuPacketData, timeout: 30, callback: _callback)
     }
     
-    public func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) {
-        transporter.send(data: data, callback: callback)
+    public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {
+        transporter.send(data: data, timeout: timeout, callback: callback)
     }
     
     //**************************************************************************

@@ -100,8 +100,9 @@ public protocol McuMgrTransport: AnyObject {
     /// Sends given data using the transport object.
     ///
     /// - parameter data: The data to be sent.
+    /// - parameter timeout: The amount of time in seconds to wait before the .send Operation is declared to have failed due to a timeout error if no appropriate response is received.
     /// - parameter callback: The request callback.
-    func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>)
+    func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>)
     
     /// Set up a connection to the remote device.
     func connect(_ callback: @escaping ConnectionCallback)
