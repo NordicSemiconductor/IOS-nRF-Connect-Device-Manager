@@ -155,7 +155,7 @@ public class ImageManager: McuManager {
         uploadConfiguration = configuration
         if let bleTransport = transporter as? McuMgrBleTransport {
             bleTransport.numberOfParallelWrites = configuration.pipelineDepth
-            bleTransport.maxPacketSize = max(Int(configuration.reassemblyBufferSize), mtu)
+            bleTransport.chunkSendDataToMtuSize = configuration.reassemblyBufferSize != 0
         }
         
         log(msg: "Uploading image \(firstImage.image) from 0/\(firstImage.data.count)...", atLevel: .application)
@@ -544,7 +544,6 @@ extension ImageUploadError: LocalizedError {
             return "Remote error: \(code)."
         }
     }
-    
 }
 
 //******************************************************************************

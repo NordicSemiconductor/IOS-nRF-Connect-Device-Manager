@@ -76,7 +76,7 @@ public class McuMgrBleTransport: NSObject {
         }
     }
     
-    public var maxPacketSize: Int!
+    public var chunkSendDataToMtuSize: Bool = false
     
     public internal(set) var state: PeripheralState = .disconnected {
         didSet {
@@ -303,35 +303,41 @@ extension McuMgrBleTransport: McuMgrTransport {
             return .failure(McuMgrBleTransportError.missingCharacteristic)
         }
         
-        // Check that data length does not exceed the mtu.
-        let mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
-        
-        var dataChunks = [Data]()
-        var dataChunkSize = 0
-        while dataChunkSize < data.count {
-            let i = dataChunks.count
-            let chunkSize = min(data.count - dataChunkSize, mtu)
-            dataChunkSize += chunkSize
-            dataChunks.append(data[(i * mtu)..<(i * mtu + chunkSize)])
-        }
-        
-        guard data.count <= (maxPacketSize ?? mtu) else {
-            return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
-        }
-        
-        let writeLock = ResultLock(isOpen: false)
-        writeLock.close()
-        
         guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() else {
             return .failure(McuMgrTransportError.badHeader)
         }
         
+        let writeLock = ResultLock(isOpen: false)
+        writeLock.close()
         writeState.newWrite(sequenceNumber: sequenceNumber, lock: writeLock)
         
-        // Write the value to the characteristic.
-        for (i, chunk) in dataChunks.enumerated() {
-            log(msg: "-> (SEQ No. \(sequenceNumber) Chunk \(i) \(chunk.hexEncodedString(options: .prepend0x))", atLevel: .debug)
-            targetPeripheral.writeValue(chunk, for: smpCharacteristic, type: .withoutResponse)
+        let mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
+        if chunkSendDataToMtuSize {
+            var dataChunks = [Data]()
+            var dataChunksSize = 0
+            while dataChunksSize < data.count {
+                let i = dataChunks.count
+                let chunkSize = min(data.count - dataChunksSize, mtu)
+                dataChunksSize += chunkSize
+                dataChunks.append(data[(i * mtu)..<(i * mtu + chunkSize)])
+            }
+            
+            guard dataChunksSize == data.count else {
+                return .failure(McuMgrTransportError.sendFailed)
+            }
+            
+            for (i, chunk) in dataChunks.enumerated() {
+                log(msg: "-> (SEQ No. \(sequenceNumber), Chunk \(i)) \(chunk.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+                targetPeripheral.writeValue(chunk, for: smpCharacteristic, type: .withoutResponse)
+            }
+        } else {
+            // No SMP Reassembly Supported. So no 'chunking'.
+            guard data.count <= mtu else {
+                return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
+            }
+            
+            log(msg: "-> (SEQ No. \(sequenceNumber)) \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+            targetPeripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
         }
 
         // Wait for the didUpdateValueFor(characteristic:) to open the lock.

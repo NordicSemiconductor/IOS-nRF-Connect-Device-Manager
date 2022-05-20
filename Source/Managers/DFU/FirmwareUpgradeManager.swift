@@ -227,6 +227,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         objc_sync_enter(self)
         state = .none
         paused = false
+        queriedForMcuManagerParameters = false
         delegate?.upgradeDidComplete()
         // Release cyclic reference.
         cyclicReferenceHolder = nil
@@ -239,6 +240,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         let tmp = state
         state = .none
         paused = false
+        queriedForMcuManagerParameters = false
         delegate?.upgradeDidFail(inState: tmp, with: error)
         // Release cyclic reference.
         cyclicReferenceHolder = nil
