@@ -8,7 +8,7 @@ The library provides a transport agnostic implementation of the McuManager proto
 
 ### Note
 
-This repository is a fork of the [McuManager iOS Library](https://github.com/JuulLabs-OSS/mcumgr-ios), which is no longer being supported by its original maintainer. As of 2021, we have taken ownership of the library,  so all new features and bug fixes will be added here. Please, migrate your projects to point to this Git repsository in order to get future updates. See [migration guide](https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager#migration-from-the-original-repo).
+This repository is a fork of the [McuManager iOS Library](https://github.com/JuulLabs-OSS/mcumgr-ios), which is no longer being supported by its original maintainer. As of 2021, we have taken ownership of the library, so all new features and bug fixes will be added here. Please, migrate your projects to point to this Git repsository in order to get future updates. See [migration guide](https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager#migration-from-the-original-repo).
 
 ## Install
 
@@ -76,6 +76,17 @@ McuManager firmware upgrades can actually be performed in few different ways. Th
 
 The `FirmwareUpgradeManager` contains an additional state, `validate`, which precedes the upload. The `validate` state checks the current image state of the device in an attempt to bypass certain states of the firmware upgrade. For example, if the image to upgrade to already exists in slot 1 on the device, the `FirmwareUpgradeManager` will skip `upload` and move directly to `test` (or `confirm` if `.confirmOnly` mode has been set) from `validate`. If the uploaded image is already active, and confirmed in slot 0, the upgrade will succeed immediately. In short, the `validate` state makes it easy to reattempt an upgrade without needing to re-upload the image or manually determine where to start.
 
+### Firmware Upgrade Configuration
+
+![nRF53 Dual-Core SoC Diagram, which supports all of these features.](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/_images/ieee802154_nrf53_singleprot_design.svg)
+
+In version 1.2, new features were introduced to speed-up the Upload speeds, mirroring the work first done on the Android side. As of version 1.3, these features have been expanded, and they're all available through the new `FirmwareUpgradeConfiguration` struct.
+
+* **`eraseAppSettings`**: This is not a speed-related feature. Instead, setting this to `true` means all app data on the device, including Bond Information, Number of Steps, Login or anything else are all erased. If there are any major Data changes the new firmware after the update, like a complete change of functionality or a new update with different save structures, this is recommended. **On** by default.
+* **`pipelineDepth`**: (Represented as 'Number of Buffers' in the Example App UI.) For values larger than 1, this enables the **SMP Pipelining** feature. It means multiple write packets are sent at the same time, thereby providing a large speed increase the higher the number of buffers the receiving device is configured with. **Set to 3 (Number of Buffers = 4)** by default. 
+* **`byteAlignment`**: This is required when used in conjunction with SMP Pipelining. By fixing the size of each chunk of Data send for the Firmware Upgrade, we can predict the receiving device's offset jumps and therefore smoothly send multiple Data packets at the same time. When SMP Pipelining is not being used (`pipelineDepth` set to 1), the library still performs the Byte Alignment, but it is not needed. **Set to 4-Byte** by default. 
+* **`reassemblyBufferSize`**: **SMP Reassembly** is another speed-improving feature. It works on devices running NCS 2.0 firmware or later, and is self-adjusting. Before the Upload starts, a new request is sent via `DefaultManager` to request the new Mcu Manager Paremeters. If received, it means the firmware accepts Data in chunks larger than the MTU Size, therefore also increasing speed. The property will reflect the size of the buffer on the receiving device, and the `McuMgrBleTransport` will be set to chunk the data down within the same Sequence Number. There is no work to be done for Reassembly to work - on devices not supporting it, the MCU Manager Paremeters request will fail, and upload will proceed assuming no Reassembly, meaning packets sent with MTU Size as the maximum.
+
 # Logging
 
 Setting `logDelegate` property in a manager gives access to low level logs, that can help debugging both the app and your device. Messages are logged on 6 log levels, from `.debug` to `.error`, and additionally contain a `McuMgrLogCategory`, which identifies the originating component. Additionally, the `logDelegate` property of `McuMgrBleTransport` provides access to the BLE Transport logs.
@@ -96,17 +107,4 @@ deviceManger.echo("Hello World!", callback)
 
 ### OSLog integration
 
-`McuMgrLogDelegate` can be easily integrated with [unified logging system](https://developer.apple.com/documentation/os/logging). An example is provided in the example app in the `AppDelegate.swift`. A `McuMgrLogLevel` extension that can be found in that file translates the log level to one of `OSLogType` levels. Similarly, `McuMgrLogCategory` extension converts the category to `OSLog` type.
-
-# Developing for McuManager
-
-Clone the repository, install pods.
-
-```
-git clone https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.git
-cd IOS-nRF-Connect-Device-Manager/Example
-pod install
-```
-
-In Xcode (or other IDE) open the `IOS-nRF-Connect-Device-Manager/Example/Example.xcworkspace`. The development pod for McuManager should be under `Pods -> Development Pods -> McuManager`.
-
+`McuMgrLogDelegate` can be easily integrated with the [Unified Logging System](https://developer.apple.com/documentation/os/logging). An example is provided in the example app in the `AppDelegate.swift`. A `McuMgrLogLevel` extension that can be found in that file translates the log level to one of `OSLogType` levels. Similarly, `McuMgrLogCategory` extension converts the category to `OSLog` type.
