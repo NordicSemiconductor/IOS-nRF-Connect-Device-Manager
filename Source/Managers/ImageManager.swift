@@ -414,7 +414,10 @@ public class ImageManager: McuManager {
             
             for i in 0..<(self.uploadConfiguration.pipelineDepth - self.uploadExpectedOffsets.count) {
                 guard let chunkOffset = self.uploadExpectedOffsets.last ?? self.uploadLastOffset,
-                      chunkOffset < self.imageData?.count ?? 0 else { return }
+                      chunkOffset < self.imageData?.count ?? 0 else {
+                    self.log(msg: "No remaining chunks to send for i \(i), chunkOffset (\(self.uploadExpectedOffsets.last ?? self.uploadLastOffset)), and imageSize (\(self.imageData?.count ?? 0)) (!)", atLevel: .debug)
+                    return
+                }
                 
                 let chunkSize = self.maxDataPacketLengthFor(data: images[self.uploadIndex].data, image: self.uploadIndex, offset: chunkOffset)
                 self.uploadExpectedOffsets.append(chunkOffset + chunkSize)
