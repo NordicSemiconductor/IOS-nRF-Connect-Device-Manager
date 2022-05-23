@@ -530,8 +530,8 @@
         <scene sceneID="URt-ni-pll">
             <objects>
                 <tableViewController title="Image" id="SO7-PQ-cvq" customClass="ImageController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <sections>
@@ -573,7 +573,7 @@
                             <tableViewSection headerTitle="Image Upgrade" id="H49-2w-bvA">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="325" id="K8B-ak-IaR">
-                                        <rect key="frame" x="0.0" y="117" width="375" height="325"/>
+                                        <rect key="frame" x="0.0" y="132" width="375" height="325"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="K8B-ak-IaR" id="tdv-im-Ef2">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="325"/>
@@ -599,7 +599,7 @@
                             <tableViewSection headerTitle="Image Upload" id="fMB-WD-o4j">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="230" id="91Z-au-ApB">
-                                        <rect key="frame" x="0.0" y="492" width="375" height="230"/>
+                                        <rect key="frame" x="0.0" y="507" width="375" height="230"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="91Z-au-ApB" id="fGj-CQ-r6P">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="230"/>
@@ -625,13 +625,13 @@
                             <tableViewSection headerTitle="Images" id="fVY-9S-Tce">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="110" id="uJU-Js-TUj">
-                                        <rect key="frame" x="0.0" y="772" width="375" height="110"/>
+                                        <rect key="frame" x="0.0" y="787" width="375" height="110"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="uJU-Js-TUj" id="Vnd-mi-K9a">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="110"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0sy-ZJ-BDd">
+                                                <containerView opaque="NO" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0sy-ZJ-BDd">
                                                     <rect key="frame" x="0.0" y="0.0" width="375" height="110"/>
                                                     <connections>
                                                         <segue destination="kcO-Bb-r8z" kind="embed" identifier="images" id="ZiJ-hj-mJO"/>
@@ -1073,7 +1073,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iej-We-FU5">
-                                <rect key="frame" x="128" y="198" width="0.0" height="18"/>
+                                <rect key="frame" x="132" y="198" width="0.0" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="YFq-RG-7Id"/>
                                 </constraints>
@@ -1081,8 +1081,8 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Pipeline Depth:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yVw-Wh-GgZ">
-                                <rect key="frame" x="16" y="198" width="104" height="18"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="No. of Buffers:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yVw-Wh-GgZ">
+                                <rect key="frame" x="16" y="198" width="100" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="S9I-nQ-ENa"/>
                                 </constraints>
@@ -1091,7 +1091,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Chm-QB-OvI">
-                                <rect key="frame" x="128" y="224" width="0.0" height="18"/>
+                                <rect key="frame" x="132" y="224" width="0.0" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="mxc-WK-tZl"/>
                                 </constraints>
@@ -1175,12 +1175,12 @@
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="55" id="B29-DR-4eR"/>
                                     <constraint firstAttribute="height" constant="30" id="Ntk-Dp-7R5"/>
                                 </constraints>
-                                <state key="normal" title="Pipeline"/>
+                                <state key="normal" title="Buffers"/>
                                 <state key="disabled">
                                     <color key="titleColor" systemColor="secondaryLabelColor"/>
                                 </state>
                                 <connections>
-                                    <action selector="setPipelienDepth:" destination="iEC-sa-48q" eventType="touchUpInside" id="iyz-KU-0RA"/>
+                                    <action selector="setNumberOfBuffers:" destination="iEC-sa-48q" eventType="touchUpInside" id="4KP-fB-hEp"/>
                                 </connections>
                             </button>
                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pqc-Sr-chf">
@@ -1231,7 +1231,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Yl-Tu-sE0">
-                                <rect key="frame" x="128" y="172" width="0.0" height="18"/>
+                                <rect key="frame" x="132" y="172" width="0.0" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="8Db-Hw-X7f"/>
                                 </constraints>
@@ -1282,7 +1282,7 @@
                             <constraint firstItem="iDf-Ds-WSW" firstAttribute="top" secondItem="yVw-Wh-GgZ" secondAttribute="bottom" constant="8" symbolic="YES" id="Zp4-Ij-3ns"/>
                             <constraint firstItem="pBz-Mk-mMH" firstAttribute="top" secondItem="gsD-Ln-zum" secondAttribute="bottom" constant="8" symbolic="YES" id="aSP-zb-DvK"/>
                             <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="8Vm-TQ-xoS" secondAttribute="trailing" id="b5i-om-mIB"/>
-                            <constraint firstItem="iej-We-FU5" firstAttribute="leading" secondItem="yVw-Wh-GgZ" secondAttribute="trailing" constant="8" symbolic="YES" id="cKr-da-jbU"/>
+                            <constraint firstItem="iej-We-FU5" firstAttribute="leading" secondItem="yVw-Wh-GgZ" secondAttribute="trailing" constant="16" id="cKr-da-jbU"/>
                             <constraint firstItem="jRc-Hw-Wdb" firstAttribute="trailing" secondItem="r1I-lh-Yqh" secondAttribute="trailingMargin" id="cXw-8d-x1d"/>
                             <constraint firstAttribute="bottomMargin" secondItem="2MQ-cF-JGT" secondAttribute="bottom" constant="8" id="dBQ-g0-rXX"/>
                             <constraint firstItem="dY8-uc-mi5" firstAttribute="top" relation="greaterThanOrEqual" secondItem="KEY-Hq-q3w" secondAttribute="bottom" id="dez-4v-ycQ"/>
@@ -1323,15 +1323,15 @@
                     <size key="freeformSize" width="375" height="315"/>
                     <connections>
                         <outlet property="actionAlignment" destination="BA2-rA-n1u" id="KyS-j0-93L"/>
+                        <outlet property="actionBuffers" destination="uI0-Yo-RdJ" id="i0r-nt-bmW"/>
                         <outlet property="actionCancel" destination="Pqc-Sr-chf" id="683-o1-qxI"/>
                         <outlet property="actionPause" destination="9d4-vk-tFT" id="vPi-wL-EFp"/>
-                        <outlet property="actionPipeline" destination="uI0-Yo-RdJ" id="3ra-GK-Jh2"/>
                         <outlet property="actionResume" destination="2MQ-cF-JGT" id="Kky-44-iW1"/>
                         <outlet property="actionSelect" destination="jRc-Hw-Wdb" id="gLm-10-8KN"/>
                         <outlet property="actionStart" destination="9nR-KA-sXF" id="99z-jG-pBR"/>
                         <outlet property="actionSwap" destination="Yfx-uH-shb" id="5gJ-ny-L7V"/>
                         <outlet property="dfuByteAlignment" destination="Chm-QB-OvI" id="03v-HA-4d1"/>
-                        <outlet property="dfuPipelineDepth" destination="iej-We-FU5" id="Sdn-gU-9I0"/>
+                        <outlet property="dfuNumberOfBuffers" destination="iej-We-FU5" id="Sdn-gU-9I0"/>
                         <outlet property="dfuSpeed" destination="ojS-eg-hT1" id="eNZ-iy-moe"/>
                         <outlet property="dfuSwapTime" destination="2Yl-Tu-sE0" id="4tr-pZ-4Pg"/>
                         <outlet property="eraseSwitch" destination="V9A-pQ-qOh" id="Kig-ww-bG2"/>
@@ -1494,7 +1494,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G6Y-ZT-OEi">
-                                <rect key="frame" x="128" y="113" width="0.0" height="18"/>
+                                <rect key="frame" x="132" y="113" width="0.0" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="Gbt-gZ-ZoU"/>
                                 </constraints>
@@ -1502,8 +1502,8 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Pipeline Depth:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ye4-Al-i2r">
-                                <rect key="frame" x="16" y="113" width="104" height="18"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="No. of Buffers:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ye4-Al-i2r">
+                                <rect key="frame" x="16" y="113" width="100" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="hjR-uD-XT9"/>
                                 </constraints>
@@ -1512,7 +1512,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PlU-k0-wH0">
-                                <rect key="frame" x="128" y="139" width="0.0" height="18"/>
+                                <rect key="frame" x="132" y="139" width="0.0" height="18"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="18" id="EAM-Tk-R7K"/>
                                 </constraints>
@@ -1532,13 +1532,13 @@
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eP4-2I-Ibj">
                                 <rect key="frame" x="0.0" y="192" width="91" height="31"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Pipeline"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Buffers"/>
                                 <connections>
-                                    <action selector="setDfuPipeline:" destination="xg9-8C-9qN" eventType="touchUpInside" id="YE5-5p-yba"/>
+                                    <action selector="setNumberOfBuffers:" destination="xg9-8C-9qN" eventType="touchUpInside" id="a4c-mi-mRS"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dS0-qU-4za">
-                                <rect key="frame" x="83" y="192" width="90" height="31"/>
+                                <rect key="frame" x="79" y="192" width="90" height="31"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Alignment"/>
                                 <connections>
@@ -1602,7 +1602,7 @@
                             <constraint firstItem="WcL-am-Aby" firstAttribute="leading" secondItem="Ngt-CN-ZoO" secondAttribute="leadingMargin" id="v5c-DH-Y7C"/>
                             <constraint firstItem="O7s-fs-kKY" firstAttribute="leading" secondItem="uea-jf-Rww" secondAttribute="trailing" constant="8" id="vPS-gS-g4C"/>
                             <constraint firstAttribute="bottomMargin" secondItem="Vxj-JJ-K89" secondAttribute="bottom" constant="8" id="xIq-9t-QBn"/>
-                            <constraint firstItem="G6Y-ZT-OEi" firstAttribute="leading" secondItem="Ye4-Al-i2r" secondAttribute="trailing" constant="8" symbolic="YES" id="xQV-Hb-Ghs"/>
+                            <constraint firstItem="G6Y-ZT-OEi" firstAttribute="leading" secondItem="Ye4-Al-i2r" secondAttribute="trailing" constant="16" id="xQV-Hb-Ghs"/>
                             <constraint firstItem="3CJ-tJ-0lJ" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Z32-Wc-ztk" secondAttribute="leading" id="xXa-6O-7Gb"/>
                         </constraints>
                     </view>
@@ -1613,7 +1613,7 @@
                         <outlet property="actionSelect" destination="djo-iN-lMc" id="qxO-4m-FIb"/>
                         <outlet property="actionStart" destination="Vxj-JJ-K89" id="Gdd-l8-RbS"/>
                         <outlet property="dfuByteAlignment" destination="PlU-k0-wH0" id="iNI-Mb-EWg"/>
-                        <outlet property="dfuPipelineDepth" destination="G6Y-ZT-OEi" id="BGD-8r-hig"/>
+                        <outlet property="dfuNumberOfBuffers" destination="G6Y-ZT-OEi" id="BGD-8r-hig"/>
                         <outlet property="dfuSpeed" destination="lil-Ea-asJ" id="HBK-M1-VHP"/>
                         <outlet property="fileHash" destination="XTu-9g-gnh" id="pdT-he-5Ea"/>
                         <outlet property="fileName" destination="WcL-am-Aby" id="v6n-uE-fSt"/>

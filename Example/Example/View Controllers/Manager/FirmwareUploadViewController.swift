@@ -20,7 +20,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var fileHash: UILabel!
     @IBOutlet weak var fileSize: UILabel!
     @IBOutlet weak var fileName: UILabel!
-    @IBOutlet weak var dfuPipelineDepth: UILabel!
+    @IBOutlet weak var dfuNumberOfBuffers: UILabel!
     @IBOutlet weak var dfuByteAlignment: UILabel!
     @IBOutlet weak var dfuSpeed: UILabel!
     @IBOutlet weak var progress: UIProgressView!
@@ -34,15 +34,16 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         present(importMenu, animated: true, completion: nil)
     }
     
-    @IBAction func setDfuPipeline(_ sender: UIButton) {
-        let alertController = UIAlertController(title: "Pipeline Depth", message: nil, preferredStyle: .actionSheet)
-        let values = [1, 2, 3, 4]
+    @IBAction func setNumberOfBuffers(_ sender: UIButton) {
+        let alertController = UIAlertController(title: "Number of Buffers", message: nil, preferredStyle: .actionSheet)
+        let values = [2, 3, 4, 5, 6]
         values.forEach { value in
-            let title = value == values.first ? "1 (no Pipelining)" : "\(value)"
+            let title = value == values.first ? "Disabled" : "\(value)"
             alertController.addAction(UIAlertAction(title: title, style: .default) {
                 action in
-                self.dfuPipelineDepth.text = "\(value)"
-                self.uploadConfiguration.pipelineDepth = value
+                self.dfuNumberOfBuffers.text = value == 2 ? "Disabled" : "\(value)"
+                // Pipeline Depth = Number of Buffers - 1
+                self.uploadConfiguration.pipelineDepth = value - 1
             })
         }
         present(alertController, addingCancelAction: true)
@@ -246,7 +247,7 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
             fileHash.text = try package.hashString()
             fileHash.numberOfLines = 0
             
-            dfuPipelineDepth.text = "\(uploadConfiguration.pipelineDepth)"
+            dfuNumberOfBuffers.text = uploadConfiguration.pipelineDepth == 1 ? "Disabled" : "\(uploadConfiguration.pipelineDepth + 1)"
             dfuByteAlignment.text = uploadConfiguration.byteAlignment.description
             
             status.textColor = .primary

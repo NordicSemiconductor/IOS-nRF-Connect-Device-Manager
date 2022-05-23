@@ -12,7 +12,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     // MARK: - IBOutlet(s)
     
     @IBOutlet weak var actionSwap: UIButton!
-    @IBOutlet weak var actionPipeline: UIButton!
+    @IBOutlet weak var actionBuffers: UIButton!
     @IBOutlet weak var actionAlignment: UIButton!
     @IBOutlet weak var actionSelect: UIButton!
     @IBOutlet weak var actionStart: UIButton!
@@ -24,7 +24,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     @IBOutlet weak var fileSize: UILabel!
     @IBOutlet weak var fileHash: UILabel!
     @IBOutlet weak var dfuSwapTime: UILabel!
-    @IBOutlet weak var dfuPipelineDepth: UILabel!
+    @IBOutlet weak var dfuNumberOfBuffers: UILabel!
     @IBOutlet weak var dfuByteAlignment: UILabel!
     @IBOutlet weak var eraseSwitch: UISwitch!
     @IBOutlet weak var dfuSpeed: UILabel!
@@ -49,7 +49,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         setSwapTime()
     }
     
-    @IBAction func setPipelienDepth(_ sender: UIButton) {
+    @IBAction func setNumberOfBuffers(_ sender: UIButton) {
         setPipelineDepth()
     }
     
@@ -117,14 +117,15 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private func setPipelineDepth() {
-        let alertController = UIAlertController(title: "Pipeline Depth", message: nil, preferredStyle: .actionSheet)
-        let values = [1, 2, 3, 4]
+        let alertController = UIAlertController(title: "Number of Buffers", message: nil, preferredStyle: .actionSheet)
+        let values = [2, 3, 4, 5, 6]
         values.forEach { value in
-            let title = value == values.first ? "1 (no Pipelining)" : "\(value)"
+            let title = value == values.first ? "Disabled" : "\(value)"
             alertController.addAction(UIAlertAction(title: title, style: .default) {
                 action in
-                self.dfuPipelineDepth.text = "\(value)"
-                self.dfuManagerConfiguration.pipelineDepth = value
+                self.dfuNumberOfBuffers.text = value == 2 ? "Disabled" : "\(value)"
+                // Pipeline Depth = Number of Buffers - 1
+                self.dfuManagerConfiguration.pipelineDepth = value - 1
             })
         }
         present(alertController, addingCancelAction: true)
@@ -206,7 +207,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
     
     func upgradeDidStart(controller: FirmwareUpgradeController) {
         actionSwap.isHidden = true
-        actionPipeline.isHidden = true
+        actionBuffers.isHidden = true
         actionAlignment.isHidden = true
         actionStart.isHidden = true
         
@@ -245,7 +246,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionResume.isHidden = true
         actionCancel.isHidden = true
         actionSwap.isHidden = false
-        actionPipeline.isHidden = false
+        actionBuffers.isHidden = false
         actionAlignment.isHidden = false
         actionStart.isHidden = false
         
@@ -261,7 +262,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionResume.isHidden = true
         actionCancel.isHidden = true
         actionSwap.isHidden = false
-        actionPipeline.isHidden = false
+        actionBuffers.isHidden = false
         actionAlignment.isHidden = false
         actionStart.isHidden = false
         
@@ -278,7 +279,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionResume.isHidden = true
         actionCancel.isHidden = true
         actionSwap.isHidden = false
-        actionPipeline.isHidden = false
+        actionBuffers.isHidden = false
         actionAlignment.isHidden = false
         actionStart.isHidden = false
         actionSelect.isEnabled = true
@@ -340,8 +341,8 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             
             dfuSwapTime.text = "\(dfuManager.estimatedSwapTime)s"
             dfuSwapTime.numberOfLines = 0
-            dfuPipelineDepth.text = "\(dfuManagerConfiguration.pipelineDepth)"
-            dfuPipelineDepth.numberOfLines = 0
+            dfuNumberOfBuffers.text = dfuManagerConfiguration.pipelineDepth == 1 ? "Disabled" : "\(dfuManagerConfiguration.pipelineDepth + 1)"
+            dfuNumberOfBuffers.numberOfLines = 0
             dfuByteAlignment.text = dfuManagerConfiguration.byteAlignment.description
             dfuByteAlignment.numberOfLines = 0
         } catch {
