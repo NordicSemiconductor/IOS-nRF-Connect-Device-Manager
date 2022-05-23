@@ -359,12 +359,16 @@ public class ImageManager: McuManager {
         }
         
         if let offset = response.off {
+            // Pipelining requires the use of byte-alignment, and byte-alignment is required
+            // because otherwise we can't predict how many bytes the firmware will accept.
             if self.uploadConfiguration.pipelineDepth > 1 {
-                // Pipelining requires the use of byte-alignment, and byte-alignment is required
-                // because otherwise we can't predict how many bytes the firmware will accept.
                 if let uploadIndex = self.uploadExpectedOffsets.firstIndex(of: UInt64(offset)) {
                     self.log(msg: "ACK for offset \(offset) for image \(self.uploadIndex)", atLevel: .debug)
                     self.uploadExpectedOffsets.remove(at: uploadIndex)
+                } else {
+                    // We've missed an offset, so let's compensate or else the upload will stall.
+                    self.log(msg: "Missed ACK for offset \(offset), image \(self.uploadIndex). Clearing first offset (\(self.uploadExpectedOffsets.first ?? 0)) to compensate.", atLevel: .warning)
+                    self.uploadExpectedOffsets.removeFirst()
                 }
             } else {
                 // So if we're not pipelining, we usually don't apply byte alignment.
