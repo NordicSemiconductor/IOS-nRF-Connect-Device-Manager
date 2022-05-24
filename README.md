@@ -12,14 +12,14 @@ This repository is a fork of the [McuManager iOS Library](https://github.com/Juu
 
 ## Install
 
-### Swift Package Manager
+### SPM or Swift Package Manager (Recommended)
 
 In Xcode, go to *File → Swift Packages → Add Package Dependency...* and add `https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.git`.
 
 ### CocoaPods
 
 ```
-pod 'iOSMcuManagerLibrary', '~> 1.1.0'
+pod 'iOSMcuManagerLibrary', '~> 1.2.0'
 ```
 
 # Introduction
@@ -80,12 +80,12 @@ The `FirmwareUpgradeManager` contains an additional state, `validate`, which pre
 
 ![nRF53 Dual-Core SoC Diagram, which supports all of these features.](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/_images/ieee802154_nrf53_singleprot_design.svg)
 
-In version 1.2, new features were introduced to speed-up the Upload speeds, mirroring the work first done on the Android side. As of version 1.3, these features have been expanded, and they're all available through the new `FirmwareUpgradeConfiguration` struct.
+In version 1.2, new features were introduced to speed-up the Upload speeds, mirroring the work first done on the Android side, and they're all available through the new `FirmwareUpgradeConfiguration` struct.
 
-* **`eraseAppSettings`**: This is not a speed-related feature. Instead, setting this to `true` means all app data on the device, including Bond Information, Number of Steps, Login or anything else are all erased. If there are any major Data changes the new firmware after the update, like a complete change of functionality or a new update with different save structures, this is recommended. `true` by default.
-* **`pipelineDepth`**: (Represented as 'Number of Buffers' in the Example App UI.) For values larger than 1, this enables the **SMP Pipelining** feature. It means multiple write packets are sent at the same time, thereby providing a large speed increase the higher the number of buffers the receiving device is configured with. Set to `3` (Number of Buffers = 4) by default. 
-* **`byteAlignment`**: This is required when used in conjunction with SMP Pipelining. By fixing the size of each chunk of Data send for the Firmware Upgrade, we can predict the receiving device's offset jumps and therefore smoothly send multiple Data packets at the same time. When SMP Pipelining is not being used (`pipelineDepth` set to 1), the library still performs the Byte Alignment, but it is not needed. Set to `ImageUploadAlignment.fourByte` by default.
-* **reassemblyBufferSize**: SMP Reassembly is another speed-improving feature. It works on devices running NCS 2.0 firmware or later, and is self-adjusting. Before the Upload starts, a new request is sent via `DefaultManager` to request the new MCU Manager Paremeters. If received, it means the firmware can accept data in chunks larger than the MTU Size, therefore also increasing speed. This property will reflect the size of the buffer on the receiving device, and the `McuMgrBleTransport` will be set to chunk the data down within the same Sequence Number, keeping each packet transmission within the MTU boundaries. There is no work required for SMP Reassembly to work - on devices not supporting it, the MCU Manager Paremeters request will fail, and the Upload will proceed assuming no reassembly capabilities.
+* **`pipelineDepth`**: (Represented as 'Number of Buffers' in the Example App UI.) For values larger than 1, this enables the **SMP Pipelining** feature. It means multiple write packets are sent concurrently, thereby providing a large speed increase the higher the number of buffers the receiving device is configured with. Set to `3` (Number of Buffers = 4) by default. 
+* **`byteAlignment`**: This is required when used in conjunction with SMP Pipelining. By fixing the size of each chunk of Data sent for the Firmware Upgrade, we can predict the receiving device's offset jumps and therefore smoothly send multiple Data packets at the same time. When SMP Pipelining is not being used (`pipelineDepth` set to `1`), the library still performs Byte Alignment if set, but it is not required for updates to work. Set to `ImageUploadAlignment.fourByte` by default.
+* **reassemblyBufferSize**: SMP Reassembly is another speed-improving feature. It works on devices running NCS 2.0 firmware or later, and is self-adjusting. Before the Upload starts, a request is sent via `DefaultManager` asking for MCU Manager Paremeters. If received, it means the firmware can accept data in chunks larger than the MTU Size, therefore also increasing speed. This property will reflect the size of the buffer on the receiving device, and the `McuMgrBleTransport` will be set to chunk the data down within the same Sequence Number, keeping each packet transmission within the MTU boundaries. **There is no work required for SMP Reassembly to work** - on devices not supporting it, the MCU Manager Paremeters request will fail, and the Upload will proceed assuming no reassembly capabilities.
+* **`eraseAppSettings`**: This is not a speed-related feature. Instead, setting this to `true` means all app data on the device, including Bond Information, Number of Steps, Login or anything else are all erased. If there are any major data changes to the new firmware after the update, like a complete change of functionality or a new update with different save structures, this is recommended. Set to `true` by default.
 
 # Logging
 
