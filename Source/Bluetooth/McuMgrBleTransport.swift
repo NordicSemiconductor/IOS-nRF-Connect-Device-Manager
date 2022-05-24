@@ -67,15 +67,28 @@ public class McuMgrBleTransport: NSObject {
     /// The log delegate will receive transport logs.
     public weak var logDelegate: McuMgrLogDelegate?
     
+    /// Set to values larger than 1 to enable Parallel Writes
+    ///
+    /// Features like SMP Pipelining are based on the concept of multiple packet transmissions happening
+    /// at the same time and waiting for their responses as they're received. By default,`McuMgrBleTransport`
+    /// only sends one Data transmission at a time. But if set to higher values, calls to
+    /// ``send(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>)`` will be handled
+    /// concurrently.
     public var numberOfParallelWrites: Int {
         set {
-            operationQueue.maxConcurrentOperationCount = newValue
+            operationQueue.maxConcurrentOperationCount = max(1, newValue)
         }
         get {
             operationQueue.maxConcurrentOperationCount
         }
     }
     
+    /// Enable when calling ``send(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>)``
+    /// with `Data` values larger than MTU Size, such as when SMP Reassembly feature is enabled.
+    ///
+    /// If the Data being sent is larger than the MTU Size, this property  should be enabled so it's cut-down
+    /// to MTU Size so as to keep within each transmission packet's maximum (MTU) size limit. Otherwise, it's
+    /// likely that CoreBluetooth will not send the Data.
     public var chunkSendDataToMtuSize: Bool = false
     
     public internal(set) var state: PeripheralState = .disconnected {
