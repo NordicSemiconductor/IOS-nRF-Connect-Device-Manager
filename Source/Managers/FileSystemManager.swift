@@ -11,12 +11,11 @@ import SwiftCBOR
 public class FileSystemManager: McuManager {
     override class var TAG: McuMgrLogCategory { .fs }
     
-    //**************************************************************************
-    // MARK: FS Constants
-    //**************************************************************************
+    // MARK: - IDs
     
-    // Mcu File System Manager ids
-    let ID_FILE =  UInt8(0)
+    enum FilesystemID: UInt8 {
+        case File
+    }
     
     //**************************************************************************
     // MARK: Initializers
@@ -42,7 +41,7 @@ public class FileSystemManager: McuManager {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(name),
                                       "off": CBOR.unsignedInt(UInt64(offset))]
         // Build request and send.
-        send(op: .read, commandId: ID_FILE, payload: payload, callback: callback)
+        send(op: .read, commandId: FilesystemID.File, payload: payload, callback: callback)
     }
 
     /// Sends the next packet of data from given offset.
@@ -75,7 +74,7 @@ public class FileSystemManager: McuManager {
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
         }
         // Build request and send.
-        send(op: .write, commandId: ID_FILE, payload: payload, callback: callback)
+        send(op: .write, commandId: FilesystemID.File, payload: payload, callback: callback)
     }
     
     /// Begins the file download from a peripheral.
@@ -472,7 +471,8 @@ public class FileSystemManager: McuManager {
         }
         // Build the packet and return the size.
         let packet = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write, flags: 0,
-                                            group: group.uInt16Value, sequenceNumber: 0, commandId: ID_FILE, payload: payload)
+                                            group: group.uInt16Value, sequenceNumber: 0, commandId: FilesystemID.File,
+                                            payload: payload)
         var packetOverhead = packet.count + 5
         if transporter.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.

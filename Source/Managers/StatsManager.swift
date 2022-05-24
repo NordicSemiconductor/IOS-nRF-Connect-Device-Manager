@@ -14,13 +14,11 @@ import SwiftCBOR
 public class StatsManager: McuManager {
     override class var TAG: McuMgrLogCategory { .stats }
     
-    //**************************************************************************
-    // MARK: Stats Constants
-    //**************************************************************************
-
-    // Mcu Stats Manager ids.
-    let ID_READ = UInt8(0)
-    let ID_LIST = UInt8(1)
+    // MARK: - IDs
+    
+    enum StatsID: UInt8 {
+        case Read, List
+    }
     
     //**************************************************************************
     // MARK: Initializers
@@ -40,13 +38,13 @@ public class StatsManager: McuManager {
     /// - parameter callback: The response callback.
     public func read(module: String, callback: @escaping McuMgrCallback<McuMgrStatsResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(module)]
-        send(op: .read, commandId: ID_READ, payload: payload, callback: callback)
+        send(op: .read, commandId: StatsID.Read, payload: payload, callback: callback)
     }
     
     /// List the statistic modules from a device.
     ///
     /// - parameter callback: The response callback.
     public func list(callback: @escaping McuMgrCallback<McuMgrStatsListResponse>) {
-        send(op: .read, commandId: ID_LIST, payload: nil, callback: callback)
+        send(op: .read, commandId: StatsID.List, payload: nil, callback: callback)
     }
 }

@@ -55,8 +55,12 @@ public enum McuMgrTransportError: Error {
     /// The transport MTU is insufficient to send the request. The transport's
     /// MTU must be sent back as this case's argument.
     case insufficientMtu(mtu: Int)
+    /// McuMgrPacket is smaller than the McuMgrHeader Size.
+    case badHeader
     /// The response received was bad.
     case badResponse
+    /// Device is busy, so we sleep for a few seconds and try again.
+    case waitAndRetry
 }
 
 extension McuMgrTransportError: LocalizedError {
@@ -75,8 +79,12 @@ extension McuMgrTransportError: LocalizedError {
             return "Sending the request failed."
         case .insufficientMtu(mtu: let mtu):
             return "Insufficient MTU: \(mtu)."
+        case .badHeader:
+            return "Bad header received. Maybe packet size is smaller than minimum header size?"
         case .badResponse:
             return "Bad response received."
+        case .waitAndRetry:
+            return "Device Busy. Will retry after a short wait..."
         }
     }
 }
@@ -92,8 +100,9 @@ public protocol McuMgrTransport: AnyObject {
     /// Sends given data using the transport object.
     ///
     /// - parameter data: The data to be sent.
+    /// - parameter timeout: The amount of time in seconds to wait before the .send Operation is declared to have failed due to a timeout error if no appropriate response is received.
     /// - parameter callback: The request callback.
-    func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>)
+    func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>)
     
     /// Set up a connection to the remote device.
     func connect(_ callback: @escaping ConnectionCallback)

@@ -40,6 +40,9 @@ open class McuManager {
     
     /// Logger delegate will receive logs.
     public weak var logDelegate: McuMgrLogDelegate?
+    /// Each Packet gets its own Sequence Number, which we will rotate for every
+    /// packet sent within the bounds of an unsigned UInt8, so 0...255 (inclusive).
+    private var sequenceNumber: UInt8
     
     //**************************************************************************
     // MARK: Initializers
@@ -48,49 +51,47 @@ open class McuManager {
     public init(group: McuMgrGroup, transporter: McuMgrTransport) {
         self.group = group
         self.transporter = transporter
+        self.sequenceNumber = 0
         self.mtu = McuManager.getDefaultMtu(scheme: transporter.getScheme())
     }
     
-    //**************************************************************************
-    // MARK: Send Commands
-    //**************************************************************************
-
-    public func send<T: McuMgrResponse>(op: McuMgrOperation,
-                                        commandId: UInt8,
-                                        payload: [String:CBOR]?,
-                                        callback: @escaping McuMgrCallback<T>) {
-        send(op: op, flags: 0, sequenceNumber: 0, commandId: commandId,
-             payload: payload, callback: callback)
+    // MARK: - Send
+    
+    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation,
+                                                             commandId: R, payload: [String:CBOR]?,
+                                                             callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
+        send(op: op, flags: 0, commandId: commandId, payload: payload, callback: callback)
     }
     
-    public func send<T: McuMgrResponse>(op: McuMgrOperation, flags: UInt8,
-                                        sequenceNumber: UInt8,
-                                        commandId: UInt8,
-                                        payload: [String:CBOR]?,
-                                        callback: @escaping McuMgrCallback<T>) {
-        log(msg: "Sending \(op) command (Group: \(group), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
+    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, flags: UInt8,
+                                                             commandId: R, payload: [String:CBOR]?,
+                                                             callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
+        let packetPacketSequenceNumber = sequenceNumber
+        sequenceNumber = sequenceNumber.next()
+        
+        log(msg: "Sending \(op) command (Group: \(group), SEQ No. \(packetPacketSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
             atLevel: .verbose)
-        let data = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
-                                          flags: flags, group: group.uInt16Value,
-                                          sequenceNumber: sequenceNumber,
-                                          commandId: commandId, payload: payload)
+        let mcuPacketData = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
+                                                   flags: flags, group: group.uInt16Value,
+                                                   sequenceNumber: packetPacketSequenceNumber,
+                                                   commandId: commandId, payload: payload)
         let _callback: McuMgrCallback<T> = logDelegate == nil ? callback : { [weak self] (response, error) in
             if let self = self {
                 if let response = response {
-                    self.log(msg: "Response (Group: \(self.group), ID: \(response.header!.commandId!)): \(response)",
+                    self.log(msg: "Response (Group: \(self.group), SEQ No. \(packetPacketSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
                              atLevel: .verbose)
                 } else if let error = error {
-                    self.log(msg: "Request failed: \(error.localizedDescription)",
+                    self.log(msg: "Request (Group: \(self.group), SEQ No. \(packetPacketSequenceNumber)) failed: \(error.localizedDescription))",
                              atLevel: .error)
                 }
             }
             callback(response, error)
         }
-        send(data: data, callback: _callback)
+        send(data: mcuPacketData, timeout: 30, callback: _callback)
     }
     
-    public func send<T: McuMgrResponse>(data: Data, callback: @escaping McuMgrCallback<T>) {
-        transporter.send(data: data, callback: callback)
+    public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {
+        transporter.send(data: data, timeout: timeout, callback: callback)
     }
     
     //**************************************************************************
@@ -108,9 +109,9 @@ open class McuManager {
     /// - parameter payload: The request payload.
     ///
     /// - returns: The raw packet data to send to the transporter.
-    public static func buildPacket(scheme: McuMgrScheme, op: McuMgrOperation, flags: UInt8,
-                                   group: UInt16, sequenceNumber: UInt8,
-                                   commandId: UInt8, payload: [String:CBOR]?) -> Data {
+    public static func buildPacket<R: RawRepresentable>(scheme: McuMgrScheme, op: McuMgrOperation, flags: UInt8,
+                                                        group: UInt16, sequenceNumber: UInt8,
+                                                        commandId: R, payload: [String:CBOR]?) -> Data where R.RawValue == UInt8 {
         // If the payload map is nil, initialize an empty map.
         var payload = (payload == nil ? [:] : payload)!
         
@@ -125,7 +126,7 @@ open class McuManager {
         // Build header.
         let header = McuMgrHeader.build(op: op.rawValue, flags: flags, len: len,
                                         group: group, seq: sequenceNumber,
-                                        id: commandId)
+                                        id: commandId.rawValue)
         
         // Build the packet based on scheme.
         if scheme.isCoap() {
@@ -222,6 +223,8 @@ extension McuManager {
 /// McuManager callback
 public typealias McuMgrCallback<T: McuMgrResponse> = (T?, Error?) -> Void
 
+// MARK: - McuMgrGroup
+
 /// The defined groups for Mcu Manager commands.
 ///
 /// Each group has its own manager class which contains the specific subcommands
@@ -267,6 +270,8 @@ public enum McuMgrGroup {
     }
 }
 
+// MARK: - McuMgrOperation
+
 /// The mcu manager operation defines whether the packet sent is a read/write
 /// and request/response.
 public enum McuMgrOperation: UInt8 {
@@ -275,6 +280,8 @@ public enum McuMgrOperation: UInt8 {
     case write          = 2
     case writeResponse  = 3
 }
+
+// MARK: - McuMgrReturnCode
 
 /// Return codes for Mcu Manager responses.
 ///
@@ -320,5 +327,15 @@ extension McuMgrReturnCode: CustomStringConvertible {
         default:
             return "Unrecognized (\(rawValue))"
         }
+    }
+}
+
+// MARK: - UInt8
+
+extension UInt8 {
+    
+    func next() -> UInt8 {
+        guard self != .max else { return 0}
+        return self + 1
     }
 }

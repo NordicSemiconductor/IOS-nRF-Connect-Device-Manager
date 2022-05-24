@@ -15,18 +15,14 @@ public class ImageManager: McuManager {
     
     private static let truncatedHashLen = 3
     
-    //**************************************************************************
-    // MARK: Constants
-    //**************************************************************************
+    // MARK: - IDs
 
-    // Mcu Image Manager command IDs.
-    let ID_STATE       = UInt8(0)
-    let ID_UPLOAD      = UInt8(1)
-    let ID_FILE        = UInt8(2)
-    let ID_CORELIST    = UInt8(3)
-    let ID_CORELOAD    = UInt8(4)
-    let ID_ERASE       = UInt8(5)
-    let ID_ERASE_STATE = UInt8(6)
+    enum ImageID: UInt8 {
+        case State
+        case Upload, File
+        case CoreList, CoreLoad
+        case Erase, EraseState
+    }
     
     //**************************************************************************
     // MARK: Initializers
@@ -44,7 +40,7 @@ public class ImageManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func list(callback: @escaping McuMgrCallback<McuMgrImageStateResponse>) {
-        send(op: .read, commandId: ID_STATE, payload: nil, callback: callback)
+        send(op: .read, commandId: ImageID.State, payload: nil, callback: callback)
     }
     
     /// Sends the next packet of data from given offset.
@@ -52,27 +48,18 @@ public class ImageManager: McuManager {
     ///
     /// - parameter data: The image data.
     /// - parameter image: The image number / slot number for DFU.
-    /// - parameter offset: The offset from this data will be sent.
+    /// - parameter offset: The offset from which this data will be sent.
+    /// - parameter alignment: The byte alignment to apply to the data (if any).
     /// - parameter callback: The callback.
-    public func upload(data: Data, image: Int, offset: UInt64, callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
-        // Calculate the number of remaining bytes.
-        let remainingBytes: UInt64 = UInt64(data.count) - offset
+    public func upload(data: Data, image: Int, offset: UInt64, alignment: ImageUploadAlignment,
+                       callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
+        let payloadLength = maxDataPacketLengthFor(data: data, image: image, offset: offset)
         
-        // Data length to end is the minimum of the max data lenght and the
-        // number of remaining bytes.
-        let packetOverhead = calculatePacketOverhead(data: data, image: image, offset: UInt64(offset))
-        
-        // Get the length of image data to send.
-        let maxDataLength: UInt64 = UInt64(mtu) - UInt64(packetOverhead)
-        let dataLength: UInt64 = min(maxDataLength, remainingBytes)
-        
-        // Build the request payload.
-        var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[offset..<(offset+dataLength)])),
-                                      "off": CBOR.unsignedInt(UInt64(offset))]
-        
-        // If this is the initial packet, send the image data length and
-        // SHA 256 in the payload.
-        if offset == 0 {
+        let chunkOffset = offset
+        let chunkEnd = min(chunkOffset + payloadLength, UInt64(data.count))
+        var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
+                                      "off": CBOR.unsignedInt(chunkOffset)]
+        if chunkOffset == 0 {
             // 0 is Default behaviour, so we can ignore adding it and
             // the firmware will do the right thing.
             if image > 0 {
@@ -82,8 +69,8 @@ public class ImageManager: McuManager {
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
             payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
         }
-        // Build request and send.
-        send(op: .write, commandId: ID_UPLOAD, payload: payload, callback: callback)
+        
+        send(op: .write, commandId: ImageID.Upload, payload: payload, callback: callback)
     }
     
     /// Test the image with the provided hash.
@@ -96,7 +83,7 @@ public class ImageManager: McuManager {
     public func test(hash: [UInt8], callback: @escaping McuMgrCallback<McuMgrImageStateResponse>) {
         let payload: [String:CBOR] = ["hash": CBOR.byteString(hash),
                                       "confirm": CBOR.boolean(false)]
-        send(op: .write, commandId: ID_STATE, payload: payload, callback: callback)
+        send(op: .write, commandId: ImageID.State, payload: payload, callback: callback)
     }
     
     /// Confirm the image with the provided hash.
@@ -112,7 +99,7 @@ public class ImageManager: McuManager {
         if let hash = hash {
             payload.updateValue(CBOR.byteString(hash), forKey: "hash")
         }
-        send(op: .write, commandId: ID_STATE, payload: payload, callback: callback)
+        send(op: .write, commandId: ImageID.State, payload: payload, callback: callback)
     }
     
     /// Begins the image upload to a peripheral.
@@ -124,10 +111,13 @@ public class ImageManager: McuManager {
     /// asynchronously to the delegate provided in this method.
     ///
     /// - parameter images: The images to upload.
+    /// - parameter pipelineDepth: For values larger than 1, we consider pipelining to be enabled. Pipelining allows multiple write requests to be in flight at the same time, increasing upload speeds. Disabled by default.
+    /// - parameter alignment: Use in conjunction with pipelining if the image data needs to be sent byte-aligned. Disabled by default.
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
-    public func upload(images: [Image], delegate: ImageUploadDelegate?) -> Bool {
+    public func upload(images: [Image], using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration(),
+                       delegate: ImageUploadDelegate?) -> Bool {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         defer {
@@ -160,9 +150,19 @@ public class ImageManager: McuManager {
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
         uploadIndex = 0
+        uploadExpectedOffsets = []
+        uploadLastOffset = 0
+        uploadConfiguration = configuration
+        if let bleTransport = transporter as? McuMgrBleTransport {
+            bleTransport.numberOfParallelWrites = configuration.pipelineDepth
+            bleTransport.chunkSendDataToMtuSize = configuration.reassemblyBufferSize != 0
+        }
         
-        log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .application)
-        upload(data: firstImage.data, image: firstImage.image, offset: 0, callback: uploadCallback)
+        log(msg: "Uploading image \(firstImage.image) from 0/\(firstImage.data.count)...", atLevel: .application)
+        let firstOffset = maxDataPacketLengthFor(data: firstImage.data, image: firstImage.image, offset: 0)
+        uploadExpectedOffsets.append(firstOffset)
+        upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: configuration.byteAlignment,
+               callback: uploadCallback)
         return true
     }
 
@@ -174,14 +174,14 @@ public class ImageManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func erase(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ID_ERASE, payload: nil, callback: callback)
+        send(op: .write, commandId: ImageID.Erase, payload: nil, callback: callback)
     }
     
     /// Erases the state of the secondary image slot on the device.
     ///
     /// - parameter callback: The response callback.
     public func eraseState(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ID_ERASE_STATE, payload: nil, callback: callback)
+        send(op: .write, commandId: ImageID.EraseState, payload: nil, callback: callback)
     }
 
     /// Requst core dump on the device. The data will be stored in the dump
@@ -189,7 +189,7 @@ public class ImageManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func coreList(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .read, commandId: ID_CORELIST, payload: nil, callback: callback)
+        send(op: .read, commandId: ImageID.CoreList, payload: nil, callback: callback)
     }
     
     /// Read core dump from the given offset.
@@ -198,14 +198,14 @@ public class ImageManager: McuManager {
     /// - parameter callback: The response callback.
     public func coreLoad(offset: UInt, callback: @escaping McuMgrCallback<McuMgrCoreLoadResponse>) {
         let payload: [String:CBOR] = ["off": CBOR.unsignedInt(UInt64(offset))]
-        send(op: .read, commandId: ID_CORELOAD, payload: payload, callback: callback)
+        send(op: .read, commandId: ImageID.CoreLoad, payload: payload, callback: callback)
     }
 
     /// Erase the area if it has a core dump, or the header is empty.
     ///
     /// - parameter callback: The response callback.
     public func coreErase(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ID_CORELOAD, payload: nil, callback: callback)
+        send(op: .write, commandId: ImageID.CoreLoad, payload: nil, callback: callback)
     }
     
     //**************************************************************************
@@ -221,18 +221,23 @@ public class ImageManager: McuManager {
     
     /// State of the image upload.
     private var uploadState: UploadState = .none
-    /// Current image byte offset to send from.
-    private var offset: UInt64 = 0
     
     /// Contains the current Image's data to send to the device.
     private var imageData: Data?
     /// Image 'slot' or core of the device we're sending data to.
     /// Default value, will be secondary slot of core 0.
     private var uploadIndex: Int = 0
+    /// Current image byte offset to send from.
+    private var uploadLastOffset: UInt64!
+    
+    private var uploadExpectedOffsets: [UInt64] = []
     /// The sequence of images we want to send to the device.
     private var uploadImages: [Image]?
     /// Delegate to send image upload updates to.
     private weak var uploadDelegate: ImageUploadDelegate?
+    /// Groups multiple Settings regarding DFU Upload, such as enabling Pipelining,
+    /// Byte Alignment and/or SMP Reassembly.
+    private var uploadConfiguration: FirmwareUpgradeConfiguration!
     
     /// Cyclic reference is used to prevent from releasing the manager
     /// in the middle of an update. The reference cycle will be set
@@ -301,10 +306,14 @@ public class ImageManager: McuManager {
             return
         }
         if uploadState == .paused {
-            let image: Int! = self.uploadImages?[self.uploadIndex].image
-            log(msg: "Continuing upload from \(offset)/\(imageData.count) to image \(image)...", atLevel: .application)
+            let image: Int! = self.uploadImages?[uploadIndex].image
             uploadState = .uploading
-            upload(data: imageData, image: image, offset: offset, callback: uploadCallback)
+            let offset = uploadLastOffset ?? 0
+            log(msg: "[Continue] Uploading image \(image) from \(offset)/\(imageData.count)...", atLevel: .application)
+            let firstResumeOffset = offset + maxDataPacketLengthFor(data: imageData, image: image, offset: offset)
+            uploadExpectedOffsets.append(firstResumeOffset)
+            upload(data: imageData, image: image, offset: offset, alignment: uploadConfiguration.byteAlignment,
+                        callback: uploadCallback)
         } else {
             log(msg: "Upload has not been previously paused", atLevel: .warning)
         }
@@ -319,6 +328,7 @@ public class ImageManager: McuManager {
         guard let self = self else {
             return
         }
+        
         // Check for an error.
         if let error = error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
@@ -342,16 +352,32 @@ public class ImageManager: McuManager {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
             return
         }
-        // Check for an error return code.
+        
         guard response.isSuccess() else {
             self.cancelUpload(error: ImageUploadError.mcuMgrErrorCode(response.returnCode))
             return
         }
-        // Get the offset from the response.
+        
         if let offset = response.off {
-            // Set the image upload offset.
-            self.offset = offset
-            self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: currentImageData.count, timestamp: Date())
+            // Pipelining requires the use of byte-alignment, and byte-alignment is required
+            // because otherwise we can't predict how many bytes the firmware will accept.
+            if self.uploadConfiguration.pipelineDepth > 1 {
+                if let uploadIndex = self.uploadExpectedOffsets.firstIndex(of: UInt64(offset)) {
+                    self.log(msg: "ACK for offset \(offset) for image \(self.uploadIndex)", atLevel: .debug)
+                    self.uploadExpectedOffsets.remove(at: uploadIndex)
+                } else {
+                    // We've missed an offset, so let's compensate or else the upload will stall.
+                    self.log(msg: "Missed ACK for offset \(offset), image \(self.uploadIndex). Clearing first offset (\(self.uploadExpectedOffsets.first ?? 0)) to compensate.", atLevel: .warning)
+                    self.uploadExpectedOffsets.removeFirst()
+                }
+            } else {
+                // So if we're not pipelining, we usually don't apply byte alignment.
+                // And even if we did, we don't need to 'predict' offsets, so we don't care.
+                self.uploadExpectedOffsets.removeAll()
+            }
+            
+            self.uploadLastOffset = max(self.uploadLastOffset, UInt64(offset))
+            self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(self.uploadLastOffset), imageSize: currentImageData.count, timestamp: Date())
             
             if self.uploadState == .none {
                 self.log(msg: "Upload cancelled", atLevel: .application)
@@ -378,25 +404,42 @@ public class ImageManager: McuManager {
                     self.uploadIndex += 1
                     self.imageData = images[self.uploadIndex].data
                     self.log(msg: "Uploading image \(images[self.uploadIndex].image) (\(self.imageData?.count) bytes)...", atLevel: .application)
+                    
+                    // Don't trigger writes to another image unless all write(s) have returned for
+                    // the current one.
+                    guard self.uploadExpectedOffsets.isEmpty else { return }
+                    let firstPacketOffset = self.maxDataPacketLengthFor(data: images[self.uploadIndex].data, image: self.uploadIndex, offset: 0)
+                    self.uploadExpectedOffsets.append(firstPacketOffset)
+                    self.uploadLastOffset = 0
                     self.sendNext(from: UInt64(0))
                 }
                 return
             }
             
-            // Send the next packet of data.
-            self.sendNext(from: offset)
+            for i in 0..<(self.uploadConfiguration.pipelineDepth - self.uploadExpectedOffsets.count) {
+                guard let chunkOffset = self.uploadExpectedOffsets.last ?? self.uploadLastOffset,
+                      chunkOffset < self.imageData?.count ?? 0 else {
+                    self.log(msg: "No remaining chunks to send for i \(i), chunkOffset (\(self.uploadExpectedOffsets.last ?? self.uploadLastOffset)), and imageSize (\(self.imageData?.count ?? 0)) (!)", atLevel: .debug)
+                    return
+                }
+                
+                let chunkSize = self.maxDataPacketLengthFor(data: images[self.uploadIndex].data, image: self.uploadIndex, offset: chunkOffset)
+                self.uploadExpectedOffsets.append(chunkOffset + chunkSize)
+                self.sendNext(from: chunkOffset)
+            }
         } else {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
         }
     }
     
     private func sendNext(from offset: UInt64) {
-        if uploadState != .uploading {
-            return
-        }
-        let nextImageData: Data! = self.uploadImages?[uploadIndex].data
-        let nextImageSlot: Int! = self.uploadImages?[uploadIndex].image
-        upload(data: nextImageData, image: nextImageSlot, offset: offset, callback: uploadCallback)
+        guard uploadState == .uploading else { return }
+        
+        let imageData: Data! = self.uploadImages?[uploadIndex].data
+        let imageSlot: Int! = self.uploadImages?[uploadIndex].image
+        log(msg: "[Next] Uploading image \(imageSlot) from \(offset)/\(imageData.count)...", atLevel: .application)
+        upload(data: imageData, image: imageSlot, offset: offset, alignment: uploadConfiguration.byteAlignment,
+               callback: uploadCallback)
     }
     
     private func resetUploadVariables() {
@@ -410,7 +453,7 @@ public class ImageManager: McuManager {
         
         // Reset upload vars.
         uploadIndex = 0
-        offset = 0
+        uploadExpectedOffsets = []
         objc_sync_exit(self)
     }
     
@@ -425,8 +468,21 @@ public class ImageManager: McuManager {
         let tempDelegate = uploadDelegate
         resetUploadVariables()
         let remainingImages = tempUploadImages.filter({ $0.image >= tempUploadIndex })
-        _ = upload(images: remainingImages, delegate: tempDelegate)
+        _ = upload(images: remainingImages, using: uploadConfiguration, delegate: tempDelegate)
         objc_sync_exit(self)
+    }
+    
+    private func maxDataPacketLengthFor(data: Data, image: Int, offset: UInt64) -> UInt64 {
+        guard offset < data.count else { return UInt64(McuMgrHeader.HEADER_LENGTH) }
+        
+        let remainingBytes = UInt64(data.count) - offset
+        let packetOverhead = calculatePacketOverhead(data: data, image: image, offset: UInt64(offset))
+        let maxPacketSize = max(uploadConfiguration.reassemblyBufferSize, UInt64(mtu))
+        var maxDataLength = maxPacketSize - UInt64(packetOverhead)
+        if uploadConfiguration.byteAlignment != .disabled {
+            maxDataLength = (maxDataLength / uploadConfiguration.byteAlignment.rawValue) * uploadConfiguration.byteAlignment.rawValue
+        }
+        return min(maxDataLength, remainingBytes)
     }
     
     private func calculatePacketOverhead(data: Data, image: Int, offset: UInt64) -> Int {
@@ -445,7 +501,8 @@ public class ImageManager: McuManager {
         }
         // Build the packet and return the size.
         let packet = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write, flags: 0,
-                                            group: group.uInt16Value, sequenceNumber: 0, commandId: ID_UPLOAD, payload: payload)
+                                            group: group.uInt16Value, sequenceNumber: 0, commandId: ImageID.Upload,
+                                            payload: payload)
         var packetOverhead = packet.count + 5
         if transporter.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.
@@ -454,6 +511,24 @@ public class ImageManager: McuManager {
         return packetOverhead
     }
 }
+
+// MARK: - ImageUploadAlignment
+
+public enum ImageUploadAlignment: UInt64, CaseIterable, CustomStringConvertible {
+    
+    case disabled = 0
+    case twoByte = 2
+    case fourByte = 4
+    case eightByte = 8
+    case sixteenByte = 16
+    
+    public var description: String {
+        guard self != .disabled else { return "Disabled" }
+        return "\(rawValue)-Byte"
+    }
+}
+
+// MARK: - ImageUploadError
 
 public enum ImageUploadError: Error {
     /// Response payload values do not exist.
@@ -476,7 +551,6 @@ extension ImageUploadError: LocalizedError {
             return "Remote error: \(code)."
         }
     }
-    
 }
 
 //******************************************************************************

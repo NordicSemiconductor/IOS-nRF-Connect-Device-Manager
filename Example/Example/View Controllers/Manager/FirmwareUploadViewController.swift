@@ -20,17 +20,64 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var fileHash: UILabel!
     @IBOutlet weak var fileSize: UILabel!
     @IBOutlet weak var fileName: UILabel!
+    @IBOutlet weak var dfuNumberOfBuffers: UILabel!
+    @IBOutlet weak var dfuByteAlignment: UILabel!
+    @IBOutlet weak var dfuSpeed: UILabel!
     @IBOutlet weak var progress: UIProgressView!
     
     @IBAction func selectFirmware(_ sender: UIButton) {
-        let importMenu = UIDocumentMenuViewController(documentTypes: ["public.data", "public.content"], in: .import)
+        let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive"]
+        let importMenu = UIDocumentMenuViewController(documentTypes: supportedDocumentTypes,
+                                                      in: .import)
         importMenu.delegate = self
         importMenu.popoverPresentationController?.sourceView = actionSelect
         present(importMenu, animated: true, completion: nil)
     }
     
+    @IBAction func setNumberOfBuffers(_ sender: UIButton) {
+        let alertController = UIAlertController(title: "Number of Buffers", message: nil, preferredStyle: .actionSheet)
+        let values = [2, 3, 4, 5, 6]
+        values.forEach { value in
+            let title = value == values.first ? "Disabled" : "\(value)"
+            alertController.addAction(UIAlertAction(title: title, style: .default) {
+                action in
+                self.dfuNumberOfBuffers.text = value == 2 ? "Disabled" : "\(value)"
+                // Pipeline Depth = Number of Buffers - 1
+                self.uploadConfiguration.pipelineDepth = value - 1
+            })
+        }
+        present(alertController, addingCancelAction: true)
+    }
+    
+    @IBAction func setDfuAlignment(_ sender: UIButton) {
+        let alertController = UIAlertController(title: "Byte Alignment", message: nil, preferredStyle: .actionSheet)
+        ImageUploadAlignment.allCases.forEach { alignmentValue in
+            alertController.addAction(UIAlertAction(title: alignmentValue.description, style: .default) {
+                action in
+                self.dfuByteAlignment.text = alignmentValue.description
+                self.uploadConfiguration.byteAlignment = alignmentValue
+            })
+        }
+        present(alertController, addingCancelAction: true)
+    }
+    
+    private func present(_ alertViewController: UIAlertController, addingCancelAction addCancelAction: Bool = false) {
+        if addCancelAction {
+            alertViewController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        }
+        
+        // If the device is an ipad set the popover presentation controller
+        if let presenter = alertViewController.popoverPresentationController {
+            presenter.sourceView = self.view
+            presenter.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+            presenter.permittedArrowDirections = []
+        }
+        present(alertViewController, animated: true)
+    }
+    
     @IBAction func start(_ sender: UIButton) {
         guard let package = package else { return }
+        uploadImageSize = nil
         
         guard package.images.count > 1 else {
             actionStart.isHidden = true
@@ -40,11 +87,14 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
             imageSlot = 0
             status.textColor = .primary
             status.text = "UPLOADING..."
-            _ = imageManager.upload(images: [ImageManager.Image(image: 0, data: package.images[0].data)], delegate: self)
+            
+            _ = imageManager.upload(images: [ImageManager.Image(image: 0, data: package.images[0].data)],
+                                    using: uploadConfiguration, delegate: self)
             return
         }
         
         let alertController = UIAlertController(title: "Select Core Slot", message: nil, preferredStyle: .actionSheet)
+        let configuration = uploadConfiguration
         for image in package.images {
             alertController.addAction(UIAlertAction(title: McuMgrPackage.imageName(at: image.image), style: .default) { [weak self]
                 action in
@@ -55,7 +105,8 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
                 self?.imageSlot = image.image
                 self?.status.textColor = .primary
                 self?.status.text = "UPLOADING \(McuMgrPackage.imageName(at: image.image))..."
-                _ = self?.imageManager.upload(images: [ImageManager.Image(image: image.image, data: image.data)], delegate: self)
+                _ = self?.imageManager.upload(images: [ImageManager.Image(image: image.image, data: image.data)],
+                                              using: configuration, delegate: self)
             })
         }
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -74,6 +125,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         status.text = "PAUSED"
         actionPause.isHidden = true
         actionResume.isHidden = false
+        dfuSpeed.isHidden = true
         imageManager.pauseUpload()
     }
     
@@ -86,9 +138,11 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         }
         actionPause.isHidden = false
         actionResume.isHidden = true
+        uploadImageSize = nil
         imageManager.continueUpload()
     }
     @IBAction func cancel(_ sender: UIButton) {
+        dfuSpeed.isHidden = true
         imageManager.cancelUpload()
     }
     
@@ -101,6 +155,10 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
             imageManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
+    private var initialBytes: Int = 0
+    private var uploadConfiguration = FirmwareUpgradeConfiguration(pipelineDepth: 1, byteAlignment: .disabled)
+    private var uploadImageSize: Int!
+    private var uploadTimestamp: Date!
 }
 
 // MARK: - ImageUploadDelegate
@@ -108,7 +166,30 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
 extension FirmwareUploadViewController: ImageUploadDelegate {
     
     func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
-        progress.setProgress(Float(bytesSent) / Float(imageSize), animated: true)
+        dfuSpeed.isHidden = false
+        
+        if uploadImageSize == nil || uploadImageSize != imageSize {
+            uploadTimestamp = timestamp
+            uploadImageSize = imageSize
+            initialBytes = bytesSent
+            progress.setProgress(Float(bytesSent) / Float(imageSize), animated: false)
+        } else {
+            progress.setProgress(Float(bytesSent) / Float(imageSize), animated: true)
+        }
+        
+        // Date.timeIntervalSince1970 returns seconds
+        let msSinceUploadBegan = (timestamp.timeIntervalSince1970 - uploadTimestamp.timeIntervalSince1970) * 1000
+        
+        guard bytesSent < imageSize else {
+            let averageSpeedInKiloBytesPerSecond = Double(imageSize - initialBytes) / msSinceUploadBegan
+            dfuSpeed.text = "\(imageSize - initialBytes) bytes sent (avg \(String(format: "%.2f kB/s", averageSpeedInKiloBytesPerSecond)))"
+            return
+        }
+        
+        let bytesSentSinceUploadBegan = bytesSent - initialBytes
+        // bytes / ms = kB/s
+        let speedInKiloBytesPerSecond = Double(bytesSentSinceUploadBegan) / msSinceUploadBegan
+        dfuSpeed.text = String(format: "%.2f kB/s", speedInKiloBytesPerSecond)
     }
     
     func uploadDidFail(with error: Error) {
@@ -165,6 +246,9 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
             fileSize.numberOfLines = 0
             fileHash.text = try package.hashString()
             fileHash.numberOfLines = 0
+            
+            dfuNumberOfBuffers.text = uploadConfiguration.pipelineDepth == 1 ? "Disabled" : "\(uploadConfiguration.pipelineDepth + 1)"
+            dfuByteAlignment.text = uploadConfiguration.byteAlignment.description
             
             status.textColor = .primary
             status.text = "READY"

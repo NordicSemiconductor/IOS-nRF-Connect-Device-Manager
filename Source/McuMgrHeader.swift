@@ -72,19 +72,19 @@ public class McuMgrHeader {
     }
 }
 
+// MARK: - CustomDebugStringConvertible
+
 extension McuMgrHeader: CustomDebugStringConvertible {
     
     public var debugDescription: String {
         return "{\"op\": \"\(op!)\", \"flags\": \(flags!), \"length\": \(length!), \"group\": \(groupId!), \"seqNum\": \(sequenceNumber!), \"commandId\": \(commandId!)}"
     }
-    
 }
 
-public enum McuMgrHeaderParseError: Error {
+// MARK: - McuMgrHeaderParseError
+
+public enum McuMgrHeaderParseError: Error, LocalizedError {
     case invalidSize(Int)
-}
-
-extension McuMgrHeaderParseError: LocalizedError {
 
     public var errorDescription: String? {
         switch self {
@@ -92,5 +92,14 @@ extension McuMgrHeaderParseError: LocalizedError {
             return "Invalid header size: \(size) (expected: \(McuMgrHeader.HEADER_LENGTH))."
         }
     }
+}
+
+// MARK: - Data Extension
+
+internal extension Data {
     
+    func readMcuMgrHeaderSequenceNumber() -> UInt8? {
+        guard count >= McuMgrHeader.HEADER_LENGTH else { return nil }
+        return read(offset: 6) as UInt8
+    }
 }

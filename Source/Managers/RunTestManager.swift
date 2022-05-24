@@ -10,13 +10,11 @@ import SwiftCBOR
 public class RunTestManager: McuManager {
     override class var TAG: McuMgrLogCategory { .runTest }
     
-    //**************************************************************************
-    // MARK: Run Constants
-    //**************************************************************************
+    // MARK: - IDs
 
-    // Mcu Run Test Manager ids.
-    let ID_TEST = UInt8(0)
-    let ID_LIST = UInt8(1)
+    enum RunTestID: UInt8 {
+        case Test, List
+    }
     
     //**************************************************************************
     // MARK: Initializers
@@ -47,14 +45,14 @@ public class RunTestManager: McuManager {
         if let token = token {
             payload.updateValue(CBOR.utf8String(token), forKey: "token")
         }
-        send(op: .write, commandId: ID_TEST, payload: payload, callback: callback)
+        send(op: .write, commandId: RunTestID.Test, payload: payload, callback: callback)
     }
 
     /// List the tests on a device.
     ///
     /// - parameter callback: The response callback.
     public func list(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .read, commandId: ID_LIST, payload: nil, callback: callback)
+        send(op: .read, commandId: RunTestID.List, payload: nil, callback: callback)
     }
     
 }

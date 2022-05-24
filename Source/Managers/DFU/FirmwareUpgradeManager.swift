@@ -7,7 +7,10 @@
 import Foundation
 import CoreBluetooth
 
+// MARK: - FirmwareUpgradeManager
+
 public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObserver {
+    
     private let imageManager: ImageManager
     private let defaultManager: DefaultManager
     private let basicManager: BasicManager
@@ -19,10 +22,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private var cyclicReferenceHolder: (() -> FirmwareUpgradeManager)?
     
     private var images: [FirmwareUpgradeImage]!
-    private var eraseAppSettings: Bool!
+    private var configuration: FirmwareUpgradeConfiguration!
     
     private var state: FirmwareUpgradeState
-    private var paused: Bool = false
+    private var paused: Bool
+    private var queriedForMcuManagerParameters: Bool
     
     /// Logger delegate may be used to obtain logs.
     public weak var logDelegate: McuMgrLogDelegate? {
@@ -51,6 +55,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.basicManager = BasicManager(transporter: transporter)
         self.delegate = delegate
         self.state = .none
+        self.paused = false
+        self.queriedForMcuManagerParameters = false
     }
     
     //**************************************************************************
@@ -59,20 +65,20 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     
     /// Start the firmware upgrade.
     ///
-    /// Use this convenience call of ``start(images:erasingAppSettings:)`` if you're only
+    /// Use this convenience call of ``start(images:using:)`` if you're only
     /// updating the App Core (i.e. no Multi-Image).
     /// - parameter data: `Data` to upload to App Core (Image 0).
-    /// - parameter eraseAppSettings: If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
-    public func start(data: Data, erasingAppSettings eraseAppSettings: Bool = true) throws {
-        try start(images: [(0, data)], erasingAppSettings: eraseAppSettings)
+    /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
+    public func start(data: Data, using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
+        try start(images: [(0, data)], using: configuration)
     }
     
     /// Start the firmware upgrade.
     ///
     /// This is the full-featured API to start DFU update, including support for Multi-Image uploads.
     /// - parameter images: An Array of (Image, `Data`) pairs with the Image Core/Index and its corresponding `Data` to upload.
-    /// - parameter eraseAppSettings: If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
-    public func start(images: [(Int, Data)], erasingAppSettings eraseAppSettings: Bool = true) throws {
+    /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
+    public func start(images: [(Int, Data)], using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
         objc_sync_enter(self)
         defer {
             objc_sync_exit(self)
@@ -84,7 +90,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         self.images = try images.map { try FirmwareUpgradeImage($0) }
-        self.eraseAppSettings = eraseAppSettings
+        self.configuration = configuration
         
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
@@ -93,6 +99,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         log(msg: "Upgrading with \(images.count) images in mode '\(mode)' (\(numberOfBytes) bytes)...",
             atLevel: .application)
         delegate?.upgradeDidStart(controller: self)
+        
+        guard queriedForMcuManagerParameters else {
+            log(msg: "Attempting to request McuMgr Parameters...", atLevel: .debug)
+            defaultManager.params(callback: mcuManagerParametersCallback)
+            return
+        }
         validate()
     }
     
@@ -176,7 +188,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 .filter({ !$0.uploaded })
                 .sorted(by: <)
                 .map({ ImageManager.Image($0.image, $0.data) })
-            _ = imageManager.upload(images: imagesToUpload, delegate: self)
+            _ = imageManager.upload(images: imagesToUpload, using: configuration, delegate: self)
         }
     }
     
@@ -215,6 +227,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         objc_sync_enter(self)
         state = .none
         paused = false
+        queriedForMcuManagerParameters = false
         delegate?.upgradeDidComplete()
         // Release cyclic reference.
         cyclicReferenceHolder = nil
@@ -227,6 +240,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         let tmp = state
         state = .none
         paused = false
+        queriedForMcuManagerParameters = false
         delegate?.upgradeDidFail(inState: tmp, with: error)
         // Release cyclic reference.
         cyclicReferenceHolder = nil
@@ -500,8 +514,27 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         
         self.log(msg: "Erase App Settings Succesful. Proceeding.", atLevel: .application)
         // Set to false so uploadDidFinish() doesn't loop forever.
-        self.eraseAppSettings = false
+        self.configuration.eraseAppSettings = false
         self.uploadDidFinish()
+    }
+    
+    /// Callback for devices running NCS firmware version 2.0 or later, which support McuMgrParameters call.
+    ///
+    /// Error handling here is not considered important because we don't expect many devices to support this.
+    private lazy var mcuManagerParametersCallback: McuMgrCallback<McuMgrParametersResponse> = { [weak self] (response: McuMgrParametersResponse?, error: Error?) in
+        
+        guard let self = self else { return }
+        self.queriedForMcuManagerParameters = true
+        
+        guard error == nil, let response = response, response.rc != 8 else {
+            self.log(msg: "Received Error or invalid McuMgrParameters Response. This is expected if the receiving firmware does not support McuMgrParameters. Proceeding as normal.", atLevel: .debug)
+            self.configuration.reassemblyBufferSize = 0
+            self.validate() // Continue Upload
+            return
+        }
+        
+        self.configuration.reassemblyBufferSize = response.bufferSize
+        self.validate() // Continue Upload
     }
     
     /// Callback for the RESET state.
@@ -702,6 +735,33 @@ private extension FirmwareUpgradeManager {
     }
 }
 
+// MARK: - FirmwareUpgradeConfiguration
+
+public struct FirmwareUpgradeConfiguration {
+    
+    /// If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
+    public var eraseAppSettings: Bool
+    /// If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.
+    public var pipelineDepth: Int
+    /// Necessary to set when Pipeline Length is larger than 1 (SMP Pipelining Enabled) to predict offset jumps as multiple
+    /// packets are sent.
+    public var byteAlignment: ImageUploadAlignment
+    /// If set, it is used instead of the MTU Size as the maximum size of the packet. It is designed to be used with a size
+    /// larger than the MTU, meaning larger Data chunks per Sequence Number, trusting the reassembly Buffer on the receiving
+    /// side to merge it all back. Thus, increasing transfer speeds.
+    ///
+    /// Can be used in conjunction with SMP Pipelining. Off (value `0`) by default.
+    public var reassemblyBufferSize: UInt64
+    
+    public init(eraseAppSettings: Bool = true, pipelineDepth: Int = 1, byteAlignment: ImageUploadAlignment = .disabled,
+                reassemblyBufferSize: UInt64 = 0) {
+        self.eraseAppSettings = eraseAppSettings
+        self.pipelineDepth = pipelineDepth
+        self.byteAlignment = byteAlignment
+        self.reassemblyBufferSize = reassemblyBufferSize
+    }
+}
+
 //******************************************************************************
 // MARK: - ImageUploadDelegate
 //******************************************************************************
@@ -727,7 +787,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     public func uploadDidFinish() {
         // Before we can move on, we must check whether the user requested for App Core Settings
         // to be erased.
-        if eraseAppSettings {
+        if configuration.eraseAppSettings {
             log(msg: "'Erase App Settings' Enabled. Sending command...", atLevel: .info)
             basicManager.eraseAppSettings(callback: eraseAppSettingsCallback)
             return
@@ -796,7 +856,7 @@ public enum FirmwareUpgradeState {
 // MARK: - FirmwareUpgradeMode
 //******************************************************************************
 
-public enum FirmwareUpgradeMode {
+public enum FirmwareUpgradeMode: CustomStringConvertible, CaseIterable {
     /// When this mode is set, the manager will send the test and reset commands
     /// to the device after the upload is complete. The device will reboot and
     /// will run the new image on its next boot. If the new image supports
@@ -822,6 +882,17 @@ public enum FirmwareUpgradeMode {
     /// Use this mode when the new image supports SMP service and you want to
     /// test it before confirming.
     case testAndConfirm
+    
+    public var description: String {
+        switch self {
+        case .testOnly:
+            return "Test Only"
+        case .confirmOnly:
+            return "Confirm Only"
+        case .testAndConfirm:
+            return "Test And Confirm"
+        }
+    }
 }
 
 //******************************************************************************
