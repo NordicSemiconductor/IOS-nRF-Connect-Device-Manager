@@ -750,7 +750,7 @@ public struct FirmwareUpgradeConfiguration {
     /// larger than the MTU, meaning larger Data chunks per Sequence Number, trusting the reassembly Buffer on the receiving
     /// side to merge it all back. Thus, increasing transfer speeds.
     ///
-    /// Can be used in conjunction with SMP Pipelining. Off (value `0`) by default.
+    /// Can be used in conjunction with SMP Pipelining.
     public var reassemblyBufferSize: UInt64
     
     public init(eraseAppSettings: Bool = true, pipelineDepth: Int = 1, byteAlignment: ImageUploadAlignment = .disabled,
