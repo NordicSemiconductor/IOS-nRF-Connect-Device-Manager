@@ -1,3 +1,8 @@
+![Platforms](https://img.shields.io/badge/platforms-iOS%20|%20macOS-333333.svg)
+[![License](https://img.shields.io/github/license/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/blob/master/LICENSE)
+[![Release](https://img.shields.io/github/release/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.svg)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/releases)
+[![Swift Package Manager Compatible](https://img.shields.io/badge/SwiftPM-compatible-brightgreen)](https://swift.org/package-manager/)
+
 # nRF Connect Device Manager
 
 nRF Connect Device Manager library is compatible with Mcu Manager, a management subsystem supported by nRF Connect SDK, Zephyr and Apache Mynewt.
