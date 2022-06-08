@@ -100,11 +100,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             atLevel: .application)
         delegate?.upgradeDidStart(controller: self)
         
-        guard queriedForMcuManagerParameters else {
-            log(msg: "Attempting to request McuMgr Parameters...", atLevel: .debug)
-            defaultManager.params(callback: mcuManagerParametersCallback)
-            return
-        }
         validate()
     }
     
@@ -303,6 +298,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         // Check that the image array exists.
         guard let responseImages = response.images, responseImages.count > 0 else {
             self.fail(error: FirmwareUpgradeError.invalidResponse(response))
+            return
+        }
+        
+        guard self.queriedForMcuManagerParameters else {
+            self.log(msg: "[\(#function)] Attempting to request McuMgr Parameters...", atLevel: .debug)
+            self.defaultManager.params(callback: self.mcuManagerParametersCallback)
             return
         }
         
