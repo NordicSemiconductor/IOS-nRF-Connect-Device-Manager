@@ -13,7 +13,8 @@ public class RunTestManager: McuManager {
     // MARK: - IDs
 
     enum RunTestID: UInt8 {
-        case Test, List
+        case Test = 0
+        case List = 1
     }
     
     //**************************************************************************

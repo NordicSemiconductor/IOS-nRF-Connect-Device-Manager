@@ -18,10 +18,13 @@ public class ImageManager: McuManager {
     // MARK: - IDs
 
     enum ImageID: UInt8 {
-        case State
-        case Upload, File
-        case CoreList, CoreLoad
-        case Erase, EraseState
+        case State = 0
+        case Upload = 1
+        case File = 2
+        case CoreList = 3
+        case CoreLoad = 4
+        case Erase = 5
+        case EraseState = 6
     }
     
     //**************************************************************************

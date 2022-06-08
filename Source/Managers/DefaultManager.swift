@@ -13,9 +13,13 @@ public class DefaultManager: McuManager {
     // MARK: - Constants
 
     enum ID: UInt8 {
-        case Echo
-        case EchoControl, TaskStatistics, MemoryPoolStatatistics, DateTimeString, Reset
-        case McuMgrParameters
+        case Echo = 0
+        case ConsoleEchoControl = 1
+        case TaskStatistics = 2
+        case MemoryPoolStatatistics = 3
+        case DateTimeString = 4
+        case Reset = 5
+        case McuMgrParameters = 6
     }
     
     //**************************************************************************
@@ -47,7 +51,7 @@ public class DefaultManager: McuManager {
     /// - parameter callback: The response callback.
     public func consoleEcho(_ echoOn: Bool, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["echo": CBOR.init(integerLiteral: echoOn ? 1 : 0)]
-        send(op: .write, commandId: ID.EchoControl, payload: payload, callback: callback)
+        send(op: .write, commandId: ID.ConsoleEchoControl, payload: payload, callback: callback)
     }
     
     /// Read the task statistics for the device.

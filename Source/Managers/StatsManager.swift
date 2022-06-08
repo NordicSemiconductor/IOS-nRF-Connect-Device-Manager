@@ -17,7 +17,8 @@ public class StatsManager: McuManager {
     // MARK: - IDs
     
     enum StatsID: UInt8 {
-        case Read, List
+        case Read = 0
+        case List = 1
     }
     
     //**************************************************************************
