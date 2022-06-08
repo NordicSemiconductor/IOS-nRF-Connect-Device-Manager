@@ -533,6 +533,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
+        self.log(msg: "Received McuMgrParameters Response for increased speed. Setting Reassembly Buffer Size to \(response.bufferSize).", atLevel: .debug)
         self.configuration.reassemblyBufferSize = response.bufferSize
         self.validate() // Continue Upload
     }
