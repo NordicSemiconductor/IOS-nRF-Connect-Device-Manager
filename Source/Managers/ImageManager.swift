@@ -392,6 +392,8 @@ public class ImageManager: McuManager {
                 return
             }
             
+            guard self.uploadState == .uploading else { return }
+            
             // Check if the upload has completed.
             if offset == currentImageData.count {
                 if self.uploadIndex == images.count - 1 {
@@ -422,7 +424,7 @@ public class ImageManager: McuManager {
             for i in 0..<(self.uploadConfiguration.pipelineDepth - self.uploadExpectedOffsets.count) {
                 guard let chunkOffset = self.uploadExpectedOffsets.last ?? self.uploadLastOffset,
                       chunkOffset < self.imageData?.count ?? 0 else {
-                    self.log(msg: "No remaining chunks to send for i \(i), chunkOffset (\(self.uploadExpectedOffsets.last ?? self.uploadLastOffset)), and imageSize (\(self.imageData?.count ?? 0)) (!)", atLevel: .debug)
+                    self.log(msg: "No remaining chunks to send for i = \(i), chunkOffset = (\(self.uploadExpectedOffsets.last ?? self.uploadLastOffset)), and imageSize = (\(self.imageData?.count)).", atLevel: .debug)
                     return
                 }
                 
@@ -436,8 +438,6 @@ public class ImageManager: McuManager {
     }
     
     private func sendNext(from offset: UInt64) {
-        guard uploadState == .uploading else { return }
-        
         let imageData: Data! = self.uploadImages?[uploadIndex].data
         let imageSlot: Int! = self.uploadImages?[uploadIndex].image
         log(msg: "[Next] Uploading image \(imageSlot) from \(offset)/\(imageData.count)...", atLevel: .application)
