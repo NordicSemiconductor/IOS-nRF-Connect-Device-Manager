@@ -102,16 +102,7 @@ public class DefaultManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func params(callback: @escaping McuMgrCallback<McuMgrParametersResponse>) {
-        let readMcuManagerParametersData = Data([
-            McuMgrOperation.read.rawValue,
-            0, // Flags
-            0, 1, // Length
-            0, 0, // McuMaanger.GROUP_DEFAULT
-            0, // Sequence Number
-            ID.McuMgrParameters.rawValue,
-            160
-        ])
-        send(data: readMcuManagerParametersData, timeout: 1, callback: callback)
+        send(op: .read, commandId: ID.McuMgrParameters, payload: nil, timeout: 1, callback: callback)
     }
 }
 
