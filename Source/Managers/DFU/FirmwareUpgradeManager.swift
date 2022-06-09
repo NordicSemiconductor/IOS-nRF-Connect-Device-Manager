@@ -26,7 +26,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     
     private var state: FirmwareUpgradeState
     private var paused: Bool
-    private var queriedForMcuManagerParameters: Bool
     
     /// Logger delegate may be used to obtain logs.
     public weak var logDelegate: McuMgrLogDelegate? {
@@ -56,7 +55,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.delegate = delegate
         self.state = .none
         self.paused = false
-        self.queriedForMcuManagerParameters = false
     }
     
     //**************************************************************************
@@ -100,7 +98,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             atLevel: .application)
         delegate?.upgradeDidStart(controller: self)
         
-        validate()
+        requestMcuMgrParameters()
     }
     
     public func cancel() {
@@ -169,6 +167,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         objc_sync_exit(self)
     }
     
+    private func requestMcuMgrParameters() {
+        setState(.requestMcuMgrParameters)
+        guard !paused else { return }
+        self.log(msg: "Requesting McuMgr Parameters...", atLevel: .debug)
+        self.defaultManager.params(callback: self.mcuManagerParametersCallback)
+    }
+    
     private func validate() {
         setState(.validate)
         if !paused {
@@ -222,7 +227,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         objc_sync_enter(self)
         state = .none
         paused = false
-        queriedForMcuManagerParameters = false
         delegate?.upgradeDidComplete()
         // Release cyclic reference.
         cyclicReferenceHolder = nil
@@ -235,7 +239,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         let tmp = state
         state = .none
         paused = false
-        queriedForMcuManagerParameters = false
         delegate?.upgradeDidFail(inState: tmp, with: error)
         // Release cyclic reference.
         cyclicReferenceHolder = nil
@@ -249,6 +252,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         if !paused {
             switch state {
+            case .requestMcuMgrParameters:
+                requestMcuMgrParameters()
             case .validate:
                 validate()
             case .upload:
@@ -298,12 +303,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         // Check that the image array exists.
         guard let responseImages = response.images, responseImages.count > 0 else {
             self.fail(error: FirmwareUpgradeError.invalidResponse(response))
-            return
-        }
-        
-        guard self.queriedForMcuManagerParameters else {
-            self.log(msg: "[\(#function)] Attempting to request McuMgr Parameters...", atLevel: .debug)
-            self.defaultManager.params(callback: self.mcuManagerParametersCallback)
             return
         }
         
@@ -525,7 +524,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private lazy var mcuManagerParametersCallback: McuMgrCallback<McuMgrParametersResponse> = { [weak self] (response: McuMgrParametersResponse?, error: Error?) in
         
         guard let self = self else { return }
-        self.queriedForMcuManagerParameters = true
         
         guard error == nil, let response = response, response.rc != 8 else {
             self.log(msg: "Received Error or invalid McuMgrParameters Response. This is expected if the receiving firmware does not support McuMgrParameters. Proceeding as normal.", atLevel: .debug)
@@ -611,6 +609,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             
             // Continue the upgrade after reconnect.
             switch self.state {
+            case .requestMcuMgrParameters:
+                self.requestMcuMgrParameters()
             case .validate:
                 self.validate()
             case .reset:
@@ -846,11 +846,10 @@ extension FirmwareUpgradeError: LocalizedError {
 //******************************************************************************
 
 public enum FirmwareUpgradeState {
-    case none, validate, upload, test, reset, confirm, success
+    case none, requestMcuMgrParameters, validate, upload, test, reset, confirm, success
     
     func isInProgress() -> Bool {
-        return self == .validate || self == .upload || self == .test
-            || self == .reset || self == .confirm
+        return self != .none
     }
 }
 
