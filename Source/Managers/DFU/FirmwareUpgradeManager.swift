@@ -96,6 +96,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         let numberOfBytes = images.reduce(0, { $0 + $1.1.count })
         log(msg: "Upgrading with \(images.count) images in mode '\(mode)' (\(numberOfBytes) bytes)...",
             atLevel: .application)
+        if #available(iOS 10.0, *) {
+            dispatchPrecondition(condition: .onQueue(.main))
+        } else {
+            assert(Thread.isMainThread)
+        }
         delegate?.upgradeDidStart(controller: self)
         
         requestMcuMgrParameters()
@@ -162,7 +167,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         let previousState = self.state
         self.state = state
         if state != previousState {
-            delegate?.upgradeStateDidChange(from: previousState, to: state)
+            DispatchQueue.main.async { [weak self] in
+                self?.delegate?.upgradeStateDidChange(from: previousState, to: state)
+            }
         }
         objc_sync_exit(self)
     }
@@ -227,7 +234,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         objc_sync_enter(self)
         state = .none
         paused = false
-        delegate?.upgradeDidComplete()
+        DispatchQueue.main.async { [weak self] in
+            self?.delegate?.upgradeDidComplete()
+        }
         // Release cyclic reference.
         cyclicReferenceHolder = nil
         objc_sync_exit(self)
@@ -239,7 +248,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         let tmp = state
         state = .none
         paused = false
-        delegate?.upgradeDidFail(inState: tmp, with: error)
+        DispatchQueue.main.async { [weak self] in
+            self?.delegate?.upgradeDidFail(inState: tmp, with: error)
+        }
         // Release cyclic reference.
         cyclicReferenceHolder = nil
         objc_sync_exit(self)
@@ -771,7 +782,9 @@ public struct FirmwareUpgradeConfiguration {
 extension FirmwareUpgradeManager: ImageUploadDelegate {
     
     public func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
-        delegate?.uploadProgressDidChange(bytesSent: bytesSent, imageSize: imageSize, timestamp: timestamp)
+        DispatchQueue.main.async { [weak self] in
+            self?.delegate?.uploadProgressDidChange(bytesSent: bytesSent, imageSize: imageSize, timestamp: timestamp)
+        }
     }
     
     public func uploadDidFail(with error: Error) {
@@ -780,7 +793,9 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     }
     
     public func uploadDidCancel() {
-        delegate?.upgradeDidCancel(state: state)
+        DispatchQueue.main.async { [weak self] in
+            self?.delegate?.upgradeDidCancel(state: .none)
+        }
         state = .none
         // Release cyclic reference.
         cyclicReferenceHolder = nil
