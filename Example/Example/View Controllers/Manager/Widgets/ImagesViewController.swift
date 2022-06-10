@@ -17,11 +17,15 @@ class ImagesViewController: UIViewController , McuMgrViewController{
     
     @IBAction func read(_ sender: UIButton) {
         busy()
-        imageManager.list { (response, error) in
-            self.lastResponse = response
-            self.handle(response, error)
+        defaultManager.params { response, _ in
+            self.mcuMgrResponse = response
+            self.imageManager.list { (response, error) in
+                self.lastResponse = response
+                self.handle(response, error)
+            }
         }
     }
+    
     @IBAction func test(_ sender: UIButton) {
         selectImageCore() { [weak self] imageHash in
             self?.busy()
@@ -53,12 +57,16 @@ class ImagesViewController: UIViewController , McuMgrViewController{
         }
     }
     
+    private var mcuMgrResponse: McuMgrParametersResponse?
     private var lastResponse: McuMgrImageStateResponse?
     private var imageManager: ImageManager!
+    private var defaultManager: DefaultManager!
     var transporter: McuMgrTransport! {
         didSet {
             imageManager = ImageManager(transporter: transporter)
             imageManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
+            defaultManager = DefaultManager(transporter: transporter)
+            defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
     var height: CGFloat = 110
@@ -97,7 +105,21 @@ class ImagesViewController: UIViewController , McuMgrViewController{
         
         if let response = response {
             if response.isSuccess(), let images = response.images {
-                var info = "Split status: \(response.splitStatus ?? 0)"
+                var info = ""
+                
+                if let mcuMgrResponse = mcuMgrResponse {
+                    info += "McuMgr Parameters:\n"
+                    if let bufferCount = mcuMgrResponse.bufferCount,
+                       let bufferSize = mcuMgrResponse.bufferSize {
+                        info += "• Buffer Count: \(bufferCount)\n"
+                        info += "• Buffer Size: \(bufferSize) bytes\n"
+                    } else {
+                        info += "• Buffer Count: N/A\n"
+                        info += "• Buffer Size: N/A\n"
+                    }
+                }
+                
+                info += "\nSplit status: \(response.splitStatus ?? 0)\n"
                 
                 for image in images {
                     info += "\nImage \(image.image!)\n" +
