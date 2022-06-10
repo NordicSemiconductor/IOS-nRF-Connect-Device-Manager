@@ -73,6 +73,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     @IBAction func resume(_ sender: UIButton) {
         guard canStartUpload() else { return }
         
+        uploadTimestamp = nil
+        uploadImageSize = nil
         dfuManager.resume()
         actionPause.isHidden = false
         actionResume.isHidden = true
