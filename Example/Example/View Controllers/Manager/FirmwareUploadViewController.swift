@@ -182,7 +182,7 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
         
         guard bytesSent < imageSize else {
             let averageSpeedInKiloBytesPerSecond = Double(imageSize - initialBytes) / msSinceUploadBegan
-            dfuSpeed.text = "\(imageSize - initialBytes) bytes sent (avg \(String(format: "%.2f kB/s", averageSpeedInKiloBytesPerSecond)))"
+            dfuSpeed.text = "\(imageSize) bytes sent (avg \(String(format: "%.2f kB/s", averageSpeedInKiloBytesPerSecond)))"
             return
         }
         
