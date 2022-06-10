@@ -21,6 +21,11 @@ open class McuManager {
     /// Header Key for CoAP Payloads.
     public static let HEADER_KEY = "_h"
     
+    /// If a specific Timeout is not set, the number of seconds that will be
+    /// allowed to elapse before a send request is considered to have failed
+    /// due to a timeout if no response is received.
+    public static let DEFAULT_SEND_TIMEOUT_SECONDS = 30
+    
     //**************************************************************************
     // MARK: Properties
     //**************************************************************************
@@ -59,12 +64,14 @@ open class McuManager {
     
     public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation,
                                                              commandId: R, payload: [String:CBOR]?,
+                                                             timeout: Int = DEFAULT_SEND_TIMEOUT_SECONDS,
                                                              callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
         send(op: op, flags: 0, commandId: commandId, payload: payload, callback: callback)
     }
     
     public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, flags: UInt8,
                                                              commandId: R, payload: [String:CBOR]?,
+                                                             timeout: Int = DEFAULT_SEND_TIMEOUT_SECONDS,
                                                              callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
         let packetPacketSequenceNumber = sequenceNumber
         sequenceNumber = sequenceNumber.next()
@@ -87,7 +94,7 @@ open class McuManager {
             }
             callback(response, error)
         }
-        send(data: mcuPacketData, timeout: 30, callback: _callback)
+        send(data: mcuPacketData, timeout: timeout, callback: _callback)
     }
     
     public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {

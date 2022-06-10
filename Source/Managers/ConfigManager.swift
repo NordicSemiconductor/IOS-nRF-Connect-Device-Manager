@@ -13,7 +13,7 @@ public class ConfigManager: McuManager {
     // MARK: - IDs
     
     enum ConfigID: UInt8 {
-        case Zero
+        case Zero = 0
     }
     
     //**************************************************************************

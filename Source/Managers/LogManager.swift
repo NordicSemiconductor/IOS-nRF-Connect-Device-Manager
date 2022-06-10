@@ -14,8 +14,12 @@ public class LogManager: McuManager {
     // MARK: - IDs
     
     enum LogID: UInt8 {
-        case Read, Clear, Append
-        case ModuleList, LevelList, LogsList
+        case Read = 0
+        case Clear = 1
+        case Append = 2
+        case ModuleList = 3
+        case LevelList = 4
+        case LogsList = 5
     }
     
     //**************************************************************************

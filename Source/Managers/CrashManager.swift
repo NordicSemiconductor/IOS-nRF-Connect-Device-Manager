@@ -13,7 +13,7 @@ public class CrashManager: McuManager {
     // MARK: - IDs
 
     enum CrashID: UInt8 {
-        case Test
+        case Test = 0
     }
     
     // MARK: - CrashTest

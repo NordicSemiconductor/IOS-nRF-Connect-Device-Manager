@@ -223,6 +223,8 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
     func upgradeStateDidChange(from previousState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
         status.textColor = .primary
         switch newState {
+        case .requestMcuMgrParameters:
+            status.text = "REQUESTING MCUMGR PARAMETERS..."
         case .validate:
             status.text = "VALIDATING..."
         case .upload:

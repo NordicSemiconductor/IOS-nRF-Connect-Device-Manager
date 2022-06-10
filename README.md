@@ -24,7 +24,7 @@ In Xcode, go to *File → Swift Packages → Add Package Dependency...* and add 
 ### CocoaPods
 
 ```
-pod 'iOSMcuManagerLibrary', '~> 1.2.0'
+pod 'iOSMcuManagerLibrary'
 ```
 
 # Introduction
