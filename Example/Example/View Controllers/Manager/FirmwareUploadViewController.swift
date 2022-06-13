@@ -22,6 +22,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var fileName: UILabel!
     @IBOutlet weak var dfuNumberOfBuffers: UILabel!
     @IBOutlet weak var dfuByteAlignment: UILabel!
+    @IBOutlet weak var dfuChunkSize: UILabel!
     @IBOutlet weak var dfuSpeed: UILabel!
     @IBOutlet weak var progress: UIProgressView!
     
@@ -58,6 +59,22 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
                 self.uploadConfiguration.byteAlignment = alignmentValue
             })
         }
+        present(alertController, addingCancelAction: true)
+    }
+    
+    @IBAction func setChunkSize(_ sender: Any) {
+        let alertController = UIAlertController(title: "Set Chunk Size", message: "0 means Default (MTU Size)", preferredStyle: .alert)
+        alertController.addTextField { (textField) in
+            textField.placeholder = "\(self.uploadConfiguration.reassemblyBufferSize)"
+            textField.keyboardType = .decimalPad
+        }
+        alertController.addAction(UIAlertAction(title: "Submit", style: .default, handler: { [weak alertController] (_) in
+            guard let textField = alertController?.textFields?.first,
+                  let stringValue = textField.text else { return }
+            self.uploadConfiguration.reassemblyBufferSize = UInt64(stringValue) ?? 0
+            self.dfuChunkSize.text = "\(self.uploadConfiguration.reassemblyBufferSize)"
+        }))
+
         present(alertController, addingCancelAction: true)
     }
     
@@ -249,6 +266,7 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
             
             dfuNumberOfBuffers.text = uploadConfiguration.pipelineDepth == 1 ? "Disabled" : "\(uploadConfiguration.pipelineDepth + 1)"
             dfuByteAlignment.text = uploadConfiguration.byteAlignment.description
+            dfuChunkSize.text = "\(uploadConfiguration.reassemblyBufferSize)"
             
             status.textColor = .primary
             status.text = "READY"
