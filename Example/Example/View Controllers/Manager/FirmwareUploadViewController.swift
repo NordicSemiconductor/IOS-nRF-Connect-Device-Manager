@@ -92,27 +92,21 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         present(alertViewController, animated: true)
     }
     
+    static let uploadImages = [0, 1, 2, 3]
     @IBAction func start(_ sender: UIButton) {
         guard let package = package else { return }
         uploadImageSize = nil
         
-        guard package.images.count > 1 else {
-            actionStart.isHidden = true
-            actionPause.isHidden = false
-            actionCancel.isHidden = false
-            actionSelect.isEnabled = false
-            imageSlot = 0
-            status.textColor = .primary
-            status.text = "UPLOADING..."
-            
-            _ = imageManager.upload(images: [ImageManager.Image(image: 0, data: package.images[0].data)],
-                                    using: uploadConfiguration, delegate: self)
-            return
+        let images: [ImageManager.Image]
+        if package.images.count > 1 {
+            images = package.images.map { ImageManager.Image(image: $0.image, data: $0.data) }
+        } else {
+            images = Self.uploadImages.map { ImageManager.Image(image: $0, data: package.images[0].data) }
         }
         
         let alertController = UIAlertController(title: "Select Core Slot", message: nil, preferredStyle: .actionSheet)
         let configuration = uploadConfiguration
-        for image in package.images {
+        for image in images {
             alertController.addAction(UIAlertAction(title: McuMgrPackage.imageName(at: image.image), style: .default) { [weak self]
                 action in
                 self?.actionStart.isHidden = true
