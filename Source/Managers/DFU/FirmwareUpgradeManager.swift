@@ -209,6 +209,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func confirm(_ image: FirmwareUpgradeImage) {
         setState(.confirm)
         if !paused {
+            self.log(msg: "Sending CONFIRM Command for Image \(image.image)...", atLevel: .application)
+            self.log(msg: "Sending CONFIRM Command for image \(image.image) with hash \([UInt8](image.hash))...", atLevel: .debug)
             imageManager.confirm(hash: [UInt8](image.hash), callback: confirmCallback)
         }
     }
@@ -672,7 +674,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         for j in 0..<self.images.count {
             switch self.mode {
             case .confirmOnly:
-                guard self.images[j].confirmed else {
+                guard !self.images[j].confirmed else {
                     self.log(msg: "Skipping Image \(j)'s confirm step since it is already confirmed.", atLevel: .debug)
                     continue
                 }
@@ -704,7 +706,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     return
                 }
                 
-                self.log(msg: "Image \(secondary.image) was confirmed in Slot \(secondary.slot).", atLevel: .debug)
+                self.log(msg: "Image \(secondary.image) already confirmed (\"permanent: true\") in Slot \(secondary.slot).", atLevel: .debug)
                 self.images[j].confirmed = true
             case .testAndConfirm:
                 if let primary = responseImages.first(where: { $0.image == j && $0.slot == 0 }) {
