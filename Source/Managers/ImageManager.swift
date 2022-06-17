@@ -161,9 +161,10 @@ public class ImageManager: McuManager {
             bleTransport.chunkSendDataToMtuSize = configuration.reassemblyBufferSize != 0
         }
         
-        log(msg: "Uploading image \(firstImage.image) from 0/\(firstImage.data.count)...", atLevel: .application)
+        log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .application)
         let firstOffset = maxDataPacketLengthFor(data: firstImage.data, image: firstImage.image, offset: 0)
         uploadExpectedOffsets.append(firstOffset)
+        log(msg: "Uploading image \(firstImage.image) from \(firstOffset)/\(firstImage.data.count)...", atLevel: .debug)
         upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: configuration.byteAlignment,
                callback: uploadCallback)
         return true
@@ -440,7 +441,7 @@ public class ImageManager: McuManager {
     private func sendNext(from offset: UInt64) {
         let imageData: Data! = self.uploadImages?[uploadIndex].data
         let imageSlot: Int! = self.uploadImages?[uploadIndex].image
-        log(msg: "[Next] Uploading image \(imageSlot) from \(offset)/\(imageData.count)...", atLevel: .application)
+        log(msg: "[Next] Uploading image \(imageSlot) from \(offset)/\(imageData.count)...", atLevel: .debug)
         upload(data: imageData, image: imageSlot, offset: offset, alignment: uploadConfiguration.byteAlignment,
                callback: uploadCallback)
     }
