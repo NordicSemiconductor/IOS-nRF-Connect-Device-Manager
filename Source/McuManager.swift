@@ -76,7 +76,7 @@ open class McuManager {
         let packetPacketSequenceNumber = sequenceNumber
         sequenceNumber = sequenceNumber.next()
         
-        log(msg: "Sending \(op) command (Group: \(group), SEQ No. \(packetPacketSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
+        log(msg: "Sending \(op) command (Group: \(group), seq: \(packetPacketSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
             atLevel: .verbose)
         let mcuPacketData = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
                                                    flags: flags, group: group.uInt16Value,
@@ -85,10 +85,10 @@ open class McuManager {
         let _callback: McuMgrCallback<T> = logDelegate == nil ? callback : { [weak self] (response, error) in
             if let self = self {
                 if let response = response {
-                    self.log(msg: "Response (Group: \(self.group), SEQ No. \(packetPacketSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
+                    self.log(msg: "Response (Group: \(self.group), seq: \(packetPacketSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
                              atLevel: .verbose)
                 } else if let error = error {
-                    self.log(msg: "Request (Group: \(self.group), SEQ No. \(packetPacketSequenceNumber)) failed: \(error.localizedDescription))",
+                    self.log(msg: "Request (Group: \(self.group), seq: \(packetPacketSequenceNumber)) failed: \(error.localizedDescription))",
                              atLevel: .error)
                 }
             }
@@ -221,8 +221,8 @@ open class McuManager {
 
 extension McuManager {
     
-    func log(msg: String, atLevel level: McuMgrLogLevel) {
-        logDelegate?.log(msg, ofCategory: Self.TAG, atLevel: level)
+    func log(msg: @autoclosure () -> String, atLevel level: McuMgrLogLevel) {
+        logDelegate?.log(msg(), ofCategory: Self.TAG, atLevel: level)
     }
     
 }
