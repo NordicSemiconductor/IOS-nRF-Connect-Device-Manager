@@ -124,7 +124,6 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             return
         }
         
-        log(msg: "peripheralDidUpdateValueFor() SEQ No. \(sequenceNumber))", atLevel: .debug)
         writeState.received(sequenceNumber: sequenceNumber, data: data)
     }
 }

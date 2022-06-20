@@ -339,8 +339,8 @@ extension McuMgrBleTransport: McuMgrTransport {
                 return .failure(McuMgrTransportError.sendFailed)
             }
             
-            for (i, chunk) in dataChunks.enumerated() {
-                log(msg: "-> (SEQ No. \(sequenceNumber), Chunk \(i)) \(chunk.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+            for chunk in dataChunks {
+                log(msg: "-> \(chunk.hexEncodedString(options: .prepend0x))", atLevel: .debug)
                 targetPeripheral.writeValue(chunk, for: smpCharacteristic, type: .withoutResponse)
             }
         } else {
@@ -349,7 +349,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
             }
             
-            log(msg: "-> (SEQ No. \(sequenceNumber)) \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+                log(msg: "-> \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
             targetPeripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
         }
 
@@ -366,13 +366,8 @@ extension McuMgrBleTransport: McuMgrTransport {
         case .success:
             guard let returnData = writeState[sequenceNumber]?.chunk else {
                 return .failure(McuMgrTransportError.badHeader)
-            }
-            
-            if let writeResponse = try? McuMgrResponse.buildResponse(scheme: .ble, data: returnData) {
-                log(msg: "<- (SEQ No. \(sequenceNumber)) Response: \(writeResponse))", atLevel: .debug)
-            }
-            
-            log(msg: "<- (SEQ No(s). \(sequenceNumber)) \(returnData.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+            }            
+            log(msg: "<- \(returnData.hexEncodedString(options: .prepend0x))", atLevel: .debug)
             return .success(returnData)
         }
     }
@@ -381,8 +376,8 @@ extension McuMgrBleTransport: McuMgrTransport {
         connectionLock.close()
     }
     
-    internal func log(msg: String, atLevel level: McuMgrLogLevel) {
-        logDelegate?.log(msg, ofCategory: .transport, atLevel: level)
+    internal func log(msg: @autoclosure () -> String, atLevel level: McuMgrLogLevel) {
+        logDelegate?.log(msg(), ofCategory: .transport, atLevel: level)
     }
 }
 

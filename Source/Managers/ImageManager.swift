@@ -164,7 +164,6 @@ public class ImageManager: McuManager {
         log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .application)
         let firstOffset = maxDataPacketLengthFor(data: firstImage.data, image: firstImage.image, offset: 0)
         uploadExpectedOffsets.append(firstOffset)
-        log(msg: "Uploading image \(firstImage.image) from \(firstOffset)/\(firstImage.data.count)...", atLevel: .debug)
         upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: configuration.byteAlignment,
                callback: uploadCallback)
         return true
@@ -313,7 +312,7 @@ public class ImageManager: McuManager {
             let image: Int! = self.uploadImages?[uploadIndex].image
             uploadState = .uploading
             let offset = uploadLastOffset ?? 0
-            log(msg: "[Continue] Uploading image \(image) from \(offset)/\(imageData.count)...", atLevel: .application)
+            log(msg: "Resuming uploading image \(image) from \(offset)/\(imageData.count)...", atLevel: .application)
             let firstResumeOffset = offset + maxDataPacketLengthFor(data: imageData, image: image, offset: offset)
             uploadExpectedOffsets.append(firstResumeOffset)
             upload(data: imageData, image: image, offset: offset, alignment: uploadConfiguration.byteAlignment,
@@ -367,7 +366,6 @@ public class ImageManager: McuManager {
             // because otherwise we can't predict how many bytes the firmware will accept.
             if self.uploadConfiguration.pipelineDepth > 1 {
                 if let uploadIndex = self.uploadExpectedOffsets.firstIndex(of: UInt64(offset)) {
-                    self.log(msg: "ACK for offset \(offset) for image \(self.uploadIndex)", atLevel: .debug)
                     self.uploadExpectedOffsets.remove(at: uploadIndex)
                 } else {
                     // We've missed an offset, so let's compensate or else the upload will stall.
@@ -425,7 +423,7 @@ public class ImageManager: McuManager {
             for i in 0..<(self.uploadConfiguration.pipelineDepth - self.uploadExpectedOffsets.count) {
                 guard let chunkOffset = self.uploadExpectedOffsets.last ?? self.uploadLastOffset,
                       chunkOffset < self.imageData?.count ?? 0 else {
-                    self.log(msg: "No remaining chunks to send for i = \(i), chunkOffset = (\(self.uploadExpectedOffsets.last ?? self.uploadLastOffset)), and imageSize = (\(self.imageData?.count)).", atLevel: .debug)
+                    // No remaining chunks to be sent.
                     return
                 }
                 
@@ -441,8 +439,8 @@ public class ImageManager: McuManager {
     private func sendNext(from offset: UInt64) {
         let imageData: Data! = self.uploadImages?[uploadIndex].data
         let imageSlot: Int! = self.uploadImages?[uploadIndex].image
-        log(msg: "[Next] Uploading image \(imageSlot) from \(offset)/\(imageData.count)...", atLevel: .debug)
-        upload(data: imageData, image: imageSlot, offset: offset, alignment: uploadConfiguration.byteAlignment,
+        upload(data: imageData, image: imageSlot, offset: offset,
+               alignment: uploadConfiguration.byteAlignment,
                callback: uploadCallback)
     }
     

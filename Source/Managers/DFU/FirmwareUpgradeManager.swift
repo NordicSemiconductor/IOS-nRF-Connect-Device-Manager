@@ -176,14 +176,16 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     
     private func requestMcuMgrParameters() {
         setState(.requestMcuMgrParameters)
-        guard !paused else { return }
-        self.log(msg: "Requesting McuMgr Parameters...", atLevel: .debug)
-        self.defaultManager.params(callback: self.mcuManagerParametersCallback)
+        if !paused {
+            log(msg: "Requesting McuMgr parameters...", atLevel: .debug)
+            defaultManager.params(callback: self.mcuManagerParametersCallback)
+        }
     }
     
     private func validate() {
         setState(.validate)
         if !paused {
+            log(msg: "Sending Image List command...", atLevel: .application)
             imageManager.list(callback: validateCallback)
         }
     }
@@ -191,10 +193,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func upload() {
         setState(.upload)
         if !paused {
+            log(msg: "Uploading images...", atLevel: .application)
             let imagesToUpload = images
-                .filter({ !$0.uploaded })
+                .filter { !$0.uploaded }
                 .sorted(by: <)
-                .map({ ImageManager.Image($0.image, $0.data) })
+                .map { ImageManager.Image($0.image, $0.data) }
             _ = imageManager.upload(images: imagesToUpload, using: configuration, delegate: self)
         }
     }
@@ -202,6 +205,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func test(_ image: FirmwareUpgradeImage) {
         setState(.test)
         if !paused {
+            log(msg: "Sending Test command for image \(image.image)...", atLevel: .application)
             imageManager.test(hash: [UInt8](image.hash), callback: testCallback)
         }
     }
@@ -209,8 +213,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func confirm(_ image: FirmwareUpgradeImage) {
         setState(.confirm)
         if !paused {
-            self.log(msg: "Sending CONFIRM Command for Image \(image.image)...", atLevel: .application)
-            self.log(msg: "Sending CONFIRM Command for image \(image.image) with hash \([UInt8](image.hash))...", atLevel: .debug)
+            log(msg: "Sending Confirm command for image \(image.image)...", atLevel: .application)
             imageManager.confirm(hash: [UInt8](image.hash), callback: confirmCallback)
         }
     }
@@ -219,6 +222,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         setState(.confirm)
         if !paused {
             // This will confirm the image on slot 0
+            log(msg: "Sending Config command...", atLevel: .application)
             imageManager.confirm(callback: confirmCallback)
         }
     }
@@ -226,6 +230,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func reset() {
         setState(.reset)
         if !paused {
+            log(msg: "Sending Reset command...", atLevel: .application)
             defaultManager.transporter.addObserver(self)
             defaultManager.reset(callback: resetCallback)
         }
@@ -324,11 +329,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             if primary != nil {
                 if Data(primary.hash) == self.images[j].hash {
                     self.images[j].uploaded = true
-                    self.log(msg: "Image \(j)'s primary slot is already uploaded.", atLevel: .application)
                     
                     if primary.confirmed || primary.permanent {
                         // The new firmware is already active and confirmed.
-                        self.log(msg: "Image \(j)'s is already confirmed.", atLevel: .application)
                         self.images[j].confirmed = true
                         continue
                     } else {
@@ -487,7 +490,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             guard secondary.pending else {
                 // For every image we upload, we need to send it the TEST Command.
                 guard self.images[j].tested else {
-                    self.log(msg: "Image \(j) is not in Pending state. Sending TEST Command.", atLevel: .info)
                     self.test(self.images[j])
                     return
                 }
@@ -497,7 +499,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 return
             }
             self.images[j].tested = true
-            self.log(msg: "Image \(j) is in Pending state.", atLevel: .info)
         }
         
         // Test image succeeded. Begin device reset.
@@ -524,8 +525,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
             return
         }
+        self.log(msg: "Erasing app settings completed", atLevel: .application)
         
-        self.log(msg: "Erase App Settings Succesful. Proceeding.", atLevel: .application)
         // Set to false so uploadDidFinish() doesn't loop forever.
         self.configuration.eraseAppSettings = false
         self.uploadDidFinish()
@@ -539,13 +540,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         guard let self = self else { return }
         
         guard error == nil, let response = response, response.rc != 8 else {
-            self.log(msg: "Received Error or invalid McuMgrParameters Response. This is expected if the receiving firmware does not support McuMgrParameters. Proceeding as normal.", atLevel: .debug)
             self.configuration.reassemblyBufferSize = 0
             self.validate() // Continue Upload
             return
         }
         
-        self.log(msg: "Received McuMgrParameters Response for increased speed. Setting Reassembly Buffer Size to \(response.bufferSize).", atLevel: .debug)
+        self.log(msg: "Setting SAR buffer size to \(response.bufferSize) bytes", atLevel: .debug)
         self.configuration.reassemblyBufferSize = response.bufferSize
         self.validate() // Continue Upload
     }
@@ -675,13 +675,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             switch self.mode {
             case .confirmOnly:
                 guard !self.images[j].confirmed else {
-                    self.log(msg: "Skipping Image \(j)'s confirm step since it is already confirmed.", atLevel: .debug)
                     continue
                 }
                 
                 // If not already confirmed/uploaded, the new image should be in slot 1.
                 guard let secondary = responseImages.first(where: { $0.image == j && $0.slot == 1 }) else {
-                    self.log(msg: "Unable to find secondary slot for Image \(j) in Image listing.", atLevel: .debug)
+                    // Unable to find Image j in secondary slot
                     
                     guard let primary = responseImages.first(where: { $0.image == j && $0.slot == 0 }) else {
                         self.fail(error: FirmwareUpgradeError.invalidResponse(response))
@@ -689,24 +688,28 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     }
                     
                     self.images[j].confirmed = true
-                    self.log(msg: "Image \(j) does not require confirm command since it is already present and confirmed in its respective slot zero.", atLevel: .debug)
                     continue
                 }
                 
                 // Check that the new image is in permanent state.
                 guard secondary.permanent else {
+                    // If a TEST command was sent before for the image that is to be confirmed we have to reset.
+                    // It is not possible to confirm such image until the device is reset.
+                    // A new DFU operation has to be performed to confirm the image.
+                    guard !secondary.pending else {
+                        self.reset()
+                        return
+                    }
                     guard self.images[j].confirmed else {
-                        self.log(msg: "Sending CONFIRM Command for Image \(secondary.image).", atLevel: .debug)
                         self.confirm(self.images[j])
                         return
                     }
                     
                     // If we've sent it the CONFIRM Command, the secondary slot must be in PERMANENT state.
-                    self.fail(error: FirmwareUpgradeError.unknown("Image \(secondary.image) Slot \(secondary.slot) is not in a permanent state."))
+                    self.fail(error: FirmwareUpgradeError.unknown("Image \(secondary.image) in slot \(secondary.slot) is not in a permanent state."))
                     return
                 }
                 
-                self.log(msg: "Image \(secondary.image) already confirmed (\"permanent: true\") in Slot \(secondary.slot).", atLevel: .debug)
                 self.images[j].confirmed = true
             case .testAndConfirm:
                 if let primary = responseImages.first(where: { $0.image == j && $0.slot == 0 }) {
@@ -721,8 +724,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                         return
                     }
                     self.images[j].confirmed = true
-                } else {
-                    self.log(msg: "Skipping Image \(j) hash verification since primary is not available.", atLevel: .info)
                 }
             case .testOnly:
                 // Impossible state. Ignore.
@@ -745,8 +746,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
 
 private extension FirmwareUpgradeManager {
     
-    func log(msg: String, atLevel level: McuMgrLogLevel) {
-        logDelegate?.log(msg, ofCategory: .dfu, atLevel: level)
+    func log(msg: @autoclosure () -> String, atLevel level: McuMgrLogLevel) {
+        logDelegate?.log(msg(), ofCategory: .dfu, atLevel: level)
     }
 }
 
@@ -807,7 +808,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         // Before we can move on, we must check whether the user requested for App Core Settings
         // to be erased.
         if configuration.eraseAppSettings {
-            log(msg: "'Erase App Settings' Enabled. Sending command...", atLevel: .info)
+            log(msg: "Sending Erase App Storage command...", atLevel: .application)
             basicManager.eraseAppSettings(callback: eraseAppSettingsCallback)
             return
         }
