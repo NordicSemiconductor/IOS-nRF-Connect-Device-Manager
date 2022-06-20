@@ -693,6 +693,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 
                 // Check that the new image is in permanent state.
                 guard secondary.permanent else {
+                    // If a TEST command was sent before for the image that is to be confirmed we have to reset.
+                    // It is not possible to confirm such image until the device is reset.
+                    // A new DFU operation has to be performed to confirm the image.
+                    guard !secondary.pending else {
+                        self.reset()
+                        return
+                    }
                     guard self.images[j].confirmed else {
                         self.confirm(self.images[j])
                         return
