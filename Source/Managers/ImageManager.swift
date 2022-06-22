@@ -403,7 +403,7 @@ public class ImageManager: McuManager {
                     // Release cyclic reference.
                     self.cyclicReferenceHolder = nil
                 } else {
-                    self.log(msg: "Uploaded image \(self.uploadIndex) (\(self.uploadIndex + 1) of \(images.count))", atLevel: .application)
+                    self.log(msg: "Uploaded image \(images[self.uploadIndex].image) (\(self.uploadIndex + 1) of \(images.count))", atLevel: .application)
                     // Move on to the next image.
                     self.uploadIndex += 1
                     self.imageData = images[self.uploadIndex].data
