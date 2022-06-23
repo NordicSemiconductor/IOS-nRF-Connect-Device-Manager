@@ -55,14 +55,15 @@ struct McuMgrPackage {
     }
     
     func hashString() throws -> String {
-        var hashString = ""
+        var result = ""
         for (i, image) in images.enumerated() {
             let hash = try McuMgrImage(data: image.data).hash
-            hashString += "\(hash.hexEncodedString(options: .upperCase).prefix(6)) (\(Self.imageName(at: i)))"
+            let hashString = hash.hexEncodedString(options: .upperCase)
+            result += "0x\(hashString.prefix(6))...\(hashString.suffix(6)) (\(Self.imageName(at: i)))"
             guard i != images.count - 1 else { continue }
-            hashString += "\n"
+            result += "\n"
         }
-        return hashString
+        return result
     }
 }
 
