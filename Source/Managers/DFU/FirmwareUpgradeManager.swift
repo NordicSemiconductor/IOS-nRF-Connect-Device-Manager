@@ -347,7 +347,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        for image in self.images {
+        for j in 0..<self.images.count {
+            let image = self.images[j]
+            
             // Look for corresponding image in the primary slot.
             let primary = responseImages.first { $0.image == image.image && $0.slot == 0 }
             if let primary = primary, Data(primary.hash) == image.hash {
@@ -501,7 +503,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        for image in self.images {
+        for j in 0..<self.images.count {
+            let image = self.images[j]
+            
             // Check that the image in secondary slot is pending (i.e. test succeeded).
             guard let secondary = responseImages.first(where: { $0.image == image.image && $0.slot == 1 }) else {
                 self.fail(error: FirmwareUpgradeError.unknown("Unable to find secondary slot for image \(image.image) in Test Response."))
@@ -557,13 +561,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        for image in self.images {
+        for j in 0..<self.images.count {
+            let image = self.images[j]
+            
             switch self.mode {
             case .confirmOnly:
                 // Check if the image was already confirmed.
-                if image.confirmed {
-                    continue
-                }
+                guard !image.confirmed else { continue }
                 
                 // If not, the new image should be in the secondary slot (1).
                 guard let secondary = responseImages.first(where: { $0.image == image.image && $0.slot == 1 }) else {
