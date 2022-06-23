@@ -1009,14 +1009,10 @@ extension FirmwareUpgradeImage: Hashable {
 
 // MARK: - FirmwareUpgradeImage Comparable
 
-extension FirmwareUpgradeImage: Comparable {
+extension FirmwareUpgradeImage: Equatable {
     
-    public static func < (lhs: FirmwareUpgradeImage, rhs: FirmwareUpgradeImage) -> Bool {
-        if lhs.image < rhs.image {
-            return true
-        } else if lhs.image > rhs.image {
-            return false
-        }
-        return lhs.hashValue < rhs.hashValue
+    public static func == (lhs: FirmwareUpgradeImage, rhs: FirmwareUpgradeImage) -> Bool {
+        return lhs.hash == rhs.hash
     }
+    
 }
