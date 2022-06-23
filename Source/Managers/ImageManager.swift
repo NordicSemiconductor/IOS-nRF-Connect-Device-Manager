@@ -137,7 +137,7 @@ public class ImageManager: McuManager {
         }
         
         guard let firstImage = images.first else {
-            log(msg: "There is no image to upload.", atLevel: .warning)
+            log(msg: "Nothing to upload", atLevel: .warning)
             return false
         }
         
@@ -161,10 +161,11 @@ public class ImageManager: McuManager {
             bleTransport.chunkSendDataToMtuSize = configuration.reassemblyBufferSize != 0
         }
         
-        log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .application)
+        log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .verbose)
         let firstOffset = maxDataPacketLengthFor(data: firstImage.data, image: firstImage.image, offset: 0)
         uploadExpectedOffsets.append(firstOffset)
-        upload(data: firstImage.data, image: firstImage.image, offset: 0, alignment: configuration.byteAlignment,
+        upload(data: firstImage.data, image: firstImage.image, offset: 0,
+               alignment: configuration.byteAlignment,
                callback: uploadCallback)
         return true
     }
