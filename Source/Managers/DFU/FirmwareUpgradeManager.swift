@@ -192,12 +192,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             let imagesToUpload = images
                 .filter { !$0.uploaded }
                 .map { ImageManager.Image($0.image, $0.data) }
-            if !imagesToUpload.isEmpty {
-                _ = imageManager.upload(images: imagesToUpload, using: configuration, delegate: self)
-            } else {
+            guard !imagesToUpload.isEmpty else {
                 log(msg: "Nothing to be uploaded", atLevel: .info)
                 uploadDidFinish()
+                return
             }
+            _ = imageManager.upload(images: imagesToUpload, using: configuration, delegate: self)
         }
     }
     
