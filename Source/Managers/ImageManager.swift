@@ -517,7 +517,7 @@ public class ImageManager: McuManager {
 
 // MARK: - ImageUploadAlignment
 
-public enum ImageUploadAlignment: UInt64, CaseIterable, CustomStringConvertible {
+public enum ImageUploadAlignment: UInt64, Codable, CaseIterable, CustomStringConvertible {
     
     case disabled = 0
     case twoByte = 2
