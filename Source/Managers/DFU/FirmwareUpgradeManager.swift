@@ -770,7 +770,7 @@ private extension FirmwareUpgradeManager {
 
 // MARK: - FirmwareUpgradeConfiguration
 
-public struct FirmwareUpgradeConfiguration {
+public struct FirmwareUpgradeConfiguration: Codable {
     
     /// If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
     public var eraseAppSettings: Bool
