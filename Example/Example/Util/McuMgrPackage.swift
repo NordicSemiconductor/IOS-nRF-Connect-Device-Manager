@@ -12,7 +12,7 @@ import ZIPFoundation
 
 // MARK: - McuMgrPackage
 
-struct McuMgrPackage {
+public struct McuMgrPackage {
     
     let images: [ImageManager.Image]
     
