@@ -10,11 +10,11 @@ import Foundation
 
 // MARK: - McuMgrManifest
 
-struct McuMgrManifest: Codable {
+public struct McuMgrManifest: Codable {
     
-    let formatVersion: Int
-    let time: Int
-    let files: [File]
+    public let formatVersion: Int
+    public let time: Int
+    public let files: [File]
     
     enum CodingKeys: String, CodingKey {
         case formatVersion = "format-version"
@@ -24,7 +24,7 @@ struct McuMgrManifest: Codable {
     static let LoadAddressRegEx: NSRegularExpression! =
         try? NSRegularExpression(pattern: #"\"load_address\":0x[0-9a-z]+,"#, options: [.caseInsensitive])
     
-    init(from url: URL) throws {
+    public init(from url: URL) throws {
         guard let data = try? Data(contentsOf: url),
               let stringData = String(data: data, encoding: .utf8) else {
                   throw Error.unableToImport
@@ -43,16 +43,23 @@ struct McuMgrManifest: Codable {
 
 extension McuMgrManifest {
     
-    struct File: Codable {
+    public struct File: Codable {
         
-        let size: Int
-        let file: String
-        let modTime: Int
-        let mcuBootVersion: String?
-        let type: String
-        let board: String
-        let soc: String
-        let imageIndex: Int
+        public let size: Int
+        public let file: String
+        public let modTime: Int
+        public let mcuBootVersion: String?
+        public let type: String
+        public let board: String
+        public let soc: String
+        public let loadAddress: Int
+        
+        public var image: Int {
+            _image ?? _imageIndex ?? 0
+        }
+        
+        private let _image: Int?
+        private let _imageIndex: Int?
         
         // swiftlint:disable nesting
         enum CodingKeys: String, CodingKey {
@@ -60,10 +67,12 @@ extension McuMgrManifest {
             case modTime = "modtime"
             case mcuBootVersion = "version_MCUBOOT"
             case type, board, soc
-            case imageIndex = "image_index"
+            case loadAddress = "load_address"
+            case _image = "image"
+            case _imageIndex = "image_index"
         }
         
-        init(from decoder: Decoder) throws {
+        public init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
             size = try values.decode(Int.self, forKey: .size)
             file = try values.decode(String.self, forKey: .file)
@@ -72,12 +81,23 @@ extension McuMgrManifest {
             type = try values.decode(String.self, forKey: .type)
             board = try values.decode(String.self, forKey: .board)
             soc = try values.decode(String.self, forKey: .soc)
-            let imageIndexString = try values.decode(String.self, forKey: .imageIndex)
+            loadAddress = try values.decode(Int.self, forKey: .loadAddress)
+            _image = try? values.decode(Int.self, forKey: ._image)
+            let imageIndexString = try? values.decode(String.self, forKey: ._imageIndex)
+            guard let imageIndexString = imageIndexString else {
+                guard _image != nil else {
+                    throw DecodingError.dataCorruptedError(forKey: ._image, in: values,
+                                                           debugDescription: "'image' nor 'imageIndex' keys found.")
+                }
+                _imageIndex = nil
+                return
+            }
+            
             guard let imageIndex = Int(imageIndexString) else {
-                throw DecodingError.dataCorruptedError(forKey: .imageIndex, in: values,
+                throw DecodingError.dataCorruptedError(forKey: ._imageIndex, in: values,
                                                        debugDescription: "`imageIndex` could not be parsed from String to Int.")
             }
-            self.imageIndex = imageIndex
+            _imageIndex = imageIndex
         }
     }
 }
