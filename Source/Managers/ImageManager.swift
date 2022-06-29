@@ -74,7 +74,9 @@ public class ImageManager: McuManager {
         }
         
         send(op: .write, sequenceNumber: uploadSequenceNumber, commandId: ImageID.Upload, payload: payload, callback: callback)
-        uploadExpectedOffsets.append(chunkEnd)
+        
+        guard uploadConfiguration.pipeliningEnabled else { return }
+        uploadExpectedOffsets.append((uploadSequenceNumber, chunkEnd))
         uploadSequenceNumber = uploadSequenceNumber == .max ? 0 : uploadSequenceNumber + 1
     }
     
@@ -238,7 +240,7 @@ public class ImageManager: McuManager {
     /// within the bounds of an unsigned UInt8 [0...255].
     private var uploadSequenceNumber: UInt8 = 0
     
-    private var uploadExpectedOffsets: [UInt64] = []
+    private var uploadExpectedOffsets: [(sequenceNumber: UInt8, offset: UInt64)] = []
     /// The sequence of images we want to send to the device.
     private var uploadImages: [Image]?
     /// Delegate to send image upload updates to.
@@ -365,20 +367,15 @@ public class ImageManager: McuManager {
         }
         
         if let offset = response.off {
-            // Pipelining requires the use of byte-alignment, and byte-alignment is required
-            // because otherwise we can't predict how many bytes the firmware will accept.
-            if self.uploadConfiguration.pipelineDepth > 1 {
-                if let uploadIndex = self.uploadExpectedOffsets.firstIndex(of: UInt64(offset)) {
-                    self.uploadExpectedOffsets.remove(at: uploadIndex)
-                } else {
-                    // We've missed an offset, so let's compensate or else the upload will stall.
-                    self.log(msg: "Missed ACK for offset \(offset), image \(self.uploadIndex). Clearing first offset (\(self.uploadExpectedOffsets.first ?? 0)) to compensate.", atLevel: .warning)
-                    self.uploadExpectedOffsets.removeFirst()
+            // Note that pipelining requires the use of byte-alignment, otherwise we
+            // can't predict how many bytes the firmware will accept in each chunk.
+            if self.uploadConfiguration.pipeliningEnabled {
+                guard let i = self.uploadExpectedOffsets.firstIndex(where: { $0.sequenceNumber == response.header.sequenceNumber }) else {
+                    self.cancelUpload(error: ImageUploadError.invalidUploadSequenceNumber(response.header.sequenceNumber))
+                    return
                 }
-            } else {
-                // So if we're not pipelining, we usually don't apply byte alignment.
-                // And even if we did, we don't need to 'predict' offsets, so we don't care.
-                self.uploadExpectedOffsets.removeAll()
+                
+                self.uploadExpectedOffsets.remove(at: i)
             }
             
             self.uploadLastOffset = max(self.uploadLastOffset, UInt64(offset))
@@ -422,7 +419,7 @@ public class ImageManager: McuManager {
             }
             
             for i in 0..<(self.uploadConfiguration.pipelineDepth - self.uploadExpectedOffsets.count) {
-                guard let chunkOffset = self.uploadExpectedOffsets.last ?? self.uploadLastOffset,
+                guard let chunkOffset = self.uploadExpectedOffsets.last?.offset ?? self.uploadLastOffset,
                       chunkOffset < self.imageData?.count ?? 0 else {
                     // No remaining chunks to be sent.
                     return
@@ -535,6 +532,8 @@ public enum ImageUploadError: Error {
     case invalidPayload
     /// Image Data is nil.
     case invalidData
+    
+    case invalidUploadSequenceNumber(UInt8)
     /// McuMgrResponse contains a error return code.
     case mcuMgrErrorCode(McuMgrReturnCode)
 }
@@ -547,6 +546,8 @@ extension ImageUploadError: LocalizedError {
             return "Response payload values do not exist."
         case .invalidData:
             return "Image data is nil."
+        case .invalidUploadSequenceNumber(let sequenceNumber):
+            return "Received Response for Unknown Sequence Number \(sequenceNumber)."
         case .mcuMgrErrorCode(let code):
             return "Remote error: \(code)."
         }

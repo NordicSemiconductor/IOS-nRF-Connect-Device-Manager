@@ -786,6 +786,11 @@ public struct FirmwareUpgradeConfiguration: Codable {
     /// Can be used in conjunction with SMP Pipelining.
     public var reassemblyBufferSize: UInt64
     
+    /// SMP Pipelining is considered Enabled for `pipelineDepth` values larger than `1`.
+    public var pipeliningEnabled: Bool {
+        return pipelineDepth > 1
+    }
+    
     public init(eraseAppSettings: Bool = true, pipelineDepth: Int = 1, byteAlignment: ImageUploadAlignment = .disabled,
                 reassemblyBufferSize: UInt64 = 0) {
         self.eraseAppSettings = eraseAppSettings
