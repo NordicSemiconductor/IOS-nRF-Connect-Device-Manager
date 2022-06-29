@@ -73,7 +73,8 @@ public class ImageManager: McuManager {
             payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
         }
         
-        send(op: .write, commandId: ImageID.Upload, payload: payload, callback: callback)
+        send(op: .write, sequenceNumber: uploadSequenceNumber, commandId: ImageID.Upload, payload: payload, callback: callback)
+        uploadSequenceNumber = uploadSequenceNumber == .max ? 0 : uploadSequenceNumber + 1
     }
     
     /// Test the image with the provided hash.
@@ -155,6 +156,7 @@ public class ImageManager: McuManager {
         uploadIndex = 0
         uploadExpectedOffsets = []
         uploadLastOffset = 0
+        uploadSequenceNumber = 0
         uploadConfiguration = configuration
         if let bleTransport = transporter as? McuMgrBleTransport {
             bleTransport.numberOfParallelWrites = configuration.pipelineDepth
@@ -233,6 +235,9 @@ public class ImageManager: McuManager {
     private var uploadIndex: Int = 0
     /// Current image byte offset to send from.
     private var uploadLastOffset: UInt64!
+    /// Each upload packet gets its own Sequence Number, which we rotate
+    /// within the bounds of an unsigned UInt8 [0...255].
+    private var uploadSequenceNumber: UInt8 = 0
     
     private var uploadExpectedOffsets: [UInt64] = []
     /// The sequence of images we want to send to the device.
