@@ -74,6 +74,7 @@ public class ImageManager: McuManager {
         }
         
         send(op: .write, sequenceNumber: uploadSequenceNumber, commandId: ImageID.Upload, payload: payload, callback: callback)
+        uploadExpectedOffsets.append(chunkEnd)
         uploadSequenceNumber = uploadSequenceNumber == .max ? 0 : uploadSequenceNumber + 1
     }
     
@@ -164,8 +165,6 @@ public class ImageManager: McuManager {
         }
         
         log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .verbose)
-        let firstOffset = maxDataPacketLengthFor(data: firstImage.data, image: firstImage.image, offset: 0)
-        uploadExpectedOffsets.append(firstOffset)
         upload(data: firstImage.data, image: firstImage.image, offset: 0,
                alignment: configuration.byteAlignment,
                callback: uploadCallback)
@@ -319,8 +318,6 @@ public class ImageManager: McuManager {
             uploadState = .uploading
             let offset = uploadLastOffset ?? 0
             log(msg: "Resuming uploading image \(image) from \(offset)/\(imageData.count)...", atLevel: .application)
-            let firstResumeOffset = offset + maxDataPacketLengthFor(data: imageData, image: image, offset: offset)
-            uploadExpectedOffsets.append(firstResumeOffset)
             upload(data: imageData, image: image, offset: offset, alignment: uploadConfiguration.byteAlignment,
                         callback: uploadCallback)
         } else {
@@ -418,8 +415,6 @@ public class ImageManager: McuManager {
                     // Don't trigger writes to another image unless all write(s) have returned for
                     // the current one.
                     guard self.uploadExpectedOffsets.isEmpty else { return }
-                    let firstPacketOffset = self.maxDataPacketLengthFor(data: images[self.uploadIndex].data, image: self.uploadIndex, offset: 0)
-                    self.uploadExpectedOffsets.append(firstPacketOffset)
                     self.uploadLastOffset = 0
                     self.sendNext(from: UInt64(0))
                 }
@@ -432,9 +427,6 @@ public class ImageManager: McuManager {
                     // No remaining chunks to be sent.
                     return
                 }
-                
-                let chunkSize = self.maxDataPacketLengthFor(data: images[self.uploadIndex].data, image: self.uploadIndex, offset: chunkOffset)
-                self.uploadExpectedOffsets.append(chunkOffset + chunkSize)
                 self.sendNext(from: chunkOffset)
             }
         } else {
