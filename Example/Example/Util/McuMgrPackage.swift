@@ -109,7 +109,7 @@ fileprivate extension McuMgrPackage {
                 throw McuMgrPackage.Error.manifestImageNotFound
             }
             let imageData = try Data(contentsOf: imageURL)
-            return (manifestFile.imageIndex, imageData)
+            return (manifestFile.image, imageData)
         }
         try unzippedURLs.forEach { url in
             try fileManager.removeItem(at: url)
