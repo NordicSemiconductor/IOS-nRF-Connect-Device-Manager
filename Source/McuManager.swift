@@ -62,7 +62,8 @@ open class McuManager {
                                                              commandId: R, payload: [String:CBOR]?,
                                                              timeout: Int = DEFAULT_SEND_TIMEOUT_SECONDS,
                                                              callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
-        send(op: op, sequenceNumber: sequenceNumber, flags: 0, commandId: commandId, payload: payload, callback: callback)
+        send(op: op, sequenceNumber: sequenceNumber, flags: 0, commandId: commandId, payload: payload, timeout: timeout,
+             callback: callback)
     }
     
     public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, sequenceNumber: UInt8,

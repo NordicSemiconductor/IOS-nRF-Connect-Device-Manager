@@ -13,6 +13,7 @@ public class ImageManager: McuManager {
     
     override class var TAG: McuMgrLogCategory { .image }
     
+    private static let PIPELINED_WRITES_TIMEOUT_SECONDS = 2
     private static let truncatedHashLen = 3
     
     // MARK: - IDs
@@ -73,9 +74,14 @@ public class ImageManager: McuManager {
             payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
         }
         
-        send(op: .write, sequenceNumber: uploadSequenceNumber, commandId: ImageID.Upload, payload: payload, callback: callback)
+        guard uploadConfiguration.pipeliningEnabled else {
+            send(op: .write, sequenceNumber: 0, commandId: ImageID.Upload, payload: payload, callback: callback)
+            return
+        }
         
-        guard uploadConfiguration.pipeliningEnabled else { return }
+        send(op: .write, sequenceNumber: uploadSequenceNumber, commandId: ImageID.Upload, payload: payload,
+             timeout: ImageManager.PIPELINED_WRITES_TIMEOUT_SECONDS, callback: callback)
+        
         uploadExpectedOffsets.append((uploadSequenceNumber, chunkEnd))
         uploadSequenceNumber = uploadSequenceNumber == .max ? 0 : uploadSequenceNumber + 1
     }
