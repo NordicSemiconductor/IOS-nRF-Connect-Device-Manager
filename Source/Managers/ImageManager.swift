@@ -375,6 +375,8 @@ public class ImageManager: McuManager {
         }
         
         if let offset = response.off {
+            var packetReceivedOutOfOrder = false
+            
             // Note that pipelining requires the use of byte-alignment, otherwise we
             // can't predict how many bytes the firmware will accept in each chunk.
             if self.uploadConfiguration.pipeliningEnabled {
@@ -383,6 +385,10 @@ public class ImageManager: McuManager {
                     return
                 }
                 
+                packetReceivedOutOfOrder = i != 0
+                if packetReceivedOutOfOrder {
+                    self.log(msg: "OOD Packet: Received \(response.header.sequenceNumber) instead of expected \(self.uploadExpectedOffsets[0].sequenceNumber)", atLevel: .debug)
+                }
                 self.uploadExpectedOffsets.remove(at: i)
             }
             
@@ -423,6 +429,12 @@ public class ImageManager: McuManager {
                     self.uploadLastOffset = 0
                     self.sendNext(from: UInt64(0))
                 }
+                return
+            }
+            
+            guard !packetReceivedOutOfOrder || self.uploadExpectedOffsets.isEmpty else {
+                // If packet was received OOD, we must throttle to allow device to catch-up.
+                // If there's no pipelining, `uploadExpectedOffsets` will always be empty here.
                 return
             }
             
