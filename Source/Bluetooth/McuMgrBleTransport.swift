@@ -163,12 +163,14 @@ extension McuMgrBleTransport: McuMgrTransport {
         return .ble
     }
     
+    public static let FAST_TIMEOUT_THRESHOLD_SECONDS = 10
+    
     public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {
         operationQueue.addOperation {
             for i in 0..<McuMgrBleTransportConstant.MAX_RETRIES {
                 switch self._send(data: data, timeoutInSeconds: timeout) {
                 case .failure(McuMgrTransportError.sendTimeout):
-                    guard i + 1 < McuMgrBleTransportConstant.MAX_RETRIES else {
+                    guard timeout < Self.FAST_TIMEOUT_THRESHOLD_SECONDS, i + 1 < McuMgrBleTransportConstant.MAX_RETRIES else {
                         DispatchQueue.main.async {
                             callback(nil, McuMgrTransportError.sendTimeout)
                         }
