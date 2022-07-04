@@ -345,6 +345,10 @@ public class ImageManager: McuManager {
             return
         }
         
+        if #available(iOS 10.0, *) {
+            dispatchPrecondition(condition: .onQueue(.main))
+        }
+        
         // Check for an error.
         if let error = error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
