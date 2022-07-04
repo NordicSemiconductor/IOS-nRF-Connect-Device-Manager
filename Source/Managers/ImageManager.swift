@@ -13,7 +13,7 @@ public class ImageManager: McuManager {
     
     override class var TAG: McuMgrLogCategory { .image }
     
-    private static let PIPELINED_WRITES_TIMEOUT_SECONDS = 5
+    private static let PIPELINED_WRITES_TIMEOUT_SECONDS = 10
     private static let truncatedHashLen = 3
     
     // MARK: - IDs
