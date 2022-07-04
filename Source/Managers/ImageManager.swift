@@ -56,7 +56,7 @@ public class ImageManager: McuManager {
     /// - parameter alignment: The byte alignment to apply to the data (if any).
     /// - parameter callback: The callback.
     public func upload(data: Data, image: Int, offset: UInt64, alignment: ImageUploadAlignment,
-                       callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
+                       fastTimeout: Bool, callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
         let payloadLength = maxDataPacketLengthFor(data: data, image: image, offset: offset)
         
         let chunkOffset = offset
@@ -80,7 +80,7 @@ public class ImageManager: McuManager {
         }
         
         // First packet write can be slower.
-        let timeout = offset == 0 ? McuManager.DEFAULT_SEND_TIMEOUT_SECONDS : ImageManager.PIPELINED_WRITES_TIMEOUT_SECONDS
+        let timeout = fastTimeout ? ImageManager.PIPELINED_WRITES_TIMEOUT_SECONDS : McuManager.DEFAULT_SEND_TIMEOUT_SECONDS
         send(op: .write, sequenceNumber: uploadSequenceNumber, commandId: ImageID.Upload, payload: payload,
              timeout: timeout, callback: callback)
         
@@ -176,7 +176,7 @@ public class ImageManager: McuManager {
         
         log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .verbose)
         upload(data: firstImage.data, image: firstImage.image, offset: 0,
-               alignment: configuration.byteAlignment,
+               alignment: configuration.byteAlignment, fastTimeout: false,
                callback: uploadCallback)
         return true
     }
@@ -329,7 +329,7 @@ public class ImageManager: McuManager {
             let offset = uploadLastOffset ?? 0
             log(msg: "Resuming uploading image \(image) from \(offset)/\(imageData.count)...", atLevel: .application)
             upload(data: imageData, image: image, offset: offset, alignment: uploadConfiguration.byteAlignment,
-                        callback: uploadCallback)
+                   fastTimeout: false, callback: uploadCallback)
         } else {
             log(msg: "Upload has not been previously paused", atLevel: .warning)
         }
@@ -460,7 +460,7 @@ public class ImageManager: McuManager {
         let imageSlot: Int! = self.uploadImages?[uploadIndex].image
         upload(data: imageData, image: imageSlot, offset: offset,
                alignment: uploadConfiguration.byteAlignment,
-               callback: uploadCallback)
+               fastTimeout: true, callback: uploadCallback)
     }
     
     private func resetUploadVariables() {
