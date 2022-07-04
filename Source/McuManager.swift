@@ -45,9 +45,6 @@ open class McuManager {
     
     /// Logger delegate will receive logs.
     public weak var logDelegate: McuMgrLogDelegate?
-    /// Each Packet gets its own Sequence Number, which we will rotate for every
-    /// packet sent within the bounds of an unsigned UInt8, so 0...255 (inclusive).
-    private var sequenceNumber: UInt8
     
     //**************************************************************************
     // MARK: Initializers
@@ -56,39 +53,36 @@ open class McuManager {
     public init(group: McuMgrGroup, transporter: McuMgrTransport) {
         self.group = group
         self.transporter = transporter
-        self.sequenceNumber = 0
         self.mtu = McuManager.getDefaultMtu(scheme: transporter.getScheme())
     }
     
     // MARK: - Send
     
-    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation,
+    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, sequenceNumber: UInt8 = 0,
                                                              commandId: R, payload: [String:CBOR]?,
                                                              timeout: Int = DEFAULT_SEND_TIMEOUT_SECONDS,
                                                              callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
-        send(op: op, flags: 0, commandId: commandId, payload: payload, callback: callback)
+        send(op: op, sequenceNumber: sequenceNumber, flags: 0, commandId: commandId, payload: payload, timeout: timeout,
+             callback: callback)
     }
     
-    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, flags: UInt8,
-                                                             commandId: R, payload: [String:CBOR]?,
+    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, sequenceNumber: UInt8,
+                                                             flags: UInt8, commandId: R, payload: [String:CBOR]?,
                                                              timeout: Int = DEFAULT_SEND_TIMEOUT_SECONDS,
                                                              callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
-        let packetPacketSequenceNumber = sequenceNumber
-        sequenceNumber = sequenceNumber.next()
-        
-        log(msg: "Sending \(op) command (Group: \(group), seq: \(packetPacketSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
+        log(msg: "Sending \(op) command (Group: \(group), seq: \(sequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
             atLevel: .verbose)
         let mcuPacketData = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
                                                    flags: flags, group: group.uInt16Value,
-                                                   sequenceNumber: packetPacketSequenceNumber,
+                                                   sequenceNumber: sequenceNumber,
                                                    commandId: commandId, payload: payload)
         let _callback: McuMgrCallback<T> = logDelegate == nil ? callback : { [weak self] (response, error) in
             if let self = self {
                 if let response = response {
-                    self.log(msg: "Response (Group: \(self.group), seq: \(packetPacketSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
+                    self.log(msg: "Response (Group: \(self.group), seq: \(sequenceNumber), ID: \(response.header!.commandId!)): \(response)",
                              atLevel: .verbose)
                 } else if let error = error {
-                    self.log(msg: "Request (Group: \(self.group), seq: \(packetPacketSequenceNumber)) failed: \(error.localizedDescription))",
+                    self.log(msg: "Request (Group: \(self.group), seq: \(sequenceNumber)) failed: \(error.localizedDescription))",
                              atLevel: .error)
                 }
             }
@@ -334,15 +328,5 @@ extension McuMgrReturnCode: CustomStringConvertible {
         default:
             return "Unrecognized (\(rawValue))"
         }
-    }
-}
-
-// MARK: - UInt8
-
-extension UInt8 {
-    
-    func next() -> UInt8 {
-        guard self != .max else { return 0}
-        return self + 1
     }
 }

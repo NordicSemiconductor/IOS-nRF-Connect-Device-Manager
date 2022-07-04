@@ -169,7 +169,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 switch self._send(data: data, timeoutInSeconds: timeout) {
                 case .failure(McuMgrTransportError.waitAndRetry):
                     sleep(UInt32(McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL))
-                    self.log(msg: "Retry \(i)", atLevel: .info)
+                    self.log(msg: "Retry \(i + 1)", atLevel: .info)
                 case .failure(let error):
                     self.log(msg: error.localizedDescription, atLevel: .error)
                     DispatchQueue.main.async {

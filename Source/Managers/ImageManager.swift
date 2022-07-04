@@ -13,6 +13,7 @@ public class ImageManager: McuManager {
     
     override class var TAG: McuMgrLogCategory { .image }
     
+    private static let PIPELINED_WRITES_TIMEOUT_SECONDS = 10
     private static let truncatedHashLen = 3
     
     // MARK: - IDs
@@ -73,7 +74,16 @@ public class ImageManager: McuManager {
             payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
         }
         
-        send(op: .write, commandId: ImageID.Upload, payload: payload, callback: callback)
+        guard uploadConfiguration.pipeliningEnabled else {
+            send(op: .write, sequenceNumber: 0, commandId: ImageID.Upload, payload: payload, callback: callback)
+            return
+        }
+        
+        send(op: .write, sequenceNumber: uploadSequenceNumber, commandId: ImageID.Upload, payload: payload,
+             callback: callback)
+        
+        uploadExpectedOffsets.append((uploadSequenceNumber, chunkEnd))
+        uploadSequenceNumber = uploadSequenceNumber == .max ? 0 : uploadSequenceNumber + 1
     }
     
     /// Test the image with the provided hash.
@@ -155,6 +165,7 @@ public class ImageManager: McuManager {
         uploadIndex = 0
         uploadExpectedOffsets = []
         uploadLastOffset = 0
+        uploadSequenceNumber = 0
         uploadConfiguration = configuration
         if let bleTransport = transporter as? McuMgrBleTransport {
             bleTransport.numberOfParallelWrites = configuration.pipelineDepth
@@ -162,8 +173,6 @@ public class ImageManager: McuManager {
         }
         
         log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .verbose)
-        let firstOffset = maxDataPacketLengthFor(data: firstImage.data, image: firstImage.image, offset: 0)
-        uploadExpectedOffsets.append(firstOffset)
         upload(data: firstImage.data, image: firstImage.image, offset: 0,
                alignment: configuration.byteAlignment,
                callback: uploadCallback)
@@ -233,8 +242,11 @@ public class ImageManager: McuManager {
     private var uploadIndex: Int = 0
     /// Current image byte offset to send from.
     private var uploadLastOffset: UInt64!
+    /// Each upload packet gets its own Sequence Number, which we rotate
+    /// within the bounds of an unsigned UInt8 [0...255].
+    private var uploadSequenceNumber: UInt8 = 0
     
-    private var uploadExpectedOffsets: [UInt64] = []
+    private var uploadExpectedOffsets: [(sequenceNumber: UInt8, offset: UInt64)] = []
     /// The sequence of images we want to send to the device.
     private var uploadImages: [Image]?
     /// Delegate to send image upload updates to.
@@ -314,10 +326,8 @@ public class ImageManager: McuManager {
             uploadState = .uploading
             let offset = uploadLastOffset ?? 0
             log(msg: "Resuming uploading image \(image) from \(offset)/\(imageData.count)...", atLevel: .application)
-            let firstResumeOffset = offset + maxDataPacketLengthFor(data: imageData, image: image, offset: offset)
-            uploadExpectedOffsets.append(firstResumeOffset)
             upload(data: imageData, image: image, offset: offset, alignment: uploadConfiguration.byteAlignment,
-                        callback: uploadCallback)
+                   callback: uploadCallback)
         } else {
             log(msg: "Upload has not been previously paused", atLevel: .warning)
         }
@@ -331,6 +341,10 @@ public class ImageManager: McuManager {
         // Ensure the manager is not released.
         guard let self = self else {
             return
+        }
+        
+        if #available(iOS 10.0, *) {
+            dispatchPrecondition(condition: .onQueue(.main))
         }
         
         // Check for an error.
@@ -363,20 +377,21 @@ public class ImageManager: McuManager {
         }
         
         if let offset = response.off {
-            // Pipelining requires the use of byte-alignment, and byte-alignment is required
-            // because otherwise we can't predict how many bytes the firmware will accept.
-            if self.uploadConfiguration.pipelineDepth > 1 {
-                if let uploadIndex = self.uploadExpectedOffsets.firstIndex(of: UInt64(offset)) {
-                    self.uploadExpectedOffsets.remove(at: uploadIndex)
-                } else {
-                    // We've missed an offset, so let's compensate or else the upload will stall.
-                    self.log(msg: "Missed ACK for offset \(offset), image \(self.uploadIndex). Clearing first offset (\(self.uploadExpectedOffsets.first ?? 0)) to compensate.", atLevel: .warning)
-                    self.uploadExpectedOffsets.removeFirst()
+            var packetReceivedOutOfOrder = false
+            
+            // Note that pipelining requires the use of byte-alignment, otherwise we
+            // can't predict how many bytes the firmware will accept in each chunk.
+            if self.uploadConfiguration.pipeliningEnabled {
+                guard let i = self.uploadExpectedOffsets.firstIndex(where: { $0.sequenceNumber == response.header.sequenceNumber }) else {
+                    self.cancelUpload(error: ImageUploadError.invalidUploadSequenceNumber(response.header.sequenceNumber))
+                    return
                 }
-            } else {
-                // So if we're not pipelining, we usually don't apply byte alignment.
-                // And even if we did, we don't need to 'predict' offsets, so we don't care.
-                self.uploadExpectedOffsets.removeAll()
+                
+                packetReceivedOutOfOrder = i != 0
+                if packetReceivedOutOfOrder {
+                    self.log(msg: "OOD Packet: Received Seq No. \(response.header.sequenceNumber) instead of expected Seq No. \(self.uploadExpectedOffsets[0].sequenceNumber)", atLevel: .debug)
+                }
+                self.uploadExpectedOffsets.remove(at: i)
             }
             
             self.uploadLastOffset = max(self.uploadLastOffset, UInt64(offset))
@@ -413,23 +428,24 @@ public class ImageManager: McuManager {
                     // Don't trigger writes to another image unless all write(s) have returned for
                     // the current one.
                     guard self.uploadExpectedOffsets.isEmpty else { return }
-                    let firstPacketOffset = self.maxDataPacketLengthFor(data: images[self.uploadIndex].data, image: self.uploadIndex, offset: 0)
-                    self.uploadExpectedOffsets.append(firstPacketOffset)
                     self.uploadLastOffset = 0
                     self.sendNext(from: UInt64(0))
                 }
                 return
             }
             
+            guard !packetReceivedOutOfOrder || self.uploadExpectedOffsets.isEmpty else {
+                // If packet was received OOD, we must throttle to allow device to catch-up.
+                // If there's no pipelining, `uploadExpectedOffsets` will always be empty here.
+                return
+            }
+            
             for i in 0..<(self.uploadConfiguration.pipelineDepth - self.uploadExpectedOffsets.count) {
-                guard let chunkOffset = self.uploadExpectedOffsets.last ?? self.uploadLastOffset,
+                guard let chunkOffset = self.uploadExpectedOffsets.last?.offset ?? self.uploadLastOffset,
                       chunkOffset < self.imageData?.count ?? 0 else {
                     // No remaining chunks to be sent.
                     return
                 }
-                
-                let chunkSize = self.maxDataPacketLengthFor(data: images[self.uploadIndex].data, image: self.uploadIndex, offset: chunkOffset)
-                self.uploadExpectedOffsets.append(chunkOffset + chunkSize)
                 self.sendNext(from: chunkOffset)
             }
         } else {
@@ -538,6 +554,8 @@ public enum ImageUploadError: Error {
     case invalidPayload
     /// Image Data is nil.
     case invalidData
+    
+    case invalidUploadSequenceNumber(UInt8)
     /// McuMgrResponse contains a error return code.
     case mcuMgrErrorCode(McuMgrReturnCode)
 }
@@ -550,6 +568,8 @@ extension ImageUploadError: LocalizedError {
             return "Response payload values do not exist."
         case .invalidData:
             return "Image data is nil."
+        case .invalidUploadSequenceNumber(let sequenceNumber):
+            return "Received Response for Unknown Sequence Number \(sequenceNumber)."
         case .mcuMgrErrorCode(let code):
             return "Remote error: \(code)."
         }
