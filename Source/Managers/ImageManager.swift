@@ -13,7 +13,7 @@ public class ImageManager: McuManager {
     
     override class var TAG: McuMgrLogCategory { .image }
     
-    private static let PIPELINED_WRITES_TIMEOUT_SECONDS = 3
+    private static let PIPELINED_WRITES_TIMEOUT_SECONDS = 5
     private static let truncatedHashLen = 3
     
     // MARK: - IDs
@@ -387,7 +387,7 @@ public class ImageManager: McuManager {
                 
                 packetReceivedOutOfOrder = i != 0
                 if packetReceivedOutOfOrder {
-                    self.log(msg: "OOD Packet: Received \(response.header.sequenceNumber) instead of expected \(self.uploadExpectedOffsets[0].sequenceNumber)", atLevel: .debug)
+                    self.log(msg: "OOD Packet: Received Seq No. \(response.header.sequenceNumber) instead of expected Seq No. \(self.uploadExpectedOffsets[0].sequenceNumber)", atLevel: .debug)
                 }
                 self.uploadExpectedOffsets.remove(at: i)
             }

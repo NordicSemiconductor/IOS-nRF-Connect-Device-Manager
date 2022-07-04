@@ -163,7 +163,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         return .ble
     }
     
-    public static let FAST_TIMEOUT_THRESHOLD_SECONDS = 10
+    public static let FAST_TIMEOUT_THRESHOLD_SECONDS = 15
     
     public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {
         operationQueue.addOperation {
