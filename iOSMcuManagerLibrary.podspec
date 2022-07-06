@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = "iOSMcuManagerLibrary"
-  s.version = "1.2.4"
+  s.version = "1.2.5"
   s.license = { :type => "Apache 2.0", :file => "LICENSE" }
   s.summary = "A mobile management library for devices running Apache Mynewt or Zephyr."
   s.homepage = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager"
