@@ -189,7 +189,7 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
         }
         
         // Date.timeIntervalSince1970 returns seconds
-        let msSinceUploadBegan = (timestamp.timeIntervalSince1970 - uploadTimestamp.timeIntervalSince1970) * 1000
+        let msSinceUploadBegan = max((timestamp.timeIntervalSince1970 - uploadTimestamp.timeIntervalSince1970) * 1000, 1)
         
         guard bytesSent < imageSize else {
             let averageSpeedInKiloBytesPerSecond = Double(imageSize - initialBytes) / msSinceUploadBegan
