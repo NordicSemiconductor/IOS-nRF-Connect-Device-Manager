@@ -119,11 +119,16 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             return
         }
         
-        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() else {
+        // Assumption: CoreBluetooth is delivering all packets from the same sender,
+        // i.e. sequence number, in order. So if the Data is the first 'chunk', it will
+        // include the header. If not, we can presume the SequenceNumber matches the
+        // previously read value.
+        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() ?? previousUpdateNotificationSequenceNumber else {
             writeState.onError(McuMgrTransportError.badHeader)
             return
         }
         
+        previousUpdateNotificationSequenceNumber = sequenceNumber
         writeState.received(sequenceNumber: sequenceNumber, data: data)
     }
 }

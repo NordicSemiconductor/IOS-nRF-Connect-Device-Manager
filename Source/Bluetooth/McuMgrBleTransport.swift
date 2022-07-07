@@ -49,6 +49,8 @@ public class McuMgrBleTransport: NSObject {
     internal let connectionLock: ResultLock
     /// Used to track multiple write requests and their responses.
     internal var writeState: McuMgrBleTransportWriteState
+    /// Used to track the Sequence Number the chunked responses belong to.
+    internal var previousUpdateNotificationSequenceNumber: UInt8?
     
     /// SMP Characteristic object. Used to write requests and receive
     /// notificaitons.
