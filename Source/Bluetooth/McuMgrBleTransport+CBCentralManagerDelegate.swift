@@ -29,11 +29,11 @@ extension McuMgrBleTransport: CBCentralManagerDelegate {
     }
     
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        guard self.identifier == peripheral.identifier else {
-            return
-        }
+        guard self.identifier == peripheral.identifier else { return }
+        
         log(msg: "Peripheral connected", atLevel: .info)
         state = .initializing
+        previousUpdateNotificationSequenceNumber = nil
         log(msg: "Discovering services...", atLevel: .verbose)
         peripheral.delegate = self
         peripheral.discoverServices([McuMgrBleTransportConstant.SMP_SERVICE])
