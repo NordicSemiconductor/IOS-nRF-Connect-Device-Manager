@@ -11,6 +11,9 @@ import iOSMcuManagerLibrary
 
 class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
+    @IBOutlet weak var actionBuffers: UIButton!
+    @IBOutlet weak var actionAlignment: UIButton!
+    @IBOutlet weak var actionChunks: UIButton!
     @IBOutlet weak var actionSelect: UIButton!
     @IBOutlet weak var actionStart: UIButton!
     @IBOutlet weak var actionPause: UIButton!
@@ -109,6 +112,9 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         for image in images {
             alertController.addAction(UIAlertAction(title: McuMgrPackage.imageName(at: image.image), style: .default) { [weak self]
                 action in
+                self?.actionBuffers.isEnabled = false
+                self?.actionAlignment.isEnabled = false
+                self?.actionChunks.isEnabled = false
                 self?.actionStart.isHidden = true
                 self?.actionPause.isHidden = false
                 self?.actionCancel.isHidden = false
@@ -205,6 +211,9 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
     
     func uploadDidFail(with error: Error) {
         progress.setProgress(0, animated: true)
+        actionBuffers.isEnabled = true
+        actionAlignment.isEnabled = true
+        actionChunks.isEnabled = true
         actionPause.isHidden = true
         actionResume.isHidden = true
         actionCancel.isHidden = true
@@ -216,6 +225,9 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
     
     func uploadDidCancel() {
         progress.setProgress(0, animated: true)
+        actionBuffers.isEnabled = true
+        actionAlignment.isEnabled = true
+        actionChunks.isEnabled = true
         actionPause.isHidden = true
         actionResume.isHidden = true
         actionCancel.isHidden = true
@@ -227,6 +239,9 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
     
     func uploadDidFinish() {
         progress.setProgress(0, animated: false)
+        actionBuffers.isEnabled = true
+        actionAlignment.isEnabled = true
+        actionChunks.isEnabled = true
         actionPause.isHidden = true
         actionResume.isHidden = true
         actionCancel.isHidden = true
