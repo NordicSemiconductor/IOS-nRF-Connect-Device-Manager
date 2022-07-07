@@ -530,8 +530,8 @@
         <scene sceneID="URt-ni-pll">
             <objects>
                 <tableViewController title="Image" id="SO7-PQ-cvq" customClass="ImageController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="571"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <sections>
@@ -573,7 +573,7 @@
                             <tableViewSection headerTitle="Image Upgrade" id="H49-2w-bvA">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="330" id="K8B-ak-IaR">
-                                        <rect key="frame" x="0.0" y="117" width="375" height="330"/>
+                                        <rect key="frame" x="0.0" y="132" width="375" height="330"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="K8B-ak-IaR" id="tdv-im-Ef2">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="330"/>
@@ -599,7 +599,7 @@
                             <tableViewSection headerTitle="Image Upload" id="fMB-WD-o4j">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="258" id="91Z-au-ApB">
-                                        <rect key="frame" x="0.0" y="497" width="375" height="258"/>
+                                        <rect key="frame" x="0.0" y="512" width="375" height="258"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="91Z-au-ApB" id="fGj-CQ-r6P">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="258"/>
@@ -625,7 +625,7 @@
                             <tableViewSection headerTitle="Images" id="fVY-9S-Tce">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="110" id="uJU-Js-TUj">
-                                        <rect key="frame" x="0.0" y="805" width="375" height="110"/>
+                                        <rect key="frame" x="0.0" y="820" width="375" height="110"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="uJU-Js-TUj" id="Vnd-mi-K9a">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="110"/>
@@ -1634,7 +1634,10 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="actionAlignment" destination="dS0-qU-4za" id="Z3U-FT-nhK"/>
+                        <outlet property="actionBuffers" destination="eP4-2I-Ibj" id="vqN-1r-RvE"/>
                         <outlet property="actionCancel" destination="uea-jf-Rww" id="LgV-qO-XfH"/>
+                        <outlet property="actionChunks" destination="2NG-d5-MRa" id="Odh-P0-er7"/>
                         <outlet property="actionPause" destination="O7s-fs-kKY" id="t6W-Zv-to3"/>
                         <outlet property="actionResume" destination="bNA-uO-3Vi" id="OcG-2z-RUq"/>
                         <outlet property="actionSelect" destination="djo-iN-lMc" id="qxO-4m-FIb"/>
