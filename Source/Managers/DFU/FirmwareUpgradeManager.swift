@@ -38,10 +38,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// Upgrade mode. The default mode is .confirmOnly.
     public var mode: FirmwareUpgradeMode = .confirmOnly
     
-    /// Estimated time required for swapping images, in seconds.
-    /// If the mode is set to `.testAndConfirm`, the manager will try to
-    /// reconnect after this time. 0 by default.
-    public var estimatedSwapTime: TimeInterval = 0.0
     private var resetResponseTime: Date?
     
     //**************************************************************************
@@ -698,7 +694,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             // Fallback if state changed prior to `resetResponseTime` is set.
             timeSinceReset = 0
         }
-        let remainingTime = estimatedSwapTime - timeSinceReset
+        let remainingTime = configuration.estimatedSwapTime - timeSinceReset
         if remainingTime > 0 {
             DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) { [weak self] in
                 self?.reconnect()
@@ -772,6 +768,9 @@ private extension FirmwareUpgradeManager {
 
 public struct FirmwareUpgradeConfiguration: Codable {
     
+    /// Estimated time required for swapping images, in seconds.
+    /// If the mode is set to `.testAndConfirm`, the manager will try to reconnect after this time. 0 by default.
+    public var estimatedSwapTime: TimeInterval
     /// If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
     public var eraseAppSettings: Bool
     /// If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.
@@ -791,8 +790,9 @@ public struct FirmwareUpgradeConfiguration: Codable {
         return pipelineDepth > 1
     }
     
-    public init(eraseAppSettings: Bool = true, pipelineDepth: Int = 1, byteAlignment: ImageUploadAlignment = .disabled,
-                reassemblyBufferSize: UInt64 = 0) {
+    public init(estimatedSwapTime: TimeInterval = 0.0, eraseAppSettings: Bool = true, pipelineDepth: Int = 1,
+                byteAlignment: ImageUploadAlignment = .disabled, reassemblyBufferSize: UInt64 = 0) {
+        self.estimatedSwapTime = estimatedSwapTime
         self.eraseAppSettings = eraseAppSettings
         self.pipelineDepth = pipelineDepth
         self.byteAlignment = byteAlignment
