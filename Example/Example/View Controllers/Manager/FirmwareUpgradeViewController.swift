@@ -92,13 +92,13 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         didSet {
             dfuManager = FirmwareUpgradeManager(transporter: transporter, delegate: self)
             dfuManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
-            // nRF52840 requires ~ 10 seconds for swapping images.
-            // Adjust this parameter for your device.
-            dfuManager.estimatedSwapTime = 10.0
         }
     }
+    
+    // nRF52840 requires ~ 10 seconds for swapping images.
+    // Adjust this parameter for your device.
     private var dfuManagerConfiguration = FirmwareUpgradeConfiguration(
-        eraseAppSettings: true, pipelineDepth: 3, byteAlignment: .fourByte)
+        estimatedSwapTime: 10.0, eraseAppSettings: true, pipelineDepth: 3, byteAlignment: .fourByte)
     private var initialBytes: Int = 0
     private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
@@ -111,8 +111,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         seconds.forEach { numberOfSeconds in
             alertController.addAction(UIAlertAction(title: "\(numberOfSeconds) seconds", style: .default) {
                 action in
-                self.dfuManager!.estimatedSwapTime = TimeInterval(numberOfSeconds)
-                self.dfuSwapTime.text = "\(self.dfuManager!.estimatedSwapTime)s"
+                self.dfuManagerConfiguration.estimatedSwapTime = TimeInterval(numberOfSeconds)
+                self.dfuSwapTime.text = "\(self.dfuManagerConfiguration.estimatedSwapTime)s"
             })
         }
         present(alertController, addingCancelAction: true)
@@ -343,7 +343,7 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             status.text = "READY"
             actionStart.isEnabled = true
             
-            dfuSwapTime.text = "\(dfuManager.estimatedSwapTime)s"
+            dfuSwapTime.text = "\(dfuManagerConfiguration.estimatedSwapTime)s"
             dfuSwapTime.numberOfLines = 0
             dfuNumberOfBuffers.text = dfuManagerConfiguration.pipelineDepth == 1 ? "Disabled" : "\(dfuManagerConfiguration.pipelineDepth + 1)"
             dfuNumberOfBuffers.numberOfLines = 0

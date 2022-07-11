@@ -173,7 +173,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         }
     }
     private var initialBytes: Int = 0
-    private var uploadConfiguration = FirmwareUpgradeConfiguration(pipelineDepth: 1, byteAlignment: .disabled)
+    private var uploadConfiguration = FirmwareUpgradeConfiguration(estimatedSwapTime: 10.0, pipelineDepth: 1, byteAlignment: .disabled)
     private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
 }
