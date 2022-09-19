@@ -154,7 +154,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     // MARK: Firmware Upgrade State Machine
     //**************************************************************************
     
-    private func setState(_ state: FirmwareUpgradeState) {
+    private func objc_sync_setState(_ state: FirmwareUpgradeState) {
         objc_sync_enter(self)
         let previousState = self.state
         self.state = state
@@ -167,7 +167,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     }
     
     private func requestMcuMgrParameters() {
-        setState(.requestMcuMgrParameters)
+        objc_sync_setState(.requestMcuMgrParameters)
         if !paused {
             log(msg: "Requesting device capabilities...", atLevel: .verbose)
             defaultManager.params(callback: self.mcuManagerParametersCallback)
@@ -175,7 +175,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     }
     
     private func validate() {
-        setState(.validate)
+        objc_sync_setState(.validate)
         if !paused {
             log(msg: "Sending Image List command...", atLevel: .verbose)
             imageManager.list(callback: validateCallback)
@@ -183,7 +183,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     }
     
     private func upload() {
-        setState(.upload)
+        objc_sync_setState(.upload)
         if !paused {
             let imagesToUpload = images
                 .filter { !$0.uploaded }
@@ -198,7 +198,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     }
     
     private func test(_ image: FirmwareUpgradeImage) {
-        setState(.test)
+        objc_sync_setState(.test)
         if !paused {
             log(msg: "Sending Test command for image \(image.image)...", atLevel: .verbose)
             imageManager.test(hash: [UInt8](image.hash), callback: testCallback)
@@ -206,7 +206,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     }
     
     private func confirm(_ image: FirmwareUpgradeImage) {
-        setState(.confirm)
+        objc_sync_setState(.confirm)
         if !paused {
             log(msg: "Sending Confirm command for image \(image.image)...", atLevel: .verbose)
             imageManager.confirm(hash: [UInt8](image.hash), callback: confirmCallback)
@@ -214,7 +214,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     }
     
     private func verify() {
-        setState(.confirm)
+        objc_sync_setState(.confirm)
         if !paused {
             // This will confirm the image on slot 0
             log(msg: "Sending Config command...", atLevel: .verbose)
@@ -228,7 +228,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     }
     
     private func reset() {
-        setState(.reset)
+        objc_sync_setState(.reset)
         if !paused {
             log(msg: "Sending Reset command...", atLevel: .verbose)
             defaultManager.transporter.addObserver(self)
@@ -237,8 +237,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     }
     
     private func success() {
-        // Does objc_sync_enter for itself.
-        setState(.success)
+        objc_sync_setState(.success)
         
         objc_sync_enter(self)
         defer {
