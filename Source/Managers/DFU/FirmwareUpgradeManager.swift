@@ -243,9 +243,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         paused = false
         DispatchQueue.main.async { [weak self] in
             self?.delegate?.upgradeDidComplete()
+            // Release cyclic reference.
+            self?.cyclicReferenceHolder = nil
         }
-        // Release cyclic reference.
-        cyclicReferenceHolder = nil
         objc_sync_exit(self)
     }
     
