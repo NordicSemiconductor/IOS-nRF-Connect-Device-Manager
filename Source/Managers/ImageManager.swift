@@ -343,7 +343,7 @@ public class ImageManager: McuManager {
             return
         }
         
-        if #available(iOS 10.0, *) {
+        if #available(iOS 10.0, watchOS 3.0, *) {
             dispatchPrecondition(condition: .onQueue(.main))
         }
         

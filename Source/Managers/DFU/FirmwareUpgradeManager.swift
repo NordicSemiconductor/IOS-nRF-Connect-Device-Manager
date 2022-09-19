@@ -91,7 +91,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         
         log(msg: "Upgrade started with \(images.count) images using '\(mode)' mode",
             atLevel: .application)
-        if #available(iOS 10.0, *) {
+        if #available(iOS 10.0, watchOS 3.0, *) {
             dispatchPrecondition(condition: .onQueue(.main))
         } else {
             assert(Thread.isMainThread)
