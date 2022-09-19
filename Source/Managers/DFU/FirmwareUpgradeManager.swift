@@ -237,8 +237,14 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     }
     
     private func success() {
+        // Does objc_sync_enter for itself.
         setState(.success)
+        
         objc_sync_enter(self)
+        defer {
+            objc_sync_exit(self)
+        }
+        
         state = .none
         paused = false
         DispatchQueue.main.async { [weak self] in
@@ -246,21 +252,23 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             // Release cyclic reference.
             self?.cyclicReferenceHolder = nil
         }
-        objc_sync_exit(self)
     }
     
     private func fail(error: Error) {
         objc_sync_enter(self)
+        defer {
+            objc_sync_exit(self)
+        }
+        
         log(msg: error.localizedDescription, atLevel: .error)
         let tmp = state
         state = .none
         paused = false
         DispatchQueue.main.async { [weak self] in
             self?.delegate?.upgradeDidFail(inState: tmp, with: error)
+            // Release cyclic reference.
+            self?.cyclicReferenceHolder = nil
         }
-        // Release cyclic reference.
-        cyclicReferenceHolder = nil
-        objc_sync_exit(self)
     }
     
     private func currentState() {
