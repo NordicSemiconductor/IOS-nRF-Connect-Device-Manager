@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "SwiftCBOR",
+        "repositoryURL": "https://github.com/unrelentingtech/SwiftCBOR.git",
+        "state": {
+          "branch": null,
+          "revision": "895c9aa84ce3b04106905e398ac870e0cca59d26",
+          "version": "0.4.4"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
