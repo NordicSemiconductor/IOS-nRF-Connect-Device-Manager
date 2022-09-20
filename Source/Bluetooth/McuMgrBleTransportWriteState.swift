@@ -61,6 +61,26 @@ final class McuMgrBleTransportWriteState {
         }
     }
     
+    func isCompleted(sequenceNumber: UInt8) -> Bool? {
+        guard self[sequenceNumber] != nil else {
+            // this message does not exist!
+            // this is tricky..
+            // it either means there never was a message with this sequenceNumber
+            // or `completedWrite` was called already.
+            // We assume the latter.
+            return true
+        }
+        // nothing read yet
+        guard let chunk = self[sequenceNumber]!.chunk else { return false }
+        // we did read something before but don't know anything about `totalChunkSize`?
+        //   this shouldn't happen as line 48 prevents that!
+        guard let expectedChunkSize = self[sequenceNumber]!.totalChunkSize else {
+            return nil
+        }
+
+        return chunk.count == expectedChunkSize
+    }
+
     func completedWrite(sequenceNumber: UInt8) {
         lockingQueue.async {
             self.state[sequenceNumber] = nil

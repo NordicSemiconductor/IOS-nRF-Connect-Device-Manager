@@ -123,7 +123,18 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         // i.e. sequence number, in order. So if the Data is the first 'chunk', it will
         // include the header. If not, we can presume the SequenceNumber matches the
         // previously read value.
-        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() ?? previousUpdateNotificationSequenceNumber else {
+        if let sequenceNumber = previousUpdateNotificationSequenceNumber {
+            guard let completed = writeState.isCompleted(sequenceNumber: sequenceNumber) else {
+                writeState.onError(McuMgrTransportError.badResponse)
+                return
+            }
+
+            if completed {
+                previousUpdateNotificationSequenceNumber = nil
+            }
+        }
+
+        guard let sequenceNumber = previousUpdateNotificationSequenceNumber ?? data.readMcuMgrHeaderSequenceNumber() else {
             writeState.onError(McuMgrTransportError.badHeader)
             return
         }
