@@ -53,10 +53,10 @@ final class McuMgrBleTransportWriteState {
             
             self.state[sequenceNumber]?.chunk?.append(data)
             
-            guard let chunk = self.state[sequenceNumber]?.chunk,
-                  let expectedChunkSize = self.state[sequenceNumber]?.totalChunkSize,
-                  chunk.count >= expectedChunkSize else { return }
-            
+            guard self.unsafe_isChunkComplete(for: sequenceNumber) else {
+                // More bytes expected.
+                return
+            }
             self.state[sequenceNumber]?.writeLock.open()
         }
     }
@@ -79,5 +79,16 @@ final class McuMgrBleTransportWriteState {
         lockingQueue.async {
             self.state[sequenceNumber]?.writeLock.open(error)
         }
+    }
+}
+
+// MARK: - Fileprivate
+
+fileprivate extension McuMgrBleTransportWriteState {
+    
+    func unsafe_isChunkComplete(for sequenceNumber: UInt8) -> Bool {
+        guard let chunk = self.state[sequenceNumber]?.chunk,
+              let expectedChunkSize = self.state[sequenceNumber]?.totalChunkSize else { return false }
+        return chunk.count >= expectedChunkSize
     }
 }
