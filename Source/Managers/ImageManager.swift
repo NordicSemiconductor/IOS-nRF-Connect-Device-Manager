@@ -389,7 +389,7 @@ public class ImageManager: McuManager {
                 
                 packetReceivedOutOfOrder = i != 0
                 if packetReceivedOutOfOrder {
-                    self.log(msg: "OOD Packet: Received Seq No. \(response.header.sequenceNumber) instead of expected Seq No. \(self.uploadExpectedOffsets[0].sequenceNumber)", atLevel: .debug)
+                    self.log(msg: "OoO Packet: Received Seq No. \(response.header.sequenceNumber) instead of expected Seq No. \(self.uploadExpectedOffsets[0].sequenceNumber)", atLevel: .debug)
                 }
                 self.uploadExpectedOffsets.remove(at: i)
             }
@@ -435,7 +435,7 @@ public class ImageManager: McuManager {
             }
             
             guard !packetReceivedOutOfOrder || self.uploadExpectedOffsets.isEmpty else {
-                // If packet was received OOD, we must throttle to allow device to catch-up.
+                // If packet was received OoO, we must throttle to allow device to catch-up.
                 // If there's no pipelining, `uploadExpectedOffsets` will always be empty here.
                 return
             }
