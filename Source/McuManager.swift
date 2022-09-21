@@ -46,6 +46,19 @@ open class McuManager {
     /// Logger delegate will receive logs.
     public weak var logDelegate: McuMgrLogDelegate?
     
+    /// Checks whether there are any pending issued commands.
+    ///
+    /// Is there any 'send' that has been issued and that we're waiting a response for.
+    public var hasPendingCommands: Bool { !pendingResponses.isEmpty }
+    
+    // MARK: Private
+    
+    /// Each 'send' command gets its own Sequence Number, which we rotate
+    /// within the bounds of an unsigned UInt8 [0...255].
+    private var nextSequenceNumber: UInt8 = 0
+    
+    private var pendingResponses: [UInt8] = []
+    
     //**************************************************************************
     // MARK: Initializers
     //**************************************************************************
@@ -58,37 +71,54 @@ open class McuManager {
     
     // MARK: - Send
     
-    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, sequenceNumber: UInt8 = 0,
+    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, commandId: R, payload: [String:CBOR]?,
+                                                             timeout: Int = DEFAULT_SEND_TIMEOUT_SECONDS,
+                                                             callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
+        return send(op: op, flags: 0, commandId: commandId, payload: payload, timeout: timeout,
+                    callback: callback)
+    }
+    
+    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, flags: UInt8,
                                                              commandId: R, payload: [String:CBOR]?,
                                                              timeout: Int = DEFAULT_SEND_TIMEOUT_SECONDS,
                                                              callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
-        send(op: op, sequenceNumber: sequenceNumber, flags: 0, commandId: commandId, payload: payload, timeout: timeout,
-             callback: callback)
-    }
-    
-    public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, sequenceNumber: UInt8,
-                                                             flags: UInt8, commandId: R, payload: [String:CBOR]?,
-                                                             timeout: Int = DEFAULT_SEND_TIMEOUT_SECONDS,
-                                                             callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
-        log(msg: "Sending \(op) command (Group: \(group), seq: \(sequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
+        log(msg: "Sending \(op) command (Group: \(group), seq: \(nextSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
             atLevel: .verbose)
+        let mcuPacketSequenceNumber = nextSequenceNumber
         let mcuPacketData = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
                                                    flags: flags, group: group.uInt16Value,
-                                                   sequenceNumber: sequenceNumber,
+                                                   sequenceNumber: mcuPacketSequenceNumber,
                                                    commandId: commandId, payload: payload)
-        let _callback: McuMgrCallback<T> = logDelegate == nil ? callback : { [weak self] (response, error) in
-            if let self = self {
-                if let response = response {
-                    self.log(msg: "Response (Group: \(self.group), seq: \(sequenceNumber), ID: \(response.header!.commandId!)): \(response)",
-                             atLevel: .verbose)
-                } else if let error = error {
-                    self.log(msg: "Request (Group: \(self.group), seq: \(sequenceNumber)) failed: \(error.localizedDescription))",
-                             atLevel: .error)
-                }
+        let _callback: McuMgrCallback<T> = { [weak self] (response, error) in
+            guard let self = self else {
+                callback(response, error)
+                return
+            }
+            
+            guard let i = self.pendingResponses.firstIndex(where: { $0 == mcuPacketSequenceNumber }) else {
+                callback(response, ImageUploadError.invalidUploadSequenceNumber(response?.header.sequenceNumber ?? .max))
+                return
+            }
+            
+            let packetReceivedOutOfOrder = i != 0
+            if packetReceivedOutOfOrder {
+                self.log(msg: "OoO Packet: Received Seq No. \(mcuPacketSequenceNumber) instead of expected Seq No. \(self.pendingResponses[0])", atLevel: .debug)
+            }
+            self.pendingResponses.remove(at: i)
+            
+            if let response = response {
+                self.log(msg: "Response (Group: \(self.group), seq: \(mcuPacketSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
+                         atLevel: .verbose)
+            } else if let error = error {
+                self.log(msg: "Request (Group: \(self.group), seq: \(mcuPacketSequenceNumber)) failed: \(error.localizedDescription))",
+                         atLevel: .error)
             }
             callback(response, error)
         }
+        
+        pendingResponses.append(mcuPacketSequenceNumber)
         send(data: mcuPacketData, timeout: timeout, callback: _callback)
+        rotateSequenceNumber()
     }
     
     public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {
@@ -219,6 +249,9 @@ extension McuManager {
         logDelegate?.log(msg(), ofCategory: Self.TAG, atLevel: level)
     }
     
+    private func rotateSequenceNumber() {
+        nextSequenceNumber = nextSequenceNumber == .max ? 0 : nextSequenceNumber + 1
+    }
 }
 
 /// McuManager callback
