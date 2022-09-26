@@ -74,7 +74,9 @@ public class ImageManager: McuManager {
             payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
         }
         
-        send(op: .write, commandId: ImageID.Upload, payload: payload, callback: callback)
+        let uploadTimeoutInSeconds = 1
+        send(op: .write, commandId: ImageID.Upload, payload: payload, timeout: uploadTimeoutInSeconds,
+             callback: callback)
         uploadExpectedOffsets.append(chunkEnd)
     }
     
@@ -367,14 +369,26 @@ public class ImageManager: McuManager {
         }
         
         if let offset = response.off {
-            if let i = self.uploadExpectedOffsets.firstIndex(of: offset) {
-                self.uploadExpectedOffsets.remove(at: i)
+            // We expect In-Order Responses.
+            if self.uploadExpectedOffsets.contains(offset) {
+                self.uploadLastOffset = max(self.uploadLastOffset, UInt64(offset))
             } else {
-                // Offset Mismatch. Reset to what the Firmware says.
-                self.uploadExpectedOffsets.removeFirst()
+                // Offset Mismatch.
+                self.uploadLastOffset = offset
+                
+                if !self.uploadExpectedOffsets.isEmpty {
+                    self.uploadExpectedOffsets.removeFirst()
+                }
+                
+                // All of our previous 'sends' are invalid.
+                // Wait for all of them to return and then continue.
+                guard self.uploadExpectedOffsets.isEmpty else {
+                    return
+                }
+                print("Extinguisied pending writes.")
             }
+            self.uploadExpectedOffsets.removeAll(where: { $0 <= offset })
             
-            self.uploadLastOffset = max(self.uploadLastOffset, UInt64(offset))
             self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(self.uploadLastOffset), imageSize: currentImageData.count, timestamp: Date())
             self.log(msg: "Response Offset: \(offset), UploadOffset: \(self.uploadLastOffset), Pending Offsets: \(self.uploadExpectedOffsets.map({ $0 })), ",
                      atLevel: .debug)
@@ -402,16 +416,19 @@ public class ImageManager: McuManager {
                     self.cyclicReferenceHolder = nil
                 } else {
                     self.log(msg: "Uploaded image \(images[self.uploadIndex].image) (\(self.uploadIndex + 1) of \(images.count))", atLevel: .application)
+                    
                     // Don't trigger writes to another image unless all write(s) have returned for
                     // the current one.
-                    guard self.uploadExpectedOffsets.isEmpty else { return }
-                    // !self.hasPendingCommands,
+                    guard self.uploadExpectedOffsets.isEmpty else {
+                        return
+                    }
                     
                     // Move on to the next image.
                     self.uploadIndex += 1
                     self.uploadLastOffset = 0
                     self.imageData = images[self.uploadIndex].data
                     self.log(msg: "Uploading image \(images[self.uploadIndex].image) (\(self.imageData?.count) bytes)...", atLevel: .application)
+                    self.uploadDelegate?.uploadProgressDidChange(bytesSent: 0, imageSize: images[self.uploadIndex].data.count, timestamp: Date())
                     self.sendNext(from: UInt64(0))
                 }
                 return
@@ -422,14 +439,8 @@ public class ImageManager: McuManager {
                 guard let chunkOffset = self.uploadExpectedOffsets.last ?? self.uploadLastOffset,
                       chunkOffset < currentImageData.count else {
                     
-                    if !self.hasPendingCommands, offset < currentImageDataSize {
-                        self.log(msg: "Offset mismatch detected. Response Offset: \(offset),  uploadLastOffset: \(self.uploadLastOffset), chunkOffset: \(self.uploadExpectedOffsets.last ?? self.uploadLastOffset), imageData: \(currentImageDataSize).", atLevel: .debug)
-                        self.uploadExpectedOffsets.removeAll()
-                        self.sendNext(from: offset)
-                    } else {
-                        // No remaining chunks to be sent?
-                        self.log(msg: "No remaining chunks to be sent? chunkOffset: \(self.uploadExpectedOffsets.last ?? self.uploadLastOffset), imageData: \(currentImageDataSize).", atLevel: .warning)
-                    }
+                    // No remaining chunks to be sent?
+                    self.log(msg: "No remaining chunks to be sent? chunkOffset: \(self.uploadExpectedOffsets.last ?? self.uploadLastOffset), imageData: \(currentImageDataSize).", atLevel: .warning)
                     return
                 }
                 self.sendNext(from: chunkOffset)

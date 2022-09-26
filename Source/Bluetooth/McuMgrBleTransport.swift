@@ -171,7 +171,11 @@ extension McuMgrBleTransport: McuMgrTransport {
                 switch self._send(data: data, timeoutInSeconds: timeout) {
                 case .failure(McuMgrTransportError.waitAndRetry):
                     sleep(UInt32(McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL))
-                    self.log(msg: "Retry \(i + 1)", atLevel: .info)
+                    if let header = try? McuMgrHeader(data: data) {
+                        self.log(msg: "Retry \(i + 1) for Seq. No. \(header.sequenceNumber)", atLevel: .info)
+                    } else {
+                        self.log(msg: "Retry \(i + 1) (Unknown Header Type)", atLevel: .info)
+                    }
                 case .failure(let error):
                     self.log(msg: error.localizedDescription, atLevel: .error)
                     DispatchQueue.main.async {
@@ -192,6 +196,12 @@ extension McuMgrBleTransport: McuMgrTransport {
                     }
                     return
                 }
+            }
+            
+            // Out of for-loop. No callback call was made.
+            // If we made it here, all retries failed.
+            DispatchQueue.main.async {
+                callback(nil, McuMgrTransportError.sendFailed)
             }
         }
     }
@@ -351,7 +361,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
             }
             
-                log(msg: "-> \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+            log(msg: "-> \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
             targetPeripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
         }
 
@@ -363,6 +373,8 @@ extension McuMgrBleTransport: McuMgrTransport {
         }
         
         switch result {
+        case .failure(McuMgrTransportError.sendTimeout):
+            return .failure(McuMgrTransportError.waitAndRetry)
         case .failure(let error):
             return .failure(error)
         case .success:

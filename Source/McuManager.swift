@@ -46,18 +46,14 @@ open class McuManager {
     /// Logger delegate will receive logs.
     public weak var logDelegate: McuMgrLogDelegate?
     
-    /// Checks whether there are any pending issued commands.
-    ///
-    /// Is there any 'send' that has been issued and that we're waiting a response for.
-    public var hasPendingCommands: Bool { !pendingResponses.isEmpty }
-    
     // MARK: Private
     
     /// Each 'send' command gets its own Sequence Number, which we rotate
     /// within the bounds of an unsigned UInt8 [0...255].
     private var nextSequenceNumber: UInt8 = 0
     
-    private var pendingResponses: [UInt8] = []
+    private var pendingSequenceNumbers: [UInt8] = []
+    private var robResultBuffer: [UInt8: Any?] = [:]
     
     //**************************************************************************
     // MARK: Initializers
@@ -89,34 +85,44 @@ open class McuManager {
                                                    flags: flags, group: group.uInt16Value,
                                                    sequenceNumber: mcuPacketSequenceNumber,
                                                    commandId: commandId, payload: payload)
-        let _callback: McuMgrCallback<T> = { [weak self] (response, error) in
+        let _callback: McuMgrCallback<T> = { [weak self] (response, error) -> Void in
             guard let self = self else {
                 callback(response, error)
                 return
             }
             
-            guard let i = self.pendingResponses.firstIndex(where: { $0 == mcuPacketSequenceNumber }) else {
+            guard let i = self.pendingSequenceNumbers.firstIndex(where: { $0 == mcuPacketSequenceNumber }) else {
                 callback(response, ImageUploadError.invalidUploadSequenceNumber(response?.header.sequenceNumber ?? .max))
                 return
             }
             
+            assert(self.pendingSequenceNumbers[i] == mcuPacketSequenceNumber)
+            self.robResultBuffer[mcuPacketSequenceNumber] = (response, error)
+            
             let packetReceivedOutOfOrder = i != 0
             if packetReceivedOutOfOrder {
-                self.log(msg: "OoO Packet: Received Seq No. \(mcuPacketSequenceNumber) instead of expected Seq No. \(self.pendingResponses[0])", atLevel: .debug)
+                self.log(msg: "OoO Packet: Received Seq No. \(mcuPacketSequenceNumber) instead of expected Seq No. \(self.pendingSequenceNumbers[0])", atLevel: .debug)
+                self.pendingSequenceNumbers.remove(at: i)
+                return
+            } else {
+                self.pendingSequenceNumbers.removeFirst()
             }
-            self.pendingResponses.remove(at: i)
             
-            if let response = response {
-                self.log(msg: "Response (Group: \(self.group), seq: \(mcuPacketSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
-                         atLevel: .verbose)
-            } else if let error = error {
-                self.log(msg: "Request (Group: \(self.group), seq: \(mcuPacketSequenceNumber)) failed: \(error.localizedDescription))",
-                         atLevel: .error)
+            for resultSequenceNumber in self.robResultBuffer.keys.sorted(by: <) {
+                let responseResult = self.robResultBuffer.removeValue(forKey: resultSequenceNumber) as? (T?, (any Error)?)
+
+                if let response = responseResult?.0 {
+                    self.log(msg: "Response (Group: \(self.group), seq: \(resultSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
+                             atLevel: .verbose)
+                } else if let error = responseResult?.1 {
+                    self.log(msg: "Request (Group: \(self.group), seq: \(resultSequenceNumber)) failed: \(error.localizedDescription))",
+                             atLevel: .error)
+                }
+                callback(responseResult?.0, responseResult?.1)
             }
-            callback(response, error)
         }
         
-        pendingResponses.append(mcuPacketSequenceNumber)
+        pendingSequenceNumbers.append(mcuPacketSequenceNumber)
         send(data: mcuPacketData, timeout: timeout, callback: _callback)
         rotateSequenceNumber()
     }
