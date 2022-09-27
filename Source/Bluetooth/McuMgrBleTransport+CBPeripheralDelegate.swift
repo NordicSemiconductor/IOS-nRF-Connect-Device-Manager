@@ -97,7 +97,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         state = .connected
         notifyStateChanged(.connected)
         
-        // The SMP Service and characateristic have now been discovered and set
+        // The SMP Service and characteristic have now been discovered and set
         // up. Signal the dispatch semaphore to continue to send the request.
         connectionLock.open(key: McuMgrBleTransportKey.discoveringSmpCharacteristic.rawValue)
     }
@@ -120,9 +120,8 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         }
         
         // Assumption: CoreBluetooth is delivering all packets from the same sender,
-        // i.e. sequence number, in order. So if the Data is the first 'chunk', it will
-        // include the header. If not, we can presume the SequenceNumber matches the
-        // previously read value.
+        // in order. So if the Data is the first 'chunk', it will include the header.
+        // If not, we can presume the SequenceNumber matches the previously read value.
         guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() ?? previousUpdateNotificationSequenceNumber else {
             writeState.onError(McuMgrTransportError.badHeader)
             return

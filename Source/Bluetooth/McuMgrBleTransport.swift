@@ -259,7 +259,6 @@ extension McuMgrBleTransport: McuMgrTransport {
             
             // Wait for the setup process to complete.
             let result = connectionLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.CONNECTION_TIMEOUT))
-            resetConnectionLock()
             
             switch result {
             case let .failure(error):
@@ -312,7 +311,6 @@ extension McuMgrBleTransport: McuMgrTransport {
             
             // Wait for the setup process to complete.
             let result = connectionLock.block(timeout: DispatchTime.now() + .seconds(timeoutInSeconds))
-            resetConnectionLock()
             
             switch result {
             case let .failure(error):
@@ -322,6 +320,8 @@ extension McuMgrBleTransport: McuMgrTransport {
                 log(msg: "Device ready", atLevel: .info)
             }
         }
+        
+        assert(connectionLock.isOpen)
         
         // Make sure the SMP characteristic is not nil.
         guard let smpCharacteristic = smpCharacteristic else {
@@ -336,6 +336,13 @@ extension McuMgrBleTransport: McuMgrTransport {
         writeLock.close()
         writeState.newWrite(sequenceNumber: sequenceNumber, lock: writeLock)
         
+        // No matter what, if we exit from now due to error or success, clear
+        // the current Sequence Number.
+        defer {
+            assert(writeState[sequenceNumber]?.writeLock.isOpen ?? true)
+            writeState.completedWrite(sequenceNumber: sequenceNumber)
+        }
+        
         let mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
         if chunkSendDataToMtuSize {
             var dataChunks = [Data]()
@@ -348,7 +355,8 @@ extension McuMgrBleTransport: McuMgrTransport {
             }
             
             guard dataChunksSize == data.count else {
-                return .failure(McuMgrTransportError.sendFailed)
+                writeState[sequenceNumber]?.writeLock.open(McuMgrTransportError.badChunking)
+                return .failure(McuMgrTransportError.badChunking)
             }
             
             for chunk in dataChunks {
@@ -358,6 +366,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         } else {
             // No SMP Reassembly Supported. So no 'chunking'.
             guard data.count <= mtu else {
+                writeState[sequenceNumber]?.writeLock.open(McuMgrTransportError.insufficientMtu(mtu: mtu))
                 return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
             }
             
@@ -368,14 +377,12 @@ extension McuMgrBleTransport: McuMgrTransport {
         // Wait for the didUpdateValueFor(characteristic:) to open the lock.
         let result = writeLock.block(timeout: DispatchTime.now() + .seconds(timeoutInSeconds))
         
-        defer {
-            writeState.completedWrite(sequenceNumber: sequenceNumber)
-        }
-        
         switch result {
         case .failure(McuMgrTransportError.sendTimeout):
+            writeLock.open(McuMgrTransportError.waitAndRetry)
             return .failure(McuMgrTransportError.waitAndRetry)
         case .failure(let error):
+            writeLock.open(error)
             return .failure(error)
         case .success:
             guard let returnData = writeState[sequenceNumber]?.chunk else {
@@ -384,10 +391,6 @@ extension McuMgrBleTransport: McuMgrTransport {
             log(msg: "<- \(returnData.hexEncodedString(options: .prepend0x))", atLevel: .debug)
             return .success(returnData)
         }
-    }
-    
-    internal func resetConnectionLock() {
-        connectionLock.close()
     }
     
     internal func log(msg: @autoclosure () -> String, atLevel level: McuMgrLogLevel) {
