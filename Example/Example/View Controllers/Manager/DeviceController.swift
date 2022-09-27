@@ -53,6 +53,12 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
         bleTransporter?.delegate = connectionStatus
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        // Close the connection to allow other UIViewController(s) to do
+        // their own thing.
+        defaultManager.transporter.close()
+    }
+    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         sendTapped(actionSend)
         return true
