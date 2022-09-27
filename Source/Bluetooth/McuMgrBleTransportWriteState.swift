@@ -32,7 +32,8 @@ final class McuMgrBleTransportWriteState {
     
     func newWrite(sequenceNumber: UInt8, lock: ResultLock) {
         lockingQueue.async {
-            // Either there's no state for that Sequence Number, or the Lock is Open.
+            // Either the Lock for a Sequence Number is Open, or there's no state for it.
+            assert(self.state[sequenceNumber]?.writeLock.isOpen ?? true)
             self.state[sequenceNumber] = (sequenceNumber: sequenceNumber, writeLock: lock, nil, nil)
         }
     }
