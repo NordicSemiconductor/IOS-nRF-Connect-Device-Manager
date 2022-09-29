@@ -8,6 +8,14 @@ import Foundation
 import CoreBluetooth
 import SwiftCBOR
 
+/**
+ Valid values are within the bounds of UInt8 (0...255).
+ 
+ For capabilities such as pipelining, incrementing and wrapping around
+ the Sequence Number for every `McuManager command is required.
+ */
+public typealias McuSequenceNumber = UInt8
+
 open class McuManager {
     class var TAG: McuMgrLogCategory { .default }
     
@@ -50,10 +58,10 @@ open class McuManager {
     
     /// Each 'send' command gets its own Sequence Number, which we rotate
     /// within the bounds of an unsigned UInt8 [0...255].
-    private var nextSequenceNumber: UInt8 = 0
+    private var nextSequenceNumber: McuSequenceNumber = 0
     
-    private var pendingSequenceNumbers: [UInt8] = []
-    private var robResultBuffer: [UInt8: Any?] = [:]
+    private var pendingSequenceNumbers: [McuSequenceNumber] = []
+    private var robResultBuffer: [McuSequenceNumber: Any?] = [:]
     
     //**************************************************************************
     // MARK: Initializers
@@ -146,8 +154,9 @@ open class McuManager {
     /// - parameter payload: The request payload.
     ///
     /// - returns: The raw packet data to send to the transporter.
-    public static func buildPacket<R: RawRepresentable>(scheme: McuMgrScheme, op: McuMgrOperation, flags: UInt8,
-                                                        group: UInt16, sequenceNumber: UInt8,
+    public static func buildPacket<R: RawRepresentable>(scheme: McuMgrScheme, op: McuMgrOperation,
+                                                        flags: UInt8, group: UInt16,
+                                                        sequenceNumber: McuSequenceNumber,
                                                         commandId: R, payload: [String:CBOR]?) -> Data where R.RawValue == UInt8 {
         // If the payload map is nil, initialize an empty map.
         var payload = (payload == nil ? [:] : payload)!
