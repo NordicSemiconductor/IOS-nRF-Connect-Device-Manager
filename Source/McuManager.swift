@@ -60,8 +60,10 @@ open class McuManager {
     /// within the bounds of an unsigned UInt8 [0...255].
     private var nextSequenceNumber: McuSequenceNumber = 0
     
-    private var pendingSequenceNumbers: [McuSequenceNumber] = []
-    private var robResultBuffer: [McuSequenceNumber: Any?] = [:]
+    /**
+     Sequence Number Response ReOrder Buffer
+     */
+    private var robBuffer = McuMgrROBBuffer<McuSequenceNumber, Any>()
     
     //**************************************************************************
     // MARK: Initializers
@@ -88,10 +90,10 @@ open class McuManager {
                                                              callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
         log(msg: "Sending \(op) command (Group: \(group), seq: \(nextSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
             atLevel: .verbose)
-        let mcuPacketSequenceNumber = nextSequenceNumber
-        let mcuPacketData = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
+        let packetSequenceNumber = nextSequenceNumber
+        let packetData = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
                                                    flags: flags, group: group.uInt16Value,
-                                                   sequenceNumber: mcuPacketSequenceNumber,
+                                                   sequenceNumber: packetSequenceNumber,
                                                    commandId: commandId, payload: payload)
         let _callback: McuMgrCallback<T> = { [weak self] (response, error) -> Void in
             guard let self = self else {
@@ -99,39 +101,29 @@ open class McuManager {
                 return
             }
             
-            guard let i = self.pendingSequenceNumbers.firstIndex(where: { $0 == mcuPacketSequenceNumber }) else {
-                callback(response, ImageUploadError.invalidUploadSequenceNumber(response?.header.sequenceNumber ?? .max))
-                return
-            }
-            
-            assert(self.pendingSequenceNumbers[i] == mcuPacketSequenceNumber)
-            self.robResultBuffer[mcuPacketSequenceNumber] = (response, error)
-            
-            let packetReceivedOutOfOrder = i != 0
-            if packetReceivedOutOfOrder {
-                self.log(msg: "OoO Packet: Received Seq No. \(mcuPacketSequenceNumber) instead of expected Seq No. \(self.pendingSequenceNumbers[0])", atLevel: .debug)
-                self.pendingSequenceNumbers.remove(at: i)
-                return
-            } else {
-                self.pendingSequenceNumbers.removeFirst()
-            }
-            
-            for resultSequenceNumber in self.robResultBuffer.keys.sorted(by: <) {
-                let responseResult = self.robResultBuffer.removeValue(forKey: resultSequenceNumber) as? (T?, (any Error)?)
-
-                if let response = responseResult?.0 {
-                    self.log(msg: "Response (Group: \(self.group), seq: \(resultSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
-                             atLevel: .verbose)
-                } else if let error = responseResult?.1 {
-                    self.log(msg: "Request (Group: \(self.group), seq: \(resultSequenceNumber)) failed: \(error.localizedDescription))",
-                             atLevel: .error)
+            do {
+                guard try self.robBuffer.receivedInOrder((response, error), for: packetSequenceNumber) else { return }
+                try self.robBuffer.deliver { responseSequenceNumber, response in
+                    let responseResult = response as? (T?, (any Error)?)
+                    
+                    if let response = responseResult?.0 {
+                        self.log(msg: "Response (Group: \(self.group), seq: \(responseSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
+                                 atLevel: .verbose)
+                    } else if let error = responseResult?.1 {
+                        self.log(msg: "Request (Group: \(self.group), seq: \(responseSequenceNumber)) failed: \(error.localizedDescription))",
+                                 atLevel: .error)
+                    }
+                    callback(responseResult?.0, responseResult?.1)
                 }
-                callback(responseResult?.0, responseResult?.1)
+            } catch let robBufferError {
+                DispatchQueue.main.async {
+                    callback(response, robBufferError)
+                }
             }
         }
         
-        pendingSequenceNumbers.append(mcuPacketSequenceNumber)
-        send(data: mcuPacketData, timeout: timeout, callback: _callback)
+        robBuffer.expectingValue(for: packetSequenceNumber)
+        send(data: packetData, timeout: timeout, callback: _callback)
         rotateSequenceNumber()
     }
     
