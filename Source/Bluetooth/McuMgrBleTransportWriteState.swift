@@ -10,7 +10,8 @@ import Dispatch
 
 // MARK: - McuMgrBleTransportWrite
 
-typealias McuMgrBleTransportWrite = (sequenceNumber: UInt8, writeLock: ResultLock, chunk: Data?, totalChunkSize: Int?)
+typealias McuMgrBleTransportWrite = (sequenceNumber: McuSequenceNumber, writeLock: ResultLock,
+                                     chunk: Data?, totalChunkSize: Int?)
 
 // MARK: - McuMgrBleTransportWriteState
 
@@ -24,13 +25,13 @@ final class McuMgrBleTransportWriteState {
     
     // MARK: - APIs
     
-    subscript(sequenceNumber: UInt8) -> McuMgrBleTransportWrite? {
+    subscript(sequenceNumber: McuSequenceNumber) -> McuMgrBleTransportWrite? {
         get {
             lockingQueue.sync { state[sequenceNumber] }
         }
     }
     
-    func newWrite(sequenceNumber: UInt8, lock: ResultLock) {
+    func newWrite(sequenceNumber: McuSequenceNumber, lock: ResultLock) {
         lockingQueue.async {
             // Either the Lock for a Sequence Number is Open, or there's no state for it.
             assert(self.state[sequenceNumber]?.writeLock.isOpen ?? true)
@@ -38,7 +39,7 @@ final class McuMgrBleTransportWriteState {
         }
     }
     
-    func received(sequenceNumber: UInt8, data: Data) {
+    func received(sequenceNumber: McuSequenceNumber, data: Data) {
         lockingQueue.async {
             if  self.state[sequenceNumber]?.chunk == nil {
                 // If we do not have any current response data, this is the initial
@@ -63,7 +64,7 @@ final class McuMgrBleTransportWriteState {
         }
     }
     
-    func completedWrite(sequenceNumber: UInt8) {
+    func completedWrite(sequenceNumber: McuSequenceNumber) {
         lockingQueue.async {
             self.state[sequenceNumber] = nil
         }
@@ -77,7 +78,7 @@ final class McuMgrBleTransportWriteState {
         }
     }
     
-    func onWriteError(sequenceNumber: UInt8, error: Error) {
+    func onWriteError(sequenceNumber: McuSequenceNumber, error: Error) {
         lockingQueue.async {
             self.state[sequenceNumber]?.writeLock.open(error)
         }
@@ -88,7 +89,7 @@ final class McuMgrBleTransportWriteState {
 
 fileprivate extension McuMgrBleTransportWriteState {
     
-    func unsafe_isChunkComplete(for sequenceNumber: UInt8) -> Bool {
+    func unsafe_isChunkComplete(for sequenceNumber: McuSequenceNumber) -> Bool {
         guard let chunk = self.state[sequenceNumber]?.chunk,
               let expectedChunkSize = self.state[sequenceNumber]?.totalChunkSize else { return false }
         return chunk.count >= expectedChunkSize

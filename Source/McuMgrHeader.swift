@@ -16,7 +16,7 @@ public class McuMgrHeader {
     public let flags: UInt8!
     public let length: UInt16!
     public let groupId: UInt16!
-    public let sequenceNumber: UInt8!
+    public let sequenceNumber: McuSequenceNumber!
     public let commandId: UInt8!
     
     /// Initialize the header with raw data. Because this method only parses the
@@ -39,7 +39,8 @@ public class McuMgrHeader {
         commandId = data[7]
     }
     
-    public init(op: UInt8, flags: UInt8, length: UInt16, groupId: UInt16, sequenceNumber: UInt8, commandId: UInt8) {
+    public init(op: UInt8, flags: UInt8, length: UInt16, groupId: UInt16,
+                sequenceNumber: McuSequenceNumber, commandId: UInt8) {
         self.op = op
         self.flags = flags
         self.length = length
@@ -67,7 +68,8 @@ public class McuMgrHeader {
     /// - parameter group: The group id for this command.
     /// - parameter seq: Optional sequence number.
     /// - parameter id: The subcommand id for the given group.
-    public static func build(op: UInt8, flags: UInt8, len: UInt16, group: UInt16, seq: UInt8, id: UInt8) -> [UInt8] {
+    public static func build(op: UInt8, flags: UInt8, len: UInt16, group: UInt16, seq: McuSequenceNumber,
+                             id: UInt8) -> [UInt8] {
         return [op, flags, UInt8(len >> 8), UInt8(len & 0xFF), UInt8(group >> 8), UInt8(group & 0xFF), seq, id]
     }
 }
@@ -98,8 +100,8 @@ public enum McuMgrHeaderParseError: Error, LocalizedError {
 
 internal extension Data {
     
-    func readMcuMgrHeaderSequenceNumber() -> UInt8? {
+    func readMcuMgrHeaderSequenceNumber() -> McuSequenceNumber? {
         guard count >= McuMgrHeader.HEADER_LENGTH else { return nil }
-        return read(offset: 6) as UInt8
+        return read(offset: 6) as McuSequenceNumber
     }
 }

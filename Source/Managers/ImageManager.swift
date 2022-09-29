@@ -552,7 +552,7 @@ public enum ImageUploadError: Error {
     /// Image Data is nil.
     case invalidData
     
-    case invalidUploadSequenceNumber(UInt8)
+    case invalidUploadSequenceNumber(McuSequenceNumber)
     /// McuMgrResponse contains a error return code.
     case mcuMgrErrorCode(McuMgrReturnCode)
 }
