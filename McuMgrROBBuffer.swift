@@ -11,7 +11,7 @@ import os.log
 
 // MARK: - McuMgrROBBuffer<Key, Value>
 
-struct McuMgrROBBuffer<Key: Hashable & Comparable, Value> {
+public struct McuMgrROBBuffer<Key: Hashable & Comparable, Value> {
     
     // MARK: BufferError
     
