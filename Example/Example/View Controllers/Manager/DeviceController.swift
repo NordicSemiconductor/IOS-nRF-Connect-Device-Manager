@@ -7,8 +7,12 @@
 import UIKit
 import iOSMcuManagerLibrary
 
+// MARK: - DeviceController
+
 class DeviceController: UITableViewController, UITextFieldDelegate {
 
+    // MARK: IBOutlet(s)
+    
     @IBOutlet weak var connectionStatus: ConnectionStateLabel!
     @IBOutlet weak var actionSend: UIButton!
     @IBOutlet weak var message: UITextField!
@@ -24,7 +28,11 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
         send(message: text)
     }
     
+    // MARK: Private Properties
+    
     private var defaultManager: DefaultManager!
+    
+    // MARK: UIViewController API
     
     override func viewDidLoad() {
         message.delegate = self
@@ -64,6 +72,8 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
         return true
     }
     
+    // MARK: send
+    
     private func send(message: String) {
         messageSent.text = message
         messageSent.isHidden = false
@@ -71,17 +81,43 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
         messageReceived.isHidden = true
         messageReceivedBackground.isHidden = true
         
-        defaultManager.echo(message) { (response, error) in
-            if let response = response {
-                self.messageReceived.text = response.response
-                self.messageReceivedBackground.tintColor = .zephyr
-            }
-            if let error = error {
-                self.messageReceived.text = "\(error.localizedDescription)"
-                self.messageReceivedBackground.tintColor = .systemRed
-            }
-            self.messageReceived.isHidden = false
-            self.messageReceivedBackground.isHidden = false
+        defaultManager.echo(message, callback: sendCallback)
+    }
+    
+    private lazy var sendCallback: McuMgrCallback<McuMgrEchoResponse> = { [weak self] (response: McuMgrEchoResponse?, error: Error?) in
+        
+        if let response = response {
+            self?.messageReceived.text = response.response
+            self?.messageReceivedBackground.tintColor = .zephyr
         }
+        
+        if let error = error {
+            if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
+                let previousMtu = self?.defaultManager.mtu
+                if !(self?.defaultManager.setMtu(newMtu) ?? true) {
+                    self?.onError(error)
+                    return
+                } else if newMtu < (previousMtu ?? .max), let messageText = self?.messageSent.text {
+                    // Try again if there is a change to the MTU.
+                    let bleTransport = self?.defaultManager.transporter as? McuMgrBleTransport
+                    self?.send(message: messageText)
+                    return
+                }
+            }
+            self?.onError(error)
+            return
+        }
+        
+        self?.messageReceived.isHidden = false
+        self?.messageReceivedBackground.isHidden = false
+    }
+    
+    // MARK: onError
+    
+    private func onError(_ error: some Error) {
+        messageReceived.text = "\(error.localizedDescription)"
+        messageReceived.isHidden = false
+        messageReceivedBackground.tintColor = .systemRed
+        messageReceivedBackground.isHidden = false
     }
 }
