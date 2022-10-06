@@ -118,8 +118,7 @@ public class ImageManager: McuManager {
     /// asynchronously to the delegate provided in this method.
     ///
     /// - parameter images: The images to upload.
-    /// - parameter pipelineDepth: For values larger than 1, we consider pipelining to be enabled. Pipelining allows multiple write requests to be in flight at the same time, increasing upload speeds. Disabled by default.
-    /// - parameter alignment: Use in conjunction with pipelining if the image data needs to be sent byte-aligned. Disabled by default.
+    /// - parameter configuration: The parameters used during the upgrade process. Set with defaults if not provided.
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
