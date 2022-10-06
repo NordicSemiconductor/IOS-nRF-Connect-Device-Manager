@@ -64,6 +64,21 @@ final class McuMgrBleTransportWriteState {
         }
     }
     
+    /**
+     Helper to check whether we've received all `Data` for a `McuSequenceNumber`.
+     
+     Returns: `true` if there's no state whatsoever for the given `McuSequenceNumber`, or there is state and we can verify the full chunk `Data` is present. `false` if otherwise, including if we have state for the `McuSequenceNumber`, but no chunk `Data` available or it's not complete yet.
+     */
+    func isChunkComplete(for sequenceNumber: McuSequenceNumber) -> Bool {
+        lockingQueue.sync {
+            guard let chunkState = self.state[sequenceNumber] else { return true }
+            
+            guard let chunk = chunkState.chunk,
+                  let expectedChunkSize = chunkState.totalChunkSize else { return false }
+            return chunk.count >= expectedChunkSize
+        }
+    }
+    
     func completedWrite(sequenceNumber: McuSequenceNumber) {
         lockingQueue.async {
             self.state[sequenceNumber] = nil

@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreBluetooth
+import OSLog
 
 // MARK: - McuMgrBleTransport+CBPeripheralDelegate
 
@@ -114,16 +115,30 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
             return
         }
         
+        // Assumption: CoreBluetooth is delivering all packets from the same sender,
+        // in order.
         guard let data = characteristic.value else {
             writeState.onError(McuMgrTransportError.badResponse)
             return
         }
         
-        // Assumption: CoreBluetooth is delivering all packets from the same sender,
-        // in order. So if the Data is the first 'chunk', it will include the header.
-        // If not, we can presume the SequenceNumber matches the previously read value.
-        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() ?? previousUpdateNotificationSequenceNumber else {
-            writeState.onError(McuMgrTransportError.badHeader)
+        if #available(iOS 10.0, *) {
+            log(msg: "peripheral(_, didUpdateValueFor: SMP_CHARACTERISTIC, _): \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+        }
+        
+        // Check that we've received all the data for the Sequence Number of the
+        // previous recevied Data.
+        if let previousUpdateNotificationSequenceNumber,
+           !writeState.isChunkComplete(for: previousUpdateNotificationSequenceNumber) {
+            
+            // Add Data to the previous Sequence Number.
+            writeState.received(sequenceNumber: previousUpdateNotificationSequenceNumber, data: data)
+            return
+        }
+        
+        // If the Data is the first 'chunk', it will include the header.
+        guard let sequenceNumber = data.readMcuMgrHeaderSequenceNumber() else {
+            writeState.onError(McuMgrTransportError.badResponse)
             return
         }
         
