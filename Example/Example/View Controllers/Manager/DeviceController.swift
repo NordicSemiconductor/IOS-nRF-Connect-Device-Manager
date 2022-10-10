@@ -94,12 +94,20 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
         if let error = error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
                 let previousMtu = self?.defaultManager.mtu
+                // Change MTU to the recommended new value.
                 if !(self?.defaultManager.setMtu(newMtu) ?? true) {
                     self?.onError(error)
                     return
-                } else if newMtu < (previousMtu ?? .max), let messageText = self?.messageSent.text {
-                    // Try again if there is a change to the MTU.
-                    let bleTransport = self?.defaultManager.transporter as? McuMgrBleTransport
+                } else if let messageText = self?.messageSent.text {
+                    // MTU Set successful and we have the text, so try again.
+                    // If MTU value did not change, suggesting new MTU did not work,
+                    // try reassembly.
+                    if newMtu == (previousMtu ?? .max),
+                       let bleTransport = self?.defaultManager.transporter as? McuMgrBleTransport,
+                       !bleTransport.chunkSendDataToMtuSize {
+                        
+                        bleTransport.chunkSendDataToMtuSize = true
+                    }
                     self?.send(message: messageText)
                     return
                 }
