@@ -27,7 +27,7 @@ public struct McuMgrManifest: Codable {
     public init(from url: URL) throws {
         guard let data = try? Data(contentsOf: url),
               let stringData = String(data: data, encoding: .utf8) else {
-                  throw Error.unableToImport
+                  throw Error.unableToRead
         }
         
         let stringWithoutSpaces = String(stringData.filter { !" \n\t\r".contains($0) })
@@ -35,7 +35,11 @@ public struct McuMgrManifest: Codable {
         guard let cleanData = modString.data(using: .utf8) else {
             throw Error.unableToParseJSON
         }
-        self = try JSONDecoder().decode(McuMgrManifest.self, from: cleanData)
+        do {
+            self = try JSONDecoder().decode(McuMgrManifest.self, from: cleanData)
+        } catch {
+            throw Error.unableToDecodeJSON
+        }
     }
 }
 
@@ -106,7 +110,18 @@ extension McuMgrManifest {
 
 extension McuMgrManifest {
     
-    enum Error: Swift.Error {
-        case unableToImport, unableToParseJSON
+    enum Error: Swift.Error, LocalizedError {
+        case unableToRead, unableToParseJSON, unableToDecodeJSON
+        
+        var errorDescription: String? {
+            switch self {
+            case .unableToRead:
+                return "Unable to Read Manifest JSON File."
+            case .unableToParseJSON:
+                return "Unable to Parse Manifest JSON File."
+            case .unableToDecodeJSON:
+                return "Unable to Decode Manifest JSON File."
+            }
+        }
     }
 }

@@ -274,6 +274,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         eraseSwitch.isEnabled = true
         status.textColor = .systemRed
         status.text = "\(error.localizedDescription)"
+        status.numberOfLines = 0
         dfuSpeed.isHidden = true
     }
     
@@ -290,6 +291,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         eraseSwitch.isEnabled = true
         status.textColor = .primary
         status.text = "CANCELLED"
+        status.numberOfLines = 0
         dfuSpeed.isHidden = true
     }
     
@@ -341,6 +343,7 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             
             status.textColor = .primary
             status.text = "READY"
+            status.numberOfLines = 0
             actionStart.isEnabled = true
             
             dfuSwapTime.text = "\(dfuManagerConfiguration.estimatedSwapTime)s"
@@ -351,10 +354,12 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             dfuByteAlignment.numberOfLines = 0
         } catch {
             print("Error reading hash: \(error)")
+            fileName.text = url.lastPathComponent
             fileSize.text = ""
             fileHash.text = ""
             status.textColor = .systemRed
-            status.text = "INVALID FILE"
+            status.text = "Error Loading File: \(error.localizedDescription)"
+            status.numberOfLines = 0
             actionStart.isEnabled = false
         }
     }

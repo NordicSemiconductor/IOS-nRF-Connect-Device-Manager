@@ -71,8 +71,24 @@ public struct McuMgrPackage {
 
 extension McuMgrPackage {
     
-    enum Error: Swift.Error {
-        case deniedAccessToScopedResource, notAValidDocument, unableToAccessCacheDirectory, manifestFileNotFound, manifestImageNotFound
+    enum Error: Swift.Error, LocalizedError {
+        case deniedAccessToScopedResource, notAValidDocument, unableToAccessCacheDirectory
+        case manifestFileNotFound, manifestImageNotFound
+        
+        var errorDescription: String? {
+            switch self {
+            case .deniedAccessToScopedResource:
+                return "Access to Scoped Resource (iCloud?) Denied."
+            case .notAValidDocument:
+                return "This is not a valid file for DFU."
+            case .unableToAccessCacheDirectory:
+                return "We were unable to access the Cache Directory."
+            case .manifestFileNotFound:
+                return "DFU Manifest File not found."
+            case .manifestImageNotFound:
+                return "DFU Image specified in Manifest not found."
+            }
+        }
     }
 }
 
