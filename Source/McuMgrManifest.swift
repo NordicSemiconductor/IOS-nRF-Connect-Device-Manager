@@ -89,10 +89,6 @@ extension McuMgrManifest {
             _image = try? values.decode(Int.self, forKey: ._image)
             let imageIndexString = try? values.decode(String.self, forKey: ._imageIndex)
             guard let imageIndexString = imageIndexString else {
-                guard _image != nil else {
-                    throw DecodingError.dataCorruptedError(forKey: ._image, in: values,
-                                                           debugDescription: "'image' nor 'imageIndex' keys found.")
-                }
                 _imageIndex = nil
                 return
             }
