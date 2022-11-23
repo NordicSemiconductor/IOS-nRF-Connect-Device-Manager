@@ -205,24 +205,18 @@ open class McuManager {
         return RFC3339DateFormatter.string(from: date)
     }
     
-    /// Set the MTU used by this McuManager. The McuManager MTU must be between
-    /// 23 and 1024 (inclusive). The MTU generally only matters when uploading
-    /// to the device, where the upload data in each request should be
-    /// maximized.
-    ///
-    /// - parameter mtu: The mtu to set.
-    ///
-    /// - returns: true if the value is between 23 and 1024 (inclusive), false
-    ///   otherwise
-    public func setMtu(_ mtu: Int) -> Bool {
-        if mtu >= 23 && mtu <= 1024 {
-            self.mtu = mtu
-            log(msg: "MTU set to \(mtu)", atLevel: .info)
-            return true
-        } else {
-            log(msg: "Invalid MTU (\(mtu)): Value must be between 23 and 1024", atLevel: .warning)
-            return false
+    static let ValidMTURange = 23...1024
+    
+    public func setMtu(_ mtu: Int) throws  {
+        guard Self.ValidMTURange.contains(mtu) else {
+            throw McuManagerError.mtuValueOutsideOfValidRange(mtu)
         }
+        guard self.mtu != mtu else {
+            throw McuManagerError.mtuValueHasNotchanged(mtu)
+        }
+        
+        self.mtu = mtu
+        log(msg: "MTU set to \(mtu)", atLevel: .info)
     }
     
     /// Get the default MTU which should be used for a transport scheme. If the
@@ -261,8 +255,26 @@ extension McuManager {
     }
 }
 
-/// McuManager callback
+// MARK: - McuManagerCallback
+
 public typealias McuMgrCallback<T: McuMgrResponse> = (T?, Error?) -> Void
+
+// MARK: - McuManagerError
+
+public enum McuManagerError: Error, LocalizedError {
+    
+    case mtuValueOutsideOfValidRange(_ newValue: Int)
+    case mtuValueHasNotchanged(_ newValue: Int)
+    
+    public var errorDescription: String? {
+        switch self {
+        case .mtuValueOutsideOfValidRange(let newMtu):
+            return "New MTU Value \(newMtu) is outside valid range of \(McuManager.ValidMTURange.lowerBound)...\(McuManager.ValidMTURange.upperBound)"
+        case .mtuValueHasNotchanged(let newMtu):
+            return "MTU Value already set to \(newMtu)."
+        }
+    }
+}
 
 // MARK: - McuMgrGroup
 
