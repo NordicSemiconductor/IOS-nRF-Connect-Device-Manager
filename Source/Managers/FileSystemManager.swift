@@ -282,10 +282,11 @@ public class FileSystemManager: McuManager {
         // Check for an error.
         if let error = error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
-                if !self.setMtu(newMtu) {
-                    self.cancelTransfer(error: error)
-                } else {
+                do {
+                    try self.setMtu(newMtu)
                     self.restartTransfer()
+                } catch let mtuResetError {
+                    self.cancelTransfer(error: mtuResetError)
                 }
                 return
             }
@@ -352,10 +353,11 @@ public class FileSystemManager: McuManager {
         // Check for an error.
         if let error = error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
-                if !self.setMtu(newMtu) {
-                    self.cancelTransfer(error: error)
-                } else {
+                do {
+                    try self.setMtu(newMtu)
                     self.restartTransfer()
+                } catch let mtuResetError {
+                    self.cancelTransfer(error: mtuResetError)
                 }
                 return
             }

@@ -341,10 +341,11 @@ public class ImageManager: McuManager {
         // Check for an error.
         if let error = error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
-                if !self.setMtu(newMtu) {
-                    self.cancelUpload(error: error)
-                } else {
+                do {
+                    try self.setMtu(newMtu)
                     self.restartUpload()
+                } catch let mtuResetError {
+                    self.cancelUpload(error: mtuResetError)
                 }
                 return
             }

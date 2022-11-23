@@ -138,16 +138,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         return state.isInProgress() && !paused
     }
     
-    /// Sets the MTU of the image upload. The MTU must be between 23 and 1024
-    /// (inclusive). The upload MTU determines the number of bytes sent in each
-    /// upload request. The MTU will default the the maximum available to the
-    /// phone and may change automatically if the end device's MTU is lower.
-    ///
-    /// - parameter mtu: The mtu to use in image upload.
-    ///
-    /// - returns: true if the mtu was within range, false otherwise
-    public func setUploadMtu(mtu: Int) -> Bool {
-        return imageManager.setMtu(mtu)
+    public func setUploadMtu(mtu: Int) throws {
+        try imageManager.setMtu(mtu)
     }
     
     //**************************************************************************
