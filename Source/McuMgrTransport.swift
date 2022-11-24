@@ -41,7 +41,7 @@ public enum ConnectionResult {
 
 public typealias ConnectionCallback = (ConnectionResult) -> Void
 
-public enum McuMgrTransportError: Error {
+public enum McuMgrTransportError: Error, Hashable {
     /// Connection to the remote device has timed out.
     case connectionTimeout
     /// Connection to the remote device has failed.
