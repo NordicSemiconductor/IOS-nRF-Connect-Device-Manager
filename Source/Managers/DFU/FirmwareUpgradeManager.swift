@@ -301,14 +301,18 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         guard let self = self else { return }
         
         guard error == nil, let response = response, response.rc != 8 else {
-            self.log(msg: "Device capabilities not supported", atLevel: .warning)
+            self.log(msg: "Device capabilities not supported.", atLevel: .warning)
             self.configuration.reassemblyBufferSize = 0
+            if self.configuration.eraseAppSettings {
+                self.log(msg: "Cancelling 'Erase App Settings' since device capabilities are not supported.", atLevel: .info)
+                self.configuration.eraseAppSettings = false
+            }
             self.validate() // Continue Upload
             return
         }
         
-        self.log(msg: "Device capabilities received", atLevel: .application)
-        self.log(msg: "Setting SAR buffer size to \(response.bufferSize) bytes", atLevel: .debug)
+        self.log(msg: "Device capabilities received.", atLevel: .application)
+        self.log(msg: "Setting SAR buffer size to \(response.bufferSize) bytes.", atLevel: .debug)
         self.configuration.reassemblyBufferSize = response.bufferSize
         self.validate() // Continue Upload
     }
