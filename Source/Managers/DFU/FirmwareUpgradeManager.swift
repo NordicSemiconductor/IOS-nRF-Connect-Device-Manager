@@ -215,6 +215,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     }
     
     private func eraseAppSettings() {
+        objc_sync_setState(.eraseAppSettings)
         log(msg: "Erasing app settings...", atLevel: .verbose)
         basicManager.eraseAppSettings(callback: eraseAppSettingsCallback)
     }
@@ -897,7 +898,10 @@ extension FirmwareUpgradeError: LocalizedError {
 //******************************************************************************
 
 public enum FirmwareUpgradeState {
-    case none, requestMcuMgrParameters, validate, upload, test, reset, confirm, success
+    case none
+    case requestMcuMgrParameters, eraseAppSettings
+    case upload, success
+    case validate, test, confirm, reset
     
     func isInProgress() -> Bool {
         return self != .none
