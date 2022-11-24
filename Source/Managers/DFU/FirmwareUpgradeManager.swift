@@ -623,12 +623,18 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
     }
     
-    /// Callback for Erase App Settings Command.
+    // MARK: Erase App Settings Callback
+    
     private lazy var eraseAppSettingsCallback: McuMgrCallback<McuMgrResponse> = { [weak self] response, error in
-        guard let self = self else { return }
+        guard let self else { return }
         
-        if let error = error {
-            self.fail(error: error)
+        if let error = error as? McuMgrTransportError {
+            // Some devices will not even reply to Erase App Settings. So just move on.
+            if McuMgrTransportError.sendFailed == error {
+                self.finishedEraseAppSettings()
+            } else {
+                self.fail(error: error)
+            }
             return
         }
         
@@ -644,6 +650,10 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             self.log(msg: "Erasing app settings not supported", atLevel: .warning)
         }
         
+        self.finishedEraseAppSettings()
+    }
+    
+    private func finishedEraseAppSettings() {
         // Set to false so uploadDidFinish() doesn't loop forever.
         self.configuration.eraseAppSettings = false
         self.uploadDidFinish()
