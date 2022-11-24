@@ -170,7 +170,8 @@ extension McuMgrBleTransport: McuMgrTransport {
             for i in 0..<McuMgrBleTransportConstant.MAX_RETRIES {
                 switch self._send(data: data, timeoutInSeconds: timeout) {
                 case .failure(McuMgrTransportError.waitAndRetry):
-                    sleep(UInt32(McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL))
+                    let waitInterval = min(timeout, McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL)
+                    sleep(UInt32(waitInterval))
                     if let header = try? McuMgrHeader(data: data) {
                         self.log(msg: "Retry \(i + 1) for Seq. No. \(header.sequenceNumber)", atLevel: .info)
                     } else {
