@@ -17,6 +17,8 @@ public class BasicManager: McuManager {
     
     // MARK: - Constants
 
+    public static let MAX_ECHO_MESSAGE_SIZE_BYTES = 2475
+    
     enum ID: UInt8 {
         case Reset = 0
     }
@@ -34,5 +36,19 @@ public class BasicManager: McuManager {
     /// - parameter callback: The response callback with a ``McuMgrResponse``.
     public func eraseAppSettings(callback: @escaping McuMgrCallback<McuMgrResponse>) {
         send(op: .write, commandId: ID.Reset, payload: [:], timeout: 1, callback: callback)
+    }
+}
+
+// MARK: - BasicManagerError
+
+enum BasicManagerError: Hashable, Error, LocalizedError {
+    
+    case echoMessageOverTheLimit(_ messageSize: Int)
+    
+    var errorDescription: String? {
+        switch self {
+        case .echoMessageOverTheLimit(let messageSize):
+            return "Echo Message of \(messageSize) bytes in size is over the limit of \(BasicManager.MAX_ECHO_MESSAGE_SIZE_BYTES) bytes."
+        }
     }
 }
