@@ -42,6 +42,15 @@ public class DefaultManager: McuManager {
     /// - parameter callback: The response callback.
     public func echo(_ echo: String, callback: @escaping McuMgrCallback<McuMgrEchoResponse>) {
         let payload: [String:CBOR] = ["d": CBOR.utf8String(echo)]
+        
+        let echoPacket = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write,
+                                                flags: 0, group: McuMgrGroup.default.uInt16Value,
+                                                sequenceNumber: 0, commandId: ID.Echo, payload: payload)
+        
+        guard echoPacket.count <= BasicManager.MAX_ECHO_MESSAGE_SIZE_BYTES else {
+            callback(nil, BasicManagerError.echoMessageOverTheLimit(echoPacket.count))
+            return
+        }
         send(op: .write, commandId: ID.Echo, payload: payload, callback: callback)
     }
     
