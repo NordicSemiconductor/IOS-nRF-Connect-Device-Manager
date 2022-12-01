@@ -631,7 +631,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     // MARK: Erase App Settings Callback
     
     private lazy var eraseAppSettingsCallback: McuMgrCallback<McuMgrResponse> = { [weak self] response, error in
-        guard let self else { return }
+        guard let self = self else { return }
         
         if let error = error as? McuMgrTransportError {
             // Some devices will not even reply to Erase App Settings. So just move on.

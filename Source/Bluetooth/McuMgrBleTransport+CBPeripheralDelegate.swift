@@ -128,7 +128,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         
         // Check that we've received all the data for the Sequence Number of the
         // previous recevied Data.
-        if let previousUpdateNotificationSequenceNumber,
+        if let previousUpdateNotificationSequenceNumber = previousUpdateNotificationSequenceNumber,
            !writeState.isChunkComplete(for: previousUpdateNotificationSequenceNumber) {
             
             // Add Data to the previous Sequence Number.
