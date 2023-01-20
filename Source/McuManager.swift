@@ -341,13 +341,17 @@ public enum McuMgrOperation: UInt8 {
 /// Each Mcu Manager response will contain a "rc" key with one of these return
 /// codes.
 public enum McuMgrReturnCode: UInt64, Error {
-    case ok         = 0
-    case unknown    = 1
-    case noMemory   = 2
-    case inValue    = 3
-    case timeout    = 4
-    case noEntry    = 5
-    case badState   = 6
+    case ok                = 0
+    case unknown           = 1
+    case noMemory          = 2
+    case inValue           = 3
+    case timeout           = 4
+    case noEntry           = 5
+    case badState          = 6
+    case responseIsTooLong = 7
+    case unsupported       = 8
+    case corruptPayload    = 9
+    case busy              = 10
     case unrecognized
     
     public func isSuccess() -> Bool {
@@ -364,19 +368,27 @@ extension McuMgrReturnCode: CustomStringConvertible {
     public var description: String {
         switch self {
         case .ok:
-            return "OK (0)"
+            return "OK (\(rawValue))"
         case .unknown:
-            return "Unknown (1)"
+            return "Unknown (\(rawValue))"
         case .noMemory:
-            return "No Memory (2)"
+            return "No Memory (\(rawValue))"
         case .inValue:
-            return "In Value (3)"
+            return "In Value (\(rawValue))"
         case .timeout:
-            return "Timeout (4)"
+            return "Timeout (\(rawValue))"
         case .noEntry:
-            return "No Entry (5)"
+            return "No Entry (\(rawValue))"
         case .badState:
-            return "Bad State (1)"
+            return "Bad State (\(rawValue))"
+        case .responseIsTooLong:
+            return "Response is Too Long (\(rawValue))"
+        case .unsupported:
+            return "Not Supported (\(rawValue)). Requested Group ID or Command ID May Not Supported by This Application."
+        case .corruptPayload:
+            return "Corrupt Payload (\(rawValue))"
+        case .busy:
+            return "Busy Processing Previous SMP Request (\(rawValue)). Wait and Try Later."
         default:
             return "Unrecognized (\(rawValue))"
         }
