@@ -568,7 +568,7 @@ extension ImageUploadError: LocalizedError {
         case .invalidUploadSequenceNumber(let sequenceNumber):
             return "Received Response for Unknown Sequence Number \(sequenceNumber)."
         case .mcuMgrErrorCode(let code):
-            return "Remote error: \(code)."
+            return "Remote error: \(code)"
         }
     }
 }
