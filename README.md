@@ -5,7 +5,7 @@
 
 # nRF Connect Device Manager
 
-nRF Connect Device Manager library is compatible with Mcu Manager, a management subsystem supported by nRF Connect SDK, Zephyr and Apache Mynewt.
+nRF Connect Device Manager library is compatible with [McuManager (McuMgr, for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview), a management subsystem supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt.  **It is the recommended protocol for Device Firmware Update(s) on new Nordic-powered devices going forward and should not be confused with the previous protocol, NordicDFU, serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library)**. McuManager uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), to send and receive message requests from compatible devices. The SMP Transport definition for Bluetooth Low Energy, which this library implements, [can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
 
 The library provides a transport agnostic implementation of the McuManager protocol. It contains a default implementation for BLE transport.
 
@@ -14,6 +14,14 @@ The library provides a transport agnostic implementation of the McuManager proto
 ### Note
 
 This repository is a fork of the [McuManager iOS Library](https://github.com/JuulLabs-OSS/mcumgr-ios), which is no longer being supported by its original maintainer. As of 2021, we have taken ownership of the library, so all new features and bug fixes will be added here. Please, migrate your projects to point to this Git repsository in order to get future updates. See [migration guide](https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager#migration-from-the-original-repo).
+
+## Compatible Devices
+
+| nRF52 Series | nRF53 Series | nRF91 Series |
+| :---: | :----: | :---: |
+| ![](nRF52-Series-small.png) | ![](nRF53-Series-small.png) | ![](nRF91-Series-small.png) |
+
+This library is designed to work with the SMP Transport over BLE. It is implemented and maintained by Nordic Semiconductor, **but it should work any devices communicating via SMP Protocol**. If you encounter an issue communicating with a device using any chip, not just Nordic, please file an Issue.
 
 ## Install
 
