@@ -23,7 +23,7 @@ This repository is a fork of the [McuManager iOS Library](https://github.com/Juu
 
 This library is designed to work with the SMP Transport over BLE. It is implemented and maintained by Nordic Semiconductor, **but it should work any devices communicating via SMP Protocol**. If you encounter an issue communicating with a device using any chip, not just Nordic, please file an Issue.
 
-## Install
+## Library Adoption into an Existing Project (Install)
 
 ### SPM or Swift Package Manager (Recommended)
 
@@ -33,6 +33,47 @@ In Xcode, go to *File → Swift Packages → Add Package Dependency...* and add 
 
 ```
 pod 'iOSMcuManagerLibrary'
+```
+
+## Building the Example Project (Requires Xcode & CocoaPods)
+
+### "Cocoapods?"
+
+Not to worry, we have you covered. Just [follow the instructions here](https://guides.cocoapods.org/using/getting-started.html).
+
+### Instructions
+
+First, clone the project:
+
+```shell
+git clone https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.git
+```
+
+Then, open the project's directory, navigate to the *Example* folder, and run `pod install`:
+
+```shell
+cd IOS-nRF-Connect-Device-Manager/
+cd Example/
+pod install
+```
+
+The output should look similar to this:
+
+```shell
+Analyzing dependencies
+Downloading dependencies
+Installing SwiftCBOR (0.4.4)
+Installing ZIPFoundation (0.9.11)
+Installing iOSMcuManagerLibrary (1.3.1)
+Generating Pods project
+Integrating client project
+Pod installation complete! There are 2 dependencies from the Podfile and 3 total pods installed.
+```
+
+You should now be able to open, build & run the Example project by opening the *nRF Connect Device Manager.xcworkspace* file:
+
+```shell
+open nRF\ Connect\ Device\ Manager.xcworkspace
 ```
 
 # Introduction
