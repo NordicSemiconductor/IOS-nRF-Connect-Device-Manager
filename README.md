@@ -254,3 +254,7 @@ deviceManger.echo("Hello World!", callback)
 ### OSLog integration
 
 `McuMgrLogDelegate` can be easily integrated with the [Unified Logging System](https://developer.apple.com/documentation/os/logging). An example is provided in the example app in the `AppDelegate.swift`. A `McuMgrLogLevel` extension that can be found in that file translates the log level to one of `OSLogType` levels. Similarly, `McuMgrLogCategory` extension converts the category to `OSLog` type.
+
+# Related Projects
+
+We've heard demand from developers for a single McuMgr DFU library to target multiple platforms. So we've made available [a Flutter library](https://pub.dev/packages/mcumgr_flutter) that acts as a wrapper for both Android and iOS.
