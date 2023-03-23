@@ -327,7 +327,7 @@ public class FileSystemManager: McuManager {
             }
             
             // Check if the upload has completed.
-            if offset == fileData.count {
+            if offset >= fileData.count {
                 self.log(msg: "Upload finished", atLevel: .application)
                 self.resetTransfer()
                 self.uploadDelegate?.uploadDidFinish()
@@ -404,7 +404,7 @@ public class FileSystemManager: McuManager {
             }
             
             // Check if the upload has completed.
-            if self.offset == self.fileSize! {
+            if self.offset >= self.fileSize! {
                 self.log(msg: "Download finished", atLevel: .application)
                 self.downloadDelegate?.download(of: self.fileName!, didFinish: self.fileData!)
                 self.resetTransfer()
