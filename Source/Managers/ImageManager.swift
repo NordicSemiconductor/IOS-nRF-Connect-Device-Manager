@@ -63,6 +63,7 @@ public class ImageManager: McuManager {
         let chunkEnd = min(chunkOffset + payloadLength, UInt64(data.count))
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
                                       "off": CBOR.unsignedInt(chunkOffset)]
+        let uploadTimeoutInSeconds: Int
         if chunkOffset == 0 {
             // 0 is Default behaviour, so we can ignore adding it and
             // the firmware will do the right thing.
@@ -72,9 +73,13 @@ public class ImageManager: McuManager {
             
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
             payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
+            
+            // When uploading offset 0, we might trigger an erase on the firmware's end.
+            // Hence, the longer timeout.
+            uploadTimeoutInSeconds = 20
+        } else {
+            uploadTimeoutInSeconds = 1
         }
-        
-        let uploadTimeoutInSeconds = 1
         send(op: .write, commandId: ImageID.Upload, payload: payload, timeout: uploadTimeoutInSeconds,
              callback: callback)
         uploadExpectedOffsets.append(chunkEnd)
