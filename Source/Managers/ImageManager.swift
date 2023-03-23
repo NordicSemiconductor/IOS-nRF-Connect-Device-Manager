@@ -76,7 +76,7 @@ public class ImageManager: McuManager {
             
             // When uploading offset 0, we might trigger an erase on the firmware's end.
             // Hence, the longer timeout.
-            uploadTimeoutInSeconds = 20
+            uploadTimeoutInSeconds = McuManager.DEFAULT_SEND_TIMEOUT_SECONDS
         } else {
             uploadTimeoutInSeconds = 1
         }
