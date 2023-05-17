@@ -14,7 +14,6 @@ public class ImageManager: McuManager {
     override class var TAG: McuMgrLogCategory { .image }
     
     private static let PIPELINED_WRITES_TIMEOUT_SECONDS = 10
-    private static let truncatedHashLen = 3
     
     // MARK: - IDs
 
@@ -72,7 +71,7 @@ public class ImageManager: McuManager {
             }
             
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
-            payload.updateValue(CBOR.byteString([UInt8](data.sha256()[0..<ImageManager.truncatedHashLen])), forKey: "sha")
+            payload.updateValue(CBOR.byteString([UInt8](data.sha256())), forKey: "sha")
             
             // When uploading offset 0, we might trigger an erase on the firmware's end.
             // Hence, the longer timeout.
@@ -518,7 +517,7 @@ public class ImageManager: McuManager {
             }
             
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
-            payload.updateValue(CBOR.byteString([UInt8](repeating: 0, count: ImageManager.truncatedHashLen)), forKey: "sha")
+            payload.updateValue(CBOR.byteString([UInt8](data.sha256())), forKey: "sha")
         }
         // Build the packet and return the size.
         let packet = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write, flags: 0,
