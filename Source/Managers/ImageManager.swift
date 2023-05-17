@@ -356,6 +356,14 @@ public class ImageManager: McuManager {
             self.cancelUpload(error: error)
             return
         }
+        
+        // If response includes 'match' value, it should be true.
+        // Else, we assume everything is OK.
+        guard response?.match ?? true else {
+            self.cancelUpload(error: ImageUploadError.offsetMismatch)
+            return
+        }
+        
         // Make sure the image data is set.
         guard let currentImageData = self.imageData, let images = self.uploadImages else {
             self.cancelUpload(error: ImageUploadError.invalidData)
@@ -555,6 +563,8 @@ public enum ImageUploadError: Error {
     case invalidPayload
     /// Image Data is nil.
     case invalidData
+    /// Response payload reports package offset does not match expected value.
+    case offsetMismatch
     
     case invalidUploadSequenceNumber(McuSequenceNumber)
     /// McuMgrResponse contains a error return code.
@@ -569,6 +579,8 @@ extension ImageUploadError: LocalizedError {
             return "Response payload values do not exist."
         case .invalidData:
             return "Image data is nil."
+        case .offsetMismatch:
+            return "Response payload reports package offset does not match expected value."
         case .invalidUploadSequenceNumber(let sequenceNumber):
             return "Received Response for Unknown Sequence Number \(sequenceNumber)."
         case .mcuMgrErrorCode(let code):

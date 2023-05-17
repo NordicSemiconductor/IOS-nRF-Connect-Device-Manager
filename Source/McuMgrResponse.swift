@@ -450,10 +450,16 @@ public class McuMgrUploadResponse: McuMgrResponse {
     
     /// Offset to send the next packet of image data from.
     public var off: UInt64?
+    public var match: Bool?
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
-        if case let CBOR.unsignedInt(off)? = cbor?["off"] {self.off = off}
+        if case let CBOR.unsignedInt(off)? = cbor?["off"] {
+            self.off = off
+        }
+        if case let CBOR.boolean(match)? = cbor?["match"] {
+            self.match = match
+        }
     }
 }
 
