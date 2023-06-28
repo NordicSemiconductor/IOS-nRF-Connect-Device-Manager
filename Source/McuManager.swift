@@ -205,7 +205,7 @@ open class McuManager {
         return RFC3339DateFormatter.string(from: date)
     }
     
-    static let ValidMTURange = 23...1024
+    static let ValidMTURange = 73...1024
     
     public func setMtu(_ mtu: Int) throws  {
         guard Self.ValidMTURange.contains(mtu) else {
