@@ -311,7 +311,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             }
             
             // Wait for the setup process to complete.
-            let result = connectionLock.block(timeout: DispatchTime.now() + .seconds(timeoutInSeconds))
+            let result = connectionLock.block(timeout: DispatchTime.now() + .seconds(McuMgrBleTransportConstant.CONNECTION_TIMEOUT))
             
             switch result {
             case let .failure(error):
