@@ -361,7 +361,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             }
             
             for chunk in dataChunks {
-                log(msg: "-> \(chunk.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+                log(msg: "-> \(chunk.hexEncodedString(options: .prepend0x)) (\(chunk.count) bytes)", atLevel: .debug)
                 targetPeripheral.writeValue(chunk, for: smpCharacteristic, type: .withoutResponse)
             }
         } else {
@@ -371,7 +371,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
             }
             
-            log(msg: "-> \(data.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+            log(msg: "-> \(data.hexEncodedString(options: .prepend0x)) (\(data.count) bytes)", atLevel: .debug)
             targetPeripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
         }
 
@@ -389,7 +389,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             guard let returnData = writeState[sequenceNumber]?.chunk else {
                 return .failure(McuMgrTransportError.badHeader)
             }            
-            log(msg: "<- \(returnData.hexEncodedString(options: .prepend0x))", atLevel: .debug)
+            log(msg: "<- \(returnData.hexEncodedString(options: .prepend0x)) (\(returnData.count) bytes)", atLevel: .debug)
             return .success(returnData)
         }
     }
