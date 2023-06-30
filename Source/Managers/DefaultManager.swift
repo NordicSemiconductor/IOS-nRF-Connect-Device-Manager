@@ -111,7 +111,7 @@ public class DefaultManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func params(callback: @escaping McuMgrCallback<McuMgrParametersResponse>) {
-        send(op: .read, commandId: ID.McuMgrParameters, payload: nil, timeout: 1, callback: callback)
+        send(op: .read, commandId: ID.McuMgrParameters, payload: nil, timeout: McuManager.FAST_TIMEOUT, callback: callback)
     }
 }
 

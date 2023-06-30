@@ -33,6 +33,9 @@ open class McuManager {
     /// allowed to elapse before a send request is considered to have failed
     /// due to a timeout if no response is received.
     public static let DEFAULT_SEND_TIMEOUT_SECONDS = 40
+    /// This is the default time to wait for a command to be sent, executed
+    /// and received (responded to) by the firmware on the other end.
+    public static let FAST_TIMEOUT = 2
     
     //**************************************************************************
     // MARK: Properties

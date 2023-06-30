@@ -77,7 +77,7 @@ public class ImageManager: McuManager {
             // Hence, the longer timeout.
             uploadTimeoutInSeconds = McuManager.DEFAULT_SEND_TIMEOUT_SECONDS
         } else {
-            uploadTimeoutInSeconds = 1
+            uploadTimeoutInSeconds = McuManager.FAST_TIMEOUT
         }
         send(op: .write, commandId: ImageID.Upload, payload: payload, timeout: uploadTimeoutInSeconds,
              callback: callback)
