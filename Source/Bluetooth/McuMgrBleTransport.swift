@@ -136,6 +136,7 @@ public class McuMgrBleTransport: NSObject {
         self.writeState = McuMgrBleTransportWriteState()
         self.observers = []
         self.operationQueue = OperationQueue()
+        self.operationQueue.qualityOfService = .userInitiated
         self.operationQueue.maxConcurrentOperationCount = 1
         super.init()
         self.centralManager.delegate = self
@@ -360,9 +361,13 @@ extension McuMgrBleTransport: McuMgrTransport {
                 return .failure(McuMgrTransportError.badChunking)
             }
             
-            for chunk in dataChunks {
-                log(msg: "-> \(chunk.hexEncodedString(options: .prepend0x)) (\(chunk.count) bytes)", atLevel: .debug)
-                targetPeripheral.writeValue(chunk, for: smpCharacteristic, type: .withoutResponse)
+            // All chunks of the same packet need to be sent together. Otherwise, they can't
+            // be merged properly on the receiving end.
+            writeState.sharedLock { [weak self] in
+                for chunk in dataChunks {
+                    self?.log(msg: "-> [Seq: \(sequenceNumber)] \(chunk.hexEncodedString(options: .prepend0x)) (\(chunk.count) bytes)", atLevel: .debug)
+                    targetPeripheral.writeValue(chunk, for: smpCharacteristic, type: .withoutResponse)
+                }
             }
         } else {
             // No SMP Reassembly Supported. So no 'chunking'.
@@ -371,7 +376,8 @@ extension McuMgrBleTransport: McuMgrTransport {
                 return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
             }
             
-            log(msg: "-> \(data.hexEncodedString(options: .prepend0x)) (\(data.count) bytes)", atLevel: .debug)
+            // We're only sending one 'chunk' so no need for shared lock.
+            log(msg: "-> [Seq: \(sequenceNumber)] \(data.hexEncodedString(options: .prepend0x)) (\(data.count) bytes)", atLevel: .debug)
             targetPeripheral.writeValue(data, for: smpCharacteristic, type: .withoutResponse)
         }
 
@@ -389,7 +395,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             guard let returnData = writeState[sequenceNumber]?.chunk else {
                 return .failure(McuMgrTransportError.badHeader)
             }            
-            log(msg: "<- \(returnData.hexEncodedString(options: .prepend0x)) (\(returnData.count) bytes)", atLevel: .debug)
+            log(msg: "<- [Seq: \(sequenceNumber)] \(returnData.hexEncodedString(options: .prepend0x)) (\(returnData.count) bytes)", atLevel: .debug)
             return .success(returnData)
         }
     }
