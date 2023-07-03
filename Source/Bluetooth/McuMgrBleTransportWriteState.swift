@@ -19,7 +19,8 @@ final class McuMgrBleTransportWriteState {
     
     // MARK: - Private Properties
     
-    private let lockingQueue = DispatchQueue(label: "McuMgrBleTransportWriteState")
+    private let lockingQueue = DispatchQueue(label: "McuMgrBleTransportWriteState",
+                                             qos: .userInitiated)
     
     private var state = [UInt8: McuMgrBleTransportWrite]()
     
@@ -37,6 +38,10 @@ final class McuMgrBleTransportWriteState {
             assert(self.state[sequenceNumber]?.writeLock.isOpen ?? true)
             self.state[sequenceNumber] = (sequenceNumber: sequenceNumber, writeLock: lock, nil, nil)
         }
+    }
+    
+    func sharedLock(_ writeClosure: @escaping () -> Void) {
+        lockingQueue.async { writeClosure() }
     }
     
     func received(sequenceNumber: McuSequenceNumber, data: Data) {
