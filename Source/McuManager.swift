@@ -35,7 +35,7 @@ open class McuManager {
     public static let DEFAULT_SEND_TIMEOUT_SECONDS = 40
     /// This is the default time to wait for a command to be sent, executed
     /// and received (responded to) by the firmware on the other end.
-    public static let FAST_TIMEOUT = 2
+    public static let FAST_TIMEOUT = 5
     
     //**************************************************************************
     // MARK: Properties
