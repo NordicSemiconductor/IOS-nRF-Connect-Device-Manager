@@ -7,7 +7,7 @@
 import Foundation
 import CommonCrypto
 
-internal extension Data {
+public extension Data {
     
     // MARK: - Convert data to and from types
     
