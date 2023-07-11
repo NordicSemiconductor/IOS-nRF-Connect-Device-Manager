@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		20051E16221E31EA00EBB6FC /* Data+McuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20051E15221E31EA00EBB6FC /* Data+McuManager.swift */; };
 		5215762D212320F300C21B0C /* LogsStatsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215762C212320F300C21B0C /* LogsStatsController.swift */; };
 		5215762F2125B59400C21B0C /* FilesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215762E2125B59400C21B0C /* FilesController.swift */; };
 		521576312126CC8F00C21B0C /* FileUploadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521576302126CC8F00C21B0C /* FileUploadViewController.swift */; };
@@ -40,7 +39,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		20051E15221E31EA00EBB6FC /* Data+McuManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+McuManager.swift"; sourceTree = "<group>"; };
 		5215762C212320F300C21B0C /* LogsStatsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsStatsController.swift; sourceTree = "<group>"; };
 		5215762E2125B59400C21B0C /* FilesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesController.swift; sourceTree = "<group>"; };
 		521576302126CC8F00C21B0C /* FileUploadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileUploadViewController.swift; sourceTree = "<group>"; };
@@ -142,7 +140,6 @@
 			isa = PBXGroup;
 			children = (
 				524DCFD8210B4241000E110D /* UIColor.swift */,
-				20051E15221E31EA00EBB6FC /* Data+McuManager.swift */,
 				AA02AA5B2796E67E003040D5 /* UTI.swift */,
 				AA02AA592796E57E003040D5 /* McuMgrPackage.swift */,
 			);
@@ -367,7 +364,6 @@
 				BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */,
 				524DCFD9210B4241000E110D /* UIColor.swift in Sources */,
 				5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */,
-				20051E16221E31EA00EBB6FC /* Data+McuManager.swift in Sources */,
 				526270A4210B8E8000FC17D4 /* ImageController.swift in Sources */,
 				AA02AA5C2796E67E003040D5 /* UTI.swift in Sources */,
 				AA02AA5A2796E57E003040D5 /* McuMgrPackage.swift in Sources */,
