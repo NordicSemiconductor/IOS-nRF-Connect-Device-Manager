@@ -37,24 +37,30 @@ internal extension Data {
     
     struct HexEncodingOptions: OptionSet {
         public let rawValue: Int
+        
         public static let upperCase = HexEncodingOptions(rawValue: 1 << 0)
-        public static let space = HexEncodingOptions(rawValue: 1 << 1)
+        public static let byteSpacing = HexEncodingOptions(rawValue: 1 << 1)
         public static let prepend0x = HexEncodingOptions(rawValue: 1 << 2)
+        public static let twoByteSpacing = HexEncodingOptions(rawValue: 1 << 3)
+        
         public init(rawValue: Int) {
             self.rawValue = rawValue
         }
     }
     
     func hexEncodedString(options: HexEncodingOptions = []) -> String {
-        if isEmpty {
-            return "0 bytes"
-        }
+        guard !isEmpty else { return "0 bytes" }
+        
         var format = options.contains(.upperCase) ? "%02hhX" : "%02hhx"
-        if options.contains(.space) {
+        if options.contains(.byteSpacing) {
             format.append(" ")
         }
         let prefix = options.contains(.prepend0x) ? "0x" : ""
-        return prefix + map { String(format: format, $0) }.joined()
+        var body = map { String(format: format, $0) }.joined()
+        if options.contains(.twoByteSpacing) {
+            body = body.inserting(separator: " ", every: 4)
+        }
+        return prefix + body
     }
     
     // MARK: - Fragmentation

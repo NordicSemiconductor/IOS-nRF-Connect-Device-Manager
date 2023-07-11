@@ -367,7 +367,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                     return
                 }
                 if let chunk {
-                    self?.log(msg: "-> [Seq: \(sequenceNumber)] \(chunk.hexEncodedString(options: .prepend0x)) (\(chunk.count) bytes)", atLevel: .debug)
+                    self?.log(msg: "-> [Seq: \(sequenceNumber)] \(chunk.hexEncodedString(options: [.upperCase, .twoByteSpacing])) (\(chunk.count) bytes)", atLevel: .debug)
                 }
             }
         } else {
@@ -383,7 +383,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                     return
                 }
                 if let data {
-                    self?.log(msg: "-> [Seq: \(sequenceNumber)] \(data.hexEncodedString(options: .prepend0x)) (\(data.count) bytes)", atLevel: .debug)
+                    self?.log(msg: "-> [Seq: \(sequenceNumber)] \(data.hexEncodedString(options: [.upperCase, .twoByteSpacing])) (\(data.count) bytes)", atLevel: .debug)
                 }
             }
         }
@@ -401,8 +401,8 @@ extension McuMgrBleTransport: McuMgrTransport {
         case .success:
             guard let returnData = writeState[sequenceNumber]?.chunk else {
                 return .failure(McuMgrTransportError.badHeader)
-            }            
-            log(msg: "<- [Seq: \(sequenceNumber)] \(returnData.hexEncodedString(options: .prepend0x)) (\(returnData.count) bytes)", atLevel: .debug)
+            }
+            log(msg: "<- [Seq: \(sequenceNumber)] \(returnData.hexEncodedString(options: [.upperCase, .twoByteSpacing])) (\(returnData.count) bytes)", atLevel: .debug)
             return .success(returnData)
         }
     }
