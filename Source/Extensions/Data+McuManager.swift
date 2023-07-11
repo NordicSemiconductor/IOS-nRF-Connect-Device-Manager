@@ -36,12 +36,13 @@ internal extension Data {
     // MARK: - Hex Encoding
     
     struct HexEncodingOptions: OptionSet {
-        public let rawValue: Int
-        
         public static let upperCase = HexEncodingOptions(rawValue: 1 << 0)
         public static let byteSpacing = HexEncodingOptions(rawValue: 1 << 1)
         public static let prepend0x = HexEncodingOptions(rawValue: 1 << 2)
         public static let twoByteSpacing = HexEncodingOptions(rawValue: 1 << 3)
+        public static let reverseEndianness = HexEncodingOptions(rawValue: 1 << 4)
+        
+        public let rawValue: Int
         
         public init(rawValue: Int) {
             self.rawValue = rawValue
@@ -55,11 +56,21 @@ internal extension Data {
         if options.contains(.byteSpacing) {
             format.append(" ")
         }
-        let prefix = options.contains(.prepend0x) ? "0x" : ""
-        var body = map { String(format: format, $0) }.joined()
+        
+        var bytes = self
+        if options.contains(.reverseEndianness) {
+            bytes.reverse()
+        }
+        
+        var body = bytes.map {
+            String(format: format, $0)
+        }.joined()
+        
         if options.contains(.twoByteSpacing) {
             body = body.inserting(separator: " ", every: 4)
         }
+        
+        let prefix = options.contains(.prepend0x) ? "0x" : ""
         return prefix + body
     }
     
