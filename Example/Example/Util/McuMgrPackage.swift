@@ -19,12 +19,7 @@ public struct McuMgrPackage {
     // MARK: - Init
     
     init(from url: URL) throws {
-        let document = UIDocument(fileURL: url)
-        guard let fileType = document.fileType else {
-            throw McuMgrPackage.Error.notAValidDocument
-        }
-        
-        switch UTI.from(fileType) {
+        switch UTI.forFile(url) {
         case .bin:
             self.images = try Self.extractImageFromBinFile(from: url)
         case .zip:

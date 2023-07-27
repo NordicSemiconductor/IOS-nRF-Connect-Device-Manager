@@ -8,6 +8,11 @@
 
 import Foundation
 import UniformTypeIdentifiers
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: - UTI
 
@@ -32,5 +37,18 @@ enum UTI: String, CaseIterable {
         return UTI.allCases.first {
             $0.typeIdentifiers.contains(fileType)
         }
+    }
+    
+    private static func typeOf(_ url: URL) -> String? {
+#if os(macOS)
+        return try? NSWorkspace.shared.type(ofFile: url.path)
+#else
+        let document = UIDocument(fileURL: url)
+        return document.fileType
+#endif
+    }
+    
+    static func forFile(_ file: URL) -> UTI? {
+        return typeOf(file).flatMap({ from($0) })
     }
 }
