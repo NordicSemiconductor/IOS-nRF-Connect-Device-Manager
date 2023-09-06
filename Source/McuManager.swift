@@ -355,6 +355,7 @@ public enum McuMgrReturnCode: UInt64, Error {
     case unsupported       = 8
     case corruptPayload    = 9
     case busy              = 10
+    case accessDenied      = 11
     case unrecognized
     
     public func isSuccess() -> Bool {
@@ -371,29 +372,31 @@ extension McuMgrReturnCode: CustomStringConvertible {
     public var description: String {
         switch self {
         case .ok:
-            return "OK (\(rawValue))"
+            return "OK (RC: \(rawValue))"
         case .unknown:
-            return "Unknown (\(rawValue))"
+            return "Unknown (RC: \(rawValue))"
         case .noMemory:
-            return "No Memory (\(rawValue))"
+            return "No Memory (RC: \(rawValue))"
         case .inValue:
-            return "In Value (\(rawValue))"
+            return "In Value (RC: \(rawValue))"
         case .timeout:
-            return "Timeout (\(rawValue))"
+            return "Timeout (RC: \(rawValue))"
         case .noEntry:
-            return "No Entry (\(rawValue))"
+            return "No Entry (RC: \(rawValue))"
         case .badState:
-            return "Bad State (\(rawValue))"
+            return "Bad State (RC: \(rawValue))"
         case .responseIsTooLong:
-            return "Response is Too Long (\(rawValue))"
+            return "Response is Too Long (RC: \(rawValue))"
         case .unsupported:
-            return "Not Supported (\(rawValue)). Requested Group ID or Command ID May Not Supported by This Application."
+            return "Not Supported (RC: \(rawValue)). Requested Group ID or Command ID May Not Supported by This Application."
         case .corruptPayload:
-            return "Corrupt Payload (\(rawValue))"
+            return "Corrupt Payload (RC: \(rawValue))"
         case .busy:
-            return "Busy Processing Previous SMP Request (\(rawValue)). Wait and Try Later."
+            return "Busy Processing Previous SMP Request (RC: \(rawValue)). Wait and Try Later."
+        case .accessDenied:
+            return "Access Denied (RC: \(rawValue)). Are You Trying to Downgrade to a Lower Image Version?"
         default:
-            return "Unrecognized (\(rawValue))"
+            return "Unrecognized (RC: \(rawValue))"
         }
     }
 }
