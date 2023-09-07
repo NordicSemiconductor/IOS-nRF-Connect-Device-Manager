@@ -184,13 +184,13 @@ extension McuMgrImageParseError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .invalidHeaderMagic:
-            return "Invalid header magic number."
+            return "Invalid Header Magic Number. Are You Trying to DFU an Image That Has Not Been Properly Signed?"
         case .invalidTlvInfoMagic:
-            return "Invalid TLV Info magic number."
+            return "Invalid TLV Info Magic Number. Are You Trying to DFU an Image That Has Not Been Properly Signed Again?"
         case .insufficientData:
-            return "Insufficient data."
+            return "Insufficient Data."
         case .hashNotFound:
-            return "Hash not found."
+            return "Hash Not Found."
         }
     }
     
