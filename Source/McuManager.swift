@@ -382,7 +382,7 @@ extension McuMgrReturnCode: CustomStringConvertible {
         case .timeout:
             return "Timeout (RC: \(rawValue))"
         case .noEntry:
-            return "No Entry (RC: \(rawValue))"
+            return "No Entry (RC: \(rawValue)). For Filesystem Operations, Does Your Mounting Point Match Your Target Firmware / Device?"
         case .badState:
             return "Bad State (RC: \(rawValue))"
         case .responseIsTooLong:

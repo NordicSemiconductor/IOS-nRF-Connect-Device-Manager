@@ -9,7 +9,10 @@ import iOSMcuManagerLibrary
 
 class FilesController: UITableViewController {
     static let partitionKey = "partition"
-    static let defaultPartition = "lfs" // https://github.com/ARMmbed/littlefs
+    /**
+    [LittleFS GitHub Project](https://github.com/ARMmbed/littlefs)
+     */
+    static let defaultPartition = "lfs1"
     
     @IBOutlet weak var connectionStatus: ConnectionStateLabel!
     
