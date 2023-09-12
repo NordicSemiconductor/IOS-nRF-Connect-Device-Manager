@@ -38,8 +38,8 @@ public class FileSystemManager: McuManager {
     public func download(name: String, offset: UInt,
                          callback: @escaping McuMgrCallback<McuMgrFsDownloadResponse>) {
         // Build the request payload.
-        let payload: [String:CBOR] = ["name": CBOR.utf8String(name),
-                                      "off": CBOR.unsignedInt(UInt64(offset))]
+        let payload: [String: CBOR] = ["name": CBOR.utf8String(name),
+                                       "off": CBOR.unsignedInt(UInt64(offset))]
         // Build request and send.
         send(op: .read, commandId: FilesystemID.File, payload: payload, callback: callback)
     }
@@ -65,9 +65,9 @@ public class FileSystemManager: McuManager {
         let dataLength: UInt = min(maxDataLength, remainingBytes)
         
         // Build the request payload.
-        var payload: [String:CBOR] = ["name": CBOR.utf8String(name),
-                                      "data": CBOR.byteString([UInt8](data[offset..<(offset+dataLength)])),
-                                      "off": CBOR.unsignedInt(UInt64(offset))]
+        var payload: [String: CBOR] = ["name": CBOR.utf8String(name),
+                                       "data": CBOR.byteString([UInt8](data[offset..<(offset+dataLength)])),
+                                       "off": CBOR.unsignedInt(UInt64(offset))]
         
         // If this is the initial packet, send the file data length.
         if offset == 0 {
@@ -463,9 +463,9 @@ public class FileSystemManager: McuManager {
     
     private func calculatePacketOverhead(name: String, data: Data, offset: UInt64) -> Int {
         // Get the Mcu Manager header.
-        var payload: [String:CBOR] = ["name": CBOR.utf8String(name),
-                                      "data": CBOR.byteString([UInt8]([0])),
-                                      "off":  CBOR.unsignedInt(offset)]
+        var payload: [String: CBOR] = ["name": CBOR.utf8String(name),
+                                       "data": CBOR.byteString([UInt8]([0])),
+                                       "off":  CBOR.unsignedInt(offset)]
         // If this is the initial packet we have to include the length of the
         // entire file.
         if offset == 0 {
@@ -483,6 +483,8 @@ public class FileSystemManager: McuManager {
         return packetOverhead
     }
 }
+
+// MARK: FileTransferError
 
 public enum FileTransferError: Error {
     /// Response payload values do not exist.
