@@ -8,6 +8,8 @@ import Foundation
 import CoreBluetooth
 import SwiftCBOR
 
+// MARK: - FileSystemManager
+
 public class FileSystemManager: McuManager {
     override class var TAG: McuMgrLogCategory { .fs }
     
@@ -54,15 +56,20 @@ public class FileSystemManager: McuManager {
     public func upload(name: String, data: Data, offset: UInt,
                        callback: @escaping McuMgrCallback<McuMgrFsUploadResponse>) {
         // Calculate the number of remaining bytes.
-        let remainingBytes: UInt = UInt(data.count) - offset
+        let remainingBytes = UInt(data.count) - offset
         
         // Data length to end is the minimum of the max data lenght and the
         // number of remaining bytes.
-        let packetOverhead = calculatePacketOverhead(name: name, data: data, offset: UInt64(offset))
+        let packetOverhead = calculatePacketOverhead(name: name, data: data,
+                                                     offset: UInt64(offset))
         
         // Get the length of file data to send.
-        let maxDataLength: UInt = UInt(mtu) - UInt(packetOverhead)
-        let dataLength: UInt = min(maxDataLength, remainingBytes)
+        let maxPacketSize = max(uploadConfiguration.reassemblyBufferSize, UInt64(mtu))
+        var maxDataLength = maxPacketSize - UInt64(packetOverhead)
+        if uploadConfiguration.byteAlignment != .disabled {
+            maxDataLength = (maxDataLength / uploadConfiguration.byteAlignment.rawValue) * uploadConfiguration.byteAlignment.rawValue
+        }
+        let dataLength = min(UInt(maxDataLength), remainingBytes)
         
         // Build the request payload.
         var payload: [String: CBOR] = ["name": CBOR.utf8String(name),
@@ -128,10 +135,13 @@ public class FileSystemManager: McuManager {
     ///
     /// - parameter name: The file name.
     /// - parameter data: The file data to be sent to the peripheral.
+    /// - parameter configuration: Settings to be used  when sending Data, such as enabling SMP Pipelining, Byte-Alignment, etc. Works as seen in `ImageManager`0s `upload(images:using:delegate)` function.
     /// - parameter delegate: The delegate to recieve progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
-    public func upload(name: String, data: Data, delegate: FileUploadDelegate) -> Bool {
+    public func upload(name: String, data: Data,
+                       using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration(),
+                       delegate: FileUploadDelegate) -> Bool {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         // If upload is already in progress or paused, do not continue.
@@ -153,6 +163,14 @@ public class FileSystemManager: McuManager {
         fileData = data
         fileSize = nil
         
+        // Note that pipelining requires the use of byte-alignment, otherwise we
+        // can't predict how many bytes the firmware will accept in each chunk.
+        self.uploadConfiguration = configuration
+        if let bleTransport = transporter as? McuMgrBleTransport {
+            bleTransport.numberOfParallelWrites = configuration.pipelineDepth
+            bleTransport.chunkSendDataToMtuSize = configuration.reassemblyBufferSize != 0
+        }
+        
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
         
@@ -162,7 +180,7 @@ public class FileSystemManager: McuManager {
     }
     
     //**************************************************************************
-    // MARK: Image Upload
+    // MARK: State
     //**************************************************************************
     
     /// Image upload states
@@ -186,6 +204,11 @@ public class FileSystemManager: McuManager {
     private var fileSize: Int?
     /// Delegate to send file upload updates to.
     private weak var uploadDelegate: FileUploadDelegate?
+    /// Groups multiple Settings regarding Upload, such as enabling
+    /// Pipelining, Byte Alignment and/or SMP Reassembly.
+    /// This is not applied for Download, since it's up to the Sender
+    /// to package/format the Data according to SMP specification.
+    private var uploadConfiguration: FirmwareUpgradeConfiguration!
     /// Delegate to send file download updates to.
     private weak var downloadDelegate: FileDownloadDelegate?
     
@@ -454,7 +477,8 @@ public class FileSystemManager: McuManager {
         objc_sync_enter(self)
         transferState = .none
         if let uploadDelegate = uploadDelegate {
-            _ = upload(name: fileName!, data: fileData!, delegate: uploadDelegate)
+            _ = upload(name: fileName!, data: fileData!,
+                       using: uploadConfiguration, delegate: uploadDelegate)
         } else if let downloadDelegate = downloadDelegate {
             _ = download(name: fileName!, delegate: downloadDelegate)
         }
