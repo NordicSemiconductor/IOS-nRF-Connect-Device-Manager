@@ -20,6 +20,25 @@ public class DefaultManager: McuManager {
         case DateTimeString = 4
         case Reset = 5
         case McuMgrParameters = 6
+        case ApplicationInfo = 7
+        case BootloaderInformation = 8
+    }
+    
+    public enum ApplicationInfoFormat: String {
+        case KernelName = "s"
+        case NodeName = "n"
+        case KernelRelease = "r"
+        case KernelVersion = "v"
+        case BuildDateTime = "b"
+        case Machine = "m"
+        case Processor = "p"
+        case HeardwarePlatform = "i"
+        case OperatingSystem = "o"
+        case All = "a"
+    }
+    
+    public enum BootloaderInfoQuery: String {
+        case Mode = "mode"
     }
     
     //**************************************************************************
@@ -30,10 +49,10 @@ public class DefaultManager: McuManager {
         super.init(group: McuMgrGroup.default, transporter: transporter)
     }
     
-    //**************************************************************************
-    // MARK: Commands
-    //**************************************************************************
+    // MARK: - Commands
 
+    // MARK: Echo
+    
     /// Echo a string to the device.
     ///
     /// Used primarily to test Mcu Manager.
@@ -54,6 +73,8 @@ public class DefaultManager: McuManager {
         send(op: .write, commandId: ID.Echo, payload: payload, callback: callback)
     }
     
+    // MARK: (Console) Echo
+    
     /// Set console echoing on the device.
     ///
     /// - parameter echoOn: Value to set console echo to.
@@ -63,6 +84,8 @@ public class DefaultManager: McuManager {
         send(op: .write, commandId: ID.ConsoleEchoControl, payload: payload, callback: callback)
     }
     
+    // MARK: Task
+    
     /// Read the task statistics for the device.
     ///
     /// - parameter callback: The response callback.
@@ -70,12 +93,16 @@ public class DefaultManager: McuManager {
         send(op: .read, commandId: ID.TaskStatistics, payload: nil, callback: callback)
     }
     
+    // MARK: Memory Pool
+    
     /// Read the memory pool statistics for the device.
     ///
     /// - parameter callback: The response callback.
     public func memoryPoolStats(callback: @escaping McuMgrCallback<McuMgrMemoryPoolStatsResponse>) {
         send(op: .read, commandId: ID.MemoryPoolStatatistics, payload: nil, callback: callback)
     }
+    
+    // MARK: Read/Write DateTime
     
     /// Read the date and time on the device.
     ///
@@ -100,6 +127,8 @@ public class DefaultManager: McuManager {
         send(op: .write, commandId: ID.DateTimeString, payload: payload, callback: callback)
     }
     
+    // MARK: Reset
+    
     /// Trigger the device to soft reset.
     ///
     /// - parameter callback: The response callback.
@@ -107,11 +136,47 @@ public class DefaultManager: McuManager {
         send(op: .write, commandId: ID.Reset, payload: nil, callback: callback)
     }
     
+    // MARK: McuMgr Parameters
+    
     /// Reads McuMgr Parameters
     ///
     /// - parameter callback: The response callback.
     public func params(callback: @escaping McuMgrCallback<McuMgrParametersResponse>) {
         send(op: .read, commandId: ID.McuMgrParameters, payload: nil, timeout: McuManager.FAST_TIMEOUT, callback: callback)
+    }
+    
+    // MARK: Application Info
+    
+    /// Reads Application Info
+    ///
+    /// - parameter callback: The response callback.
+    public func applicationInfo(format: Set<ApplicationInfoFormat>,
+                                callback: @escaping McuMgrCallback<AppInfoResponse>) {
+        let payload: [String:CBOR]
+        if format.contains(.All) {
+            payload = ["format": CBOR.utf8String(ApplicationInfoFormat.All.rawValue)]
+        } else {
+            payload = ["format": CBOR.utf8String(format.map({$0.rawValue}).joined(separator: ""))]
+        }
+        send(op: .read, commandId: ID.ApplicationInfo, payload: payload,
+             timeout: McuManager.FAST_TIMEOUT, callback: callback)
+    }
+    
+    // MARK: Boolotader Info
+    
+    /// Reads Bootloader Info
+    ///
+    /// - parameter callback: The response callback.
+    public func bootloaderInfo(query: BootloaderInfoQuery?,
+                               callback: @escaping McuMgrCallback<BootloaderInfoResponse>) {
+        let payload: [String:CBOR]?
+        if let query {
+            payload = ["query": CBOR.utf8String(query.rawValue)]
+        } else {
+            payload = nil
+        }
+        send(op: .read, commandId: ID.BootloaderInformation, payload: payload,
+             timeout: McuManager.FAST_TIMEOUT, callback: callback)
     }
 }
 
