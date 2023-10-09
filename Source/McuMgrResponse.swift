@@ -351,7 +351,6 @@ public class McuMgrDateTimeResponse: McuMgrResponse {
 public final class McuMgrParametersResponse: McuMgrResponse {
     
     public var bufferSize: UInt64!
-    
     public var bufferCount: UInt64!
     
     public required init(cbor: CBOR?) throws {
@@ -359,6 +358,74 @@ public final class McuMgrParametersResponse: McuMgrResponse {
         
         if case let CBOR.unsignedInt(bufferSize)? = cbor?["buf_size"] { self.bufferSize = bufferSize }
         if case let CBOR.unsignedInt(bufferCount)? = cbor?["buf_count"] { self.bufferCount = bufferCount }
+    }
+}
+
+// MARK: - AppInfoResponse
+
+public final class AppInfoResponse: McuMgrResponse {
+    
+    public var response: String?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.utf8String(output)? = cbor?["output"] {
+            self.response = output
+        }
+    }
+}
+
+// MARK: - BootloaderInfoResponse
+
+public final class BootloaderInfoResponse: McuMgrResponse {
+    
+    public enum Mode: Int, CustomStringConvertible {
+        case Unknown = -1
+        case SingleApplication = 0
+        case SwapUsingScratch = 1
+        case Overwrite = 2
+        case SwapNoScratch = 3
+        case DirectXIPNoRevert = 4
+        case DirectXIPWithRevert = 5
+        case RAMLoader = 6
+        
+        public var description: String {
+            switch self {
+            case .Unknown:
+                return "MCUboot is in single application mode."
+            case .SingleApplication:
+                return "MCUboot is in single application mode."
+            case .SwapUsingScratch:
+                return "MCUboot is in swap using scratch partition mode."
+            case .Overwrite:
+                return "MCUboot is in overwrite (upgrade-only) mode."
+            case .SwapNoScratch:
+                return "MCUboot is in swap without scratch mode."
+            case .DirectXIPNoRevert:
+                return "MCUboot is in DirectXIP without revert mode."
+            case .DirectXIPWithRevert:
+                return "MCUboot is in DirectXIP with revert mode."
+            case .RAMLoader:
+                return "MCUboot is in RAM loader mode."
+            }
+        }
+    }
+    
+    public var bootloader: String?
+    public var mode: Mode?
+    public var noDowngrade: Bool?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.utf8String(bootloader)? = cbor?["bootloader"] {
+            self.bootloader = bootloader
+        }
+        if case let CBOR.unsignedInt(mode)? = cbor?["mode"] {
+            self.mode = Mode(rawValue: Int(mode))
+        }
+        if case let CBOR.boolean(noDowngrade)? = cbor?["no-downgrade"] {
+            self.noDowngrade = noDowngrade
+        }
     }
 }
 
