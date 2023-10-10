@@ -31,18 +31,23 @@ public struct McuMgrPackage {
     
     // MARK: - API
     
-    static func imageName(at index: Int) -> String {
-        switch index {
-        case 0: return "App Core"
-        case 1: return "Net Core"
-        default: return "Image \(index)"
+    func imageName(at index: Int) -> String {
+        let coreName: String
+        switch images[index].image {
+        case 0: 
+            coreName = "App Core"
+        case 1: 
+            coreName = "Net Core"
+        default: 
+            coreName = "Image \(index)"
         }
+        return "\(coreName) Slot \(images[index].slot)"
     }
     
     func sizeString() -> String {
         var sizeString = ""
         for (i, image) in images.enumerated() {
-            sizeString += "\(image.data.count) bytes (\(Self.imageName(at: i)))"
+            sizeString += "\(image.data.count) bytes (\(imageName(at: i)))"
             guard i != images.count - 1 else { continue }
             sizeString += "\n"
         }
@@ -54,7 +59,7 @@ public struct McuMgrPackage {
         for (i, image) in images.enumerated() {
             let hash = try McuMgrImage(data: image.data).hash
             let hashString = hash.hexEncodedString(options: .upperCase)
-            result += "0x\(hashString.prefix(6))...\(hashString.suffix(6)) (\(Self.imageName(at: i)))"
+            result += "0x\(hashString.prefix(6))...\(hashString.suffix(6)) (\(imageName(at: i)))"
             guard i != images.count - 1 else { continue }
             result += "\n"
         }
@@ -120,7 +125,7 @@ fileprivate extension McuMgrPackage {
                 throw McuMgrPackage.Error.manifestImageNotFound
             }
             let imageData = try Data(contentsOf: imageURL)
-            return (manifestFile.image, imageData)
+            return ImageManager.Image(manifestFile, data: imageData)
         }
         try unzippedURLs.forEach { url in
             try fileManager.removeItem(at: url)

@@ -64,13 +64,14 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// - parameter data: `Data` to upload to App Core (Image 0).
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
     public func start(data: Data, using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
-        try start(images: [(0, data)], using: configuration)
+        try start(images: [ImageManager.Image(image: 0, data: data)],
+                  using: configuration)
     }
     
     /// Start the firmware upgrade.
     ///
     /// This is the full-featured API to start DFU update, including support for Multi-Image uploads.
-    /// - parameter images: An Array of (Image, `Data`) pairs with the Image Core/Index and its corresponding `Data` to upload.
+    /// - parameter images: An Array of (`ImageManager.Image`) to upload.
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
     public func start(images: [ImageManager.Image], using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
         objc_sync_enter(self)
@@ -179,7 +180,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         if !paused {
             let imagesToUpload = images
                 .filter { !$0.uploaded }
-                .map { ImageManager.Image($0.image, $0.data) }
+                .map { ImageManager.Image($0) }
             guard !imagesToUpload.isEmpty else {
                 log(msg: "Nothing to be uploaded", atLevel: .info)
                 uploadDidFinish()
@@ -996,11 +997,12 @@ public protocol FirmwareUpgradeDelegate: AnyObject {
 
 // MARK: - FirmwareUpgradeImage
 
-fileprivate struct FirmwareUpgradeImage {
+internal struct FirmwareUpgradeImage {
     
     // MARK: Properties
     
     let image: Int
+    let slot: Int
     let data: Data
     let hash: Data
     var uploaded: Bool
@@ -1011,6 +1013,7 @@ fileprivate struct FirmwareUpgradeImage {
     
     init(_ image: ImageManager.Image) throws {
         self.image = image.image
+        self.slot = image.slot
         self.data = image.data
         self.hash = try McuMgrImage(data: image.data).hash
         self.uploaded = false
