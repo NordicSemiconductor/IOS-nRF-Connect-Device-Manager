@@ -100,17 +100,10 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         guard let package = package else { return }
         uploadImageSize = nil
         
-        let images: [ImageManager.Image]
-        if package.images.count > 1 {
-            images = package.images.map { ImageManager.Image(image: $0.image, data: $0.data) }
-        } else {
-            images = Self.uploadImages.map { ImageManager.Image(image: $0, data: package.images[0].data) }
-        }
-        
-        let alertController = UIAlertController(title: "Select Core Slot", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Select", message: nil, preferredStyle: .actionSheet)
         let configuration = uploadConfiguration
-        for image in images {
-            alertController.addAction(UIAlertAction(title: McuMgrPackage.imageName(at: image.image), style: .default) { [weak self]
+        for (i, image) in package.images.enumerated() {
+            alertController.addAction(UIAlertAction(title: package.imageName(at: i), style: .default) { [weak self]
                 action in
                 self?.actionBuffers.isEnabled = false
                 self?.actionAlignment.isEnabled = false
@@ -119,10 +112,10 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
                 self?.actionPause.isHidden = false
                 self?.actionCancel.isHidden = false
                 self?.actionSelect.isEnabled = false
-                self?.imageSlot = image.image
+                self?.packageImageIndex = i
                 self?.status.textColor = .primary
-                self?.status.text = "UPLOADING \(McuMgrPackage.imageName(at: image.image))..."
-                _ = self?.imageManager.upload(images: [ImageManager.Image(image: image.image, data: image.data)],
+                self?.status.text = "UPLOADING \(package.imageName(at: i))..."
+                _ = self?.imageManager.upload(images: [image],
                                               using: configuration, delegate: self)
             })
         }
@@ -148,8 +141,8 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
     @IBAction func resume(_ sender: UIButton) {
         status.textColor = .primary
-        if let image = self.imageSlot {
-            status.text = "UPLOADING IMAGE \(McuMgrPackage.imageName(at: image))..."
+        if let package, let i = packageImageIndex {
+            status.text = "UPLOADING IMAGE \(package.imageName(at: i))..."
         } else {
             status.text = "UPLOADING..."
         }
@@ -163,8 +156,8 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         imageManager.cancelUpload()
     }
     
-    private var imageSlot: Int?
     private var package: McuMgrPackage?
+    private var packageImageIndex: Int?
     private var imageManager: ImageManager!
     var transporter: McuMgrTransport! {
         didSet {

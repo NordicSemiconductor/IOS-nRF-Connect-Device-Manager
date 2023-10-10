@@ -8,8 +8,40 @@ import Foundation
 import CoreBluetooth
 import SwiftCBOR
 
+// MARK: - ImageManager
+
 public class ImageManager: McuManager {
-    public typealias Image = (image: Int, data: Data)
+    
+    // MARK: Image
+    
+    public struct Image {
+        public let image: Int
+        public let slot: Int
+        public let data: Data
+        
+        /**
+         So far, only DirectXIP would target `slot` 0 (Primary). So if not specifically
+         stated, all of the previous code / modes target `slot` 1 (Secondary). Hence,
+         why that's the default.
+         */
+        public init(image: Int, slot: Int = 1, data: Data) {
+            self.image = image
+            self.slot = slot
+            self.data = data
+        }
+        
+        public init(_ manifest: McuMgrManifest.File, data: Data) {
+            self.image = manifest.image
+            self.slot = manifest.slot
+            self.data = data
+        }
+        
+        internal init(_ image: FirmwareUpgradeImage) {
+            self.image = image.image
+            self.slot = image.slot
+            self.data = image.data
+        }
+    }
     
     override class var TAG: McuMgrLogCategory { .image }
     
