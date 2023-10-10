@@ -49,10 +49,17 @@ extension McuMgrManifest {
     
     public struct File: Codable {
         
+        // MARK: Public Properties
+        
         public let size: Int
         public let file: String
         public let modTime: Int
         public let mcuBootVersion: String?
+        /**
+         If not present when parsing a Manifest from .json, slot 0 (primary)
+         is assumed as the binary's target.
+         */
+        public let slot: Int
         public let type: String
         public let board: String
         public let soc: String
@@ -62,30 +69,57 @@ extension McuMgrManifest {
             _image ?? _imageIndex ?? 0
         }
         
+        /**
+         Returns true if the MCUBoot Version in the Manifest specifically lists 'XIP' Support,
+         and **NOT** if specific `slot` information is included. Even though that would also be
+         an acceptable manner to detect Direct XIP Support.
+         */
+        public var supportsDirectXIP: Bool {
+            _mcuBootXipVersion != nil
+        }
+        
+        // MARK: Private
+        
         private let _image: Int?
         private let _imageIndex: Int?
+        private let _mcuBootXipVersion: String?
+        
+        // MARK: JSON Encoding
         
         // swiftlint:disable nesting
         enum CodingKeys: String, CodingKey {
-            case size, file
+            case size, file, slot
             case modTime = "modtime"
             case mcuBootVersion = "version_MCUBOOT"
             case type, board, soc
             case loadAddress = "load_address"
             case _image = "image"
             case _imageIndex = "image_index"
+            case _mcuBootXipVersion = "version_MCUBOOT+XIP"
         }
+        
+        // MARK: Init
         
         public init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
             size = try values.decode(Int.self, forKey: .size)
             file = try values.decode(String.self, forKey: .file)
             modTime = try values.decode(Int.self, forKey: .modTime)
-            mcuBootVersion = try? values.decode(String.self, forKey: .mcuBootVersion)
             type = try values.decode(String.self, forKey: .type)
             board = try values.decode(String.self, forKey: .board)
             soc = try values.decode(String.self, forKey: .soc)
             loadAddress = try values.decode(Int.self, forKey: .loadAddress)
+            
+            let slotString = try? values.decode(String.self, forKey: .slot)
+            slot = Int(slotString ?? "") ?? 0
+            
+            let version = try? values.decode(String.self, forKey: .mcuBootVersion)
+            _mcuBootXipVersion = try? values.decode(String.self, forKey: ._mcuBootXipVersion)
+            // We don't know which one will be present. Examples we've seen suggest if it's not
+            // Direct XIP, then the standard 'mcuBoot_version' will be there. But we can't discard
+            // both being present. In which case, 'XIP' is more feature-complete.
+            mcuBootVersion = _mcuBootXipVersion ?? version
+            
             _image = try? values.decode(Int.self, forKey: ._image)
             let imageIndexString = try? values.decode(String.self, forKey: ._imageIndex)
             guard let imageIndexString = imageIndexString else {
