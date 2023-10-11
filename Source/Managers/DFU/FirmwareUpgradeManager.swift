@@ -162,8 +162,16 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func requestMcuMgrParameters() {
         objc_sync_setState(.requestMcuMgrParameters)
         if !paused {
-            log(msg: "Requesting device capabilities...", atLevel: .verbose)
-            defaultManager.params(callback: self.mcuManagerParametersCallback)
+            log(msg: "Requesting McuMgr Parameteres...", atLevel: .verbose)
+            defaultManager.params(callback: mcuManagerParametersCallback)
+        }
+    }
+    
+    private func bootloaderInfo() {
+        objc_sync_setState(.bootloaderInfo)
+        if !paused {
+            log(msg: "Requesting Bootloader Info...", atLevel: .verbose)
+            defaultManager.bootloaderInfo(query: .Mode, callback: bootloaderInfoCallback)
         }
     }
     
@@ -307,13 +315,36 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 self.log(msg: "Cancelling 'Erase App Settings' since device capabilities are not supported.", atLevel: .info)
                 self.configuration.eraseAppSettings = false
             }
-            self.validate() // Continue Upload
+            self.bootloaderInfo() // Continue Upload
             return
         }
         
         self.log(msg: "Device capabilities received.", atLevel: .application)
         self.log(msg: "Setting SAR buffer size to \(response.bufferSize) bytes.", atLevel: .debug)
         self.configuration.reassemblyBufferSize = response.bufferSize
+        self.bootloaderInfo() // Continue Upload
+    }
+    
+    // MARK: Bootloader Info Callback
+    
+    private lazy var bootloaderInfoCallback: McuMgrCallback<BootloaderInfoResponse> = { [weak self] response, error in
+        guard let self else { return }
+        
+        guard error == nil, let response, response.rc != 8 else {
+            self.log(msg: "Bootloader Mode Unknown.", atLevel: .debug)
+            self.validate() // Continue Upload
+            return
+        }
+        
+        self.log(msg: "Bootloader Info received.", atLevel: .application)
+        self.configuration.bootloaderMode = response.mode ?? .Unknown
+        if self.configuration.bootloaderMode == .DirectXIPNoRevert {
+            // Mark all images as confirmed for DirectXIP No Revert, because there's no need.
+            // No Revert means we just Reset and the firmware will handle it.
+            for image in self.images {
+                markAsConfirmed(image)
+            }
+        }
         self.validate() // Continue Upload
     }
     
@@ -348,77 +379,32 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        for image in self.images {
-            // Look for corresponding image in the primary slot.
+        for image in self.images where !image.uploaded {
+            // Look for corresponding image in the desired slot.
             let targetImageSlot = responseImages.first {
-                $0.image == image.image && $0.slot == 0
+                $0.image == image.image && $0.slot == image.slot
             }
             if let targetImageSlot, Data(targetImageSlot.hash) == image.hash {
                 listMatch(for: targetImageSlot, to: image)
-                continue
+                continue // next Image.
             }
             
-            // Look for the corresponding image in the secondary slot.
-            if let secondary = responseImages.first(where: { $0.image == image.image && $0.slot == 1 }) {
-                // Check if the firmware has already been uploaded.
-                if Data(secondary.hash) == image.hash {
-                    // Firmware is identical to the one in slot 1.
-                    // No need to send anything.
-                    self.markAsUploaded(image)
-
-                    // If the image was already confirmed...
-                    if secondary.permanent {
-                        // ...check if we can continue.
-                        // A confirmed image cannot be un-confirmed and made tested.
-                        guard self.mode != .testOnly else {
-                            self.fail(error: FirmwareUpgradeError.unknown("Image \(image.image) already confirmed. Can't be tested!"))
-                            return
-                        }
-                        self.log(msg: "Image \(image.image) already uploaded and confirmed", atLevel: .application)
-                        self.markAsConfirmed(image)
-                        continue
-                    }
-                    
-                    // If the test command was sent to this image...
-                    if secondary.pending {
-                        // ...mark it as tested.
-                        self.log(msg: "Image \(image.image) already uploaded and tested", atLevel: .application)
-                        self.markAsTested(image)
-                        continue
-                    }
-                    
-                    // Otherwise, the test or confirm commands will be sent later, depending on the mode.
-                    self.log(msg: "Image \(image.image) already uploaded", atLevel: .application)
-                } else {
-                    // Seems like the secondary slot for this image number is already taken
-                    // by some other firmware.
-                    
-                    // If the image in secondary slot is confirmed, we won't be able to erase or
-                    // test the slot. Therefore, we confirm the image in the core's primary slot
-                    // to allow us to modify the image in the secondary slot.
-                    if secondary.confirmed {
-                        guard let primary = targetImageSlot else { continue }
-                        self.log(msg: "Secondary slot of image \(image.image) is already confirmed", atLevel: .warning)
-                        self.log(msg: "Confirming the primary slot of image \(image.image)...", atLevel: .verbose)
-                        self.validationConfirm(image: primary)
-                        return
-                    }
-
-                    // If the image in secondary slot is pending, we won't be able to
-                    // erase or test the slot. Therefore, we must reset the device
-                    // (which will swap and run the test image) and revalidate the new image state.
-                    if secondary.pending {
-                        self.log(msg: "Secondary slot of image \(image.image) is already pending", atLevel: .warning)
-                        self.log(msg: "Resetting the device...", atLevel: .verbose)
-                        // reset() can't be called here, as it changes the state to RESET.
-                        self.defaultManager.transporter.addObserver(self)
-                        self.defaultManager.reset(callback: self.resetCallback)
-                        // The validate() method will be called again.
-                        return
-                    }
-                    // Otherwise, do nothing, as the old firmware will be overwritten by the new one.
-                    self.log(msg: "Secondary slot of image \(image.image) will be overwritten", atLevel: .warning)
+            let imageForAlternativeSlotAvailable = self.images.first(where: {
+                $0.image == image.image && $0.slot != image.slot
+            })
+            
+            if let imageForAlternativeSlotAvailable {
+                // If we have the same Image but targeted for a different slot (DirectXIP feature),
+                // we need to chose one of the two to upload.
+                let activeSlot = responseImages.first {
+                    $0.image == image.image && $0.active
+                }?.slot ?? 1 // Default to slot 1, but we should never need to get here.
+                
+                for i in self.images.indices where self.images[i].image == image.image && self.images[i].slot == activeSlot {
+                    self.images[i].uploaded = true // Mark as Uploaded so we don't upload it.
                 }
+            } else {
+                validateSecondarySlotUpload(of: image, with: responseImages)
             }
         }
         
@@ -428,7 +414,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     
     private func listMatch(for responseImage: McuMgrImageStateResponse.ImageSlot, 
                            to uploadImage: FirmwareUpgradeImage) {
-        // The image is already active in the primary slot.
+        // The image is already active in the desired slot.
         // No need to upload it again.
         markAsUploaded(uploadImage)
         
@@ -445,7 +431,75 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
     }
     
-    private func validationConfirm(image: McuMgrImageStateResponse.ImageSlot) {
+    private func validateSecondarySlotUpload(of image: FirmwareUpgradeImage,
+                                             with responseImages: [McuMgrImageStateResponse.ImageSlot]) {
+        // Look for the corresponding image in the secondary slot.
+        if let secondary = responseImages.first(where: { $0.image == image.image && $0.slot == 1 }) {
+            // Check if the firmware has already been uploaded.
+            if Data(secondary.hash) == image.hash {
+                // Firmware is identical to the one in slot 1.
+                // No need to send anything.
+                markAsUploaded(image)
+
+                // If the image was already confirmed...
+                if secondary.permanent {
+                    // ...check if we can continue.
+                    // A confirmed image cannot be un-confirmed and made tested.
+                    guard self.mode != .testOnly else {
+                        fail(error: FirmwareUpgradeError.unknown("Image \(image.image) already confirmed. Can't be tested!"))
+                        return
+                    }
+                    log(msg: "Image \(image.image) already uploaded and confirmed", atLevel: .application)
+                    markAsConfirmed(image)
+                    return
+                }
+                
+                // If the test command was sent to this image...
+                if secondary.pending {
+                    // ...mark it as tested.
+                    log(msg: "Image \(image.image) already uploaded and tested", atLevel: .application)
+                    markAsTested(image)
+                    return
+                }
+                
+                // Otherwise, the test or confirm commands will be sent later, depending on the mode.
+                log(msg: "Image \(image.image) already uploaded", atLevel: .application)
+            } else {
+                // Seems like the secondary slot for this image number is already taken
+                // by some other firmware.
+                
+                // If the image in secondary slot is confirmed, we won't be able to erase or
+                // test the slot. Therefore, we confirm the image in the core's primary slot
+                // to allow us to modify the image in the secondary slot.
+                if secondary.confirmed {
+                    guard let primary = responseImages.first(where: {
+                        $0.image == image.image && $0.slot == image.slot
+                    }) else { return }
+                    log(msg: "Secondary slot of image \(image.image) is already confirmed", atLevel: .warning)
+                    log(msg: "Confirming the primary slot of image \(image.image)...", atLevel: .verbose)
+                    listConfirm(image: primary)
+                    return
+                }
+
+                // If the image in secondary slot is pending, we won't be able to
+                // erase or test the slot. Therefore, we must reset the device
+                // (which will swap and run the test image) and revalidate the new image state.
+                if secondary.pending {
+                    log(msg: "Secondary slot of image \(image.image) is already pending", atLevel: .warning)
+                    log(msg: "Resetting the device...", atLevel: .verbose)
+                    // reset() can't be called here, as it changes the state to RESET.
+                    defaultManager.transporter.addObserver(self)
+                    defaultManager.reset(callback: self.resetCallback)
+                    // The validate() method will be called again.
+                    return
+                }
+                // Otherwise, do nothing, as the old firmware will be overwritten by the new one.
+                log(msg: "Secondary slot of image \(image.image) will be overwritten", atLevel: .warning)
+            }
+        }
+    }
+    
+    private func listConfirm(image: McuMgrImageStateResponse.ImageSlot) {
         imageManager.confirm(hash: image.hash) { [weak self] response, error in
             guard let self = self else {
                 return
@@ -676,6 +730,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.uploadDidFinish()
     }
     
+    // MARK: Reset Callback
+    
     /// Callback for the RESET state.
     ///
     /// This callback will fail the upgrade on error. On success, the reset
@@ -767,6 +823,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
     }
     
+    // MARK: State
+    
     private func markAsUploaded(_ image: FirmwareUpgradeImage) {
         guard let i = images.firstIndex(of: image) else { return }
         images[i].uploaded = true
@@ -810,6 +868,8 @@ public struct FirmwareUpgradeConfiguration: Codable {
     ///
     /// Can be used in conjunction with SMP Pipelining.
     public var reassemblyBufferSize: UInt64
+    /// Added for DirectXIP Support.
+    public var bootloaderMode: BootloaderInfoResponse.Mode
     
     /// SMP Pipelining is considered Enabled for `pipelineDepth` values larger than `1`.
     public var pipeliningEnabled: Bool {
@@ -823,6 +883,7 @@ public struct FirmwareUpgradeConfiguration: Codable {
         self.pipelineDepth = pipelineDepth
         self.byteAlignment = byteAlignment
         self.reassemblyBufferSize = reassemblyBufferSize
+        self.bootloaderMode = .Unknown
     }
 }
 
@@ -865,6 +926,10 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         case .confirmOnly:
             if let firstUnconfirmedImage = images.first(where: { !$0.confirmed }) {
                 confirm(firstUnconfirmedImage)
+                return
+            } else {
+                // If there's no image to confirm, then we reset.
+                reset()
                 return
             }
         case .testOnly, .testAndConfirm:
@@ -911,7 +976,7 @@ extension FirmwareUpgradeError: LocalizedError {
 
 public enum FirmwareUpgradeState {
     case none
-    case requestMcuMgrParameters, eraseAppSettings
+    case requestMcuMgrParameters, bootloaderInfo, eraseAppSettings
     case upload, success
     case validate, test, confirm, reset
     

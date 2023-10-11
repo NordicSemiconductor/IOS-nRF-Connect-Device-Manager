@@ -379,7 +379,7 @@ public final class AppInfoResponse: McuMgrResponse {
 
 public final class BootloaderInfoResponse: McuMgrResponse {
     
-    public enum Mode: Int, CustomStringConvertible {
+    public enum Mode: Int, Codable, CustomStringConvertible {
         case Unknown = -1
         case SingleApplication = 0
         case SwapUsingScratch = 1

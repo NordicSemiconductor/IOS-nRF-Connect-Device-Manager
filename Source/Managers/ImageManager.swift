@@ -20,11 +20,11 @@ public class ImageManager: McuManager {
         public let data: Data
         
         /**
-         So far, only DirectXIP would target `slot` 0 (Primary). So if not specifically
-         stated, all of the previous code / modes target `slot` 1 (Secondary). Hence,
-         why that's the default.
+         All of the previous code / modes target `slot` 0 (Primary) as where they
+         want the image uploaded, so that's the default. Only DirectXIP would
+         target `slot` 1 (Secondary).
          */
-        public init(image: Int, slot: Int = 1, data: Data) {
+        public init(image: Int, slot: Int = 0, data: Data) {
             self.image = image
             self.slot = slot
             self.data = data
@@ -366,16 +366,14 @@ public class ImageManager: McuManager {
     private lazy var uploadCallback: McuMgrCallback<McuMgrUploadResponse> = {
         [weak self] (response: McuMgrUploadResponse?, error: Error?) in
         // Ensure the manager is not released.
-        guard let self = self else {
-            return
-        }
+        guard let self else { return }
         
         if #available(iOS 10.0, watchOS 3.0, *) {
             dispatchPrecondition(condition: .onQueue(.main))
         }
         
         // Check for an error.
-        if let error = error {
+        if let error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
                 do {
                     try self.setMtu(newMtu)
@@ -402,7 +400,7 @@ public class ImageManager: McuManager {
             return
         }
         // Make sure the response is not nil.
-        guard let response = response else {
+        guard let response else {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
             return
         }
