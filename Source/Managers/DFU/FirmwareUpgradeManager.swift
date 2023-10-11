@@ -171,7 +171,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         objc_sync_setState(.validate)
         if !paused {
             log(msg: "Sending Image List command...", atLevel: .verbose)
-            imageManager.list(callback: validateCallback)
+            imageManager.list(callback: listCallback)
         }
     }
     
@@ -291,9 +291,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
     }
     
-    //**************************************************************************
-    // MARK: - McuMgrCallbacks
-    //**************************************************************************
+    // MARK: McuMgr Parameters Callback
     
     /// Callback for devices running NCS firmware version 2.0 or later, which support McuMgrParameters call.
     ///
@@ -319,11 +317,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.validate() // Continue Upload
     }
     
-    /// Callback for the VALIDATE state.
+    // MARK: List Callback
+    
+    /// Callback for the List (VALIDATE) state.
     ///
     /// This callback will fail the upgrade on error and continue to the next
     /// state on success.
-    private lazy var validateCallback: McuMgrCallback<McuMgrImageStateResponse> = { [weak self] response, error in
+    private lazy var listCallback: McuMgrCallback<McuMgrImageStateResponse> = { [weak self] response, error in
         // Ensure the manager is not released.
         guard let self = self else { return }
         
@@ -350,23 +350,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         
         for image in self.images {
             // Look for corresponding image in the primary slot.
-            let primary = responseImages.first { $0.image == image.image && $0.slot == 0 }
-            if let primary = primary, Data(primary.hash) == image.hash {
-                // The image is already active in the primary slot.
-                // No need to upload it again.
-                self.markAsUploaded(image)
-                
-                // If the image is already confirmed...
-                if primary.confirmed {
-                    // ...there's no need to send any commands for this image.
-                    self.log(msg: "Image \(image.image) already active", atLevel: .application)
-                    self.markAsConfirmed(image)
-                    self.markAsTested(image)
-                } else {
-                    // Otherwise, the image must be in test mode.
-                    self.log(msg: "Image \(image.image) already active in test mode", atLevel: .application)
-                    self.markAsTested(image)
-                }
+            let targetImageSlot = responseImages.first {
+                $0.image == image.image && $0.slot == 0
+            }
+            if let targetImageSlot, Data(targetImageSlot.hash) == image.hash {
+                listMatch(for: targetImageSlot, to: image)
                 continue
             }
             
@@ -409,7 +397,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     // test the slot. Therefore, we confirm the image in the core's primary slot
                     // to allow us to modify the image in the secondary slot.
                     if secondary.confirmed {
-                        guard let primary = primary else { continue }
+                        guard let primary = targetImageSlot else { continue }
                         self.log(msg: "Secondary slot of image \(image.image) is already confirmed", atLevel: .warning)
                         self.log(msg: "Confirming the primary slot of image \(image.image)...", atLevel: .verbose)
                         self.validationConfirm(image: primary)
@@ -438,6 +426,25 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.upload()
     }
     
+    private func listMatch(for responseImage: McuMgrImageStateResponse.ImageSlot, 
+                           to uploadImage: FirmwareUpgradeImage) {
+        // The image is already active in the primary slot.
+        // No need to upload it again.
+        markAsUploaded(uploadImage)
+        
+        // If the image is already confirmed...
+        if responseImage.confirmed {
+            // ...there's no need to send any commands for this image.
+            log(msg: "Image \(uploadImage.image) already active", atLevel: .application)
+            markAsConfirmed(uploadImage)
+            markAsTested(uploadImage)
+        } else {
+            // Otherwise, the image must be in test mode.
+            log(msg: "Image \(uploadImage.image) already active in test mode", atLevel: .application)
+            markAsTested(uploadImage)
+        }
+    }
+    
     private func validationConfirm(image: McuMgrImageStateResponse.ImageSlot) {
         imageManager.confirm(hash: image.hash) { [weak self] response, error in
             guard let self = self else {
@@ -462,9 +469,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             }
             // TODO: Perhaps adding a check to verify if the image was indeed confirmed?
             self.log(msg: "Image \(image.image) confirmed", atLevel: .application)
-            self.validateCallback(response, nil)
+            self.listCallback(response, nil)
         }
     }
+    
+    // MARK: Test Callback
     
     /// Callback for the TEST state.
     ///
@@ -527,6 +536,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.log(msg: "All test commands sent", atLevel: .application)
         self.reset()
     }
+    
+    // MARK: Confirm Callback
     
     /// Callback for the CONFIRM state.
     ///
