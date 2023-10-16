@@ -229,6 +229,8 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
             status.text = ""
         case .requestMcuMgrParameters:
             status.text = "REQUESTING MCUMGR PARAMETERS..."
+        case .bootloaderInfo:
+            status.text = "REQUESTING BOOTLOADER INFO..."
         case .validate:
             status.text = "VALIDATING..."
         case .upload:
