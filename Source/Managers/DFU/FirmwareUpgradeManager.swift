@@ -201,7 +201,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func test(_ image: FirmwareUpgradeImage) {
         objc_sync_setState(.test)
         if !paused {
-            log(msg: "Sending Test command for image \(image.image)...", atLevel: .verbose)
+            log(msg: "Sending Test command for image \(image.image) Slot \(image.slot)...", atLevel: .verbose)
             imageManager.test(hash: [UInt8](image.hash), callback: testCallback)
         }
     }
@@ -209,7 +209,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func confirm(_ image: FirmwareUpgradeImage) {
         objc_sync_setState(.confirm)
         if !paused {
-            log(msg: "Sending Confirm command for image \(image.image)...", atLevel: .verbose)
+            log(msg: "Sending Confirm command for Image \(image.image) Slot \(image.slot)...", atLevel: .verbose)
             imageManager.confirm(hash: [UInt8](image.hash), callback: confirmCallback)
         }
     }
@@ -218,7 +218,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         objc_sync_setState(.confirm)
         if !paused {
             // This will confirm the image on slot 0
-            log(msg: "Sending Config command...", atLevel: .verbose)
+            log(msg: "Sending Confirm command...", atLevel: .verbose)
             imageManager.confirm(callback: confirmCallback)
         }
     }
@@ -452,7 +452,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                         fail(error: FirmwareUpgradeError.unknown("Image \(image.image) already confirmed. Can't be tested!"))
                         return
                     }
-                    log(msg: "Image \(image.image) already uploaded and confirmed", atLevel: .application)
+                    log(msg: "Image \(image.image) Slot \(secondary.slot) already uploaded and confirmed", atLevel: .application)
                     markAsConfirmed(image)
                     return
                 }
@@ -460,7 +460,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 // If the test command was sent to this image...
                 if secondary.pending {
                     // ...mark it as tested.
-                    log(msg: "Image \(image.image) already uploaded and tested", atLevel: .application)
+                    log(msg: "Image \(image.image) Slot \(secondary.slot) already uploaded and tested", atLevel: .application)
                     markAsTested(image)
                     return
                 }
@@ -479,7 +479,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                         $0.image == image.image && $0.slot == image.slot
                     }) else { return }
                     log(msg: "Secondary slot of Image \(image.image) is already confirmed", atLevel: .warning)
-                    log(msg: "Confirming Image \(image.image) Slot \(image.slot)...", atLevel: .verbose)
+                    log(msg: "Confirming Image \(primary.image) Slot \(primary.slot)...", atLevel: .verbose)
                     listConfirm(image: primary)
                     return
                 }
@@ -488,7 +488,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 // erase or test the slot. Therefore, we must reset the device
                 // (which will swap and run the test image) and revalidate the new image state.
                 if secondary.pending {
-                    log(msg: "Secondary slot of image \(image.image) is already pending", atLevel: .warning)
+                    log(msg: "Image \(image.image) Slot \(secondary.slot) is already pending", atLevel: .warning)
                     log(msg: "Resetting the device...", atLevel: .verbose)
                     // reset() can't be called here, as it changes the state to RESET.
                     defaultManager.transporter.addObserver(self)
