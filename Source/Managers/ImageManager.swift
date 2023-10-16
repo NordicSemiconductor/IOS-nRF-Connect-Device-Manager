@@ -202,7 +202,7 @@ public class ImageManager: McuManager {
             bleTransport.chunkSendDataToMtuSize = configuration.reassemblyBufferSize != 0
         }
         
-        log(msg: "Uploading image \(firstImage.image) (\(firstImage.data.count) bytes)...", atLevel: .verbose)
+        log(msg: "Uploading Image \(firstImage.image) with Target Slot \(firstImage.slot) (\(firstImage.data.count) bytes)...", atLevel: .verbose)
         upload(data: firstImage.data, image: firstImage.image, offset: 0,
                alignment: configuration.byteAlignment,
                callback: uploadCallback)
@@ -469,7 +469,7 @@ public class ImageManager: McuManager {
                     self.uploadIndex += 1
                     self.uploadLastOffset = 0
                     self.imageData = images[self.uploadIndex].data
-                    self.log(msg: "Uploading image \(images[self.uploadIndex].image) (\(self.imageData?.count) bytes)...", atLevel: .application)
+                    self.log(msg: "Uploading image \(images[self.uploadIndex].image) with Target Slot \(images[self.uploadIndex].slot) (\(self.imageData?.count) bytes)...", atLevel: .application)
                     self.uploadDelegate?.uploadProgressDidChange(bytesSent: 0, imageSize: images[self.uploadIndex].data.count, timestamp: Date())
                     self.sendNext(from: UInt64(0))
                 }

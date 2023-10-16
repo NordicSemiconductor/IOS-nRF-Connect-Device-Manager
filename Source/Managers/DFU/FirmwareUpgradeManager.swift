@@ -404,6 +404,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 for i in self.images.indices where self.images[i].image == image.image && self.images[i].slot == activeSlot {
                     // Mark as Uploaded so we skip over it and don't send it.
                     markAsUploaded(self.images[i])
+                    self.log(msg: "Two possible slots available for Image \(image.image). Image \(image.image) Slot \(activeSlot) is marked as currently Active, so we're uploading to the alternative Slot instead.", atLevel: .application)
                 }
             } else {
                 validateSecondarySlotUpload(of: image, with: responseImages)
@@ -477,8 +478,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     guard let primary = responseImages.first(where: {
                         $0.image == image.image && $0.slot == image.slot
                     }) else { return }
-                    log(msg: "Secondary slot of image \(image.image) is already confirmed", atLevel: .warning)
-                    log(msg: "Confirming the primary slot of image \(image.image)...", atLevel: .verbose)
+                    log(msg: "Secondary slot of Image \(image.image) is already confirmed", atLevel: .warning)
+                    log(msg: "Confirming Image \(image.image) Slot \(image.slot)...", atLevel: .verbose)
                     listConfirm(image: primary)
                     return
                 }
@@ -496,7 +497,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     return
                 }
                 // Otherwise, do nothing, as the old firmware will be overwritten by the new one.
-                log(msg: "Secondary slot of image \(image.image) will be overwritten", atLevel: .warning)
+                log(msg: "Secondary Slot of image \(image.image) will be overwritten", atLevel: .warning)
             }
         }
     }
