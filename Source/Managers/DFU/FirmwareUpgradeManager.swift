@@ -209,7 +209,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func confirm(_ image: FirmwareUpgradeImage) {
         objc_sync_setState(.confirm)
         if !paused {
-            log(msg: "Sending Confirm command for Image \(image.image) Slot \(image.slot)...", atLevel: .verbose)
+            log(msg: "Sending Confirm command to Image \(image.image) Slot \(image.slot)...", atLevel: .verbose)
             imageManager.confirm(hash: [UInt8](image.hash), callback: confirmCallback)
         }
     }
@@ -931,7 +931,11 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         // If eraseAppSettings command was sent or was not requested, we can continue.
         switch mode {
         case .confirmOnly:
-            if let firstUnconfirmedImage = images.first(where: { !$0.confirmed }) {
+            // Note: We look for the first !uploaded image because at the time of LIST, it was
+            // not marked as uploaded yet, so we had to upload it. If the code reaches this point
+            // the Upload has finished, so it has been uploaded already, and what's missing is
+            // the CONFIRM Command.
+            if let firstUnconfirmedImage = images.first(where: { !$0.uploaded && !$0.confirmed }) {
                 confirm(firstUnconfirmedImage)
                 return
             } else {
