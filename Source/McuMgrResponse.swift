@@ -456,7 +456,7 @@ public class McuMgrImageStateResponse: McuMgrResponse {
 
 extension McuMgrImageStateResponse {
     
-    public class ImageSlot: CBORMappable {
+    public class ImageSlot: CBORMappable, CustomDebugStringConvertible {
         
         // MARK: Properties
         
@@ -479,6 +479,16 @@ extension McuMgrImageStateResponse {
         public var active: Bool! { boolean() }
         /// Permanent flag. Set if this image is permanent.
         public var permanent: Bool! { boolean() }
+        
+        // MARK: CustomDebugStringConvertible
+        
+        public var debugDescription: String {
+            return """
+            Hash: \(hash)
+            Image \(image), Slot \(slot), Version \(version)
+            Bootable \(bootable ? "Yes" : "No"), Pending \(pending ? "Yes" : "No"), Confirmed \(confirmed ? "Yes" : "No"), Active \(active ? "Yes" : "No"), Permanent \(permanent ? "Yes" : "No")
+            """
+        }
         
         // MARK: Init
         

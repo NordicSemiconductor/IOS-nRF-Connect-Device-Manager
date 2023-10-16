@@ -308,21 +308,22 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private lazy var mcuManagerParametersCallback: McuMgrCallback<McuMgrParametersResponse> = { [weak self] response, error in
         guard let self = self else { return }
         
-        guard error == nil, let response = response, response.rc != 8 else {
+        guard error == nil, let response, response.rc != 8 else {
             self.log(msg: "Device capabilities not supported.", atLevel: .warning)
             self.configuration.reassemblyBufferSize = 0
             if self.configuration.eraseAppSettings {
                 self.log(msg: "Cancelling 'Erase App Settings' since device capabilities are not supported.", atLevel: .info)
                 self.configuration.eraseAppSettings = false
             }
-            self.bootloaderInfo() // Continue Upload
+            self.log(msg: "Skipping over 'Bootloader Info' step since device capabilities (McuMgr Parameters) are not supported.", atLevel: .info)
+            self.validate() // Continue Upload
             return
         }
         
         self.log(msg: "Device capabilities received.", atLevel: .application)
         self.log(msg: "Setting SAR buffer size to \(response.bufferSize) bytes.", atLevel: .debug)
         self.configuration.reassemblyBufferSize = response.bufferSize
-        self.bootloaderInfo() // Continue Upload
+        self.bootloaderInfo() // Continue to Bootloader Info.
     }
     
     // MARK: Bootloader Info Callback
@@ -359,11 +360,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         guard let self = self else { return }
         
         // Check for an error.
-        if let error = error {
+        if let error {
             self.fail(error: error)
             return
         }
-        guard let response = response else {
+        guard let response else {
             self.fail(error: FirmwareUpgradeError.unknown("Validation response is nil!"))
             return
         }
@@ -385,7 +386,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 $0.image == image.image && $0.slot == image.slot
             }
             if let targetImageSlot, Data(targetImageSlot.hash) == image.hash {
-                listMatch(for: targetImageSlot, to: image)
+                targetSlotMatch(for: targetImageSlot, to: image)
                 continue // next Image.
             }
             
@@ -401,7 +402,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 }?.slot ?? 1 // Default to slot 1, but we should never need to get here.
                 
                 for i in self.images.indices where self.images[i].image == image.image && self.images[i].slot == activeSlot {
-                    self.images[i].uploaded = true // Mark as Uploaded so we don't upload it.
+                    // Mark as Uploaded so we skip over it and don't send it.
+                    markAsUploaded(self.images[i])
                 }
             } else {
                 validateSecondarySlotUpload(of: image, with: responseImages)
@@ -412,8 +414,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.upload()
     }
     
-    private func listMatch(for responseImage: McuMgrImageStateResponse.ImageSlot, 
-                           to uploadImage: FirmwareUpgradeImage) {
+    private func targetSlotMatch(for responseImage: McuMgrImageStateResponse.ImageSlot,
+                                 to uploadImage: FirmwareUpgradeImage) {
         // The image is already active in the desired slot.
         // No need to upload it again.
         markAsUploaded(uploadImage)
@@ -868,7 +870,11 @@ public struct FirmwareUpgradeConfiguration: Codable {
     ///
     /// Can be used in conjunction with SMP Pipelining.
     public var reassemblyBufferSize: UInt64
-    /// Added for DirectXIP Support.
+    /// Provides valuable information regarding how the target device is set up to switch over to the new firmware being uploaded, if available.
+    ///
+    /// For example, in DirectXIP, some bootloaders will not accept a 'CONFIRM' Command and return an Error
+    /// that could make the DFU Library return an Error. When in reality, what the target bootloader wants
+    /// is just to receive a 'RESET' Command instead to conclude the process.
     public var bootloaderMode: BootloaderInfoResponse.Mode
     
     /// SMP Pipelining is considered Enabled for `pipelineDepth` values larger than `1`.
@@ -1073,7 +1079,7 @@ public protocol FirmwareUpgradeDelegate: AnyObject {
 
 // MARK: - FirmwareUpgradeImage
 
-internal struct FirmwareUpgradeImage {
+internal struct FirmwareUpgradeImage: CustomDebugStringConvertible {
     
     // MARK: Properties
     
@@ -1095,6 +1101,17 @@ internal struct FirmwareUpgradeImage {
         self.uploaded = false
         self.tested = false
         self.confirmed = false
+    }
+    
+    // MARK: CustomDebugStringConvertible
+    
+    var debugDescription: String {
+        return """
+        Data: \(data)
+        Hash: \(hash)
+        Image \(image), Slot \(slot)
+        Uploaded \(uploaded ? "Yes" : "No"), Tested \(tested ? "Yes" : "No"), Confirmed \(confirmed ? "Yes" : "No")
+        """
     }
 }
 
