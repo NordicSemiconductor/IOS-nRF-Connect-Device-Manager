@@ -457,6 +457,10 @@ public class ImageManager: McuManager {
                     // Release cyclic reference.
                     self.cyclicReferenceHolder = nil
                 } else {
+                    self.uploadDelegate?.uploadProgressDidChange(
+                        bytesSent: images[self.uploadIndex].data.count,
+                        imageSize: images[self.uploadIndex].data.count,
+                        timestamp: Date())
                     self.log(msg: "Uploaded image \(images[self.uploadIndex].image) (\(self.uploadIndex + 1) of \(images.count))", atLevel: .application)
                     
                     // Don't trigger writes to another image unless all write(s) have returned for

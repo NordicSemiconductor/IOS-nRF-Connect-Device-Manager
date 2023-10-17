@@ -404,6 +404,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 for i in self.images.indices where self.images[i].image == image.image && self.images[i].slot == activeSlot {
                     // Mark as Uploaded so we skip over it and don't send it.
                     markAsUploaded(self.images[i])
+                    // Mark as Confirmed so we don't accidentally send it a Confirm Command.
+                    markAsConfirmed(self.images[i])
                     self.log(msg: "Two possible slots available for Image \(image.image). Image \(image.image) Slot \(activeSlot) is marked as currently Active, so we're uploading to the alternative Slot instead.", atLevel: .application)
                 }
             } else {
@@ -602,19 +604,19 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// success.
     private lazy var confirmCallback: McuMgrCallback<McuMgrImageStateResponse> = { [weak self] response, error in
         // Ensure the manager is not released.
-        guard let self = self else {
-            return
-        }
+        guard let self else { return }
+        
         // Check for an error.
-        if let error = error {
+        if let error {
             self.fail(error: error)
             return
         }
-        guard let response = response else {
+        guard let response else {
             self.fail(error: FirmwareUpgradeError.unknown("Confirmation response is nil!"))
             return
         }
         self.log(msg: "Confirmation response: \(response)", atLevel: .info)
+        
         // Check for McuMgrReturnCode error.
         if !response.isSuccess() {
             self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
@@ -901,6 +903,13 @@ public struct FirmwareUpgradeConfiguration: Codable {
 extension FirmwareUpgradeManager: ImageUploadDelegate {
     
     public func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
+        if bytesSent == imageSize {
+            // An Image was sent. Mark as uploaded.
+            if let image = self.images.first(where: { !$0.uploaded && $0.data.count == imageSize }) {
+                markAsUploaded(image)
+            }
+        }
+        
         DispatchQueue.main.async { [weak self] in
             self?.delegate?.uploadProgressDidChange(bytesSent: bytesSent, imageSize: imageSize, timestamp: timestamp)
         }
@@ -931,11 +940,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         // If eraseAppSettings command was sent or was not requested, we can continue.
         switch mode {
         case .confirmOnly:
-            // Note: We look for the first !uploaded image because at the time of LIST, it was
-            // not marked as uploaded yet, so we had to upload it. If the code reaches this point
-            // the Upload has finished, so it has been uploaded already, and what's missing is
-            // the CONFIRM Command.
-            if let firstUnconfirmedImage = images.first(where: { !$0.uploaded && !$0.confirmed }) {
+            if let firstUnconfirmedImage = images.first(where: { $0.uploaded && !$0.confirmed }) {
                 confirm(firstUnconfirmedImage)
                 return
             } else {
