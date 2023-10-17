@@ -191,6 +191,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 .map { ImageManager.Image($0) }
             guard !imagesToUpload.isEmpty else {
                 log(msg: "Nothing to be uploaded", atLevel: .info)
+                // Allow Library Apps to show 100% Progress in this case.
+                DispatchQueue.main.async { [weak self] in
+                    self?.delegate?.uploadProgressDidChange(bytesSent: 100, imageSize: 100, 
+                                                            timestamp: Date())
+                }
                 uploadDidFinish()
                 return
             }
@@ -357,7 +362,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// state on success.
     private lazy var listCallback: McuMgrCallback<McuMgrImageStateResponse> = { [weak self] response, error in
         // Ensure the manager is not released.
-        guard let self = self else { return }
+        guard let self else { return }
         
         // Check for an error.
         if let error {
@@ -394,19 +399,18 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 $0.image == image.image && $0.slot != image.slot
             })
             
-            if let imageForAlternativeSlotAvailable {
+            if let imageForAlternativeSlotAvailable,
+                let activeResponseImage = responseImages.first(where: {
+                    $0.image == image.image && $0.active
+                }) {
+                
                 // If we have the same Image but targeted for a different slot (DirectXIP feature),
                 // we need to chose one of the two to upload.
-                let activeSlot = responseImages.first {
-                    $0.image == image.image && $0.active
-                }?.slot ?? 1 // Default to slot 1, but we should never need to get here.
-                
-                for i in self.images.indices where self.images[i].image == image.image && self.images[i].slot == activeSlot {
-                    // Mark as Uploaded so we skip over it and don't send it.
-                    markAsUploaded(self.images[i])
-                    // Mark as Confirmed so we don't accidentally send it a Confirm Command.
-                    markAsConfirmed(self.images[i])
-                    self.log(msg: "Two possible slots available for Image \(image.image). Image \(image.image) Slot \(activeSlot) is marked as currently Active, so we're uploading to the alternative Slot instead.", atLevel: .application)
+                if let activeImage = self.images.first(where: {
+                    $0.image == image.image && $0.slot == activeResponseImage.slot
+                }) {
+                    targetSlotMatch(for: activeResponseImage, to: activeImage)
+                    self.log(msg: "Two possible slots available for Image \(image.image). Image \(image.image) Slot \(activeResponseImage.slot) is marked as currently Active, so we're uploading to the alternative Slot instead.", atLevel: .application)
                 }
             } else {
                 validateSecondarySlotUpload(of: image, with: responseImages)
@@ -426,12 +430,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         // If the image is already confirmed...
         if responseImage.confirmed {
             // ...there's no need to send any commands for this image.
-            log(msg: "Image \(uploadImage.image) already active", atLevel: .application)
+            log(msg: "Image \(uploadImage.image) Slot \(uploadImage.image) already Active", atLevel: .application)
             markAsConfirmed(uploadImage)
             markAsTested(uploadImage)
         } else {
             // Otherwise, the image must be in test mode.
-            log(msg: "Image \(uploadImage.image) already active in test mode", atLevel: .application)
+            log(msg: "Image \(uploadImage.image) Slot \(uploadImage.image) already Active in Test Mode", atLevel: .application)
             markAsTested(uploadImage)
         }
     }
@@ -636,10 +640,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     continue
                 }
                 
-                // If not, the new image should be in the secondary slot (1).
-                guard let secondary = responseImages.first(where: { $0.image == image.image && $0.slot == 1 }) else {
-                    // Let's try the primary slot...
-                    guard let _ = responseImages.first(where: { $0.image == image.image && $0.slot == 0 }) else {
+                guard let targetSlot = responseImages.first(where: {
+                    $0.image == image.image && Data($0.hash) == image.hash
+                }) else {
+                    // Let's try the alternative slot...
+                    guard let _ = responseImages.first(where: { $0.image == image.image && $0.slot != image.slot }) else {
                         self.fail(error: FirmwareUpgradeError.invalidResponse(response))
                         return
                     }
@@ -649,11 +654,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 }
                 
                 // Check that the new image is in permanent state.
-                guard secondary.permanent else {
+                guard targetSlot.permanent else {
                     // If a TEST command was sent before for the image that is to be confirmed we have to reset.
                     // It is not possible to confirm such image until the device is reset.
                     // A new DFU operation has to be performed to confirm the image.
-                    guard !secondary.pending else {
+                    guard !targetSlot.pending else {
                         continue
                     }
                     guard image.confirmed else {
@@ -662,7 +667,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     }
                     
                     // If we've sent it the CONFIRM Command, the secondary slot must be in PERMANENT state.
-                    self.fail(error: FirmwareUpgradeError.unknown("Image \(secondary.image) in slot \(secondary.slot) is not in a permanent state."))
+                    self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) Slot \(targetSlot.slot) is not in a Permanent state."))
                     return
                 }
                 
@@ -942,9 +947,13 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         case .confirmOnly:
             if let firstUnconfirmedImage = images.first(where: { $0.uploaded && !$0.confirmed }) {
                 confirm(firstUnconfirmedImage)
+                // We might sent 'Confirm', but the firmware might not change the flag to reflect it.
+                // If we don't track this eternally, we could enter into an infinite loop always trying
+                // to Confirm an image.
+                markAsConfirmed(firstUnconfirmedImage)
                 return
             } else {
-                // If there's no image to confirm, then we reset.
+                // If there's no image left to Confirm, then we Reset.
                 reset()
                 return
             }
