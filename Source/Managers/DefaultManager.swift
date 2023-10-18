@@ -46,7 +46,7 @@ public class DefaultManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.default, transporter: transporter)
+        super.init(group: McuMgrGroup.OS, transporter: transporter)
     }
     
     // MARK: - Commands
@@ -62,12 +62,12 @@ public class DefaultManager: McuManager {
     public func echo(_ echo: String, callback: @escaping McuMgrCallback<McuMgrEchoResponse>) {
         let payload: [String:CBOR] = ["d": CBOR.utf8String(echo)]
         
-        let echoPacket = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write,
-                                                flags: 0, group: McuMgrGroup.default.uInt16Value,
+        let echoPacket = McuManager.buildPacket(scheme: transporter.getScheme(), version: .SMPv2,
+                                                op: .write, flags: 0, group: McuMgrGroup.OS.rawValue,
                                                 sequenceNumber: 0, commandId: ID.Echo, payload: payload)
         
         guard echoPacket.count <= BasicManager.MAX_ECHO_MESSAGE_SIZE_BYTES else {
-            callback(nil, BasicManagerError.echoMessageOverTheLimit(echoPacket.count))
+            callback(nil, EchoError.echoMessageOverTheLimit(echoPacket.count))
             return
         }
         send(op: .write, commandId: ID.Echo, payload: payload, callback: callback)
@@ -180,3 +180,39 @@ public class DefaultManager: McuManager {
     }
 }
 
+// MARK: - EchoError
+
+enum EchoError: Hashable, Error, LocalizedError {
+    
+    case echoMessageOverTheLimit(_ messageSize: Int)
+
+    var errorDescription: String? {
+        switch self {
+        case .echoMessageOverTheLimit(let messageSize):
+            return "Echo Message of \(messageSize) bytes in size is over the limit of \(BasicManager.MAX_ECHO_MESSAGE_SIZE_BYTES) bytes."
+        }
+    }
+}
+
+// MARK: - OSManagerError
+
+public enum OSManagerError: UInt64, Error, LocalizedError {
+    
+    case noError = 0
+    case unknown = 1
+    case invalidFormat = 2
+    case queryNotRecognized = 3
+    
+    public var errorDescription: String? {
+        switch self {
+        case .noError:
+            return "No Error Has Occurred"
+        case .unknown:
+            return "An Unknown Error Occurred"
+        case .invalidFormat:
+            return "Provided Format Value Is Not Valid"
+        case .queryNotRecognized:
+            return "Query Was Not Recognized (i.e. No Answer)"
+        }
+    }
+}

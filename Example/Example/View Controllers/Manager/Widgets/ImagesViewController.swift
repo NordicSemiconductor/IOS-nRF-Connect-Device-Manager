@@ -99,66 +99,24 @@ class ImagesViewController: UIViewController , McuMgrViewController{
         present(alertController, animated: true)
     }
     
+    // MARK: handle(response:error:)
+    
     private func handle(_ response: McuMgrImageStateResponse?, _ error: Error?) {
         let bounds = CGSize(width: message.frame.width, height: CGFloat.greatestFiniteMagnitude)
         let oldRect = message.sizeThatFits(bounds)
         
-        if let response = response {
-            if response.isSuccess(), let images = response.images {
-                var info = ""
-                
-                if let mcuMgrResponse = mcuMgrResponse {
-                    info += "McuMgr Parameters:\n"
-                    if let bufferCount = mcuMgrResponse.bufferCount,
-                       let bufferSize = mcuMgrResponse.bufferSize {
-                        info += "• Buffer Count: \(bufferCount)\n"
-                        info += "• Buffer Size: \(bufferSize) bytes\n"
-                    } else {
-                        info += "• Buffer Count: N/A\n"
-                        info += "• Buffer Size: N/A\n"
-                    }
-                }
-                
-                info += "\nSplit status: \(response.splitStatus ?? 0)\n"
-                
-                for image in images {
-                    info += "\nImage \(image.image!)\n" +
-                        "• Slot: \(image.slot!)\n" +
-                        "• Version: \(image.version!)\n" +
-                        "• Hash: \(Data(image.hash).hexEncodedString(options: .upperCase))\n" +
-                        "• Flags: "
-                    if image.bootable {
-                        info += "Bootable, "
-                    }
-                    if image.pending {
-                        info += "Pending, "
-                    }
-                    if image.confirmed {
-                        info += "Confirmed, "
-                    }
-                    if image.active {
-                        info += "Active, "
-                    }
-                    if image.permanent {
-                        info += "Permanent, "
-                    }
-                    if !image.bootable && !image.pending && !image.confirmed && !image.active && !image.permanent {
-                        info += "None"
-                    } else {
-                        info = String(info.dropLast(2))
-                    }
-                }
-                readAction.isEnabled = true
+        if let response {
+            switch response.result {
+            case .success:
+                let images = response.images ?? []
                 testAction.isEnabled = images.count > 1 && !images[1].pending
                 confirmAction.isEnabled = images.count > 1 && !images[1].permanent
                 eraseAction.isEnabled = images.count > 1 && !images[1].confirmed
                 
-                message.text = info
-                message.textColor = .primary
-            } else { // not a success
-                readAction.isEnabled = true
-                message.textColor = .systemRed
-                message.text = "Device returned error: \(response.returnCode)"
+                updateUI(text: getInfo(from: response), color: .primary, readEnabled: true)
+            case .failure(let error):
+                updateUI(text: "Device returned error: \(error.localizedDescription)",
+                         color: .systemRed, readEnabled: true)
             }
         } else { // no response
             readAction.isEnabled = true
@@ -173,6 +131,62 @@ class ImagesViewController: UIViewController , McuMgrViewController{
         let diff = newRect.height - oldRect.height
         height += diff
         tableView.reloadData()
+    }
+    
+    // MARK: getInfo()
+    
+    private func getInfo(from response: McuMgrImageStateResponse) -> String {
+        let images = response.images ?? []
+        var info = ""
+        
+        if let mcuMgrResponse {
+            info += "McuMgr Parameters:\n"
+            if let bufferCount = mcuMgrResponse.bufferCount,
+               let bufferSize = mcuMgrResponse.bufferSize {
+                info += "• Buffer Count: \(bufferCount)\n"
+                info += "• Buffer Size: \(bufferSize) bytes\n"
+            } else {
+                info += "• Buffer Count: N/A\n"
+                info += "• Buffer Size: N/A\n"
+            }
+        }
+        
+        info += "\nSplit status: \(response.splitStatus ?? 0)\n"
+        
+        for image in images {
+            info += "\nImage \(image.image!)\n" +
+                "• Slot: \(image.slot!)\n" +
+                "• Version: \(image.version!)\n" +
+                "• Hash: \(Data(image.hash).hexEncodedString(options: .upperCase))\n" +
+                "• Flags: "
+            if image.bootable {
+                info += "Bootable, "
+            }
+            if image.pending {
+                info += "Pending, "
+            }
+            if image.confirmed {
+                info += "Confirmed, "
+            }
+            if image.active {
+                info += "Active, "
+            }
+            if image.permanent {
+                info += "Permanent, "
+            }
+            if !image.bootable && !image.pending && !image.confirmed && !image.active && !image.permanent {
+                info += "None"
+            } else {
+                info = String(info.dropLast(2))
+            }
+        }
+        return info
+    }
+    
+    private func updateUI(text: String, color: UIColor, readEnabled: Bool) {
+        message.text = text
+        message.textColor = color
+        readAction.isEnabled = readEnabled
     }
     
     private func busy() {
