@@ -59,6 +59,8 @@ open class McuManager {
     
     // MARK: Private
     
+    private var smpVersion: McuMgrVersion = .SMPv2
+    
     /// Each 'send' command gets its own Sequence Number, which we rotate
     /// within the bounds of an unsigned UInt8 [0...255].
     private var nextSequenceNumber: McuSequenceNumber = 0
@@ -94,12 +96,12 @@ open class McuManager {
         log(msg: "Sending \(op) command (Group: \(group), seq: \(nextSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
             atLevel: .verbose)
         let packetSequenceNumber = nextSequenceNumber
-        let packetData = McuManager.buildPacket(scheme: transporter.getScheme(), op: op,
-                                                flags: flags, group: group.uInt16Value,
+        let packetData = McuManager.buildPacket(scheme: transporter.getScheme(), version: smpVersion,
+                                                op: op, flags: flags, group: group.rawValue,
                                                 sequenceNumber: packetSequenceNumber,
                                                 commandId: commandId, payload: payload)
         let _callback: McuMgrCallback<T> = { [weak self] (response, error) -> Void in
-            guard let self = self else {
+            guard let self else {
                 callback(response, error)
                 return
             }
@@ -108,8 +110,8 @@ open class McuManager {
                 guard try self.robBuffer.receivedInOrder((response, error), for: packetSequenceNumber) else { return }
                 try self.robBuffer.deliver { responseSequenceNumber, response in
                     let responseResult = response as? (T?, (any Error)?)
-                    
                     if let response = responseResult?.0 {
+                        self.smpVersion = McuMgrVersion(rawValue: response.header.version) ?? .SMPv1
                         self.log(msg: "Response (Group: \(self.group), seq: \(responseSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
                                  atLevel: .verbose)
                     } else if let error = responseResult?.1 {
@@ -141,6 +143,7 @@ open class McuManager {
     /// Build a McuManager request packet based on the transporter scheme.
     ///
     /// - parameter scheme: The transport scheme.
+    /// - parameter version: The SMP Version.
     /// - parameter op: The McuManagerOperation code.
     /// - parameter flags: The optional flags.
     /// - parameter group: The command group.
@@ -149,7 +152,9 @@ open class McuManager {
     /// - parameter payload: The request payload.
     ///
     /// - returns: The raw packet data to send to the transporter.
-    public static func buildPacket<R: RawRepresentable>(scheme: McuMgrScheme, op: McuMgrOperation,
+    public static func buildPacket<R: RawRepresentable>(scheme: McuMgrScheme,
+                                                        version: McuMgrVersion,
+                                                        op: McuMgrOperation,
                                                         flags: UInt8, group: UInt16,
                                                         sequenceNumber: McuSequenceNumber,
                                                         commandId: R, payload: [String:CBOR]?) -> Data where R.RawValue == UInt8 {
@@ -165,8 +170,8 @@ open class McuManager {
         let len: UInt16 = UInt16(CBOR.encode(payloadCopy).count)
         
         // Build header.
-        let header = McuMgrHeader.build(op: op.rawValue, flags: flags, len: len,
-                                        group: group, seq: sequenceNumber,
+        let header = McuMgrHeader.build(version: version.rawValue, op: op.rawValue, flags: flags,
+                                        len: len, group: group, seq: sequenceNumber,
                                         id: commandId.rawValue)
         
         // Build the packet based on scheme.
@@ -268,13 +273,19 @@ public enum McuManagerError: Error, LocalizedError {
     
     case mtuValueOutsideOfValidRange(_ newValue: Int)
     case mtuValueHasNotchanged(_ newValue: Int)
+    case returnCode(_ rc: McuMgrReturnCode)
+    case returnCodeValue(_ rc: UInt64)
     
     public var errorDescription: String? {
         switch self {
         case .mtuValueOutsideOfValidRange(let newMtu):
             return "New MTU Value \(newMtu) is outside valid range of \(McuManager.ValidMTURange.lowerBound)...\(McuManager.ValidMTURange.upperBound)"
         case .mtuValueHasNotchanged(let newMtu):
-            return "MTU Value already set to \(newMtu)."
+            return "MTU Value already set to \(newMtu)"
+        case .returnCode(let rc):
+            return "Remote Error: \(rc)"
+        case .returnCodeValue(let code):
+            return "Remote Error: \(code)"
         }
     }
 }
@@ -285,45 +296,46 @@ public enum McuManagerError: Error, LocalizedError {
 ///
 /// Each group has its own manager class which contains the specific subcommands
 /// and functions. The default are contained within the McuManager class.
-public enum McuMgrGroup {
+public enum McuMgrGroup: UInt16 {
     /// Default command group (DefaultManager).
-    case `default`
+    case OS = 0
     /// Image command group (ImageManager).
-    case image
+    case Image = 1
     /// Statistics command group (StatsManager).
-    case stats
+    case Statistics = 2
     /// System configuration command group (ConfigManager).
-    case config
+    case Settings = 3
     /// Log command group (LogManager).
-    case logs
+    case Logs = 4
     /// Crash command group (CrashManager).
-    case crash
+    case Crash = 5
     /// Split image command group (Not implemented).
-    case split
+    case Split = 6
     /// Run test command group (RunManager).
-    case run
+    case Run = 7
     /// File System command group (FileSystemManager).
-    case fs
-    /// Basic command group (BasicManager).
-    case basic
+    case Filesystem = 8
+    /// Shell Command Group (Not Implemented).
+    case Shell = 9
     /// Per user command group, value must be >= 64.
-    case peruser(value: UInt16)
+    case PerUser = 64
     
-    var uInt16Value: UInt16 {
-        switch self {
-        case .default: return 0
-        case .image: return 1
-        case .stats: return 2
-        case .config: return 3
-        case .logs: return 4
-        case .crash: return 5
-        case .split: return 6
-        case .run: return 7
-        case .fs: return 8
-        case .basic: return 63
-        case .peruser(let value): return value
-        }
-    }
+    /** 
+     * Basic command group (BasicManager).
+     *
+     * Zephyr-specific groups decrease from PERUSER to avoid collision with upstream and
+     * user-defined groups.
+     */
+    case Basic = 63 // PerUser - 1
+}
+
+// MARK: - McuMgrVersion
+
+/// The mcu manager operation defines whether the packet sent is a read/write
+/// and request/response.
+public enum McuMgrVersion: UInt8 {
+    case SMPv1 = 0
+    case SMPv2 = 1
 }
 
 // MARK: - McuMgrOperation
@@ -335,6 +347,70 @@ public enum McuMgrOperation: UInt8 {
     case readResponse   = 1
     case write          = 2
     case writeResponse  = 3
+}
+
+public enum McuMgrError: Error, LocalizedError {
+    case returnCode(_ rc: McuMgrReturnCode)
+    case groupCode(_ group: McuMgrGroupReturnCode)
+    
+    public var errorDescription: String? {
+        switch self {
+        case .returnCode(let rc):
+            return rc.description
+        case .groupCode(let groupCode):
+            return groupCode.groupError()?.errorDescription
+        }
+    }
+}
+
+public class McuMgrGroupReturnCode: CBORMappable {
+    
+    public var group: UInt64 = 0
+    
+    public var rc: UInt64 = 0
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.unsignedInt(group)? = cbor?["group"] {
+            self.group = group
+        }
+        if case let CBOR.unsignedInt(rc)? = cbor?["rc"] {
+            self.rc = rc
+        }
+    }
+    
+    public init(map: [CBOR: CBOR]) throws {
+        try super.init(cbor: nil)
+        if case let CBOR.unsignedInt(group)? = map["group"] {
+            self.group = group
+        }
+        if case let CBOR.unsignedInt(rc)? = map["rc"] {
+            self.rc = rc
+        }
+    }
+    
+    public func groupError() -> LocalizedError? {
+        guard rc != 0 else { return nil }
+        
+        let error: LocalizedError?
+        switch McuMgrGroup(rawValue: UInt16(group)) {
+        case .OS:
+            error = OSManagerError(rawValue: rc)
+        case .Image:
+            error = ImageManagerError(rawValue: rc)
+        case .Statistics:
+            error = StatsManagerError(rawValue: rc)
+        case .Filesystem:
+            error = FileSystemManagerError(rawValue: rc)
+        case .Basic:
+            error = BasicManagerError(rawValue: rc)
+        default:
+            // Passthrough to McuMgr 'RC' Errors for Unkwnon
+            // or Unsupported values.
+            error = McuManagerError.returnCodeValue(rc)
+        }
+        return error ?? McuManagerError.returnCodeValue(rc)
+    }
 }
 
 // MARK: - McuMgrReturnCode
@@ -356,6 +432,7 @@ public enum McuMgrReturnCode: UInt64, Error {
     case corruptPayload    = 9
     case busy              = 10
     case accessDenied      = 11
+    
     case unrecognized
     
     public func isSuccess() -> Bool {

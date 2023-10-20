@@ -12,6 +12,7 @@ public class McuMgrHeader {
     /// Header length.
     public static let HEADER_LENGTH = 8
     
+    public let version: UInt8!
     public let op: UInt8!
     public let flags: UInt8!
     public let length: UInt16!
@@ -31,7 +32,10 @@ public class McuMgrHeader {
         if (data.count < McuMgrHeader.HEADER_LENGTH) {
             throw McuMgrHeaderParseError.invalidSize(data.count)
         }
-        op = data[0]
+        // First Byte: 7 6 5     4 3      2 1 0
+        //             Reserved  Version  Op
+        version = (data[0] >> 3) & 0b11
+        op = data[0] & 0b11
         flags = data[1]
         length = data.readBigEndian(offset: 2)
         groupId = data.readBigEndian(offset: 4)
@@ -39,8 +43,10 @@ public class McuMgrHeader {
         commandId = data[7]
     }
     
-    public init(op: UInt8, flags: UInt8, length: UInt16, groupId: UInt16,
-                sequenceNumber: McuSequenceNumber, commandId: UInt8) {
+    public init(version: UInt8, op: UInt8, flags: UInt8, length: UInt16,
+                groupId: UInt16, sequenceNumber: McuSequenceNumber,
+                commandId: UInt8) {
+        self.version = version
         self.op = op
         self.flags = flags
         self.length = length
@@ -51,7 +57,10 @@ public class McuMgrHeader {
     
     public func toData() -> Data {
         var data = Data(count: McuMgrHeader.HEADER_LENGTH)
-        data.append(op)
+        // First Byte: 7 6 5     4 3      2 1 0
+        //             Reserved  Version  Op
+        let firstByte: UInt8 = (version << 3) + op
+        data.append(firstByte)
         data.append(flags)
         data.append(Data(from: length))
         data.append(Data(from: groupId))
@@ -62,15 +71,19 @@ public class McuMgrHeader {
     
     /// Helper function to build a raw mcu manager header.
     ///
+    /// - parameter version: The SMP Protocol version.
     /// - parameter op: The Mcu Manager operation.
     /// - parameter flags: Optional flags.
     /// - parameter len: Optional length.
     /// - parameter group: The group id for this command.
     /// - parameter seq: Optional sequence number.
     /// - parameter id: The subcommand id for the given group.
-    public static func build(op: UInt8, flags: UInt8, len: UInt16, group: UInt16, seq: McuSequenceNumber,
-                             id: UInt8) -> [UInt8] {
-        return [op, flags, UInt8(len >> 8), UInt8(len & 0xFF), UInt8(group >> 8), UInt8(group & 0xFF), seq, id]
+    public static func build(version: UInt8, op: UInt8, flags: UInt8, len: UInt16, group: UInt16,
+                             seq: McuSequenceNumber, id: UInt8) -> [UInt8] {
+        // First Byte: 7 6 5     4 3      2 1 0
+        //             Reserved  Version  Op
+        let firstByte: UInt8 = ((version & 0b11) << 3) + op
+        return [firstByte, flags, UInt8(len >> 8), UInt8(len & 0xFF), UInt8(group >> 8), UInt8(group & 0xFF), seq, id]
     }
 }
 
@@ -79,7 +92,7 @@ public class McuMgrHeader {
 extension McuMgrHeader: CustomDebugStringConvertible {
     
     public var debugDescription: String {
-        return "{\"op\": \"\(op!)\", \"flags\": \(flags!), \"length\": \(length!), \"group\": \(groupId!), \"seqNum\": \(sequenceNumber!), \"commandId\": \(commandId!)}"
+        return "{\"version\": \"\(version!)\", \"op\": \"\(op!)\", \"flags\": \(flags!), \"length\": \(length!), \"group\": \(groupId!), \"seqNum\": \(sequenceNumber!), \"commandId\": \(commandId!)}"
     }
 }
 

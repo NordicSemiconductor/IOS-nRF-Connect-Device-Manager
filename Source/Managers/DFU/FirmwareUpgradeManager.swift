@@ -374,9 +374,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         self.log(msg: "Validation response: \(response)", atLevel: .info)
-        // Check for McuMgrReturnCode error.
-        if !response.isSuccess() {
-            self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
+        // Check for an error return code.
+        if let error = response.getError() {
+            self.fail(error: error)
             return
         }
         // Check that the image array exists.
@@ -386,12 +386,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         for image in self.images where !image.uploaded {
-            // Look for corresponding image in the desired slot.
-            let targetImageSlot = responseImages.first {
-                $0.image == image.image && $0.slot == image.slot
-            }
-            if let targetImageSlot, Data(targetImageSlot.hash) == image.hash {
-                targetSlotMatch(for: targetImageSlot, to: image)
+            // Look for corresponding image.
+            let targetImage = responseImages.first(where: { $0.image == image.image })
+            // Regardless of where we'd upload the image (slot), if the hash
+            // matches then we don't need to do anything about it.
+            if let targetImage, Data(targetImage.hash) == image.hash {
+                targetSlotMatch(for: targetImage, to: image)
                 continue // next Image.
             }
             
@@ -521,8 +521,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 self.fail(error: FirmwareUpgradeError.unknown("Test response is nil!"))
                 return
             }
-            if !response.isSuccess() {
-                self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
+            if let error = response.getError() {
+                self.fail(error: error)
                 return
             }
             // Check that the image array exists.
@@ -558,8 +558,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         self.log(msg: "Test response: \(response)", atLevel: .info)
         // Check for McuMgrReturnCode error.
-        if !response.isSuccess() {
-            self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
+        if let error = response.getError() {
+            self.fail(error: error)
             return
         }
         // Check that the image array exists.
@@ -622,8 +622,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.log(msg: "Confirmation response: \(response)", atLevel: .info)
         
         // Check for McuMgrReturnCode error.
-        if !response.isSuccess() {
-            self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
+        if let error = response.getError() {
+            self.fail(error: error)
             return
         }
         // Check that the image array exists.
@@ -724,9 +724,10 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        if response.isSuccess() {
+        switch response.result {
+        case .success:
             self.log(msg: "Erasing app settings completed", atLevel: .application)
-        } else {
+        case .failure:
             // rc != 0 is OK, meaning that this feature is not supported. DFU should continue.
             self.log(msg: "Erasing app settings not supported", atLevel: .warning)
         }
@@ -761,8 +762,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         // Check for McuMgrReturnCode error.
-        if !response.isSuccess() {
-            self.fail(error: FirmwareUpgradeError.mcuMgrReturnCodeError(response.returnCode))
+        if let error = response.getError() {
+            self.fail(error: error)
             return
         }
         self.resetResponseTime = Date()
@@ -950,7 +951,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
                 // We might sent 'Confirm', but the firmware might not change the flag to reflect it.
                 // If we don't track this eternally, we could enter into an infinite loop always trying
                 // to Confirm an image.
-                markAsConfirmed(firstUnconfirmedImage)
+//                markAsConfirmed(firstUnconfirmedImage)
                 return
             } else {
                 // If there's no image left to Confirm, then we Reset.
@@ -974,7 +975,6 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
 public enum FirmwareUpgradeError: Error {
     case unknown(String)
     case invalidResponse(McuMgrResponse)
-    case mcuMgrReturnCodeError(McuMgrReturnCode)
     case connectionFailedAfterReset
 }
 
@@ -986,8 +986,6 @@ extension FirmwareUpgradeError: LocalizedError {
             return message
         case .invalidResponse(let response):
             return "Invalid response: \(response)."
-        case .mcuMgrReturnCodeError(let code):
-            return "Remote error: \(code)."
         case .connectionFailedAfterReset:
             return "Connection failed after reset."
         }

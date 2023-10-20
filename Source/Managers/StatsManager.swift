@@ -26,7 +26,7 @@ public class StatsManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.stats, transporter: transporter)
+        super.init(group: McuMgrGroup.Statistics, transporter: transporter)
     }
     
     //**************************************************************************
@@ -47,5 +47,33 @@ public class StatsManager: McuManager {
     /// - parameter callback: The response callback.
     public func list(callback: @escaping McuMgrCallback<McuMgrStatsListResponse>) {
         send(op: .read, commandId: StatsID.List, payload: nil, callback: callback)
+    }
+}
+
+// MARK: - StatsManagerError
+
+public enum StatsManagerError: UInt64, Error, LocalizedError {
+    case noError = 0
+    case unknown = 1
+    case invalidGroup = 2
+    case invalidStatName = 3
+    case invalidStatSize = 4
+    case abortedWalk = 5
+    
+    public var errorDescription: String? {
+        switch self {
+        case .noError:
+            return "No Error Has Occurred"
+        case .unknown:
+            return "An Unknown Error Occurred"
+        case .invalidGroup:
+            return "Statistic Group Not Found"
+        case .invalidStatName:
+            return "Statistic Name Not Found"
+        case .invalidStatSize:
+            return "Size Of The Statistic Cannot Be Handled"
+        case .abortedWalk:
+            return "Walkthrough Of Statistics Was Aborted"
+        }
     }
 }

@@ -94,8 +94,9 @@ extension FileDownloadViewController: FileDownloadDelegate {
     func downloadDidFail(with error: Error) {
         fileName.textColor = .systemRed
         switch error as? FileTransferError {
-        case .mcuMgrErrorCode(.unknown):
-            fileName.text = "File not found"
+        // TODO: Fix by attempting to check specific Errors from FilesystemError.
+//        case .mcuMgrErrorCode(.unknown):
+//            fileName.text = "File not found"
         default:
             fileName.text = "\(error.localizedDescription)"
         }

@@ -27,7 +27,7 @@ public class LogManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.logs, transporter: transporter)
+        super.init(group: McuMgrGroup.Logs, transporter: transporter)
     }
     
     //**************************************************************************

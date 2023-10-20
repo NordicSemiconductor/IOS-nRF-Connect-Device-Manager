@@ -24,7 +24,7 @@ public class FileSystemManager: McuManager {
     //**************************************************************************
     
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.fs, transporter: transporter)
+        super.init(group: McuMgrGroup.Filesystem, transporter: transporter)
     }
     
     //**************************************************************************
@@ -317,7 +317,7 @@ public class FileSystemManager: McuManager {
             return
         }
         // Make sure the file data is set.
-        guard let fileData = self.fileData else {
+        guard let fileData else {
             self.cancelTransfer(error: FileTransferError.invalidData)
             return
         }
@@ -327,8 +327,8 @@ public class FileSystemManager: McuManager {
             return
         }
         // Check for an error return code.
-        guard response.isSuccess() else {
-            self.cancelTransfer(error: FileTransferError.mcuMgrErrorCode(response.returnCode))
+        if let error = response.getError() {
+            self.cancelTransfer(error: error)
             return
         }
         // Get the offset from the response.
@@ -393,8 +393,8 @@ public class FileSystemManager: McuManager {
             return
         }
         // Check for an error return code.
-        guard response.isSuccess() else {
-            self.cancelTransfer(error: FileTransferError.mcuMgrErrorCode(response.returnCode))
+        if let error = response.getError() {
+            self.cancelTransfer(error: error)
             return
         }
         // Get the offset from the response.
@@ -496,9 +496,9 @@ public class FileSystemManager: McuManager {
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
         }
         // Build the packet and return the size.
-        let packet = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write, flags: 0,
-                                            group: group.uInt16Value, sequenceNumber: 0, commandId: FilesystemID.File,
-                                            payload: payload)
+        let packet = McuManager.buildPacket(scheme: transporter.getScheme(), version: .SMPv2, op: .write,
+                                            flags: 0, group: group.rawValue, sequenceNumber: 0,
+                                            commandId: FilesystemID.File, payload: payload)
         var packetOverhead = packet.count + 5
         if transporter.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.
@@ -510,28 +510,71 @@ public class FileSystemManager: McuManager {
 
 // MARK: FileTransferError
 
-public enum FileTransferError: Error {
-    /// Response payload values do not exist.
+public enum FileTransferError: Error, LocalizedError {
+    
     case invalidPayload
-    /// File Data is nil.
     case invalidData
-    /// McuMgrResponse contains a error return code.
-    case mcuMgrErrorCode(McuMgrReturnCode)
-}
-
-extension FileTransferError: LocalizedError {
     
     public var errorDescription: String? {
         switch self {
         case .invalidPayload:
-            return "Response payload values do not exist."
+            return "Response Payload Values Do Not Exist."
         case .invalidData:
-            return "File data is nil."
-        case .mcuMgrErrorCode(let code):
-            return "Remote error: \(code)."
+            return "File Data Is Nil."
         }
     }
+}
+
+// MARK: - FileSystemManagerError
+
+public enum FileSystemManagerError: UInt64, Error, LocalizedError {
+    case noError = 0
+    case unknown = 1
+    case invalidName = 2
+    case notFound = 3
+    case isDirectory = 4
+    case openFailed = 5
+    case seekFailed = 6
+    case readFailed = 7
+    case truncateFailed = 8
+    case deleteFailed = 9
+    case writeFailed = 10
+    case invalidOffset = 11
+    case offsetLargerThanFile = 12
+    case checksumHashNotFound = 13
     
+    public var errorDescription: String? {
+        switch self {
+        case .noError:
+            return "No Error"
+        case .unknown:
+            return "An Unknown Error Occurred"
+        case .invalidName:
+            return "Specified File Name Is Not Valid"
+        case .notFound:
+            return "Specified File Name Does Not Exist"
+        case .isDirectory:
+            return "Specified File Name Is a Directory, Not a File"
+        case .openFailed:
+            return "Error Occured Whilst Attempting to Open File"
+        case .seekFailed:
+            return "Error Occured Whilst Attempting to Seek to an Offset In a File"
+        case .readFailed:
+            return "Error Occured Whilst Attempting to Read Data From a File"
+        case .truncateFailed:
+            return "Error Occured Whilst Attempting to Truncate a File"
+        case .deleteFailed:
+            return "Error Occured Whilst Attempting to Delete a File"
+        case .writeFailed:
+            return "Error Occured Whilst Attempting to Write Data to a File"
+        case .invalidOffset:
+            return "Specified Data Offset Within a File Is Invalid"
+        case .offsetLargerThanFile:
+            return "Requested Offset Is Larger Than the Size of The File on the device"
+        case .checksumHashNotFound:
+            return "Requested Hash or CheckSum Was Not Found or Is Not Supported"
+        }
+    }
 }
 
 //******************************************************************************

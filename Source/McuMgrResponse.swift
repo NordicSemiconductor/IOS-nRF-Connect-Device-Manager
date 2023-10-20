@@ -18,6 +18,12 @@ open class McuMgrResponse: CBORMappable {
     /// assumed.
     public var rc: UInt64 = 0
     
+    /**
+     In SMPv2, when a Request makes it into a specific Group, that Group may
+     return its own kind of Return Code or Error.
+     */
+    public var groupRC: McuMgrGroupReturnCode?
+    
     //**************************************************************************
     // MARK: Response Properties
     //**************************************************************************
@@ -39,9 +45,9 @@ open class McuMgrResponse: CBORMappable {
     /// The raw McuMgrResponse payload.
     public var payloadData: Data?
     
-    /// The repsponse's return code obtained from the payload. If no return code
-    /// is explicitly stated, OK (0) is assumed.
-    public var returnCode: McuMgrReturnCode = .ok
+    /// The repsponse's result obtained from the payload. If no Return Code (RC)
+    /// or Group Error is explicitly stated, success is assumed.
+    public var result: Result<Void, McuMgrError> = .success(())
     
     /// The CoAP Response code for CoAP based transport schemes. For non-CoAP
     /// transport schemes this value will always be 0
@@ -53,6 +59,9 @@ open class McuMgrResponse: CBORMappable {
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
+        if case let CBOR.map(err)? = cbor?["err"] {
+            self.groupRC = try McuMgrGroupReturnCode(map: err)
+        }
         if case let CBOR.unsignedInt(rc)? = cbor?["rc"] {
             self.rc = rc
         }
@@ -62,8 +71,17 @@ open class McuMgrResponse: CBORMappable {
     // MARK: Functions
     //**************************************************************************
     
-    public func isSuccess() -> Bool {
-        return returnCode.isSuccess()
+    /**
+     Returns `LocalizedError` if any is present. Either Group Error or McuManager
+     Error. If `nil`, success scenario can be assumed.
+     */
+    public func getError() -> LocalizedError? {
+        switch result {
+        case .success:
+            return nil
+        case .failure(let error):
+            return error
+        }
     }
     
     //**************************************************************************
@@ -134,7 +152,13 @@ open class McuMgrResponse: CBORMappable {
         response.header = header
         response.scheme = scheme
         response.rawData = bytes
-        response.returnCode = McuMgrReturnCode(rawValue: response.rc) ?? .unrecognized
+        if let groupRC = response.groupRC, groupRC.rc != 0 {
+            response.result = .failure(.groupCode(groupRC))
+        } else if let returnCode = McuMgrReturnCode(rawValue: response.rc), returnCode != .ok {
+            response.result = .failure(.returnCode(returnCode))
+        } else {
+            response.result = .success(())
+        }
         response.coapCode = coapCode
         
         return response

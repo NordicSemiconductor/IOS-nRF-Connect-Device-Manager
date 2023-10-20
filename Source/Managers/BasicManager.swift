@@ -26,7 +26,7 @@ public class BasicManager: McuManager {
     // MARK: - Init
     
     public init(transporter: McuMgrTransport) {
-        super.init(group: .basic, transporter: transporter)
+        super.init(group: .Basic, transporter: transporter)
     }
     
     // MARK: - Commands
@@ -41,14 +41,25 @@ public class BasicManager: McuManager {
 
 // MARK: - BasicManagerError
 
-enum BasicManagerError: Hashable, Error, LocalizedError {
+public enum BasicManagerError: UInt64, Error, LocalizedError {
+    case noError = 0
+    case unknown = 1
+    case flashOpenFailed = 2
+    case flashConfigQueryFailed = 3
+    case flashEraseFailed = 4
     
-    case echoMessageOverTheLimit(_ messageSize: Int)
-    
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
-        case .echoMessageOverTheLimit(let messageSize):
-            return "Echo Message of \(messageSize) bytes in size is over the limit of \(BasicManager.MAX_ECHO_MESSAGE_SIZE_BYTES) bytes."
+        case .noError:
+            return "No Error Has Occurred"
+        case .unknown:
+            return "An Unknown Error Occurred"
+        case .flashOpenFailed:
+            return "Opening Flash Area Failed"
+        case .flashConfigQueryFailed:
+            return "Querying Flash Area Parameters Failed"
+        case .flashEraseFailed:
+            return "Erasing Flash Area Failed"
         }
     }
 }

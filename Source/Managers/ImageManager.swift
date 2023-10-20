@@ -20,11 +20,11 @@ public class ImageManager: McuManager {
         public let data: Data
         
         /**
-         All of the previous code / modes target `slot` 0 (Primary) as where they
+         All of the previous code / modes target `slot` 1 (Secondary) as where they
          want the image uploaded, so that's the default. Only DirectXIP would
-         target `slot` 1 (Secondary).
+         target `slot` 0 (Primary) for upload.
          */
-        public init(image: Int, slot: Int = 0, data: Data) {
+        public init(image: Int, slot: Int = 1, data: Data) {
             self.image = image
             self.slot = slot
             self.data = data
@@ -64,7 +64,7 @@ public class ImageManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.image, transporter: transporter)
+        super.init(group: McuMgrGroup.Image, transporter: transporter)
     }
     
     //**************************************************************************
@@ -405,8 +405,8 @@ public class ImageManager: McuManager {
             return
         }
         
-        guard response.isSuccess() else {
-            self.cancelUpload(error: ImageUploadError.mcuMgrErrorCode(response.returnCode))
+        if let error = response.getError() {
+            self.cancelUpload(error: error)
             return
         }
         
@@ -562,9 +562,9 @@ public class ImageManager: McuManager {
             payload.updateValue(CBOR.byteString([UInt8](data.sha256())), forKey: "sha")
         }
         // Build the packet and return the size.
-        let packet = McuManager.buildPacket(scheme: transporter.getScheme(), op: .write, flags: 0,
-                                            group: group.uInt16Value, sequenceNumber: 0, commandId: ImageID.Upload,
-                                            payload: payload)
+        let packet = McuManager.buildPacket(scheme: transporter.getScheme(), version: .SMPv2, op: .write,
+                                            flags: 0, group: group.rawValue, sequenceNumber: 0,
+                                            commandId: ImageID.Upload, payload: payload)
         var packetOverhead = packet.count + 5
         if transporter.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.
@@ -592,7 +592,7 @@ public enum ImageUploadAlignment: UInt64, Codable, CaseIterable, CustomStringCon
 
 // MARK: - ImageUploadError
 
-public enum ImageUploadError: Error {
+public enum ImageUploadError: Error, LocalizedError {
     /// Response payload values do not exist.
     case invalidPayload
     /// Image Data is nil.
@@ -601,11 +601,6 @@ public enum ImageUploadError: Error {
     case offsetMismatch
     
     case invalidUploadSequenceNumber(McuSequenceNumber)
-    /// McuMgrResponse contains a error return code.
-    case mcuMgrErrorCode(McuMgrReturnCode)
-}
-
-extension ImageUploadError: LocalizedError {
     
     public var errorDescription: String? {
         switch self {
@@ -617,8 +612,107 @@ extension ImageUploadError: LocalizedError {
             return "Response payload reports package offset does not match expected value."
         case .invalidUploadSequenceNumber(let sequenceNumber):
             return "Received Response for Unknown Sequence Number \(sequenceNumber)."
-        case .mcuMgrErrorCode(let code):
-            return "Remote error: \(code)"
+        }
+    }
+}
+
+// MARK: - ImageManagerError
+
+public enum ImageManagerError: UInt64, Error, LocalizedError {
+    
+    case noError = 0
+    case unknown = 1
+    case flashConfigurationQueryFailure = 2
+    case noImage = 3
+    case noTLVs = 4
+    case invalidTLV = 5
+    case tlvHashCollision = 6
+    case tlvInvalidSize = 7
+    case hashNotFound = 8
+    case fullSlots = 9
+    case flashOpenFailed = 10
+    case flashReadFailed = 11
+    case flashWriteFailed = 12
+    case flashEraseFailed = 13
+    case invalidSlot = 14
+    case mallocFailed = 15
+    case flashContextAlreadySet = 16
+    case flashContextNotSet = 17
+    case flashAreaNull = 18
+    case invalidPageOffset = 19
+    case missingOffset = 20
+    case missingLength = 21
+    case invalidImageHeader = 22
+    case invalidImageHeaderMagic = 23
+    case invalidHash = 24
+    case invalidFlashAddress = 25
+    case versionGetFailed = 26
+    case newerCurrentVersion = 27
+    case imageAlreadyPending = 28
+    case invalidImageVectorTable = 29
+
+    public var errorDescription: String? {
+        switch self {
+        case .noError:
+            return "No Error Has Occurred"
+        case .unknown:
+            return "An Unknown Error Occurred"
+        case .flashConfigurationQueryFailure:
+            return "Failed to Query Flash Area Configuration"
+        case .noImage:
+            return "There's No Image in the Slot"
+        case .noTLVs:
+            return "Slot Image Is Missing TLV (Tag, Length, Volume) Information"
+        case .invalidTLV:
+            return "Slot Image Has an Invalid TLV Type and/or Length"
+        case .tlvHashCollision:
+            return "Slot Image Has Multiple Hash TLVs, Which Is Invalid"
+        case .tlvInvalidSize:
+            return "Slot Image Has an Invalid TLV Size"
+        case .hashNotFound:
+            return "Slot Image Has No Hash TLV"
+        case .fullSlots:
+            return "There Is No Free Slot to Place The Image"
+        case .flashOpenFailed:
+            return "Flash Area Opening Failed"
+        case .flashReadFailed:
+            return "Flash Area Reading Failed"
+        case .flashWriteFailed:
+            return "Flash Area Writing Failed"
+        case .flashEraseFailed:
+            return "Flash Area Erasing Failed"
+        case .invalidSlot:
+            return "Given Slot Is Not Valid"
+        case .mallocFailed:
+            return "Insufficient Heap Memory (Malloc Failed)"
+        case .flashContextAlreadySet:
+            return "Flash Context Is Already Set"
+        case .flashContextNotSet:
+            return "Flash Context Is Not Set"
+        case .flashAreaNull:
+            return "Device For The Flash Area Is Null"
+        case .invalidPageOffset:
+            return "Invalid Page Number Offset"
+        case .missingOffset:
+            return "Required Offset Parameter Not Found"
+        case .missingLength:
+            return "Required Length Parameter Not Found"
+        case .invalidImageHeader:
+            return "Image Length Is Smaller Than The Size Of an Image Header"
+        case .invalidImageHeaderMagic:
+            return "Image Header Magic Value Does Not Match The Expected Value"
+        case .invalidHash:
+            return "Invalid Hash Parameter"
+        case .invalidFlashAddress:
+            return "Image Load Address Does Not Match The Address of The Flash Area"
+        case .versionGetFailed:
+            return "Failed to Get Version of Currently Running Application"
+        case .newerCurrentVersion:
+            return "Currently Running Application Is Newer Than Uploading Version"
+        case .imageAlreadyPending:
+            return "Image Operation Already Pending"
+        case .invalidImageVectorTable:
+            return "Image Vector Table Is Invalid"
         }
     }
 }

@@ -56,10 +56,8 @@ extension McuMgrManifest {
         public let modTime: Int
         public let mcuBootVersion: String?
         /**
-         If not present when parsing a Manifest from .json, slot 0 (Primary)
-         is assumed as the binary's target. If no DirectXIP is involved, it
-         might be uploaded to slot 1 and then swapped, but the assumed target
-         is the Primary slot.
+         If not present when parsing a Manifest from .json, slot 1 (Secondary)
+         is assumed as the binary's target.
          */
         public let slot: Int
         public let type: String
@@ -113,7 +111,7 @@ extension McuMgrManifest {
             loadAddress = try values.decode(Int.self, forKey: .loadAddress)
             
             let slotString = try? values.decode(String.self, forKey: .slot)
-            slot = Int(slotString ?? "") ?? 0
+            slot = Int(slotString ?? "") ?? 1
             
             let version = try? values.decode(String.self, forKey: .mcuBootVersion)
             _mcuBootXipVersion = try? values.decode(String.self, forKey: ._mcuBootXipVersion)
