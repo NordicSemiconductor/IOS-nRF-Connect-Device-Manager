@@ -320,8 +320,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 self.log(msg: "Cancelling 'Erase App Settings' since device capabilities are not supported.", atLevel: .info)
                 self.configuration.eraseAppSettings = false
             }
-            self.log(msg: "Skipping over 'Bootloader Info' step since device capabilities (McuMgr Parameters) are not supported.", atLevel: .info)
-            self.validate() // Continue Upload
+            self.bootloaderInfo() // Continue to Bootloader Info.
             return
         }
         
