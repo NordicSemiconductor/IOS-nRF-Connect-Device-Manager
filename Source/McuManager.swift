@@ -93,7 +93,7 @@ open class McuManager {
                                                              commandId: R, payload: [String:CBOR]?,
                                                              timeout: Int = DEFAULT_SEND_TIMEOUT_SECONDS,
                                                              callback: @escaping McuMgrCallback<T>) where R.RawValue == UInt8 {
-        log(msg: "Sending \(op) command (Group: \(group), seq: \(nextSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
+        log(msg: "Sending \(op) command (Version: \(smpVersion), Group: \(group), seq: \(nextSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
             atLevel: .verbose)
         let packetSequenceNumber = nextSequenceNumber
         let packetData = McuManager.buildPacket(scheme: transporter.getScheme(), version: smpVersion,
@@ -112,10 +112,10 @@ open class McuManager {
                     let responseResult = response as? (T?, (any Error)?)
                     if let response = responseResult?.0 {
                         self.smpVersion = McuMgrVersion(rawValue: response.header.version) ?? .SMPv1
-                        self.log(msg: "Response (Group: \(self.group), seq: \(responseSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
+                        self.log(msg: "Response (Version: \(self.smpVersion), Group: \(self.group), seq: \(responseSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
                                  atLevel: .verbose)
                     } else if let error = responseResult?.1 {
-                        self.log(msg: "Request (Group: \(self.group), seq: \(responseSequenceNumber)) failed: \(error.localizedDescription))",
+                        self.log(msg: "Request (Version: \(self.smpVersion), Group: \(self.group), seq: \(responseSequenceNumber)) failed: \(error.localizedDescription))",
                                  atLevel: .error)
                     }
                     callback(responseResult?.0, responseResult?.1)
@@ -333,9 +333,18 @@ public enum McuMgrGroup: UInt16 {
 
 /// The mcu manager operation defines whether the packet sent is a read/write
 /// and request/response.
-public enum McuMgrVersion: UInt8 {
+public enum McuMgrVersion: UInt8, CustomStringConvertible {
     case SMPv1 = 0
     case SMPv2 = 1
+    
+    public var description: String {
+        switch self {
+        case .SMPv1:
+            return "SMPv1"
+        case .SMPv2:
+            return "SMPv2"
+        }
+    }
 }
 
 // MARK: - McuMgrOperation
