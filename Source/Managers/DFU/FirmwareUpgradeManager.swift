@@ -333,7 +333,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     // MARK: Bootloader Info Callback
     
     private lazy var bootloaderInfoCallback: McuMgrCallback<BootloaderInfoResponse> = { [weak self] response, error in
-        guard let self else { return }
+        guard let self = self else { return }
         
         guard error == nil, let response, response.rc != 8 else {
             self.log(msg: "Bootloader Mode Unknown.", atLevel: .debug)
@@ -347,7 +347,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             // Mark all images as confirmed for DirectXIP No Revert, because there's no need.
             // No Revert means we just Reset and the firmware will handle it.
             for image in self.images {
-                markAsConfirmed(image)
+                self.markAsConfirmed(image)
             }
         }
         self.validate() // Continue Upload
@@ -361,14 +361,14 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     /// state on success.
     private lazy var listCallback: McuMgrCallback<McuMgrImageStateResponse> = { [weak self] response, error in
         // Ensure the manager is not released.
-        guard let self else { return }
+        guard let self = self else { return }
         
         // Check for an error.
-        if let error {
+        if let error = error {
             self.fail(error: error)
             return
         }
-        guard let response else {
+        guard let response = response else {
             self.fail(error: FirmwareUpgradeError.unknown("Validation response is nil!"))
             return
         }
@@ -390,7 +390,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             // Regardless of where we'd upload the image (slot), if the hash
             // matches then we don't need to do anything about it.
             if let targetImage, Data(targetImage.hash) == image.hash {
-                targetSlotMatch(for: targetImage, to: image)
+                self.targetSlotMatch(for: targetImage, to: image)
                 continue // next Image.
             }
             
@@ -408,11 +408,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 if let activeImage = self.images.first(where: {
                     $0.image == image.image && $0.slot == activeResponseImage.slot
                 }) {
-                    targetSlotMatch(for: activeResponseImage, to: activeImage)
+                    self.targetSlotMatch(for: activeResponseImage, to: activeImage)
                     self.log(msg: "Two possible slots available for Image \(image.image). Image \(image.image) Slot \(activeResponseImage.slot) is marked as currently Active, so we're uploading to the alternative Slot instead.", atLevel: .application)
                 }
             } else {
-                validateSecondarySlotUpload(of: image, with: responseImages)
+                self.validateSecondarySlotUpload(of: image, with: responseImages)
             }
         }
         
