@@ -542,6 +542,9 @@ public enum FileSystemManagerError: UInt64, Error, LocalizedError {
     case invalidOffset = 11
     case offsetLargerThanFile = 12
     case checksumHashNotFound = 13
+    case mountingPointNotFound = 14
+    case readOnlyFilesystem = 15
+    case emptyFile = 16
     
     public var errorDescription: String? {
         switch self {
@@ -573,6 +576,12 @@ public enum FileSystemManagerError: UInt64, Error, LocalizedError {
             return "Requested Offset Is Larger Than the Size of The File on the device"
         case .checksumHashNotFound:
             return "Requested Hash or CheckSum Was Not Found or Is Not Supported"
+        case .mountingPointNotFound:
+            return "Requested Mounting Point Was Not Found or Is Not Mounted"
+        case .readOnlyFilesystem:
+            return "Specified Mount Point Only Supports Read-Only Operations"
+        case .emptyFile:
+            return "Requested Operation Cannot Be Performed Due to File Being Empty with No Contents"
         }
     }
 }
