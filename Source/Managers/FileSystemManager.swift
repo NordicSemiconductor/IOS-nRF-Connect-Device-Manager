@@ -317,7 +317,7 @@ public class FileSystemManager: McuManager {
             return
         }
         // Make sure the file data is set.
-        guard let fileData else {
+        guard let fileData = fileData else {
             self.cancelTransfer(error: FileTransferError.invalidData)
             return
         }
