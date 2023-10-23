@@ -40,7 +40,7 @@ public enum McuMgrLogLevel: Int {
 /// The log category indicates the component that created the log entry.
 public enum McuMgrLogCategory: String {
     case transport = "Transport"
-    case config    = "ConfigManager"
+    case Settings  = "SettingsManager"
     case crash     = "CrashManager"
     case `default` = "DefaultManager"
     case fs        = "FSManager"

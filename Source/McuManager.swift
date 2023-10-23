@@ -303,7 +303,7 @@ public enum McuMgrGroup: UInt16 {
     case Image = 1
     /// Statistics command group (StatsManager).
     case Statistics = 2
-    /// System configuration command group (ConfigManager).
+    /// System configuration command group (SettingsManager).
     case Settings = 3
     /// Log command group (LogManager).
     case Logs = 4
@@ -409,6 +409,8 @@ public class McuMgrGroupReturnCode: CBORMappable {
             error = ImageManagerError(rawValue: rc)
         case .Statistics:
             error = StatsManagerError(rawValue: rc)
+        case .Settings:
+            error = SettingsManagerError(rawValue: rc)
         case .Filesystem:
             error = FileSystemManagerError(rawValue: rc)
         case .Basic:

@@ -91,7 +91,7 @@ McuManager are organized by functionality into command groups. In _mcumgr-ios_, 
 * **`DefaultManager`**: Contains commands relevant to the OS. This includes task and memory pool statistics, device time read & write, and device reset.
 * **`ImageManager`**: Manage image state on the device and perform image uploads.
 * **`StatsManager`**: Read stats from the device.
-* **`ConfigManager`**: Read/Write config values on the device.
+* **`SettingsManager`**: Read/Write config values on the device.
 * **`LogManager`**: Collect logs from the device.
 * **`CrashManager`**: Run crash tests on the device.
 * **`RunTestManager`**: Runs tests on the device.
