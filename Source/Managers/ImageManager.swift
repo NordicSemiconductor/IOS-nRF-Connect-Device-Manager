@@ -650,6 +650,10 @@ public enum ImageManagerError: UInt64, Error, LocalizedError {
     case newerCurrentVersion = 27
     case imageAlreadyPending = 28
     case invalidImageVectorTable = 29
+    case invalidImageTooLarge = 30
+    case invalidImageDataOverrun = 31
+    case imageConfirmationDenied = 32
+    case imageSettingTestToActiveDenied = 33
 
     public var errorDescription: String? {
         switch self {
@@ -713,6 +717,14 @@ public enum ImageManagerError: UInt64, Error, LocalizedError {
             return "Image Operation Already Pending"
         case .invalidImageVectorTable:
             return "Image Vector Table Is Invalid"
+        case .invalidImageTooLarge:
+            return "Image Is Too Large to Fit"
+        case .invalidImageDataOverrun:
+            return "Data Sent Is Larger than the Provided Image Size"
+        case .imageConfirmationDenied:
+            return "Image Confirmation Denied"
+        case .imageSettingTestToActiveDenied:
+            return "Setting Active Slot to Test Is Not Allowed"
         }
     }
 }
