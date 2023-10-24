@@ -614,6 +614,75 @@ public class McuMgrFsDownloadResponse: McuMgrResponse {
     }
 }
 
+public class McuMgrFilesystemCrc32Response: McuMgrResponse {
+    
+    // Type of hash/checksum that was performed.
+    public var type: String?
+    // Offset that checksum calculation started at
+    public var off: UInt64?
+    // Length of input data used for hash/checksum generation (in bytes)
+    public var len: UInt64?
+    // IEEE CRC32 checksum (uint32 represented as type long)
+    public var output: UInt64?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.utf8String(type)? = cbor?["type"] {
+            self.type = type
+        }
+        if case let CBOR.unsignedInt(off)? = cbor?["off"] {
+            self.off = off
+        }
+        if case let CBOR.unsignedInt(len)? = cbor?["len"] {
+            self.len = len
+        }
+        if case let CBOR.unsignedInt(output)? = cbor?["output"] {
+            self.output = output
+        }
+    }
+}
+
+public class McuMgrFilesystemSha256Response: McuMgrResponse {
+    
+    // Type of hash/checksum that was performed.
+    public var type: String?
+    // Offset that checksum calculation started at.
+    public var off: UInt64?
+    // Length of input data used for hash/checksum generation (in bytes)
+    public var len: UInt64?
+    // 32-byte SHA256 (Secure Hash Algorithm)
+    public var output: [UInt8]?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.utf8String(type)? = cbor?["type"] {
+            self.type = type
+        }
+        if case let CBOR.unsignedInt(off)? = cbor?["off"] {
+            self.off = off
+        }
+        if case let CBOR.unsignedInt(len)? = cbor?["len"] {
+            self.len = len
+        }
+        if case let CBOR.byteString(output)? = cbor?["output"] {
+            self.output = output
+        }
+    }
+}
+
+public class McuMgrFilesystemStatusResponse: McuMgrResponse {
+    
+    /// The length of the file.
+    public var len: UInt64?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.unsignedInt(len)? = cbor?["len"] {
+            self.len = len
+        }
+    }
+}
+
 //******************************************************************************
 // MARK: Logs Responses
 //******************************************************************************

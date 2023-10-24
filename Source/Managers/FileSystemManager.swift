@@ -11,25 +11,25 @@ import SwiftCBOR
 // MARK: - FileSystemManager
 
 public class FileSystemManager: McuManager {
-    override class var TAG: McuMgrLogCategory { .fs }
+    override class var TAG: McuMgrLogCategory { .FileSystemManager }
     
     // MARK: - IDs
     
     enum FilesystemID: UInt8 {
-        case File
+        case File = 0
+        case Status = 1
+        case HashChecksum = 2
+        case SupportedHashChecksum = 3
+        case CloseFile = 4
     }
     
-    //**************************************************************************
-    // MARK: Initializers
-    //**************************************************************************
+    // MARK: Init
     
     public init(transporter: McuMgrTransport) {
         super.init(group: McuMgrGroup.Filesystem, transporter: transporter)
     }
     
-    //**************************************************************************
-    // MARK: File System Commands
-    //**************************************************************************
+    // MARK: Download
     
     /// Requests the next packet of data from given offset.
     /// To download a complete file, use download(name:delegate) method instead.
@@ -46,6 +46,8 @@ public class FileSystemManager: McuManager {
         send(op: .read, commandId: FilesystemID.File, payload: payload, callback: callback)
     }
 
+    // MARK: Upload
+    
     /// Sends the next packet of data from given offset.
     /// To send a complete file, use upload(name:data:delegate) method instead.
     ///
@@ -179,9 +181,71 @@ public class FileSystemManager: McuManager {
         return true
     }
     
-    //**************************************************************************
+    // MARK: Status
+    
+    /// Retrieve status of an existing file from specified path of a target device.
+    ///
+    /// - parameter name: The file name.
+    /// - parameter callback: The callback.
+    public func status(name: String, callback: @escaping McuMgrCallback<McuMgrFilesystemStatusResponse>) {
+        let payload: [String: CBOR] = ["name": CBOR.utf8String(name)]
+        send(op: .read, commandId: FilesystemID.Status, payload: payload, callback: callback)
+    }
+    
+    // MARK: CRC32
+    
+    /// Generate a checksum of an existing file at a specified path on a target.
+    ///
+    /// - parameter name: The file name.
+    /// - parameter offset: The offset to start checksum calculation at.
+    /// - parameter length: The maximum length of data to read from file to generate checksum.
+    /// - parameter callback: The callback.
+    public func crc32(name: String, offset: UInt64, length: UInt64, callback: @escaping McuMgrCallback<McuMgrFilesystemCrc32Response>) {
+        var payload: [String: CBOR] = [
+            "name": CBOR.utf8String(name),
+            "type": CBOR.utf8String("crc32")
+        ]
+        if offset > 0 {
+            payload["offset"] = CBOR.unsignedInt(offset)
+        }
+        if length > 0 {
+            payload["length"] = CBOR.unsignedInt(length)
+        }
+        send(op: .read, commandId: FilesystemID.HashChecksum, payload: payload, callback: callback)
+    }
+    
+    // MARK: SHA256
+    
+    /// Generate a checksum of an existing file at a specified path on a target.
+    ///
+    /// - parameter name: The file name.
+    /// - parameter offset: The offset to start checksum calculation at.
+    /// - parameter length: The maximum length of data to read from file to generate checksum.
+    /// - parameter callback: The callback.
+    public func sha256(name: String, offset: UInt64, length: UInt64, callback: @escaping McuMgrCallback<McuMgrFilesystemSha256Response>) {
+        var payload: [String: CBOR] = [
+            "name": CBOR.utf8String(name),
+            "type": CBOR.utf8String("sha256")
+        ]
+        if offset > 0 {
+            payload["offset"] = CBOR.unsignedInt(offset)
+        }
+        if length > 0 {
+            payload["length"] = CBOR.unsignedInt(length)
+        }
+        send(op: .read, commandId: FilesystemID.HashChecksum, payload: payload, callback: callback)
+    }
+    
+    // MARK: closeAll
+    
+    /// Close any open file handles held by fs_mgmt upload/download requests that might have stalled or be incomplete.
+    ///
+    /// - parameter callback: The callback.
+    public func closeAll(name: String, callback: @escaping McuMgrCallback<McuMgrResponse>) {
+        send(op: .read, commandId: FilesystemID.CloseFile, payload: nil, callback: callback)
+    }
+    
     // MARK: State
-    //**************************************************************************
     
     /// Image upload states
     public enum UploadState: UInt8 {
@@ -217,6 +281,8 @@ public class FileSystemManager: McuManager {
     /// when upload or download was started and released on success, error
     /// or cancel.
     private var cyclicReferenceHolder: (() -> FileSystemManager)?
+    
+    // MARK: Cancel
     
     /// Cancels the current transfer.
     ///
@@ -259,6 +325,8 @@ public class FileSystemManager: McuManager {
         objc_sync_exit(self)
     }
     
+    // MARK: Pause
+    
     /// Pauses the current transfer. If there is no transfer in progress, nothing
     /// happens.
     public func pauseTransfer() {
@@ -272,6 +340,8 @@ public class FileSystemManager: McuManager {
         }
         objc_sync_exit(self)
     }
+    
+    // MARK: Continue
     
     /// Continues a paused transfer. If the transfer is not paused or not uploading,
     /// nothing happens.
@@ -292,9 +362,7 @@ public class FileSystemManager: McuManager {
         objc_sync_exit(self)
     }
     
-    //**************************************************************************
-    // MARK: File Transfer Private Methods
-    //**************************************************************************
+    // MARK: uploadCallback
     
     private lazy var uploadCallback: McuMgrCallback<McuMgrFsUploadResponse> = {
         [weak self] (response: McuMgrFsUploadResponse?, error: Error?) in
@@ -366,6 +434,8 @@ public class FileSystemManager: McuManager {
             self.cancelTransfer(error: ImageUploadError.invalidPayload)
         }
     }
+    
+    // MARK: downloadCallback
     
     private lazy var downloadCallback: McuMgrCallback<McuMgrFsDownloadResponse> = {
         [weak self] (response: McuMgrFsDownloadResponse?, error: Error?) in
@@ -508,7 +578,7 @@ public class FileSystemManager: McuManager {
     }
 }
 
-// MARK: FileTransferError
+// MARK: - FileTransferError
 
 public enum FileTransferError: Error, LocalizedError {
     
@@ -586,9 +656,7 @@ public enum FileSystemManagerError: UInt64, Error, LocalizedError {
     }
 }
 
-//******************************************************************************
-// MARK: File Upload Delegate
-//******************************************************************************
+// MARK: - FileUploadDelegate
 
 public protocol FileUploadDelegate: AnyObject {
     
@@ -611,9 +679,7 @@ public protocol FileUploadDelegate: AnyObject {
     func uploadDidFinish()
 }
 
-//******************************************************************************
-// MARK: File Download Delegate
-//******************************************************************************
+// MARK: - FileDownloadDelegate
 
 public protocol FileDownloadDelegate: AnyObject {
     
