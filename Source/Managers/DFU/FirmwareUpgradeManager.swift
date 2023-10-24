@@ -347,7 +347,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             // Mark all images as confirmed for DirectXIP No Revert, because there's no need.
             // No Revert means we just Reset and the firmware will handle it.
             for image in self.images {
-                self.markAsConfirmed(image)
+                self.mark(image, as: \.confirmed)
             }
         }
         self.validate() // Continue Upload
@@ -424,18 +424,18 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                                  to uploadImage: FirmwareUpgradeImage) {
         // The image is already active in the desired slot.
         // No need to upload it again.
-        markAsUploaded(uploadImage)
+        mark(uploadImage, as: \.uploaded)
         
         // If the image is already confirmed...
         if responseImage.confirmed {
             // ...there's no need to send any commands for this image.
             log(msg: "Image \(uploadImage.image) Slot \(uploadImage.image) already Active", atLevel: .application)
-            markAsConfirmed(uploadImage)
-            markAsTested(uploadImage)
+            mark(uploadImage, as: \.confirmed)
+            mark(uploadImage, as: \.tested)
         } else {
             // Otherwise, the image must be in test mode.
             log(msg: "Image \(uploadImage.image) Slot \(uploadImage.image) already Active in Test Mode", atLevel: .application)
-            markAsTested(uploadImage)
+            mark(uploadImage, as: \.tested)
         }
     }
     
@@ -447,7 +447,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             if Data(secondary.hash) == image.hash {
                 // Firmware is identical to the one in slot 1.
                 // No need to send anything.
-                markAsUploaded(image)
+                mark(image, as: \.uploaded)
 
                 // If the image was already confirmed...
                 if secondary.permanent {
@@ -458,7 +458,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                         return
                     }
                     log(msg: "Image \(image.image) Slot \(secondary.slot) already uploaded and confirmed", atLevel: .application)
-                    markAsConfirmed(image)
+                    mark(image, as: \.confirmed)
                     return
                 }
                 
@@ -466,7 +466,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 if secondary.pending {
                     // ...mark it as tested.
                     log(msg: "Image \(image.image) Slot \(secondary.slot) already uploaded and tested", atLevel: .application)
-                    markAsTested(image)
+                    mark(image, as: \.tested)
                     return
                 }
                 
@@ -591,7 +591,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 self.fail(error: FirmwareUpgradeError.unknown("Image \(image.image) is not in a pending state."))
                 return
             }
-            self.markAsTested(image)
+            self.mark(image, as: \.tested)
         }
         
         // Test image succeeded. Begin device reset.
@@ -648,7 +648,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                         return
                     }
                     
-                    self.markAsConfirmed(image)
+                    self.mark(image, as: \.confirmed)
                     continue
                 }
                 
@@ -660,17 +660,16 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     guard !targetSlot.pending else {
                         continue
                     }
-                    guard image.confirmed else {
-                        self.confirm(image)
-                        return
-                    }
                     
-                    // If we've sent it the CONFIRM Command, the secondary slot must be in PERMANENT state.
-                    self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) Slot \(targetSlot.slot) is not in a Permanent state."))
+                    if image.confirmed && !image.confirmSent {
+                        self.confirm(image)
+                    } else {
+                        self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) Slot \(targetSlot.slot) is not in a Permanent state after sending Confirm Command."))
+                    }
                     return
                 }
                 
-                self.markAsConfirmed(image)
+                self.mark(image, as: \.confirmed)
             case .testAndConfirm:
                 if let primary = responseImages.first(where: { $0.image == image.image && $0.slot == 0 }) {
                     // If Primary is available, check that the upgrade image has successfully booted.
@@ -683,7 +682,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                         self.fail(error: FirmwareUpgradeError.unknown("Image \(primary.image) is not in a confirmed state."))
                         return
                     }
-                    self.markAsConfirmed(image)
+                    self.mark(image, as: \.confirmed)
                 }
             case .testOnly:
                 // Impossible state. Ignore.
@@ -835,19 +834,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     
     // MARK: State
     
-    private func markAsUploaded(_ image: FirmwareUpgradeImage) {
+    private func mark(_ image: FirmwareUpgradeImage, as key: WritableKeyPath<FirmwareUpgradeImage, Bool>) {
         guard let i = images.firstIndex(of: image) else { return }
-        images[i].uploaded = true
-    }
-    
-    private func markAsTested(_ image: FirmwareUpgradeImage) {
-        guard let i = images.firstIndex(of: image) else { return }
-        images[i].tested = true
-    }
-    
-    private func markAsConfirmed(_ image: FirmwareUpgradeImage) {
-        guard let i = images.firstIndex(of: image) else { return }
-        images[i].confirmed = true
+        images[i][keyPath: key] = true
     }
 }
 
@@ -911,7 +900,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         if bytesSent == imageSize {
             // An Image was sent. Mark as uploaded.
             if let image = self.images.first(where: { !$0.uploaded && $0.data.count == imageSize }) {
-                markAsUploaded(image)
+                self.mark(image, as: \.uploaded)
             }
         }
         
@@ -945,12 +934,14 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         // If eraseAppSettings command was sent or was not requested, we can continue.
         switch mode {
         case .confirmOnly:
-            if let firstUnconfirmedImage = images.first(where: { $0.uploaded && !$0.confirmed }) {
+            if let firstUnconfirmedImage = images.first(where: {
+                $0.uploaded && !$0.confirmed && !$0.confirmSent }
+            ) {
                 confirm(firstUnconfirmedImage)
-                // We might sent 'Confirm', but the firmware might not change the flag to reflect it.
-                // If we don't track this eternally, we could enter into an infinite loop always trying
+                // We might send 'Confirm', but the firmware might not change the flag to reflect it.
+                // If we don't track this internally, we could enter into an infinite loop always trying
                 // to Confirm an image.
-//                markAsConfirmed(firstUnconfirmedImage)
+                self.mark(firstUnconfirmedImage, as: \.confirmSent)
                 return
             } else {
                 // If there's no image left to Confirm, then we Reset.
@@ -1106,6 +1097,7 @@ internal struct FirmwareUpgradeImage: CustomDebugStringConvertible {
     var uploaded: Bool
     var tested: Bool
     var confirmed: Bool
+    var confirmSent: Bool
     
     // MARK: Init
     
@@ -1117,6 +1109,7 @@ internal struct FirmwareUpgradeImage: CustomDebugStringConvertible {
         self.uploaded = false
         self.tested = false
         self.confirmed = false
+        self.confirmSent = false
     }
     
     // MARK: CustomDebugStringConvertible
