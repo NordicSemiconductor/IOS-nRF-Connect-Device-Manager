@@ -39,17 +39,17 @@ public enum McuMgrLogLevel: Int {
 
 /// The log category indicates the component that created the log entry.
 public enum McuMgrLogCategory: String {
-    case transport = "Transport"
-    case Settings  = "SettingsManager"
-    case crash     = "CrashManager"
-    case `default` = "DefaultManager"
-    case fs        = "FSManager"
-    case image     = "ImageManager"
-    case log       = "LogManager"
-    case runTest   = "RunTestManager"
-    case stats     = "StatsManager"
-    case dfu       = "DFU"
-    case basic     = "BasicManager"
+    case transport         = "Transport"
+    case Settings          = "SettingsManager"
+    case crash             = "CrashManager"
+    case `default`         = "DefaultManager"
+    case FileSystemManager = "FileSystemManager"
+    case image             = "ImageManager"
+    case log               = "LogManager"
+    case runTest           = "RunTestManager"
+    case stats             = "StatsManager"
+    case dfu               = "DFU"
+    case basic             = "BasicManager"
 }
 
 /// The Logger delegate.
