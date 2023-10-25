@@ -95,7 +95,7 @@ public class FileSystemManager: McuManager {
     /// this method.
     ///
     /// - parameter name: The file name to download.
-    /// - parameter delegate: The delegate to recieve progress callbacks.
+    /// - parameter delegate: The delegate to receive progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
     public func download(name: String, delegate: FileDownloadDelegate?) -> Bool {
@@ -138,7 +138,7 @@ public class FileSystemManager: McuManager {
     /// - parameter name: The file name.
     /// - parameter data: The file data to be sent to the peripheral.
     /// - parameter configuration: Settings to be used  when sending Data, such as enabling SMP Pipelining, Byte-Alignment, etc. Works as seen in `ImageManager`0s `upload(images:using:delegate)` function.
-    /// - parameter delegate: The delegate to recieve progress callbacks.
+    /// - parameter delegate: The delegate to receive progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
     public func upload(name: String, data: Data,
@@ -238,7 +238,7 @@ public class FileSystemManager: McuManager {
     
     // MARK: closeAll
     
-    /// Close any open file handles held by fs_mgmt upload/download requests that might have stalled or be incomplete.
+    /// Close any open file handles held by `fs_mgmt` upload/download requests that might have stalled or be incomplete.
     ///
     /// - parameter callback: The callback.
     public func closeAll(name: String, callback: @escaping McuMgrCallback<McuMgrResponse>) {
@@ -629,17 +629,17 @@ public enum FileSystemManagerError: UInt64, Error, LocalizedError {
         case .isDirectory:
             return "Specified File Name Is a Directory, Not a File"
         case .openFailed:
-            return "Error Occured Whilst Attempting to Open File"
+            return "Error Occurred Whilst Attempting to Open File"
         case .seekFailed:
-            return "Error Occured Whilst Attempting to Seek to an Offset In a File"
+            return "Error Occurred Whilst Attempting to Seek to an Offset In a File"
         case .readFailed:
-            return "Error Occured Whilst Attempting to Read Data From a File"
+            return "Error Occurred Whilst Attempting to Read Data From a File"
         case .truncateFailed:
-            return "Error Occured Whilst Attempting to Truncate a File"
+            return "Error Occurred Whilst Attempting to Truncate a File"
         case .deleteFailed:
-            return "Error Occured Whilst Attempting to Delete a File"
+            return "Error Occurred Whilst Attempting to Delete a File"
         case .writeFailed:
-            return "Error Occured Whilst Attempting to Write Data to a File"
+            return "Error Occurred Whilst Attempting to Write Data to a File"
         case .invalidOffset:
             return "Specified Data Offset Within a File Is Invalid"
         case .offsetLargerThanFile:

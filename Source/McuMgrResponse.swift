@@ -45,7 +45,7 @@ open class McuMgrResponse: CBORMappable {
     /// The raw McuMgrResponse payload.
     public var payloadData: Data?
     
-    /// The repsponse's result obtained from the payload. If no Return Code (RC)
+    /// The response's result obtained from the payload. If no Return Code (RC)
     /// or Group Error is explicitly stated, success is assumed.
     public var result: Result<Void, McuMgrError> = .success(())
     
@@ -97,7 +97,7 @@ open class McuMgrResponse: CBORMappable {
     ///
     /// - parameter scheme: the transport scheme of the transporter.
     /// - parameter data: The response's raw packet data.
-    /// - parameter coapPaylaod: (Optional) payload for CoAP transport schemes.
+    /// - parameter coapPayload: (Optional) payload for CoAP transport schemes.
     /// - parameter coapCode: (Optional) CoAP response code.
     ///
     /// - returns: The McuMgrResponse on success or nil on failure.
@@ -202,7 +202,7 @@ open class McuMgrResponse: CBORMappable {
     // MARK: Utilities
     //**************************************************************************
     
-    /// Gets the expected length of the entire respose from the length field in
+    /// Gets the expected length of the entire response from the length field in
     /// the McuMgrHeader. The return value includes the 8-byte McuMgr header.
     ///
     /// - parameter scheme: The transport scheme (Must be BLE to use this
@@ -389,7 +389,7 @@ public final class McuMgrParametersResponse: McuMgrResponse {
 
 public final class AppInfoResponse: McuMgrResponse {
     
-    public var response: String?
+    public var response: String!
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
@@ -488,7 +488,7 @@ extension McuMgrImageStateResponse {
         public var image: UInt64! { unsignedUInt64(defaultValue: 0) }
         /// The (zero) index of this image slot (0 for primary, 1 for secondary).
         public var slot: UInt64! { unsignedUInt64() }
-        /// The verison of the image.
+        /// The version of the image.
         public var version: String! { utf8String() }
         /// The sha256 hash of the image.
         public var hash: [UInt8]! { byteString() }
@@ -496,7 +496,7 @@ extension McuMgrImageStateResponse {
         public var bootable: Bool! { boolean() }
         /// Pending flag. A pending image will be booted into on reset.
         public var pending: Bool! { boolean() }
-        /// Confired flag. A confirmed image will always be booted into (unless
+        /// Confirmed flag. A confirmed image will always be booted into (unless
         /// another image is pending.
         public var confirmed: Bool! { boolean() }
         /// Active flag. Set if the image in this slot is active.

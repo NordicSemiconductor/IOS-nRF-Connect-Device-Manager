@@ -16,7 +16,7 @@ public enum PeripheralState {
     /// State set when the peripheral gets connected and the
     /// manager starts service discovery.
     case initializing
-    /// State set when device becones ready, that is all required
+    /// State set when device becomes ready, that is all required
     /// services have been discovered and notifications enabled.
     case connected
     /// State set when close() method has been called.
@@ -41,7 +41,7 @@ public class McuMgrBleTransport: NSObject {
     /// The CBCentralManager instance from which the peripheral was obtained.
     /// This is used to connect and cancel connection.
     internal let centralManager: CBCentralManager
-    /// The queue used to buffer reqeusts when another one is in progress.
+    /// The queue used to buffer requests when another one is in progress.
     private let operationQueue: OperationQueue
     /// Lock used to wait for callbacks before continuing the request. This lock
     /// is used to wait for the device to setup (i.e. connection, descriptor)
@@ -53,7 +53,7 @@ public class McuMgrBleTransport: NSObject {
     internal var previousUpdateNotificationSequenceNumber: McuSequenceNumber?
     
     /// SMP Characteristic object. Used to write requests and receive
-    /// notificaitons.
+    /// notifications.
     internal var smpCharacteristic: CBCharacteristic?
     
     /// An array of observers.
@@ -111,7 +111,7 @@ public class McuMgrBleTransport: NSObject {
     /// The peripheral will connect automatically if a request to it is
     /// made. To disconnect from the peripheral, call `close()`.
     ///
-    /// - parameter target: The BLE peripheral with Simple Managerment
+    /// - parameter target: The BLE peripheral with Simple Management
     ///   Protocol (SMP) service.
     public convenience init(_ target: CBPeripheral) {
         self.init(target.identifier)
@@ -127,7 +127,7 @@ public class McuMgrBleTransport: NSObject {
     /// The peripheral will connect automatically if a request to it is
     /// made. To disconnect from the peripheral, call `close()`.
     ///
-    /// - parameter targetIdentifier: The UUID of the peripheral with Simple Managerment
+    /// - parameter targetIdentifier: The UUID of the peripheral with Simple Management
     ///   Protocol (SMP) service.
     public init(_ targetIdentifier: UUID) {
         self.centralManager = CBCentralManager(delegate: nil, queue: .global(qos: .userInitiated))
@@ -285,7 +285,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 // If the peripheral was already connected, but the SMP
                 // characteristic has not been set, start by performing service
                 // discovery. Once the characteristic's notification is enabled,
-                // the semaphore will be signalled and the request can be sent.
+                // the semaphore will be signaled and the request can be sent.
                 log(msg: "Peripheral already connected", atLevel: .info)
                 log(msg: "Discovering services...", atLevel: .verbose)
                 state = .connecting
@@ -294,7 +294,7 @@ extension McuMgrBleTransport: McuMgrTransport {
             case .disconnected:
                 // If the peripheral is disconnected, begin the setup process by
                 // connecting to the device. Once the characteristic's
-                // notification is enabled, the semaphore will be signalled and
+                // notification is enabled, the semaphore will be signaled and
                 // the request can be sent.
                 log(msg: "Connecting...", atLevel: .verbose)
                 state = .connecting

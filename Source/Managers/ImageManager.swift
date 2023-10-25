@@ -96,7 +96,7 @@ public class ImageManager: McuManager {
                                       "off": CBOR.unsignedInt(chunkOffset)]
         let uploadTimeoutInSeconds: Int
         if chunkOffset == 0 {
-            // 0 is Default behaviour, so we can ignore adding it and
+            // 0 is Default behavior, so we can ignore adding it and
             // the firmware will do the right thing.
             if image > 0 {
                 payload.updateValue(CBOR.unsignedInt(UInt64(image)), forKey: "image")
@@ -131,11 +131,11 @@ public class ImageManager: McuManager {
     
     /// Confirm the image with the provided hash.
     ///
-    /// A successful confirm will make the image permenant (i.e. the image will
+    /// A successful confirm will make the image permanent (i.e. the image will
     /// be booted upon reset).
     ///
     /// - parameter hash: The hash of the image to confirm. If not provided, the
-    ///   current image running on the device will be made permenant.
+    ///   current image running on the device will be made permanent.
     /// - parameter callback: The response callback.
     public func confirm(hash: [UInt8]? = nil, callback: @escaping McuMgrCallback<McuMgrImageStateResponse>) {
         var payload: [String:CBOR] = ["confirm": CBOR.boolean(true)]
@@ -155,7 +155,7 @@ public class ImageManager: McuManager {
     ///
     /// - parameter images: The images to upload.
     /// - parameter configuration: The parameters used during the upgrade process. Set with defaults if not provided.
-    /// - parameter delegate: The delegate to recieve progress callbacks.
+    /// - parameter delegate: The delegate to receive progress callbacks.
     ///
     /// - returns: True if the upload has started successfully, false otherwise.
     public func upload(images: [Image], using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration(),
@@ -227,7 +227,7 @@ public class ImageManager: McuManager {
         send(op: .write, commandId: ImageID.EraseState, payload: nil, callback: callback)
     }
 
-    /// Requst core dump on the device. The data will be stored in the dump
+    /// Request core dump on the device. The data will be stored in the dump
     /// area.
     ///
     /// - parameter callback: The response callback.
@@ -427,7 +427,6 @@ public class ImageManager: McuManager {
                 guard self.uploadExpectedOffsets.isEmpty else {
                     return
                 }
-                print("Extinguisied pending writes.")
             }
             self.uploadExpectedOffsets.removeAll(where: { $0 <= offset })
             
