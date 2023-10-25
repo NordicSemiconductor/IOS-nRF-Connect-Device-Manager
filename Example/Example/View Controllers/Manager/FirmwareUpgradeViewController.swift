@@ -166,11 +166,11 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private func selectMode(for package: McuMgrPackage) {
-        let alertController = UIAlertController(title: "Select mode", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Select Mode", message: nil, preferredStyle: .actionSheet)
         FirmwareUpgradeMode.allCases.forEach { upgradeMode in
             alertController.addAction(UIAlertAction(title: upgradeMode.description, style: .default) {
                 action in
-                self.dfuManager!.mode = upgradeMode
+                self.dfuManagerConfiguration.upgradeMode = upgradeMode
                 self.startFirmwareUpgrade(package: package)
             })
         }
