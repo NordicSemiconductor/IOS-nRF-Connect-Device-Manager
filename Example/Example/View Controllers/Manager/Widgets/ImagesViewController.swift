@@ -105,9 +105,10 @@ class ImagesViewController: UIViewController , McuMgrViewController{
             switch response.result {
             case .success:
                 let images = response.images ?? []
-                testAction.isEnabled = images.count > 1 && !images[1].pending
-                confirmAction.isEnabled = images.count > 1 && !images[1].permanent
-                eraseAction.isEnabled = images.count > 1 && !images[1].confirmed
+                let nonActive = images.count > 1 ? (images[0].active ? 1 : 0) : 0
+                testAction.isEnabled = images.count > 1 && !images[nonActive].pending
+                confirmAction.isEnabled = images.count > 1 && !images[nonActive].permanent
+                eraseAction.isEnabled = images.count > 1 && !images[nonActive].confirmed
                 
                 updateUI(text: getInfo(from: response), color: .primary, readEnabled: true)
             case .failure(let error):
