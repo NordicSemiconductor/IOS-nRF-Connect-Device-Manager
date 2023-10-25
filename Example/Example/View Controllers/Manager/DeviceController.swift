@@ -100,7 +100,7 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
                     if let messageText = self?.messageSent.text {
                         self?.send(message: messageText)
                     }
-                } catch McuManagerError.mtuValueHasNotchanged {
+                } catch McuManagerError.mtuValueHasNotChanged {
                     // If MTU value did not change, try reassembly.
                     if let messageText = self?.messageSent.text,
                        let bleTransport = self?.defaultManager.transporter as? McuMgrBleTransport,
