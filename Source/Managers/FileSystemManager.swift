@@ -581,16 +581,15 @@ public class FileSystemManager: McuManager {
 // MARK: - FileTransferError
 
 public enum FileTransferError: Error, LocalizedError {
-    
     case invalidPayload
     case invalidData
     
     public var errorDescription: String? {
         switch self {
         case .invalidPayload:
-            return "Response Payload Values Do Not Exist."
+            return "Response Payload Values Do Not Exist"
         case .invalidData:
-            return "File Data Is Nil."
+            return "File Data Is Nil"
         }
     }
 }
@@ -619,7 +618,7 @@ public enum FileSystemManagerError: UInt64, Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .noError:
-            return "No Error"
+            return "Success"
         case .unknown:
             return "An Unknown Error Occurred"
         case .invalidName:

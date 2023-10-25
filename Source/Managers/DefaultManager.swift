@@ -185,7 +185,6 @@ public class DefaultManager: McuManager {
 // MARK: - EchoError
 
 enum EchoError: Hashable, Error, LocalizedError {
-    
     case echoMessageOverTheLimit(_ messageSize: Int)
 
     var errorDescription: String? {
@@ -199,7 +198,6 @@ enum EchoError: Hashable, Error, LocalizedError {
 // MARK: - OSManagerError
 
 public enum OSManagerError: UInt64, Error, LocalizedError {
-    
     case noError = 0
     case unknown = 1
     case invalidFormat = 2
@@ -208,7 +206,7 @@ public enum OSManagerError: UInt64, Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .noError:
-            return "No Error Has Occurred"
+            return "Success"
         case .unknown:
             return "An Unknown Error Occurred"
         case .invalidFormat:

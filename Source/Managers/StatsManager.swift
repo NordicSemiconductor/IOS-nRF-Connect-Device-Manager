@@ -63,7 +63,7 @@ public enum StatsManagerError: UInt64, Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .noError:
-            return "No Error Has Occurred"
+            return "Success"
         case .unknown:
             return "An Unknown Error Occurred"
         case .invalidGroup:

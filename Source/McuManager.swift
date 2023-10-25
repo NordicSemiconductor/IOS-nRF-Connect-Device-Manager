@@ -462,27 +462,27 @@ extension McuMgrReturnCode: CustomStringConvertible {
         case .ok:
             return "OK (RC: \(rawValue))"
         case .unknown:
-            return "Unknown (RC: \(rawValue))"
+            return "Unknown error (RC: \(rawValue))"
         case .noMemory:
             return "No Memory (RC: \(rawValue))"
         case .inValue:
-            return "In Value (RC: \(rawValue))"
+            return "Invalid Value (RC: \(rawValue))"
         case .timeout:
             return "Timeout (RC: \(rawValue))"
         case .noEntry:
-            return "No Entry (RC: \(rawValue)). For Filesystem Operations, Does Your Mounting Point Match Your Target Firmware / Device?"
+            return "No Entry (RC: \(rawValue))" // For Filesystem Operations, Does Your Mounting Point Match Your Target Firmware / Device?
         case .badState:
             return "Bad State (RC: \(rawValue))"
         case .responseIsTooLong:
             return "Response is Too Long (RC: \(rawValue))"
         case .unsupported:
-            return "Not Supported (RC: \(rawValue)). Requested Group ID or Command ID May Not Supported by This Application."
+            return "Not Supported (RC: \(rawValue))"
         case .corruptPayload:
             return "Corrupt Payload (RC: \(rawValue))"
         case .busy:
-            return "Busy Processing Previous SMP Request (RC: \(rawValue)). Wait and Try Later."
+            return "Busy processing previous SMP Request (RC: \(rawValue)). Try again later."
         case .accessDenied:
-            return "Access Denied (RC: \(rawValue)). Are You Trying to Downgrade to a Lower Image Version?"
+            return "Access Denied (RC: \(rawValue))" // Are You Trying to Downgrade to a Lower Image Version?
         default:
             return "Unrecognized (RC: \(rawValue))"
         }

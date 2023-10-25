@@ -604,13 +604,13 @@ public enum ImageUploadError: Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .invalidPayload:
-            return "Response payload values do not exist."
+            return "Response payload values do not exist"
         case .invalidData:
-            return "Image data is nil."
+            return "Image data is nil"
         case .offsetMismatch:
-            return "Response payload reports package offset does not match expected value."
+            return "Response payload reports package offset does not match expected value"
         case .invalidUploadSequenceNumber(let sequenceNumber):
-            return "Received Response for Unknown Sequence Number \(sequenceNumber)."
+            return "Received Response for Unknown Sequence Number \(sequenceNumber)"
         }
     }
 }
@@ -618,7 +618,6 @@ public enum ImageUploadError: Error, LocalizedError {
 // MARK: - ImageManagerError
 
 public enum ImageManagerError: UInt64, Error, LocalizedError {
-    
     case noError = 0
     case unknown = 1
     case flashConfigurationQueryFailure = 2
@@ -657,7 +656,7 @@ public enum ImageManagerError: UInt64, Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .noError:
-            return "No Error Has Occurred"
+            return "Success"
         case .unknown:
             return "An Unknown Error Occurred"
         case .flashConfigurationQueryFailure:
@@ -665,7 +664,7 @@ public enum ImageManagerError: UInt64, Error, LocalizedError {
         case .noImage:
             return "There's No Image in the Slot"
         case .noTLVs:
-            return "Slot Image Is Missing TLV (Tag, Length, Volume) Information"
+            return "Slot Image Is Missing TLV Information"
         case .invalidTLV:
             return "Slot Image Has an Invalid TLV Type and/or Length"
         case .tlvHashCollision:
