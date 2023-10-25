@@ -38,6 +38,7 @@ public class DefaultManager: McuManager {
     }
     
     public enum BootloaderInfoQuery: String {
+        case Name = ""
         case Mode = "mode"
     }
     
@@ -166,14 +167,15 @@ public class DefaultManager: McuManager {
     
     /// Reads Bootloader Info
     ///
+    /// - parameter query: The specific Bootloader Information you'd like to request.
     /// - parameter callback: The response callback.
-    public func bootloaderInfo(query: BootloaderInfoQuery?,
+    public func bootloaderInfo(query: BootloaderInfoQuery,
                                callback: @escaping McuMgrCallback<BootloaderInfoResponse>) {
         let payload: [String:CBOR]?
-        if let query {
-            payload = ["query": CBOR.utf8String(query.rawValue)]
-        } else {
+        if query == .Name {
             payload = nil
+        } else {
+            payload = ["query": CBOR.utf8String(query.rawValue)]
         }
         send(op: .read, commandId: ID.BootloaderInformation, payload: payload,
              timeout: McuManager.FAST_TIMEOUT, callback: callback)
