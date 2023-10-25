@@ -202,9 +202,9 @@ open class McuManager {
     ///
     /// - parameter date: The date.
     /// - parameter timeZone: Optional timezone for the given date. If left out
-    ///   or nil, the timzone will be set to the system time zone.
+    ///   or nil, the timezone will be set to the system time zone.
     ///
-    /// - returns: The datetime string.
+    /// - returns: The date-time string.
     public static func dateToString(date: Date, timeZone: TimeZone? = nil) -> String {
         let RFC3339DateFormatter = DateFormatter()
         RFC3339DateFormatter.locale = Locale(identifier: "en_US_POSIX")
@@ -416,7 +416,7 @@ public class McuMgrGroupReturnCode: CBORMappable {
         case .Basic:
             error = BasicManagerError(rawValue: rc)
         default:
-            // Passthrough to McuMgr 'RC' Errors for Unkwnon
+            // Passthrough to McuMgr 'RC' Errors for Unknown
             // or Unsupported values.
             error = McuManagerError.returnCodeValue(rc)
         }
