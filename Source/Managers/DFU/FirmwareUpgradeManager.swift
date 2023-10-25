@@ -216,15 +216,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
     }
     
-    private func verify() {
-        objc_sync_setState(.confirm)
-        if !paused {
-            // This will confirm the image on slot 0
-            log(msg: "Sending Confirm command...", atLevel: .verbose)
-            imageManager.confirm(callback: confirmCallback)
-        }
-    }
-    
     private func eraseAppSettings() {
         objc_sync_setState(.eraseAppSettings)
         log(msg: "Erasing app settings...", atLevel: .verbose)
@@ -237,6 +228,28 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             log(msg: "Sending Reset command...", atLevel: .verbose)
             defaultManager.transporter.addObserver(self)
             defaultManager.reset(callback: resetCallback)
+        }
+    }
+    
+    /**
+     Called in .test&Confirm mode after uploaded images have been sent 'Test' command, they
+     are tested, then Reset, and now we need to Confirm all Images.
+     */
+    private func testAndConfirmAfterReset() {
+        if let untestedImage = images.first(where: { $0.uploaded && !$0.tested }) {
+            self.fail(error: FirmwareUpgradeError.untestedImageFound(image: untestedImage.image, slot: untestedImage.slot))
+            return
+        }
+        
+        if let firstUnconfirmedImage = images.first(where: {
+            $0.uploaded && !$0.confirmed && !$0.confirmSent }
+        ) {
+            confirm(firstUnconfirmedImage)
+            mark(firstUnconfirmedImage, as: \.confirmSent)
+        } else {
+            // in .testAndConfirm, we test all uploaded images before Reset.
+            // So if we're here after Reset and there's nothing to confirm, we're done.
+            self.success()
         }
     }
     
@@ -288,12 +301,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             case .upload:
                 imageManager.continueUpload()
             case .test:
-                guard let nextImageToTest = self.images.first(where: { !$0.tested }) else { return }
+                guard let nextImageToTest = self.images.first(where: { $0.uploaded && !$0.tested }) else { return }
                 test(nextImageToTest)
             case .reset:
                 reset()
             case .confirm:
-                guard let nextImageToConfirm = self.images.first(where: { !$0.confirmed }) else { return }
+                guard let nextImageToConfirm = self.images.first(where: { $0.uploaded && !$0.confirmed }) else { return }
                 confirm(nextImageToConfirm)
             default:
                 break
@@ -570,29 +583,31 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        for image in self.images {
-            // Check that the image in secondary slot is pending (i.e. test succeeded).
-            guard let secondary = responseImages.first(where: { $0.image == image.image && $0.slot == 1 }) else {
-                self.fail(error: FirmwareUpgradeError.unknown("Unable to find secondary slot for image \(image.image) in Test Response."))
+        for image in self.images where !image.tested {
+            guard let targetSlot = responseImages.first(where: {
+                $0.image == image.image && Data($0.hash) == image.hash
+            }) else {
+                self.fail(error: FirmwareUpgradeError.unknown("Unable to find Uploaded Image \(image.image) Slot \(image.slot) in Test Response."))
                 return
             }
             
-            guard secondary.pending else {
+            // Check the target image is pending (i.e. test succeeded).
+            guard targetSlot.pending else {
                 // For every image we upload, we need to send it the TEST Command.
                 guard image.tested else {
                     self.test(image)
                     return
                 }
                 
-                // If we've sent it the TEST Command, the secondary slot must be in pending state to pass test.
-                self.fail(error: FirmwareUpgradeError.unknown("Image \(image.image) is not in a pending state."))
+                // If we've sent it the TEST Command, the slot must be in pending state to pass test.
+                self.fail(error: FirmwareUpgradeError.unknown("Image \(image.image) Slot \(image.slot) is not in a pending state."))
                 return
             }
             self.mark(image, as: \.tested)
         }
         
         // Test image succeeded. Begin device reset.
-        self.log(msg: "All test commands sent", atLevel: .application)
+        self.log(msg: "All Test commands sent", atLevel: .application)
         self.reset()
     }
     
@@ -628,14 +643,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        for image in self.images {
+        for image in self.images where !image.confirmed {
             switch self.configuration.upgradeMode {
             case .confirmOnly:
-                // Check if the image was already confirmed.
-                if image.confirmed {
-                    continue
-                }
-                
                 guard let targetSlot = responseImages.first(where: {
                     $0.image == image.image && Data($0.hash) == image.hash
                 }) else {
@@ -668,17 +678,20 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 
                 self.mark(image, as: \.confirmed)
             case .testAndConfirm:
-                if let primary = responseImages.first(where: { $0.image == image.image && $0.slot == 0 }) {
-                    // If Primary is available, check that the upgrade image has successfully booted.
-                    if Data(primary.hash) != image.hash {
-                        self.fail(error: FirmwareUpgradeError.unknown("Device failed to boot into Image \(primary.image)."))
+                if let targetSlot = responseImages.first(where: {
+                    $0.image == image.image && Data($0.hash) == image.hash
+                }) {
+                    if targetSlot.active || targetSlot.permanent {
+                        // Image booted. All okay.
+                        self.mark(image, as: \.confirmed)
+                        continue
+                    }
+                    
+                    if image.confirmSent && !targetSlot.confirmed {
+                        self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) Slot \(targetSlot.slot) was sent Confirm command but is not in a Confirmed state."))
                         return
                     }
-                    // Check that the new image is in confirmed state.
-                    if !primary.confirmed {
-                        self.fail(error: FirmwareUpgradeError.unknown("Image \(primary.image) is not in a confirmed state."))
-                        return
-                    }
+                    
                     self.mark(image, as: \.confirmed)
                 }
             case .testOnly:
@@ -687,11 +700,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             }
         }
         
+        self.log(msg: "Work Complete!", atLevel: .verbose)
         self.log(msg: "Upgrade complete", atLevel: .application)
         switch self.configuration.upgradeMode {
         case .confirmOnly:
             self.reset()
         case .testAndConfirm:
+            // No need to reset again.
             self.success()
         case .testOnly:
             // Impossible!
@@ -818,7 +833,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             case .reset:
                 switch self.configuration.upgradeMode {
                 case .testAndConfirm:
-                    self.verify()
+                    self.testAndConfirmAfterReset()
                 default:
                     self.log(msg: "Upgrade complete", atLevel: .application)
                     self.success()
@@ -945,7 +960,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
                 // We might send 'Confirm', but the firmware might not change the flag to reflect it.
                 // If we don't track this internally, we could enter into an infinite loop always trying
                 // to Confirm an image.
-                self.mark(firstUnconfirmedImage, as: \.confirmSent)
+                mark(firstUnconfirmedImage, as: \.confirmSent)
                 return
             } else {
                 // If there's no image left to Confirm, then we Reset.
@@ -953,7 +968,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
                 return
             }
         case .testOnly, .testAndConfirm:
-            if let firstUntestedImage = images.first(where: { !$0.tested }) {
+            if let firstUntestedImage = images.first(where: { $0.uploaded && !$0.tested }) {
                 test(firstUntestedImage)
                 return
             }
@@ -970,6 +985,7 @@ public enum FirmwareUpgradeError: Error {
     case unknown(String)
     case invalidResponse(McuMgrResponse)
     case connectionFailedAfterReset
+    case untestedImageFound(image: Int, slot: Int)
 }
 
 extension FirmwareUpgradeError: LocalizedError {
@@ -982,6 +998,8 @@ extension FirmwareUpgradeError: LocalizedError {
             return "Invalid response: \(response)."
         case .connectionFailedAfterReset:
             return "Connection failed after reset."
+        case .untestedImageFound(let image, let slot):
+            return "Image \(image) Slot \(slot) found to be not Tested after Reset. After Reset, all Uploaded Images are expected to have been Tested (Verified)."
         }
     }
     
