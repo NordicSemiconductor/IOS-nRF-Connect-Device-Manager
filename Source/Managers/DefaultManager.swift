@@ -16,7 +16,7 @@ public class DefaultManager: McuManager {
         case Echo = 0
         case ConsoleEchoControl = 1
         case TaskStatistics = 2
-        case MemoryPoolStatatistics = 3
+        case MemoryPoolStatistics = 3
         case DateTimeString = 4
         case Reset = 5
         case McuMgrParameters = 6
@@ -32,7 +32,7 @@ public class DefaultManager: McuManager {
         case BuildDateTime = "b"
         case Machine = "m"
         case Processor = "p"
-        case HeardwarePlatform = "i"
+        case HardwarePlatform = "i"
         case OperatingSystem = "o"
         case All = "a"
     }
@@ -100,7 +100,7 @@ public class DefaultManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func memoryPoolStats(callback: @escaping McuMgrCallback<McuMgrMemoryPoolStatsResponse>) {
-        send(op: .read, commandId: ID.MemoryPoolStatatistics, payload: nil, callback: callback)
+        send(op: .read, commandId: ID.MemoryPoolStatistics, payload: nil, callback: callback)
     }
     
     // MARK: Read/Write DateTime
@@ -163,7 +163,7 @@ public class DefaultManager: McuManager {
              timeout: McuManager.FAST_TIMEOUT, callback: callback)
     }
     
-    // MARK: Boolotader Info
+    // MARK: Bootloader Info
     
     /// Reads Bootloader Info
     ///

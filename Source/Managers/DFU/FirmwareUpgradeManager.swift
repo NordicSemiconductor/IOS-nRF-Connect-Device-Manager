@@ -159,7 +159,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func requestMcuMgrParameters() {
         objc_sync_setState(.requestMcuMgrParameters)
         if !paused {
-            log(msg: "Requesting McuMgr Parameteres...", atLevel: .verbose)
+            log(msg: "Requesting McuMgr Parameters...", atLevel: .verbose)
             defaultManager.params(callback: mcuManagerParametersCallback)
         }
     }
@@ -851,7 +851,7 @@ public struct FirmwareUpgradeConfiguration: Codable {
     /// Estimated time required for swapping images, in seconds.
     /// If the mode is set to `.testAndConfirm`, the manager will try to reconnect after this time. 0 by default.
     public var estimatedSwapTime: TimeInterval
-    /// If enabled, after succesful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
+    /// If enabled, after successful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
     public var eraseAppSettings: Bool
     /// If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.
     public var pipelineDepth: Int
@@ -1079,7 +1079,7 @@ public protocol FirmwareUpgradeDelegate: AnyObject {
     /// sent depending on the mode.
     func upgradeDidCancel(state: FirmwareUpgradeState)
     
-    /// Called whnen the upload progress has changed.
+    /// Called when the upload progress has changed.
     ///
     /// - parameter bytesSent: Number of bytes sent so far.
     /// - parameter imageSize: Total number of bytes to be sent.
