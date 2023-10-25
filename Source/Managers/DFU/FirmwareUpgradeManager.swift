@@ -35,9 +35,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
     }
     
-    /// Upgrade mode. The default mode is .confirmOnly.
-    public var mode: FirmwareUpgradeMode = .confirmOnly
-    
     private var resetResponseTime: Date?
     
     //**************************************************************************
@@ -90,7 +87,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
         
-        log(msg: "Upgrade started with \(images.count) images using '\(mode)' mode",
+        log(msg: "Upgrade started with \(images.count) images using '\(configuration.upgradeMode)' mode",
             atLevel: .application)
         if #available(iOS 10.0, watchOS 3.0, *) {
             dispatchPrecondition(condition: .onQueue(.main))
@@ -342,7 +339,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         self.log(msg: "Bootloader Info received.", atLevel: .application)
-        self.configuration.bootloaderMode = response.mode ?? .Unknown
+        self.configuration.bootloaderMode = response.mode ?? self.configuration.bootloaderMode
         if self.configuration.bootloaderMode == .DirectXIPNoRevert {
             // Mark all images as confirmed for DirectXIP No Revert, because there's no need.
             // No Revert means we just Reset and the firmware will handle it.
@@ -453,7 +450,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 if secondary.permanent {
                     // ...check if we can continue.
                     // A confirmed image cannot be un-confirmed and made tested.
-                    guard self.mode != .testOnly else {
+                    guard self.configuration.upgradeMode != .testOnly else {
                         fail(error: FirmwareUpgradeError.unknown("Image \(image.image) already confirmed. Can't be tested!"))
                         return
                     }
@@ -632,7 +629,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         for image in self.images {
-            switch self.mode {
+            switch self.configuration.upgradeMode {
             case .confirmOnly:
                 // Check if the image was already confirmed.
                 if image.confirmed {
@@ -691,7 +688,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         self.log(msg: "Upgrade complete", atLevel: .application)
-        switch self.mode {
+        switch self.configuration.upgradeMode {
         case .confirmOnly:
             self.reset()
         case .testAndConfirm:
@@ -819,7 +816,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             case .validate:
                 self.validate()
             case .reset:
-                switch self.mode {
+                switch self.configuration.upgradeMode {
                 case .testAndConfirm:
                     self.verify()
                 default:
@@ -867,11 +864,15 @@ public struct FirmwareUpgradeConfiguration: Codable {
     ///
     /// Can be used in conjunction with SMP Pipelining.
     public var reassemblyBufferSize: UInt64
+    /// Previously set directly in `FirmwareUpgradeManager`, it has since been moved here, to the Configuration. It modifies the steps after `upload` step in Firmware Upgrade that need to be performed for the Upgrade process to be considered Successful.
+    public var upgradeMode: FirmwareUpgradeMode
     /// Provides valuable information regarding how the target device is set up to switch over to the new firmware being uploaded, if available.
     ///
     /// For example, in DirectXIP, some bootloaders will not accept a 'CONFIRM' Command and return an Error
     /// that could make the DFU Library return an Error. When in reality, what the target bootloader wants
     /// is just to receive a 'RESET' Command instead to conclude the process.
+    ///
+    /// Set to `.Unknown` by default, since BootloaderInfo is a new addition for NCS 2.5 / SMPv2.
     public var bootloaderMode: BootloaderInfoResponse.Mode
     
     /// SMP Pipelining is considered Enabled for `pipelineDepth` values larger than `1`.
@@ -880,13 +881,16 @@ public struct FirmwareUpgradeConfiguration: Codable {
     }
     
     public init(estimatedSwapTime: TimeInterval = 0.0, eraseAppSettings: Bool = true, pipelineDepth: Int = 1,
-                byteAlignment: ImageUploadAlignment = .disabled, reassemblyBufferSize: UInt64 = 0) {
+                byteAlignment: ImageUploadAlignment = .disabled, reassemblyBufferSize: UInt64 = 0,
+                upgradeMode: FirmwareUpgradeMode = .confirmOnly,
+                bootloaderMode: BootloaderInfoResponse.Mode = .Unknown) {
         self.estimatedSwapTime = estimatedSwapTime
         self.eraseAppSettings = eraseAppSettings
         self.pipelineDepth = pipelineDepth
         self.byteAlignment = byteAlignment
         self.reassemblyBufferSize = reassemblyBufferSize
-        self.bootloaderMode = .Unknown
+        self.upgradeMode = upgradeMode
+        self.bootloaderMode = bootloaderMode
     }
 }
 
@@ -932,7 +936,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         }
         
         // If eraseAppSettings command was sent or was not requested, we can continue.
-        switch mode {
+        switch configuration.upgradeMode {
         case .confirmOnly:
             if let firstUnconfirmedImage = images.first(where: {
                 $0.uploaded && !$0.confirmed && !$0.confirmSent }
@@ -1002,7 +1006,7 @@ public enum FirmwareUpgradeState {
 // MARK: - FirmwareUpgradeMode
 //******************************************************************************
 
-public enum FirmwareUpgradeMode: CustomStringConvertible, CaseIterable {
+public enum FirmwareUpgradeMode: Codable, CustomStringConvertible, CaseIterable {
     /// When this mode is set, the manager will send the test and reset commands
     /// to the device after the upload is complete. The device will reboot and
     /// will run the new image on its next boot. If the new image supports
