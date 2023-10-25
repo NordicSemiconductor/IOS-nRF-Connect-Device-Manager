@@ -17,19 +17,16 @@ class ImagesViewController: UIViewController , McuMgrViewController{
     
     @IBAction func read(_ sender: UIButton) {
         busy()
-        defaultManager.params { response, _ in
-            self.mcuMgrResponse = response
-            self.imageManager.list { (response, error) in
-                self.lastResponse = response
-                self.handle(response, error)
-            }
+        imageManager.list { [weak self] response, error in
+            self?.lastResponse = response
+            self?.handle(response, error)
         }
     }
     
     @IBAction func test(_ sender: UIButton) {
         selectImageCore() { [weak self] imageHash in
             self?.busy()
-            self?.imageManager.test(hash: imageHash) { (response, error) in
+            self?.imageManager.test(hash: imageHash) { [weak self] response, error in
                 self?.lastResponse = response
                 self?.handle(response, error)
             }
@@ -38,7 +35,7 @@ class ImagesViewController: UIViewController , McuMgrViewController{
     @IBAction func confirm(_ sender: UIButton) {
         selectImageCore() { [weak self] imageHash in
             self?.busy()
-            self?.imageManager.confirm(hash: imageHash) { (response, error) in
+            self?.imageManager.confirm(hash: imageHash) { [weak self] response, error in
                 self?.lastResponse = response
                 self?.handle(response, error)
             }
@@ -46,18 +43,17 @@ class ImagesViewController: UIViewController , McuMgrViewController{
     }
     @IBAction func erase(_ sender: UIButton) {
         busy()
-        imageManager.erase { (response, error) in
+        imageManager.erase { [weak self] response, error in
             if let _ = response {
-                self.read(sender)
+                self?.read(sender)
             } else {
-                self.readAction.isEnabled = true
-                self.message.textColor = .systemRed
-                self.message.text = "\(error!)"
+                self?.readAction.isEnabled = true
+                self?.message.textColor = .systemRed
+                self?.message.text = "\(error!)"
             }
         }
     }
     
-    private var mcuMgrResponse: McuMgrParametersResponse?
     private var lastResponse: McuMgrImageStateResponse?
     private var imageManager: ImageManager!
     private var defaultManager: DefaultManager!
@@ -137,25 +133,10 @@ class ImagesViewController: UIViewController , McuMgrViewController{
     
     private func getInfo(from response: McuMgrImageStateResponse) -> String {
         let images = response.images ?? []
-        var info = ""
-        
-        if let mcuMgrResponse {
-            info += "McuMgr Parameters:\n"
-            if let bufferCount = mcuMgrResponse.bufferCount,
-               let bufferSize = mcuMgrResponse.bufferSize {
-                info += "• Buffer Count: \(bufferCount)\n"
-                info += "• Buffer Size: \(bufferSize) bytes\n"
-            } else {
-                info += "• Buffer Count: N/A\n"
-                info += "• Buffer Size: N/A\n"
-            }
-        }
-        
-        info += "\nSplit status: \(response.splitStatus ?? 0)\n"
+        var info = "Split status: \(response.splitStatus ?? 0)"
         
         for image in images {
-            info += "\nImage \(image.image!)\n" +
-                "• Slot: \(image.slot!)\n" +
+            info += "\n\nImage: \(image.image!), Slot: \(image.slot!)\n" +
                 "• Version: \(image.version!)\n" +
                 "• Hash: \(Data(image.hash).hexEncodedString(options: .upperCase))\n" +
                 "• Flags: "
@@ -175,7 +156,7 @@ class ImagesViewController: UIViewController , McuMgrViewController{
                 info += "Permanent, "
             }
             if !image.bootable && !image.pending && !image.confirmed && !image.active && !image.permanent {
-                info += "None"
+                info += "None, "
             } else {
                 info = String(info.dropLast(2))
             }
