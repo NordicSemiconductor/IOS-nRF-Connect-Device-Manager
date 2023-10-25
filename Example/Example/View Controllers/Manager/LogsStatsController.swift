@@ -65,7 +65,7 @@ class LogsStatsController: UITableViewController {
                 }
             } else {
                 self.stats.textColor = .systemRed
-                self.stats.text = "\(error!)"
+                self.stats.text = error!.localizedDescription
                 
                 let newRect = self.stats.sizeThatFits(bounds)
                 let diff = newRect.height - oldRect.height

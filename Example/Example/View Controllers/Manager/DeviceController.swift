@@ -120,7 +120,7 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
     // MARK: onError
     
     private func onError(_ error: some Error) {
-        messageReceived.text = "\(error.localizedDescription)"
+        messageReceived.text = error.localizedDescription
         messageReceived.isHidden = false
         messageReceivedBackground.tintColor = .systemRed
         messageReceivedBackground.isHidden = false

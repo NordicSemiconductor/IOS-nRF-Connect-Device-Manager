@@ -111,14 +111,14 @@ class ImagesViewController: UIViewController , McuMgrViewController{
                 
                 updateUI(text: getInfo(from: response), color: .primary, readEnabled: true)
             case .failure(let error):
-                updateUI(text: "Device returned error: \(error.localizedDescription)",
+                updateUI(text: error.localizedDescription,
                          color: .systemRed, readEnabled: true)
             }
         } else { // no response
             readAction.isEnabled = true
             message.textColor = .systemRed
             if let error = error {
-                message.text = "\(error.localizedDescription)"
+                message.text = error.localizedDescription
             } else {
                 message.text = "Empty response"
             }
