@@ -8,8 +8,11 @@ import UIKit
 import iOSMcuManagerLibrary
 
 class ImageController: UITableViewController {
-    @IBOutlet weak var connectionStatus: ConnectionStateLabel!
-    
+    @IBOutlet weak var connectionStatus: UILabel!
+    @IBOutlet weak var mcuMgrParams: UILabel!
+    @IBOutlet weak var bootloaderName: UILabel!
+    @IBOutlet weak var bootloaderMode: UILabel!    
+    @IBOutlet weak var kernel: UILabel!
     /// Instance if Images View Controller, required to get its
     /// height when data are obtained and height changes.
     private var imagesViewController: ImagesViewController!
@@ -17,10 +20,8 @@ class ImageController: UITableViewController {
     override func viewDidAppear(_ animated: Bool) {
         showModeSwitch()
         
-        // Set the connection status label as transport delegate.
-        let baseController = parent as! BaseViewController
-        let bleTransporter = baseController.transporter as? McuMgrBleTransport
-        bleTransporter?.delegate = connectionStatus
+        let baseController = parent as? BaseViewController
+        baseController?.deviceStatusDelegate = self
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -96,4 +97,28 @@ class ImageController: UITableViewController {
         }
         return super.tableView(tableView, titleForHeaderInSection: section)
     }
+}
+
+extension ImageController: DeviceStatusDelegate {
+    
+    func connectionStateDidChange(_ state: PeripheralState) {
+        connectionStatus.text = state.description
+    }
+    
+    func bootloaderNameReceived(_ name: String) {
+        bootloaderName.text = name
+    }
+    
+    func bootloaderModeReceived(_ mode: BootloaderInfoResponse.Mode) {
+        bootloaderMode.text = mode.text
+    }
+    
+    func appInfoReceived(_ output: String) {
+        kernel.text = output
+    }
+    
+    func mcuMgrParamsReceived(buffers: Int, size: Int) {
+        mcuMgrParams.text = "\(buffers) x \(size) bytes"
+    }
+    
 }

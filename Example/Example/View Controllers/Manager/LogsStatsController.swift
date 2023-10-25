@@ -8,7 +8,11 @@ import UIKit
 import iOSMcuManagerLibrary
 
 class LogsStatsController: UITableViewController {
-    @IBOutlet weak var connectionStatus: ConnectionStateLabel!
+    @IBOutlet weak var connectionStatus: UILabel!
+    @IBOutlet weak var mcuMgrParams: UILabel!
+    @IBOutlet weak var bootloaderName: UILabel!
+    @IBOutlet weak var bootloaderMode: UILabel!
+    @IBOutlet weak var kernel: UILabel!
     @IBOutlet weak var stats: UILabel!
     @IBOutlet weak var refreshAction: UIButton!
     
@@ -82,9 +86,8 @@ class LogsStatsController: UITableViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        // Set the connection status label as transport delegate.
-        let bleTransporter = statsManager.transporter as? McuMgrBleTransport
-        bleTransporter?.delegate = connectionStatus
+        let baseController = parent as? BaseViewController
+        baseController?.deviceStatusDelegate = self
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -94,4 +97,28 @@ class LogsStatsController: UITableViewController {
         return super.tableView(tableView, heightForRowAt: indexPath)
     }
 
+}
+
+extension LogsStatsController: DeviceStatusDelegate {
+    
+    func connectionStateDidChange(_ state: PeripheralState) {
+        connectionStatus.text = state.description
+    }
+    
+    func bootloaderNameReceived(_ name: String) {
+        bootloaderName.text = name
+    }
+    
+    func bootloaderModeReceived(_ mode: BootloaderInfoResponse.Mode) {
+        bootloaderMode.text = mode.text
+    }
+    
+    func appInfoReceived(_ output: String) {
+        kernel.text = output
+    }
+    
+    func mcuMgrParamsReceived(buffers: Int, size: Int) {
+        mcuMgrParams.text = "\(buffers) x \(size) bytes"
+    }
+    
 }
