@@ -202,9 +202,9 @@ open class McuManager {
     ///
     /// - parameter date: The date.
     /// - parameter timeZone: Optional timezone for the given date. If left out
-    ///   or nil, the timzone will be set to the system time zone.
+    ///   or nil, the timezone will be set to the system time zone.
     ///
-    /// - returns: The datetime string.
+    /// - returns: The date-time string.
     public static func dateToString(date: Date, timeZone: TimeZone? = nil) -> String {
         let RFC3339DateFormatter = DateFormatter()
         RFC3339DateFormatter.locale = Locale(identifier: "en_US_POSIX")
@@ -220,7 +220,7 @@ open class McuManager {
             throw McuManagerError.mtuValueOutsideOfValidRange(mtu)
         }
         guard self.mtu != mtu else {
-            throw McuManagerError.mtuValueHasNotchanged(mtu)
+            throw McuManagerError.mtuValueHasNotChanged(mtu)
         }
         
         self.mtu = mtu
@@ -272,7 +272,7 @@ public typealias McuMgrCallback<T: McuMgrResponse> = (T?, Error?) -> Void
 public enum McuManagerError: Error, LocalizedError {
     
     case mtuValueOutsideOfValidRange(_ newValue: Int)
-    case mtuValueHasNotchanged(_ newValue: Int)
+    case mtuValueHasNotChanged(_ newValue: Int)
     case returnCode(_ rc: McuMgrReturnCode)
     case returnCodeValue(_ rc: UInt64)
     
@@ -280,7 +280,7 @@ public enum McuManagerError: Error, LocalizedError {
         switch self {
         case .mtuValueOutsideOfValidRange(let newMtu):
             return "New MTU Value \(newMtu) is outside valid range of \(McuManager.ValidMTURange.lowerBound)...\(McuManager.ValidMTURange.upperBound)"
-        case .mtuValueHasNotchanged(let newMtu):
+        case .mtuValueHasNotChanged(let newMtu):
             return "MTU Value already set to \(newMtu)"
         case .returnCode(let rc):
             return "Remote Error: \(rc)"
@@ -416,7 +416,7 @@ public class McuMgrGroupReturnCode: CBORMappable {
         case .Basic:
             error = BasicManagerError(rawValue: rc)
         default:
-            // Passthrough to McuMgr 'RC' Errors for Unkwnon
+            // Passthrough to McuMgr 'RC' Errors for Unknown
             // or Unsupported values.
             error = McuManagerError.returnCodeValue(rc)
         }
