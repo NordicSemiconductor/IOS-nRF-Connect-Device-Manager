@@ -303,11 +303,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             case .test:
                 guard let nextImageToTest = self.images.first(where: { $0.uploaded && !$0.tested }) else { return }
                 test(nextImageToTest)
+                mark(nextImageToTest, as: \.testSent)
             case .reset:
                 reset()
             case .confirm:
                 guard let nextImageToConfirm = self.images.first(where: { $0.uploaded && !$0.confirmed }) else { return }
                 confirm(nextImageToConfirm)
+                mark(nextImageToConfirm, as: \.confirmSent)
             default:
                 break
             }
@@ -594,13 +596,14 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             // Check the target image is pending (i.e. test succeeded).
             guard targetSlot.pending else {
                 // For every image we upload, we need to send it the TEST Command.
-                guard image.tested else {
+                if image.tested && !image.testSent {
                     self.test(image)
+                    self.mark(image, as: \.testSent)
                     return
                 }
                 
                 // If we've sent it the TEST Command, the slot must be in pending state to pass test.
-                self.fail(error: FirmwareUpgradeError.unknown("Image \(image.image) Slot \(image.slot) is not in a pending state."))
+                self.fail(error: FirmwareUpgradeError.unknown("Image \(image.image) Slot \(image.slot) was sent Test Command but it did not switch to a pending state."))
                 return
             }
             self.mark(image, as: \.tested)
@@ -970,6 +973,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         case .testOnly, .testAndConfirm:
             if let firstUntestedImage = images.first(where: { $0.uploaded && !$0.tested }) {
                 test(firstUntestedImage)
+                mark(firstUntestedImage, as: \.testSent)
                 return
             }
         }
@@ -1118,6 +1122,7 @@ internal struct FirmwareUpgradeImage: CustomDebugStringConvertible {
     let hash: Data
     var uploaded: Bool
     var tested: Bool
+    var testSent: Bool
     var confirmed: Bool
     var confirmSent: Bool
     
@@ -1130,6 +1135,7 @@ internal struct FirmwareUpgradeImage: CustomDebugStringConvertible {
         self.hash = try McuMgrImage(data: image.data).hash
         self.uploaded = false
         self.tested = false
+        self.testSent = false
         self.confirmed = false
         self.confirmSent = false
     }
@@ -1141,7 +1147,9 @@ internal struct FirmwareUpgradeImage: CustomDebugStringConvertible {
         Data: \(data)
         Hash: \(hash)
         Image \(image), Slot \(slot)
-        Uploaded \(uploaded ? "Yes" : "No"), Tested \(tested ? "Yes" : "No"), Confirmed \(confirmed ? "Yes" : "No")
+        Uploaded \(uploaded ? "Yes" : "No")
+        Tested \(tested ? "Yes" : "No"), Test Sent \(testSent ? "Yes" : "No"),
+        Confirmed \(confirmed ? "Yes" : "No"), Confirm Sent \(confirmSent ? "Yes" : "No")
         """
     }
 }
