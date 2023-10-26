@@ -171,6 +171,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     private var uploadTimestamp: Date!
     
     override func viewDidLoad() {
+        super.viewDidLoad()
         view.translatesAutoresizingMaskIntoConstraints = false
     }
 }
