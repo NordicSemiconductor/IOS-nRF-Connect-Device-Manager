@@ -34,5 +34,10 @@ class SettingsViewController: UIViewController, McuMgrViewController {
     private func done() {
         factoryResetButton.isEnabled = true
     }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.translatesAutoresizingMaskIntoConstraints = false
+    }
 
 }

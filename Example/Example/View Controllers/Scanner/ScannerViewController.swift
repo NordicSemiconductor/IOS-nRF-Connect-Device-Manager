@@ -42,7 +42,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
+        super.viewDidAppear(animated)
         
         if centralManager.state == .poweredOn {
             activityIndicator.startAnimating()

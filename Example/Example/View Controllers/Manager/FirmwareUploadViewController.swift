@@ -140,7 +140,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     }
     
     @IBAction func resume(_ sender: UIButton) {
-        status.textColor = .primary
+        status.textColor = .secondary
         if let package, let i = packageImageIndex {
             status.text = "UPLOADING IMAGE \(package.imageName(at: i))..."
         } else {
@@ -169,6 +169,11 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     private var uploadConfiguration = FirmwareUpgradeConfiguration(estimatedSwapTime: 10.0, pipelineDepth: 1, byteAlignment: .disabled)
     private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.translatesAutoresizingMaskIntoConstraints = false
+    }
 }
 
 // MARK: - ImageUploadDelegate
@@ -213,7 +218,7 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
         actionStart.isHidden = false
         actionSelect.isEnabled = true
         status.textColor = .systemRed
-        status.text = "\(error.localizedDescription)"
+        status.text = error.localizedDescription
     }
     
     func uploadDidCancel() {
@@ -226,7 +231,7 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
         actionCancel.isHidden = true
         actionStart.isHidden = false
         actionSelect.isEnabled = true
-        status.textColor = .primary
+        status.textColor = .secondary
         status.text = "CANCELLED"
     }
     
@@ -241,7 +246,7 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
         actionStart.isHidden = false
         actionStart.isEnabled = false
         actionSelect.isEnabled = true
-        status.textColor = .primary
+        status.textColor = .secondary
         status.text = "UPLOAD COMPLETE"
         package = nil
     }
@@ -281,5 +286,6 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
             status.text = "INVALID FILE"
             actionStart.isEnabled = false
         }
+        (parent as! ImageController).innerViewReloaded()
     }
 }

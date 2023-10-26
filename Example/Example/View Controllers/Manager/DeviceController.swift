@@ -69,6 +69,10 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
         return true
     }
     
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableView.automaticDimension
+    }
+    
     // MARK: send
     
     private func send(message: String) {

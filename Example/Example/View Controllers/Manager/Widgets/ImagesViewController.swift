@@ -65,8 +65,6 @@ class ImagesViewController: UIViewController , McuMgrViewController{
             defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
-    var height: CGFloat = 110
-    var tableView: UITableView!
     
     private func selectImageCore(callback: @escaping (([UInt8]) -> Void)) {
         guard let responseImages = lastResponse?.images, responseImages.count > 1 else {
@@ -95,12 +93,14 @@ class ImagesViewController: UIViewController , McuMgrViewController{
         present(alertController, animated: true)
     }
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
     // MARK: handle(response:error:)
     
     private func handle(_ response: McuMgrImageStateResponse?, _ error: Error?) {
-        let bounds = CGSize(width: message.frame.width, height: CGFloat.greatestFiniteMagnitude)
-        let oldRect = message.sizeThatFits(bounds)
-        
         if let response {
             switch response.result {
             case .success:
@@ -124,10 +124,7 @@ class ImagesViewController: UIViewController , McuMgrViewController{
                 message.text = "Empty response"
             }
         }
-        let newRect = message.sizeThatFits(bounds)
-        let diff = newRect.height - oldRect.height
-        height += diff
-        tableView.reloadData()
+        (parent as! ImageController).innerViewReloaded()
     }
     
     // MARK: getInfo()

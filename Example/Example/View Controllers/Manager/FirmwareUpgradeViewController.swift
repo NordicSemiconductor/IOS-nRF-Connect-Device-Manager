@@ -103,6 +103,11 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
     // MARK: - Logic
     
     private func setSwapTime() {
@@ -223,7 +228,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
     }
     
     func upgradeStateDidChange(from previousState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
-        status.textColor = .primary
+        status.textColor = .secondary
         switch newState {
         case .none:
             status.text = ""
@@ -345,7 +350,7 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             fileHash.text = try package?.hashString()
             fileHash.numberOfLines = 0
             
-            status.textColor = .primary
+            status.textColor = .secondary
             status.text = "READY"
             status.numberOfLines = 0
             actionStart.isEnabled = true
@@ -366,5 +371,6 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             status.numberOfLines = 0
             actionStart.isEnabled = false
         }
+        (parent as! ImageController).innerViewReloaded()
     }
 }

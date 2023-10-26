@@ -52,8 +52,6 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
             fsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
-    var height: CGFloat = 80
-    var tableView: UITableView!
     
     private var fsManager: FileSystemManager!
     private var partition: String {
@@ -67,11 +65,16 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
     }
     
     override func viewDidLoad() {
+        super.viewDidLoad()
+        
         let recents = UserDefaults.standard.array(forKey: recentsKey)
         actionOpenRecents.isEnabled = recents != nil
+        view.translatesAutoresizingMaskIntoConstraints = false
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
         refreshSource()
     }
     
@@ -98,13 +101,12 @@ extension FileDownloadViewController: FileDownloadDelegate {
 //        case .mcuMgrErrorCode(.unknown):
 //            fileName.text = "File not found"
         default:
-            fileName.text = "\(error.localizedDescription)"
+            fileName.text = error.localizedDescription
         }
         fileContent.text = nil
         progress.setProgress(0, animated: true)
         
-        height = 146
-        tableView.reloadData()
+        (parent as! FilesController).innerViewReloaded()
     }
     
     func downloadDidCancel() {
@@ -117,9 +119,6 @@ extension FileDownloadViewController: FileDownloadDelegate {
         fileContent.text = String(data: data, encoding: .utf8)
         progress.setProgress(0, animated: false)
         
-        let bounds = CGSize(width: fileContent.frame.width, height: CGFloat.greatestFiniteMagnitude)
-        let rect = fileContent.sizeThatFits(bounds)
-        height = 146 + rect.height
-        tableView.reloadData()
+        (parent as! FilesController).innerViewReloaded()
     }
 }

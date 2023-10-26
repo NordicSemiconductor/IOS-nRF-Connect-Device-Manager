@@ -18,9 +18,6 @@ class LogsStatsController: UITableViewController {
     
     @IBAction func refreshTapped(_ sender: UIButton) {
         statsManager.list { (response, error) in
-            let bounds = CGSize(width: self.stats.frame.width, height: CGFloat.greatestFiniteMagnitude)
-            var oldRect = self.stats.sizeThatFits(bounds)
-            
             if let response = response {
                 self.stats.text = ""
                 self.stats.textColor = .primary
@@ -52,31 +49,22 @@ class LogsStatsController: UITableViewController {
                             } else {
                                 self.stats.text!.removeLast()
                             }
-                            
-                            let newRect = self.stats.sizeThatFits(bounds)
-                            let diff = newRect.height - oldRect.height
-                            oldRect = newRect
-                            self.height += diff
-                            self.tableView.reloadData()
                         })
                     }
                 } else {
-                    self.stats.text = "No stats found."
+                    self.stats.text = "No stats found"
                 }
             } else {
                 self.stats.textColor = .systemRed
                 self.stats.text = error!.localizedDescription
-                
-                let newRect = self.stats.sizeThatFits(bounds)
-                let diff = newRect.height - oldRect.height
-                self.height += diff
-                self.tableView.reloadData()
             }
+            self.tableView.beginUpdates()
+            self.tableView.setNeedsDisplay()
+            self.tableView.endUpdates()
         }
     }
     
     private var statsManager: StatsManager!
-    private var height: CGFloat = 106
     
     override func viewDidLoad() {
         let baseController = parent as! BaseViewController
@@ -91,10 +79,7 @@ class LogsStatsController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if indexPath.section == 1 /* Stats */ {
-            return height
-        }
-        return super.tableView(tableView, heightForRowAt: indexPath)
+        return UITableView.automaticDimension
     }
 
 }
