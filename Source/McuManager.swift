@@ -63,7 +63,7 @@ open class McuManager {
     
     /// Each 'send' command gets its own Sequence Number, which we rotate
     /// within the bounds of an unsigned UInt8 [0...255].
-    private var nextSequenceNumber: McuSequenceNumber = 0
+    private var nextSequenceNumber: McuSequenceNumber = UInt8.random(in: 0...255)
     
     /**
      Sequence Number Response ReOrder Buffer
