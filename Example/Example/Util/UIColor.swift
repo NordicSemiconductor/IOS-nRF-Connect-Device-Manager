@@ -22,6 +22,14 @@ extension UIColor {
         }
     }
     
+    static var secondary: UIColor {
+        if #available(iOS 13.0, *) {
+            return .secondaryLabel
+        } else {
+            return .gray
+        }
+    }
+    
     static func dynamicColor(light: UIColor, dark: UIColor) -> UIColor {
         if #available(iOS 13.0, *) {
             return UIColor { (traitCollection) -> UIColor in

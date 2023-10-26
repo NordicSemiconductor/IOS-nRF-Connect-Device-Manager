@@ -34,18 +34,16 @@ class ImageController: UITableViewController {
         
         var destination = segue.destination as? McuMgrViewController
         destination?.transporter = transporter
-        
-        if let imagesViewController = segue.destination as? ImagesViewController {
-            self.imagesViewController = imagesViewController
-            imagesViewController.tableView = tableView
-        }
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if indexPath.section == 3 /* Images */ {
-            return imagesViewController.height
-        }
-        return super.tableView(tableView, heightForRowAt: indexPath)
+        return UITableView.automaticDimension
+    }
+    
+    func innerViewReloaded() {
+        tableView.beginUpdates()
+        tableView.setNeedsDisplay()
+        tableView.endUpdates()
     }
     
     // MARK: - Handling Basic / Advanced mode
