@@ -396,7 +396,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        for image in self.images where !image.uploaded {
+        var updatedImages = self.images
+        // We need to loop over the indices, because we change the array from within it.
+        // So 'for image in self.images' would make each 'image' not reflect changes.
+        for i in self.images.indices {
+            let image = self.images[i]
+            guard !image.uploaded else { continue }
+            
             // Look for corresponding image.
             let targetImage = responseImages.first(where: { $0.image == image.image })
             // Regardless of where we'd upload the image (slot), if the hash
@@ -410,23 +416,43 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 $0.image == image.image && $0.slot != image.slot
             })
             
-            if let imageForAlternativeSlotAvailable,
-                let activeResponseImage = responseImages.first(where: {
+            // if (DirectXIP) basically
+            if let imageForAlternativeSlotAvailable {
+                // Do we need to upload this image?
+                if let alternativeAlreadyUploaded = responseImages.first(where: {
+                    $0.image == image.image && $0.slot == imageForAlternativeSlotAvailable.slot
+                }), Data(alternativeAlreadyUploaded.hash) == imageForAlternativeSlotAvailable.hash {
+                    self.log(msg: "Image \(image.image) has already been uploaded.", atLevel: .application)
+                    
+                    for skipImage in self.images ?? [] where skipImage.image == image.image {
+                        // Mark as Uploaded so we skip it over.
+                        self.mark(skipImage, as: \.uploaded)
+                    }
+                    
+                    // Remove all Target Slot(s) for this Image.
+                    updatedImages?.removeAll(where: {
+                        $0.image == image.image
+                    })
+                    continue
+                }
+                
+                // If we have the same Image but targeted for a different slot (DirectXIP),
+                // we need to chose one of the two to upload.
+                if let activeResponseImage = responseImages.first(where: {
                     $0.image == image.image && $0.active
                 }) {
-                
-                // If we have the same Image but targeted for a different slot (DirectXIP feature),
-                // we need to chose one of the two to upload.
-                if let activeImage = self.images.first(where: {
-                    $0.image == image.image && $0.slot == activeResponseImage.slot
-                }) {
-                    self.targetSlotMatch(for: activeResponseImage, to: activeImage)
-                    self.log(msg: "Two possible slots available for Image \(image.image). Image \(image.image) Slot \(activeResponseImage.slot) is marked as currently Active, so we're uploading to the alternative Slot instead.", atLevel: .application)
+                    updatedImages?.removeAll(where: {
+                        $0.image == image.image && $0.slot == activeResponseImage.slot
+                    })
+                    self.log(msg: "Two possible slots available for Image \(image.image). Image \(image.image) Slot \(activeResponseImage.slot) is marked as currently Active, so we're uploading to the alternative Slot.", atLevel: .application)
                 }
             } else {
                 self.validateSecondarySlotUpload(of: image, with: responseImages)
             }
         }
+        
+        // Update, in case some Image(s) don't need to be uploaded.
+        self.images = updatedImages
         
         // Validation successful, begin with image upload.
         self.upload()
