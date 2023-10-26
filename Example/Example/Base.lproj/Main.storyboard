@@ -2410,19 +2410,16 @@
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AUS-tl-MVT">
-                                <rect key="frame" x="16" y="137.66666666666666" width="343" height="21"/>
+                                <rect key="frame" x="16" y="137.66666666666666" width="343" height="18"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="21" id="BE2-iO-jgp"/>
+                                    <constraint firstAttribute="height" constant="18" id="BE2-iO-jgp"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tor-xI-TgX">
-                                <rect key="frame" x="16" y="166.66666666666666" width="343" height="64.333333333333343"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="20" id="CsH-TB-0Sf"/>
-                                </constraints>
+                                <rect key="frame" x="16" y="163.66666666666666" width="343" height="67.333333333333343"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <nil key="highlightedColor"/>
