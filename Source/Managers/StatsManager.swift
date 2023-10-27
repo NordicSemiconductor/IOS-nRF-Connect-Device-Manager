@@ -65,15 +65,15 @@ public enum StatsManagerError: UInt64, Error, LocalizedError {
         case .noError:
             return "Success"
         case .unknown:
-            return "An Unknown Error Occurred"
+            return "Unknown error"
         case .invalidGroup:
-            return "Statistic Group Not Found"
+            return "Statistic group not found"
         case .invalidStatName:
-            return "Statistic Name Not Found"
+            return "Statistic name not found"
         case .invalidStatSize:
-            return "Size Of The Statistic Cannot Be Handled"
+            return "Size of the statistic cannot be handled"
         case .abortedWalk:
-            return "Walkthrough Of Statistics Was Aborted"
+            return "Walkthrough of statistics was aborted"
         }
     }
 }

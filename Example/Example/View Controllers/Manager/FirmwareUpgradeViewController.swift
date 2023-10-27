@@ -111,7 +111,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     // MARK: - Logic
     
     private func setSwapTime() {
-        let alertController = UIAlertController(title: "Swap Time (in seconds)", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Swap time (in seconds)", message: nil, preferredStyle: .actionSheet)
         let seconds = [0, 5, 10, 20, 30, 40]
         seconds.forEach { numberOfSeconds in
             alertController.addAction(UIAlertAction(title: "\(numberOfSeconds) seconds", style: .default) {
@@ -124,7 +124,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private func setPipelineDepth() {
-        let alertController = UIAlertController(title: "Number of Buffers", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Number of buffers", message: nil, preferredStyle: .actionSheet)
         let values = [2, 3, 4, 5, 6]
         values.forEach { value in
             let title = value == values.first ? "Disabled" : "\(value)"
@@ -139,11 +139,12 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private func setByteAlignment() {
-        let alertController = UIAlertController(title: "Byte Alignment", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Byte alignment", message: nil, preferredStyle: .actionSheet)
         ImageUploadAlignment.allCases.forEach { alignmentValue in
-            alertController.addAction(UIAlertAction(title: alignmentValue.description, style: .default) {
+            let text = "\(alignmentValue)"
+            alertController.addAction(UIAlertAction(title: text, style: .default) {
                 action in
-                self.dfuByteAlignment.text = alignmentValue.description
+                self.dfuByteAlignment.text = text
                 self.dfuManagerConfiguration.byteAlignment = alignmentValue
             })
         }
@@ -158,9 +159,9 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         guard dfuManagerConfiguration.pipelineDepth == 1 || dfuManagerConfiguration.byteAlignment != .disabled else {
             
             dfuManagerConfiguration.byteAlignment = FirmwareUpgradeConfiguration().byteAlignment
-            dfuByteAlignment.text = dfuManagerConfiguration.byteAlignment.description
+            dfuByteAlignment.text = "\(dfuManagerConfiguration.byteAlignment)"
             
-            let alert = UIAlertController(title: "Byte Alignment Setting Changed", message: """
+            let alert = UIAlertController(title: "Byte alignment setting changed", message: """
             Pipelining requires a Byte Alignment setting to be applied, otherwise chunk offsets can't be predicted as more Data is sent.
             """, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
@@ -171,9 +172,10 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private func selectMode(for package: McuMgrPackage) {
-        let alertController = UIAlertController(title: "Select Mode", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Select mode", message: nil, preferredStyle: .actionSheet)
         FirmwareUpgradeMode.allCases.forEach { upgradeMode in
-            alertController.addAction(UIAlertAction(title: upgradeMode.description, style: .default) {
+            let text = "\(upgradeMode)"
+            alertController.addAction(UIAlertAction(title: text, style: .default) {
                 action in
                 self.dfuManagerConfiguration.upgradeMode = upgradeMode
                 self.startFirmwareUpgrade(package: package)
@@ -200,9 +202,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         do {
             try dfuManager.start(images: package.images, using: dfuManagerConfiguration)
         } catch {
-            print("Error reading hash: \(error)")
             status.textColor = .systemRed
-            status.text = "ERROR"
+            status.text = error.localizedDescription
             actionStart.isEnabled = false
         }
     }
@@ -282,7 +283,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionSelect.isEnabled = true
         eraseSwitch.isEnabled = true
         status.textColor = .systemRed
-        status.text = "\(error.localizedDescription)"
+        status.text = error.localizedDescription
         status.numberOfLines = 0
         dfuSpeed.isHidden = true
     }
@@ -359,15 +360,14 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             dfuSwapTime.numberOfLines = 0
             dfuNumberOfBuffers.text = dfuManagerConfiguration.pipelineDepth == 1 ? "Disabled" : "\(dfuManagerConfiguration.pipelineDepth + 1)"
             dfuNumberOfBuffers.numberOfLines = 0
-            dfuByteAlignment.text = dfuManagerConfiguration.byteAlignment.description
+            dfuByteAlignment.text = "\(dfuManagerConfiguration.byteAlignment)"
             dfuByteAlignment.numberOfLines = 0
         } catch {
-            print("Error reading hash: \(error)")
             fileName.text = url.lastPathComponent
             fileSize.text = ""
             fileHash.text = ""
             status.textColor = .systemRed
-            status.text = "Error Loading File: \(error.localizedDescription)"
+            status.text = error.localizedDescription
             status.numberOfLines = 0
             actionStart.isEnabled = false
         }

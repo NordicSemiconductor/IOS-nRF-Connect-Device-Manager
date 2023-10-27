@@ -208,11 +208,11 @@ public enum OSManagerError: UInt64, Error, LocalizedError {
         case .noError:
             return "Success"
         case .unknown:
-            return "An Unknown Error Occurred"
+            return "Unknown Error"
         case .invalidFormat:
-            return "Provided Format Value Is Not Valid"
+            return "Provided format value is not valid"
         case .queryNotRecognized:
-            return "Query Was Not Recognized (i.e. No Answer)"
+            return "Query was not recognized (i.e. no answer)"
         }
     }
 }

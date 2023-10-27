@@ -74,10 +74,10 @@ class ImagesViewController: UIViewController , McuMgrViewController{
             return
         }
         
-        let alertController = UIAlertController(title: "Select Image", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Select image", message: nil, preferredStyle: .actionSheet)
         for image in responseImages {
             guard !image.confirmed else { continue }
-            let title = "Image \(image.image!), Slot \(image.slot!)"
+            let title = "Image \(image.image!), slot \(image.slot!)"
             alertController.addAction(UIAlertAction(title: title, style: .default) { action in
                 callback(image.hash)
             })

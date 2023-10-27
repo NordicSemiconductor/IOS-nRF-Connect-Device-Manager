@@ -222,19 +222,13 @@ open class McuMgrResponse: CBORMappable {
     }
 }
 
-extension McuMgrResponse: CustomStringConvertible {
-    
-    public var description: String {
-        return payload?.description ?? "nil"
-    }
-}
-
 extension McuMgrResponse: CustomDebugStringConvertible {
     
     /// String representation of the response.
     public var debugDescription: String {
         return "Header: \(self.header!), Payload: \(payload?.description ?? "nil")"
     }
+    
 }
 
 //******************************************************************************
@@ -251,9 +245,9 @@ extension McuMgrResponseParseError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .invalidDataSize:
-            return "Invalid data size."
+            return "Invalid data size"
         case .invalidPayload:
-            return "Invalid payload."
+            return "Invalid payload"
         }
     }
     
@@ -403,7 +397,7 @@ public final class AppInfoResponse: McuMgrResponse {
 
 public final class BootloaderInfoResponse: McuMgrResponse {
     
-    public enum Mode: Int, Codable, CustomStringConvertible {
+    public enum Mode: Int, Codable, CustomDebugStringConvertible {
         case unknown = -1
         case singleApplication = 0
         case swapUsingScratch = 1
@@ -413,24 +407,24 @@ public final class BootloaderInfoResponse: McuMgrResponse {
         case directXIPWithRevert = 5
         case RAMLoader = 6
         
-        public var description: String {
+        public var debugDescription: String {
             switch self {
             case .unknown:
-                return "MCUboot is in single application mode."
+                return "Unknown"
             case .singleApplication:
-                return "MCUboot is in single application mode."
+                return "Single application"
             case .swapUsingScratch:
-                return "MCUboot is in swap using scratch partition mode."
+                return "Swap using scratch partition"
             case .overwrite:
-                return "MCUboot is in overwrite (upgrade-only) mode."
+                return "Overwrite (upgrade-only)"
             case .swapNoScratch:
-                return "MCUboot is in swap without scratch mode."
+                return "Swap without scratch"
             case .directXIPNoRevert:
-                return "MCUboot is in DirectXIP without revert mode."
+                return "Direct-XIP without revert"
             case .directXIPWithRevert:
-                return "MCUboot is in DirectXIP with revert mode."
+                return "Direct-XIP with revert"
             case .RAMLoader:
-                return "MCUboot is in RAM loader mode."
+                return "RAM Loader"
             }
         }
     }
