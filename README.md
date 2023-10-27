@@ -186,6 +186,7 @@ McuManager firmware upgrades can be performed following slightly different proce
 * **`.testAndConfirm`**: This mode is the **default and recommended mode** for performing upgrades due to it's ability to recover from a bad firmware upgrade. The process for this mode is `upload`, `test`, `reset`, `confirm`. 
 * **`.confirmOnly`**: This mode is **not recommended, except for Multi-Image DFU where it is the only supported mode**. If the device fails to boot into the new image, it will not be able to recover and will need to be re-flashed. The process for this mode is `upload`, `confirm`, `reset`.
 * **`.testOnly`**: This mode is useful if you want to run tests on the new image running before confirming it manually as the primary boot image. The process for this mode is `upload`, `test`, `reset`.
+* **`.uploadOnly`**: This is a very particular mode. It does not listen or acknowledge Bootloader Info, and plows through the upgrade process with just `upload` followed by `reset`. That's it. **It is up to the user, since this is not a default, to decide this is the right mode to use**.
 
 ### Firmware Upgrade State
 

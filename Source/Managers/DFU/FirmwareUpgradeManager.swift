@@ -723,7 +723,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     
                     self.mark(image, as: \.confirmed)
                 }
-            case .testOnly:
+            case .testOnly, .uploadOnly:
                 // Impossible state. Ignore.
                 return
             }
@@ -737,7 +737,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         case .testAndConfirm:
             // No need to reset again.
             self.success()
-        case .testOnly:
+        case .testOnly, .uploadOnly:
             // Impossible!
             return
         }
@@ -1002,6 +1002,8 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
                 mark(firstUntestedImage, as: \.testSent)
                 return
             }
+        case .uploadOnly:
+            reset()
         }
         success()
     }
@@ -1081,6 +1083,14 @@ public enum FirmwareUpgradeMode: Codable, CustomStringConvertible, CaseIterable 
     /// test it before confirming.
     case testAndConfirm
     
+    /**
+     Upload Only is a very particular mode. It ignores Bootloader Info, does not
+     test nor confirm any uploded images. It does list/verify, proceed to upload
+     the images, and reset. It is not recommended for use, except perhaps for
+     DirectXIP use cases where the Bootloader is unreliable.
+     */
+    case uploadOnly
+    
     public var description: String {
         switch self {
         case .testOnly:
@@ -1089,6 +1099,8 @@ public enum FirmwareUpgradeMode: Codable, CustomStringConvertible, CaseIterable 
             return "Confirm Only"
         case .testAndConfirm:
             return "Test And Confirm"
+        case .uploadOnly:
+            return "Upload Only (No Revert)"
         }
     }
 }
