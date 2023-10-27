@@ -333,11 +333,11 @@ public enum McuMgrGroup: UInt16 {
 
 /// The mcu manager operation defines whether the packet sent is a read/write
 /// and request/response.
-public enum McuMgrVersion: UInt8, CustomStringConvertible {
+public enum McuMgrVersion: UInt8, CustomDebugStringConvertible {
     case SMPv1 = 0
     case SMPv2 = 1
     
-    public var description: String {
+    public var debugDescription: String {
         switch self {
         case .SMPv1:
             return "SMPv1"
@@ -460,31 +460,42 @@ extension McuMgrReturnCode: CustomStringConvertible {
     public var description: String {
         switch self {
         case .ok:
-            return "OK (RC: \(rawValue))"
+            return "OK"
         case .unknown:
-            return "Unknown error (RC: \(rawValue))"
+            return "Unknown error"
         case .noMemory:
-            return "No Memory (RC: \(rawValue))"
+            return "No memory"
         case .inValue:
-            return "Invalid Value (RC: \(rawValue))"
+            return "Invalid value"
         case .timeout:
-            return "Timeout (RC: \(rawValue))"
+            return "Timeout"
         case .noEntry:
-            return "No Entry (RC: \(rawValue))" // For Filesystem Operations, Does Your Mounting Point Match Your Target Firmware / Device?
+            return "No entry" // For Filesystem Operations, Does Your Mounting Point Match Your Target Firmware / Device?
         case .badState:
-            return "Bad State (RC: \(rawValue))"
+            return "Bad state"
         case .responseIsTooLong:
-            return "Response is Too Long (RC: \(rawValue))"
+            return "Response is too long"
         case .unsupported:
-            return "Not Supported (RC: \(rawValue))"
+            return "Not supported"
         case .corruptPayload:
-            return "Corrupt Payload (RC: \(rawValue))"
+            return "Corrupt payload"
         case .busy:
-            return "Busy processing previous SMP Request (RC: \(rawValue)). Try again later."
+            return "Busy, try again later" // Busy processing previous SMP Request
         case .accessDenied:
-            return "Access Denied (RC: \(rawValue))" // Are You Trying to Downgrade to a Lower Image Version?
+            return "Access denied" // Are You Trying to Downgrade to a Lower Image Version?
         default:
             return "Unrecognized (RC: \(rawValue))"
         }
     }
+}
+
+extension McuMgrReturnCode: CustomDebugStringConvertible {
+    
+    public var debugDescription: String {
+        if case .unrecognized = self {
+            return description
+        }
+        return "\(description) (RC: \(rawValue))"
+    }
+    
 }

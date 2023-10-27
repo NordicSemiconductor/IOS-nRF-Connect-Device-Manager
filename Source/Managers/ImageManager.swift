@@ -575,7 +575,7 @@ public class ImageManager: McuManager {
 
 // MARK: - ImageUploadAlignment
 
-public enum ImageUploadAlignment: UInt64, Codable, CaseIterable, CustomStringConvertible {
+public enum ImageUploadAlignment: UInt64, Codable, CaseIterable, CustomDebugStringConvertible {
     
     case disabled = 0
     case twoByte = 2
@@ -583,9 +583,9 @@ public enum ImageUploadAlignment: UInt64, Codable, CaseIterable, CustomStringCon
     case eightByte = 8
     case sixteenByte = 16
     
-    public var description: String {
-        guard self != .disabled else { return "Disabled" }
-        return "\(rawValue)-Byte"
+    public var debugDescription: String {
+        guard self != .disabled else { return "disabled" }
+        return "\(rawValue)-byte"
     }
 }
 
@@ -610,7 +610,7 @@ public enum ImageUploadError: Error, LocalizedError {
         case .offsetMismatch:
             return "Response payload reports package offset does not match expected value"
         case .invalidUploadSequenceNumber(let sequenceNumber):
-            return "Received Response for Unknown Sequence Number \(sequenceNumber)"
+            return "Received Response for unknown Sequence Number \(sequenceNumber)"
         }
     }
 }
@@ -658,71 +658,71 @@ public enum ImageManagerError: UInt64, Error, LocalizedError {
         case .noError:
             return "Success"
         case .unknown:
-            return "An Unknown Error Occurred"
+            return "Unknown error"
         case .flashConfigurationQueryFailure:
-            return "Failed to Query Flash Area Configuration"
+            return "Failed to query flash area configuration"
         case .noImage:
-            return "There's No Image in the Slot"
+            return "There's no image in the slot"
         case .noTLVs:
-            return "Slot Image Is Missing TLV Information"
+            return "Slot image is missing TLV information"
         case .invalidTLV:
-            return "Slot Image Has an Invalid TLV Type and/or Length"
+            return "Slot image has an invalid TLV type and/or length"
         case .tlvHashCollision:
-            return "Slot Image Has Multiple Hash TLVs, Which Is Invalid"
+            return "Slot image has multiple hash TLVs, which is invalid"
         case .tlvInvalidSize:
-            return "Slot Image Has an Invalid TLV Size"
+            return "Slot image has an invalid TLV size"
         case .hashNotFound:
-            return "Slot Image Has No Hash TLV"
+            return "Slot image has no hash TLV"
         case .fullSlots:
-            return "There Is No Free Slot to Place The Image"
+            return "There is no free slot to place the image"
         case .flashOpenFailed:
-            return "Flash Area Opening Failed"
+            return "Flash area opening failed"
         case .flashReadFailed:
-            return "Flash Area Reading Failed"
+            return "Flash area reading failed"
         case .flashWriteFailed:
-            return "Flash Area Writing Failed"
+            return "Flash area writing failed"
         case .flashEraseFailed:
-            return "Flash Area Erasing Failed"
+            return "Flash area erasing failed"
         case .invalidSlot:
-            return "Given Slot Is Not Valid"
+            return "Given slot is not valid"
         case .mallocFailed:
-            return "Insufficient Heap Memory (Malloc Failed)"
+            return "Insufficient heap memory (malloc failed)"
         case .flashContextAlreadySet:
-            return "Flash Context Is Already Set"
+            return "Flash context is already set"
         case .flashContextNotSet:
-            return "Flash Context Is Not Set"
+            return "Flash context is not set"
         case .flashAreaNull:
-            return "Device For The Flash Area Is Null"
+            return "device for the flash area is null"
         case .invalidPageOffset:
-            return "Invalid Page Number Offset"
+            return "Invalid page number offset"
         case .missingOffset:
-            return "Required Offset Parameter Not Found"
+            return "Required offset parameter not found"
         case .missingLength:
-            return "Required Length Parameter Not Found"
+            return "Required length parameter not found"
         case .invalidImageHeader:
-            return "Image Length Is Smaller Than The Size Of an Image Header"
+            return "Image length is smaller than the size of an image header"
         case .invalidImageHeaderMagic:
-            return "Image Header Magic Value Does Not Match The Expected Value"
+            return "Image header magic value does not match the expected value"
         case .invalidHash:
-            return "Invalid Hash Parameter"
+            return "Invalid hash parameter"
         case .invalidFlashAddress:
-            return "Image Load Address Does Not Match The Address of The Flash Area"
+            return "Image load address does not match the address of the flash area"
         case .versionGetFailed:
-            return "Failed to Get Version of Currently Running Application"
+            return "Failed to get version of currently running application"
         case .newerCurrentVersion:
-            return "Currently Running Application Is Newer Than Uploading Version"
+            return "Currently running application is newer than uploading version"
         case .imageAlreadyPending:
-            return "Image Operation Already Pending"
+            return "Image operation already pending"
         case .invalidImageVectorTable:
-            return "Image Vector Table Is Invalid"
+            return "Image vector table is invalid"
         case .invalidImageTooLarge:
-            return "Image Is Too Large to Fit"
+            return "Image is too large to fit"
         case .invalidImageDataOverrun:
-            return "Data Sent Is Larger than the Provided Image Size"
+            return "Data sent is larger than the provided image size"
         case .imageConfirmationDenied:
-            return "Image Confirmation Denied"
+            return "Image confirmation denied"
         case .imageSettingTestToActiveDenied:
-            return "Setting Active Slot to Test Is Not Allowed"
+            return "Setting active slot to test is not allowed"
         }
     }
 }

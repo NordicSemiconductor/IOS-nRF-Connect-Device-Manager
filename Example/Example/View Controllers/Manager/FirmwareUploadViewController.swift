@@ -39,7 +39,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     }
     
     @IBAction func setNumberOfBuffers(_ sender: UIButton) {
-        let alertController = UIAlertController(title: "Number of Buffers", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Number of buffers", message: nil, preferredStyle: .actionSheet)
         let values = [2, 3, 4, 5, 6]
         values.forEach { value in
             let title = value == values.first ? "Disabled" : "\(value)"
@@ -54,11 +54,12 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     }
     
     @IBAction func setDfuAlignment(_ sender: UIButton) {
-        let alertController = UIAlertController(title: "Byte Alignment", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Byte alignment", message: nil, preferredStyle: .actionSheet)
         ImageUploadAlignment.allCases.forEach { alignmentValue in
-            alertController.addAction(UIAlertAction(title: alignmentValue.description, style: .default) {
+            let text = "\(alertController)"
+            alertController.addAction(UIAlertAction(title: text, style: .default) {
                 action in
-                self.dfuByteAlignment.text = alignmentValue.description
+                self.dfuByteAlignment.text = text
                 self.uploadConfiguration.byteAlignment = alignmentValue
             })
         }
@@ -66,7 +67,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     }
     
     @IBAction func setChunkSize(_ sender: Any) {
-        let alertController = UIAlertController(title: "Set Chunk Size", message: "0 means Default (MTU Size)", preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Set chunk size", message: "0 means default (MTU size)", preferredStyle: .alert)
         alertController.addTextField { (textField) in
             textField.placeholder = "\(self.uploadConfiguration.reassemblyBufferSize)"
             textField.keyboardType = .decimalPad
@@ -272,7 +273,7 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
             fileHash.numberOfLines = 0
             
             dfuNumberOfBuffers.text = uploadConfiguration.pipelineDepth == 1 ? "Disabled" : "\(uploadConfiguration.pipelineDepth + 1)"
-            dfuByteAlignment.text = uploadConfiguration.byteAlignment.description
+            dfuByteAlignment.text = "\(uploadConfiguration.byteAlignment)"
             dfuChunkSize.text = "\(uploadConfiguration.reassemblyBufferSize)"
             
             status.textColor = .primary
@@ -283,7 +284,7 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
             fileSize.text = ""
             fileHash.text = ""
             status.textColor = .systemRed
-            status.text = "INVALID FILE"
+            status.text = "Invalid file"
             actionStart.isEnabled = false
         }
         (parent as! ImageController).innerViewReloaded()

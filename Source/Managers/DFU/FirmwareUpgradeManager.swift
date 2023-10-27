@@ -1027,11 +1027,11 @@ extension FirmwareUpgradeError: LocalizedError {
         case .unknown(let message):
             return message
         case .invalidResponse(let response):
-            return "Invalid response: \(response)."
+            return "Invalid response: \(response)"
         case .connectionFailedAfterReset:
-            return "Connection failed after reset."
+            return "Connection failed after reset"
         case .untestedImageFound(let image, let slot):
-            return "Image \(image) Slot \(slot) found to be not Tested after Reset. After Reset, all Uploaded Images are expected to have been Tested (Verified)."
+            return "Image \(image), slot \(slot) found to be not Tested after Reset"
         }
     }
     
@@ -1056,7 +1056,7 @@ public enum FirmwareUpgradeState {
 // MARK: - FirmwareUpgradeMode
 //******************************************************************************
 
-public enum FirmwareUpgradeMode: Codable, CustomStringConvertible, CaseIterable {
+public enum FirmwareUpgradeMode: Codable, CustomDebugStringConvertible, CaseIterable {
     /// When this mode is set, the manager will send the test and reset commands
     /// to the device after the upload is complete. The device will reboot and
     /// will run the new image on its next boot. If the new image supports
@@ -1091,16 +1091,16 @@ public enum FirmwareUpgradeMode: Codable, CustomStringConvertible, CaseIterable 
      */
     case uploadOnly
     
-    public var description: String {
+    public var debugDescription: String {
         switch self {
         case .testOnly:
-            return "Test Only"
+            return "Test only"
         case .confirmOnly:
-            return "Confirm Only"
+            return "Confirm only"
         case .testAndConfirm:
-            return "Test And Confirm"
+            return "Test and Confirm"
         case .uploadOnly:
-            return "Upload Only (No Revert)"
+            return "Upload only (no revert)"
         }
     }
 }

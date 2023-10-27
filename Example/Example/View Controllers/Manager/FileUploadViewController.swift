@@ -160,9 +160,8 @@ extension FileUploadViewController: UIDocumentMenuDelegate, UIDocumentPickerDele
         do {
             return try Data(contentsOf: url)
         } catch {
-            print("Error reading file: \(error)")
             status.textColor = .systemRed
-            status.text = "COULD NOT OPEN FILE"
+            status.text = error.localizedDescription
             return nil
         }
     }

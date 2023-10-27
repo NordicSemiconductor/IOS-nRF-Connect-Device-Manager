@@ -620,37 +620,37 @@ public enum FileSystemManagerError: UInt64, Error, LocalizedError {
         case .noError:
             return "Success"
         case .unknown:
-            return "An Unknown Error Occurred"
+            return "Unknown error"
         case .invalidName:
-            return "Specified File Name Is Not Valid"
+            return "Specified file name is not valid"
         case .notFound:
-            return "Specified File Name Does Not Exist"
+            return "Specified file name does not exist"
         case .isDirectory:
-            return "Specified File Name Is a Directory, Not a File"
+            return "Specified file name is a directory, not a file"
         case .openFailed:
-            return "Error Occurred Whilst Attempting to Open File"
+            return "Error occurred whilst attempting to open file"
         case .seekFailed:
-            return "Error Occurred Whilst Attempting to Seek to an Offset In a File"
+            return "Error occurred whilst attempting to seek to an offset in a file"
         case .readFailed:
-            return "Error Occurred Whilst Attempting to Read Data From a File"
+            return "Error occurred whilst attempting to read data from a file"
         case .truncateFailed:
-            return "Error Occurred Whilst Attempting to Truncate a File"
+            return "Error occurred whilst attempting to truncate a file"
         case .deleteFailed:
-            return "Error Occurred Whilst Attempting to Delete a File"
+            return "Error occurred whilst attempting to delete a file"
         case .writeFailed:
-            return "Error Occurred Whilst Attempting to Write Data to a File"
+            return "Error occurred whilst attempting to write data to a file"
         case .invalidOffset:
-            return "Specified Data Offset Within a File Is Invalid"
+            return "Specified data offset within a file is invalid"
         case .offsetLargerThanFile:
-            return "Requested Offset Is Larger Than the Size of The File on the device"
+            return "Requested offset is larger than the size of the file on the device"
         case .checksumHashNotFound:
-            return "Requested Hash or CheckSum Was Not Found or Is Not Supported"
+            return "Requested hash or checksum was not found or is not supported"
         case .mountingPointNotFound:
-            return "Requested Mounting Point Was Not Found or Is Not Mounted"
+            return "Requested mounting point was not found or is not mounted"
         case .readOnlyFilesystem:
-            return "Specified Mount Point Only Supports Read-Only Operations"
+            return "Specified mount point only supports read-only operations"
         case .emptyFile:
-            return "Requested Operation Cannot Be Performed Due to File Being Empty with No Contents"
+            return "Requested operation cannot be performed due to file being empty with no contents"
         }
     }
 }

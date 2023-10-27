@@ -51,15 +51,15 @@ public enum BasicManagerError: UInt64, Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .noError:
-            return "No Error Has Occurred"
+            return "Success"
         case .unknown:
-            return "An Unknown Error Occurred"
+            return "Unknown error"
         case .flashOpenFailed:
-            return "Opening Flash Area Failed"
+            return "Opening flash area failed"
         case .flashConfigQueryFailed:
-            return "Querying Flash Area Parameters Failed"
+            return "Querying flash area parameters failed"
         case .flashEraseFailed:
-            return "Erasing Flash Area Failed"
+            return "Erasing flash area failed"
         }
     }
 }

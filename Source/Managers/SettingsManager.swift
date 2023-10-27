@@ -64,19 +64,19 @@ public enum SettingsManagerError: UInt64, Error, LocalizedError {
         case .noError:
             return "Success"
         case .unknown:
-            return "An Unknown Error Occurred"
+            return "Unknown error"
         case .keyTooLong:
-            return "Given Key Name Is Too Long to Be Used"
+            return "Provided key name is too long to be used"
         case .keyNotFound:
-            return "Given Key Name Does Not Exist"
+            return "Provided key name does not exist"
         case .readNotSupported:
-            return "Desired Key Name Does Not Support Being Read"
+            return "Provided key name does not support being read"
         case .rootKeyNotFound:
-            return "Desired Root Key Name Does Not Exist"
+            return "Provided root key name does not exist"
         case .writeNotSupported:
-            return "Desired dKey Name Does Not Support Write Operation"
+            return "Provided key name does not support write operation"
         case .deleteNotSupported:
-            return "Given Key Name Does Not Support Delete Operation"
+            return "Provided key name does not support delete operation"
         }
     }
 }
