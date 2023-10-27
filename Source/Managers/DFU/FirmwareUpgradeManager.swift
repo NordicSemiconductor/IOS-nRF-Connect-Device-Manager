@@ -168,7 +168,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         objc_sync_setState(.bootloaderInfo)
         if !paused {
             log(msg: "Requesting Bootloader Info...", atLevel: .verbose)
-            defaultManager.bootloaderInfo(query: .Mode, callback: bootloaderInfoCallback)
+            defaultManager.bootloaderInfo(query: .mode, callback: bootloaderInfoCallback)
         }
     }
     
@@ -355,7 +355,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         
         self.log(msg: "Bootloader Info received.", atLevel: .application)
         self.configuration.bootloaderMode = response.mode ?? self.configuration.bootloaderMode
-        if self.configuration.bootloaderMode == .DirectXIPNoRevert {
+        if self.configuration.bootloaderMode == .directXIPNoRevert {
             // Mark all images as confirmed for DirectXIP No Revert, because there's no need.
             // No Revert means we just Reset and the firmware will handle it.
             for image in self.images {
@@ -927,7 +927,7 @@ public struct FirmwareUpgradeConfiguration: Codable {
     public init(estimatedSwapTime: TimeInterval = 0.0, eraseAppSettings: Bool = true, pipelineDepth: Int = 1,
                 byteAlignment: ImageUploadAlignment = .disabled, reassemblyBufferSize: UInt64 = 0,
                 upgradeMode: FirmwareUpgradeMode = .confirmOnly,
-                bootloaderMode: BootloaderInfoResponse.Mode = .Unknown) {
+                bootloaderMode: BootloaderInfoResponse.Mode = .unknown) {
         self.estimatedSwapTime = estimatedSwapTime
         self.eraseAppSettings = eraseAppSettings
         self.pipelineDepth = pipelineDepth

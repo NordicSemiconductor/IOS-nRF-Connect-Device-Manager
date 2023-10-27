@@ -20,13 +20,13 @@ public class BasicManager: McuManager {
     public static let MAX_ECHO_MESSAGE_SIZE_BYTES = 2475
     
     enum ID: UInt8 {
-        case Reset = 0
+        case reset = 0
     }
     
     // MARK: - Init
     
     public init(transporter: McuMgrTransport) {
-        super.init(group: .Basic, transporter: transporter)
+        super.init(group: .basic, transporter: transporter)
     }
     
     // MARK: - Commands
@@ -35,7 +35,7 @@ public class BasicManager: McuManager {
     ///
     /// - parameter callback: The response callback with a ``McuMgrResponse``.
     public func eraseAppSettings(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ID.Reset, payload: [:], timeout: McuManager.FAST_TIMEOUT, callback: callback)
+        send(op: .write, commandId: ID.reset, payload: [:], timeout: McuManager.FAST_TIMEOUT, callback: callback)
     }
 }
 

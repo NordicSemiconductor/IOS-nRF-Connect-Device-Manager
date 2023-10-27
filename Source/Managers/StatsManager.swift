@@ -17,8 +17,8 @@ public class StatsManager: McuManager {
     // MARK: - IDs
     
     enum StatsID: UInt8 {
-        case Read = 0
-        case List = 1
+        case read = 0
+        case list = 1
     }
     
     //**************************************************************************
@@ -26,7 +26,7 @@ public class StatsManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.Statistics, transporter: transporter)
+        super.init(group: McuMgrGroup.statistics, transporter: transporter)
     }
     
     //**************************************************************************
@@ -39,14 +39,14 @@ public class StatsManager: McuManager {
     /// - parameter callback: The response callback.
     public func read(module: String, callback: @escaping McuMgrCallback<McuMgrStatsResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(module)]
-        send(op: .read, commandId: StatsID.Read, payload: payload, callback: callback)
+        send(op: .read, commandId: StatsID.read, payload: payload, callback: callback)
     }
     
     /// List the statistic modules from a device.
     ///
     /// - parameter callback: The response callback.
     public func list(callback: @escaping McuMgrCallback<McuMgrStatsListResponse>) {
-        send(op: .read, commandId: StatsID.List, payload: nil, callback: callback)
+        send(op: .read, commandId: StatsID.list, payload: nil, callback: callback)
     }
 }
 

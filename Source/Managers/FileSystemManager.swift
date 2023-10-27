@@ -11,22 +11,22 @@ import SwiftCBOR
 // MARK: - FileSystemManager
 
 public class FileSystemManager: McuManager {
-    override class var TAG: McuMgrLogCategory { .FileSystemManager }
+    override class var TAG: McuMgrLogCategory { .filesystemManager }
     
     // MARK: - IDs
     
     enum FilesystemID: UInt8 {
-        case File = 0
-        case Status = 1
-        case HashChecksum = 2
-        case SupportedHashChecksum = 3
-        case CloseFile = 4
+        case file = 0
+        case status = 1
+        case hashChecksum = 2
+        case supportedHashChecksum = 3
+        case closeFile = 4
     }
     
     // MARK: Init
     
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.Filesystem, transporter: transporter)
+        super.init(group: McuMgrGroup.filesystem, transporter: transporter)
     }
     
     // MARK: Download
@@ -43,7 +43,7 @@ public class FileSystemManager: McuManager {
         let payload: [String: CBOR] = ["name": CBOR.utf8String(name),
                                        "off": CBOR.unsignedInt(UInt64(offset))]
         // Build request and send.
-        send(op: .read, commandId: FilesystemID.File, payload: payload, callback: callback)
+        send(op: .read, commandId: FilesystemID.file, payload: payload, callback: callback)
     }
 
     // MARK: Upload
@@ -83,7 +83,7 @@ public class FileSystemManager: McuManager {
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
         }
         // Build request and send.
-        send(op: .write, commandId: FilesystemID.File, payload: payload, callback: callback)
+        send(op: .write, commandId: FilesystemID.file, payload: payload, callback: callback)
     }
     
     /// Begins the file download from a peripheral.
@@ -189,7 +189,7 @@ public class FileSystemManager: McuManager {
     /// - parameter callback: The callback.
     public func status(name: String, callback: @escaping McuMgrCallback<McuMgrFilesystemStatusResponse>) {
         let payload: [String: CBOR] = ["name": CBOR.utf8String(name)]
-        send(op: .read, commandId: FilesystemID.Status, payload: payload, callback: callback)
+        send(op: .read, commandId: FilesystemID.status, payload: payload, callback: callback)
     }
     
     // MARK: CRC32
@@ -211,7 +211,7 @@ public class FileSystemManager: McuManager {
         if length > 0 {
             payload["length"] = CBOR.unsignedInt(length)
         }
-        send(op: .read, commandId: FilesystemID.HashChecksum, payload: payload, callback: callback)
+        send(op: .read, commandId: FilesystemID.hashChecksum, payload: payload, callback: callback)
     }
     
     // MARK: SHA256
@@ -233,7 +233,7 @@ public class FileSystemManager: McuManager {
         if length > 0 {
             payload["length"] = CBOR.unsignedInt(length)
         }
-        send(op: .read, commandId: FilesystemID.HashChecksum, payload: payload, callback: callback)
+        send(op: .read, commandId: FilesystemID.hashChecksum, payload: payload, callback: callback)
     }
     
     // MARK: closeAll
@@ -242,7 +242,7 @@ public class FileSystemManager: McuManager {
     ///
     /// - parameter callback: The callback.
     public func closeAll(name: String, callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .read, commandId: FilesystemID.CloseFile, payload: nil, callback: callback)
+        send(op: .read, commandId: FilesystemID.closeFile, payload: nil, callback: callback)
     }
     
     // MARK: State
@@ -568,7 +568,7 @@ public class FileSystemManager: McuManager {
         // Build the packet and return the size.
         let packet = McuManager.buildPacket(scheme: transporter.getScheme(), version: .SMPv2, op: .write,
                                             flags: 0, group: group.rawValue, sequenceNumber: 0,
-                                            commandId: FilesystemID.File, payload: payload)
+                                            commandId: FilesystemID.file, payload: payload)
         var packetOverhead = packet.count + 5
         if transporter.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.

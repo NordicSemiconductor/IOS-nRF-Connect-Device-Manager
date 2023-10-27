@@ -300,25 +300,25 @@ public enum McuMgrGroup: UInt16 {
     /// Default command group (DefaultManager).
     case OS = 0
     /// Image command group (ImageManager).
-    case Image = 1
+    case image = 1
     /// Statistics command group (StatsManager).
-    case Statistics = 2
+    case statistics = 2
     /// System configuration command group (SettingsManager).
-    case Settings = 3
+    case settings = 3
     /// Log command group (LogManager).
-    case Logs = 4
+    case logs = 4
     /// Crash command group (CrashManager).
-    case Crash = 5
+    case crash = 5
     /// Split image command group (Not implemented).
-    case Split = 6
+    case split = 6
     /// Run test command group (RunManager).
-    case Run = 7
+    case run = 7
     /// File System command group (FileSystemManager).
-    case Filesystem = 8
+    case filesystem = 8
     /// Shell Command Group (Not Implemented).
-    case Shell = 9
+    case shell = 9
     /// Per user command group, value must be >= 64.
-    case PerUser = 64
+    case perUser = 64
     
     /** 
      * Basic command group (BasicManager).
@@ -326,7 +326,7 @@ public enum McuMgrGroup: UInt16 {
      * Zephyr-specific groups decrease from PERUSER to avoid collision with upstream and
      * user-defined groups.
      */
-    case Basic = 63 // PerUser - 1
+    case basic = 63 // PerUser - 1
 }
 
 // MARK: - McuMgrVersion
@@ -405,15 +405,15 @@ public class McuMgrGroupReturnCode: CBORMappable {
         switch McuMgrGroup(rawValue: UInt16(group)) {
         case .OS:
             error = OSManagerError(rawValue: rc)
-        case .Image:
+        case .image:
             error = ImageManagerError(rawValue: rc)
-        case .Statistics:
+        case .statistics:
             error = StatsManagerError(rawValue: rc)
-        case .Settings:
+        case .settings:
             error = SettingsManagerError(rawValue: rc)
-        case .Filesystem:
+        case .filesystem:
             error = FileSystemManagerError(rawValue: rc)
-        case .Basic:
+        case .basic:
             error = BasicManagerError(rawValue: rc)
         default:
             // Passthrough to McuMgr 'RC' Errors for Unknown

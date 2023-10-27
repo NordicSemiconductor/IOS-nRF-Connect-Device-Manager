@@ -404,30 +404,30 @@ public final class AppInfoResponse: McuMgrResponse {
 public final class BootloaderInfoResponse: McuMgrResponse {
     
     public enum Mode: Int, Codable, CustomStringConvertible {
-        case Unknown = -1
-        case SingleApplication = 0
-        case SwapUsingScratch = 1
-        case Overwrite = 2
-        case SwapNoScratch = 3
-        case DirectXIPNoRevert = 4
-        case DirectXIPWithRevert = 5
+        case unknown = -1
+        case singleApplication = 0
+        case swapUsingScratch = 1
+        case overwrite = 2
+        case swapNoScratch = 3
+        case directXIPNoRevert = 4
+        case directXIPWithRevert = 5
         case RAMLoader = 6
         
         public var description: String {
             switch self {
-            case .Unknown:
+            case .unknown:
                 return "MCUboot is in single application mode."
-            case .SingleApplication:
+            case .singleApplication:
                 return "MCUboot is in single application mode."
-            case .SwapUsingScratch:
+            case .swapUsingScratch:
                 return "MCUboot is in swap using scratch partition mode."
-            case .Overwrite:
+            case .overwrite:
                 return "MCUboot is in overwrite (upgrade-only) mode."
-            case .SwapNoScratch:
+            case .swapNoScratch:
                 return "MCUboot is in swap without scratch mode."
-            case .DirectXIPNoRevert:
+            case .directXIPNoRevert:
                 return "MCUboot is in DirectXIP without revert mode."
-            case .DirectXIPWithRevert:
+            case .directXIPWithRevert:
                 return "MCUboot is in DirectXIP with revert mode."
             case .RAMLoader:
                 return "MCUboot is in RAM loader mode."

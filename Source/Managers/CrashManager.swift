@@ -13,7 +13,7 @@ public class CrashManager: McuManager {
     // MARK: - IDs
 
     enum CrashID: UInt8 {
-        case Test = 0
+        case test = 0
     }
     
     // MARK: - CrashTest
@@ -31,7 +31,7 @@ public class CrashManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.Crash, transporter: transporter)
+        super.init(group: McuMgrGroup.crash, transporter: transporter)
     }
 
     //**************************************************************************
@@ -44,6 +44,6 @@ public class CrashManager: McuManager {
     /// - parameter callback: The response callback.
     public func test(crash: CrashTest, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["t": CBOR.utf8String(crash.rawValue)]
-        send(op: .write, commandId: CrashID.Test, payload: payload, callback: callback)
+        send(op: .write, commandId: CrashID.test, payload: payload, callback: callback)
     }
 }

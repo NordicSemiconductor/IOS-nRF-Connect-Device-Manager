@@ -13,33 +13,33 @@ public class DefaultManager: McuManager {
     // MARK: - Constants
 
     enum ID: UInt8 {
-        case Echo = 0
-        case ConsoleEchoControl = 1
-        case TaskStatistics = 2
-        case MemoryPoolStatistics = 3
-        case DateTimeString = 4
-        case Reset = 5
-        case McuMgrParameters = 6
-        case ApplicationInfo = 7
-        case BootloaderInformation = 8
+        case echo = 0
+        case consoleEchoControl = 1
+        case taskStatistics = 2
+        case memoryPoolStatistics = 3
+        case dateTimeString = 4
+        case reset = 5
+        case mcuMgrParameters = 6
+        case applicationInfo = 7
+        case bootloaderInformation = 8
     }
     
     public enum ApplicationInfoFormat: String {
-        case KernelName = "s"
-        case NodeName = "n"
-        case KernelRelease = "r"
-        case KernelVersion = "v"
-        case BuildDateTime = "b"
-        case Machine = "m"
-        case Processor = "p"
-        case HardwarePlatform = "i"
-        case OperatingSystem = "o"
-        case All = "a"
+        case kernelName = "s"
+        case nodeName = "n"
+        case kernelRelease = "r"
+        case kernelVersion = "v"
+        case buildDateTime = "b"
+        case machine = "m"
+        case processor = "p"
+        case hardwarePlatform = "i"
+        case operatingSystem = "o"
+        case all = "a"
     }
     
     public enum BootloaderInfoQuery: String {
-        case Name = ""
-        case Mode = "mode"
+        case name = ""
+        case mode = "mode"
     }
     
     //**************************************************************************
@@ -65,13 +65,13 @@ public class DefaultManager: McuManager {
         
         let echoPacket = McuManager.buildPacket(scheme: transporter.getScheme(), version: .SMPv2,
                                                 op: .write, flags: 0, group: McuMgrGroup.OS.rawValue,
-                                                sequenceNumber: 0, commandId: ID.Echo, payload: payload)
+                                                sequenceNumber: 0, commandId: ID.echo, payload: payload)
         
         guard echoPacket.count <= BasicManager.MAX_ECHO_MESSAGE_SIZE_BYTES else {
             callback(nil, EchoError.echoMessageOverTheLimit(echoPacket.count))
             return
         }
-        send(op: .write, commandId: ID.Echo, payload: payload, callback: callback)
+        send(op: .write, commandId: ID.echo, payload: payload, callback: callback)
     }
     
     // MARK: (Console) Echo
@@ -82,7 +82,7 @@ public class DefaultManager: McuManager {
     /// - parameter callback: The response callback.
     public func consoleEcho(_ echoOn: Bool, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["echo": CBOR.init(integerLiteral: echoOn ? 1 : 0)]
-        send(op: .write, commandId: ID.ConsoleEchoControl, payload: payload, callback: callback)
+        send(op: .write, commandId: ID.consoleEchoControl, payload: payload, callback: callback)
     }
     
     // MARK: Task
@@ -91,7 +91,7 @@ public class DefaultManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func taskStats(callback: @escaping McuMgrCallback<McuMgrTaskStatsResponse>) {
-        send(op: .read, commandId: ID.TaskStatistics, payload: nil, callback: callback)
+        send(op: .read, commandId: ID.taskStatistics, payload: nil, callback: callback)
     }
     
     // MARK: Memory Pool
@@ -100,7 +100,7 @@ public class DefaultManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func memoryPoolStats(callback: @escaping McuMgrCallback<McuMgrMemoryPoolStatsResponse>) {
-        send(op: .read, commandId: ID.MemoryPoolStatistics, payload: nil, callback: callback)
+        send(op: .read, commandId: ID.memoryPoolStatistics, payload: nil, callback: callback)
     }
     
     // MARK: Read/Write DateTime
@@ -109,7 +109,7 @@ public class DefaultManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func readDatetime(callback: @escaping McuMgrCallback<McuMgrDateTimeResponse>) {
-        send(op: .read, commandId: ID.DateTimeString, payload: nil, callback: callback)
+        send(op: .read, commandId: ID.dateTimeString, payload: nil, callback: callback)
     }
     
     /// Set the date and time on the device.
@@ -125,7 +125,7 @@ public class DefaultManager: McuManager {
         let payload: [String:CBOR] = [
             "datetime": CBOR.utf8String(McuManager.dateToString(date: date, timeZone: timeZone))
         ]
-        send(op: .write, commandId: ID.DateTimeString, payload: payload, callback: callback)
+        send(op: .write, commandId: ID.dateTimeString, payload: payload, callback: callback)
     }
     
     // MARK: Reset
@@ -134,7 +134,7 @@ public class DefaultManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func reset(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ID.Reset, payload: nil, callback: callback)
+        send(op: .write, commandId: ID.reset, payload: nil, callback: callback)
     }
     
     // MARK: McuMgr Parameters
@@ -143,7 +143,7 @@ public class DefaultManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func params(callback: @escaping McuMgrCallback<McuMgrParametersResponse>) {
-        send(op: .read, commandId: ID.McuMgrParameters, payload: nil, timeout: McuManager.FAST_TIMEOUT, callback: callback)
+        send(op: .read, commandId: ID.mcuMgrParameters, payload: nil, timeout: McuManager.FAST_TIMEOUT, callback: callback)
     }
     
     // MARK: Application Info
@@ -154,12 +154,12 @@ public class DefaultManager: McuManager {
     public func applicationInfo(format: Set<ApplicationInfoFormat>,
                                 callback: @escaping McuMgrCallback<AppInfoResponse>) {
         let payload: [String:CBOR]
-        if format.contains(.All) {
-            payload = ["format": CBOR.utf8String(ApplicationInfoFormat.All.rawValue)]
+        if format.contains(.all) {
+            payload = ["format": CBOR.utf8String(ApplicationInfoFormat.all.rawValue)]
         } else {
             payload = ["format": CBOR.utf8String(format.map({$0.rawValue}).joined(separator: ""))]
         }
-        send(op: .read, commandId: ID.ApplicationInfo, payload: payload,
+        send(op: .read, commandId: ID.applicationInfo, payload: payload,
              timeout: McuManager.FAST_TIMEOUT, callback: callback)
     }
     
@@ -172,12 +172,12 @@ public class DefaultManager: McuManager {
     public func bootloaderInfo(query: BootloaderInfoQuery,
                                callback: @escaping McuMgrCallback<BootloaderInfoResponse>) {
         let payload: [String:CBOR]?
-        if query == .Name {
+        if query == .name {
             payload = nil
         } else {
             payload = ["query": CBOR.utf8String(query.rawValue)]
         }
-        send(op: .read, commandId: ID.BootloaderInformation, payload: payload,
+        send(op: .read, commandId: ID.bootloaderInformation, payload: payload,
              timeout: McuManager.FAST_TIMEOUT, callback: callback)
     }
 }
