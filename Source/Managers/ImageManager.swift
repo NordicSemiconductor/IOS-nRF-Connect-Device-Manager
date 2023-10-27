@@ -50,13 +50,13 @@ public class ImageManager: McuManager {
     // MARK: - IDs
 
     enum ImageID: UInt8 {
-        case State = 0
-        case Upload = 1
-        case File = 2
-        case CoreList = 3
-        case CoreLoad = 4
-        case Erase = 5
-        case EraseState = 6
+        case state = 0
+        case upload = 1
+        case file = 2
+        case coreList = 3
+        case coreLoad = 4
+        case erase = 5
+        case eraseState = 6
     }
     
     //**************************************************************************
@@ -64,7 +64,7 @@ public class ImageManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.Image, transporter: transporter)
+        super.init(group: McuMgrGroup.image, transporter: transporter)
     }
     
     //**************************************************************************
@@ -75,7 +75,7 @@ public class ImageManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func list(callback: @escaping McuMgrCallback<McuMgrImageStateResponse>) {
-        send(op: .read, commandId: ImageID.State, payload: nil, callback: callback)
+        send(op: .read, commandId: ImageID.state, payload: nil, callback: callback)
     }
     
     /// Sends the next packet of data from given offset.
@@ -111,7 +111,7 @@ public class ImageManager: McuManager {
         } else {
             uploadTimeoutInSeconds = McuManager.FAST_TIMEOUT
         }
-        send(op: .write, commandId: ImageID.Upload, payload: payload, timeout: uploadTimeoutInSeconds,
+        send(op: .write, commandId: ImageID.upload, payload: payload, timeout: uploadTimeoutInSeconds,
              callback: callback)
         uploadExpectedOffsets.append(chunkEnd)
     }
@@ -126,7 +126,7 @@ public class ImageManager: McuManager {
     public func test(hash: [UInt8], callback: @escaping McuMgrCallback<McuMgrImageStateResponse>) {
         let payload: [String:CBOR] = ["hash": CBOR.byteString(hash),
                                       "confirm": CBOR.boolean(false)]
-        send(op: .write, commandId: ImageID.State, payload: payload, callback: callback)
+        send(op: .write, commandId: ImageID.state, payload: payload, callback: callback)
     }
     
     /// Confirm the image with the provided hash.
@@ -142,7 +142,7 @@ public class ImageManager: McuManager {
         if let hash = hash {
             payload.updateValue(CBOR.byteString(hash), forKey: "hash")
         }
-        send(op: .write, commandId: ImageID.State, payload: payload, callback: callback)
+        send(op: .write, commandId: ImageID.state, payload: payload, callback: callback)
     }
     
     /// Begins the image upload to a peripheral.
@@ -217,14 +217,14 @@ public class ImageManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func erase(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ImageID.Erase, payload: nil, callback: callback)
+        send(op: .write, commandId: ImageID.erase, payload: nil, callback: callback)
     }
     
     /// Erases the state of the secondary image slot on the device.
     ///
     /// - parameter callback: The response callback.
     public func eraseState(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ImageID.EraseState, payload: nil, callback: callback)
+        send(op: .write, commandId: ImageID.eraseState, payload: nil, callback: callback)
     }
 
     /// Request core dump on the device. The data will be stored in the dump
@@ -232,7 +232,7 @@ public class ImageManager: McuManager {
     ///
     /// - parameter callback: The response callback.
     public func coreList(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .read, commandId: ImageID.CoreList, payload: nil, callback: callback)
+        send(op: .read, commandId: ImageID.coreList, payload: nil, callback: callback)
     }
     
     /// Read core dump from the given offset.
@@ -241,14 +241,14 @@ public class ImageManager: McuManager {
     /// - parameter callback: The response callback.
     public func coreLoad(offset: UInt, callback: @escaping McuMgrCallback<McuMgrCoreLoadResponse>) {
         let payload: [String:CBOR] = ["off": CBOR.unsignedInt(UInt64(offset))]
-        send(op: .read, commandId: ImageID.CoreLoad, payload: payload, callback: callback)
+        send(op: .read, commandId: ImageID.coreLoad, payload: payload, callback: callback)
     }
 
     /// Erase the area if it has a core dump, or the header is empty.
     ///
     /// - parameter callback: The response callback.
     public func coreErase(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ImageID.CoreLoad, payload: nil, callback: callback)
+        send(op: .write, commandId: ImageID.coreLoad, payload: nil, callback: callback)
     }
     
     //**************************************************************************
@@ -563,7 +563,7 @@ public class ImageManager: McuManager {
         // Build the packet and return the size.
         let packet = McuManager.buildPacket(scheme: transporter.getScheme(), version: .SMPv2, op: .write,
                                             flags: 0, group: group.rawValue, sequenceNumber: 0,
-                                            commandId: ImageID.Upload, payload: payload)
+                                            commandId: ImageID.upload, payload: payload)
         var packetOverhead = packet.count + 5
         if transporter.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.

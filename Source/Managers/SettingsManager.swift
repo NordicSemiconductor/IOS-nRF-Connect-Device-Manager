@@ -10,18 +10,18 @@ import SwiftCBOR
 // MARK: - SettingsManager
 
 public class SettingsManager: McuManager {
-    override class var TAG: McuMgrLogCategory { .Settings }
+    override class var TAG: McuMgrLogCategory { .settings }
     
     // MARK: IDs
     
     enum ConfigID: UInt8 {
-        case Zero = 0
+        case zero = 0
     }
     
     // MARK: Initializers
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.Settings, transporter: transporter)
+        super.init(group: McuMgrGroup.settings, transporter: transporter)
     }
     
     // MARK: Commands
@@ -32,7 +32,7 @@ public class SettingsManager: McuManager {
     /// - parameter callback: The response callback.
     public func read(name: String, callback: @escaping McuMgrCallback<McuMgrConfigResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(name)]
-        send(op: .read, commandId: ConfigID.Zero, payload: payload, callback: callback)
+        send(op: .read, commandId: ConfigID.zero, payload: payload, callback: callback)
     }
 
     /// Write a system configuration variable on a device.
@@ -43,7 +43,7 @@ public class SettingsManager: McuManager {
     public func write(name: String, value: String, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(name),
                                       "val":  CBOR.utf8String(value)]
-        send(op: .write, commandId: ConfigID.Zero, payload: payload, callback: callback)
+        send(op: .write, commandId: ConfigID.zero, payload: payload, callback: callback)
     }
 }
 

@@ -14,12 +14,12 @@ public class LogManager: McuManager {
     // MARK: - IDs
     
     enum LogID: UInt8 {
-        case Read = 0
-        case Clear = 1
-        case Append = 2
-        case ModuleList = 3
-        case LevelList = 4
-        case LogsList = 5
+        case read = 0
+        case clear = 1
+        case append = 2
+        case moduleList = 3
+        case levelList = 4
+        case logsList = 5
     }
     
     //**************************************************************************
@@ -27,7 +27,7 @@ public class LogManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.Logs, transporter: transporter)
+        super.init(group: McuMgrGroup.logs, transporter: transporter)
     }
     
     //**************************************************************************
@@ -62,34 +62,34 @@ public class LogManager: McuManager {
                 payload.updateValue(CBOR.utf8String(McuManager.dateToString(date: minTimestamp)), forKey: "ts")
             }
         }
-        send(op: .read, commandId: LogID.Read, payload: payload, callback: callback)
+        send(op: .read, commandId: LogID.read, payload: payload, callback: callback)
     }
 
     /// Clear the logs on a device.
     ///
     /// - parameter callback: The response callback.
     public func clear(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: LogID.Clear, payload: nil, callback: callback)
+        send(op: .write, commandId: LogID.clear, payload: nil, callback: callback)
     }
 
     /// List the log modules on a device.
     ///
     /// - parameter callback: The response callback.
     public func moduleList(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .read, commandId: LogID.ModuleList, payload: nil, callback: callback)
+        send(op: .read, commandId: LogID.moduleList, payload: nil, callback: callback)
     }
 
     /// List the log levels on a device.
     ///
     /// - parameter callback: The response callback.
     public func levelList(callback: @escaping McuMgrCallback<McuMgrLevelListResponse>) {
-        send(op: .read, commandId: LogID.LevelList, payload: nil, callback: callback)
+        send(op: .read, commandId: LogID.levelList, payload: nil, callback: callback)
     }
 
     /// List the logs on a device.
     ///
     /// - parameter callback: The response callback.
     public func logsList(callback: @escaping McuMgrCallback<McuMgrLogListResponse>) {
-        send(op: .read, commandId: LogID.LogsList, payload: nil, callback: callback)
+        send(op: .read, commandId: LogID.logsList, payload: nil, callback: callback)
     }
 }

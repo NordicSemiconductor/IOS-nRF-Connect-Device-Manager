@@ -13,8 +13,8 @@ public class RunTestManager: McuManager {
     // MARK: - IDs
 
     enum RunTestID: UInt8 {
-        case Test = 0
-        case List = 1
+        case test = 0
+        case list = 1
     }
     
     //**************************************************************************
@@ -22,7 +22,7 @@ public class RunTestManager: McuManager {
     //**************************************************************************
 
     public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.Run, transporter: transporter)
+        super.init(group: McuMgrGroup.run, transporter: transporter)
     }
     
     //**************************************************************************
@@ -46,14 +46,14 @@ public class RunTestManager: McuManager {
         if let token = token {
             payload.updateValue(CBOR.utf8String(token), forKey: "token")
         }
-        send(op: .write, commandId: RunTestID.Test, payload: payload, callback: callback)
+        send(op: .write, commandId: RunTestID.test, payload: payload, callback: callback)
     }
 
     /// List the tests on a device.
     ///
     /// - parameter callback: The response callback.
     public func list(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .read, commandId: RunTestID.List, payload: nil, callback: callback)
+        send(op: .read, commandId: RunTestID.list, payload: nil, callback: callback)
     }
     
 }

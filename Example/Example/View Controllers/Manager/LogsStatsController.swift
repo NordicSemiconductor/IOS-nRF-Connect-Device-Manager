@@ -95,7 +95,7 @@ extension LogsStatsController: DeviceStatusDelegate {
     }
     
     func bootloaderModeReceived(_ mode: BootloaderInfoResponse.Mode) {
-        bootloaderMode.text = mode.text
+        bootloaderMode.text = mode.description
     }
     
     func appInfoReceived(_ output: String) {

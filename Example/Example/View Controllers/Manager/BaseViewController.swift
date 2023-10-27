@@ -105,14 +105,14 @@ extension BaseViewController: PeripheralDelegate {
                    let size = response?.bufferSize {
                     self?.mcuMgrParams = (Int(count), Int(size))
                 }
-                defaultManager.applicationInfo(format: [.KernelName, .KernelVersion]) { [weak self] response, error in
+                defaultManager.applicationInfo(format: [.kernelName, .kernelVersion]) { [weak self] response, error in
                     self?.appInfoOutput = response?.response
                  
-                    defaultManager.bootloaderInfo(query: .Name) { [weak self] response, error in
+                    defaultManager.bootloaderInfo(query: .name) { [weak self] response, error in
                         self?.bootloaderName = response?.bootloader
                         
                         if response?.bootloader == "MCUboot" {
-                            defaultManager.bootloaderInfo(query: .Mode) { [weak self] response, error in
+                            defaultManager.bootloaderInfo(query: .mode) { [weak self] response, error in
                                 self?.bootloaderMode = response?.mode
                             }
                         }
