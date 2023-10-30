@@ -699,10 +699,14 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                         continue
                     }
                     
-                    if image.confirmed && !image.confirmSent {
-                        self.confirm(image)
-                    } else {
-                        self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) Slot \(targetSlot.slot) is not in a Permanent state after sending Confirm Command."))
+                    
+                    if !image.confirmed {
+                        if image.confirmSent {
+                            self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) Slot \(targetSlot.slot) is not in a Permanent state after sending Confirm Command."))
+                        } else {
+                            self.confirm(image)
+                            self.mark(image, as: \.confirmSent)
+                        }
                     }
                     return
                 }
