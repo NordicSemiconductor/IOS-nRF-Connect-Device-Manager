@@ -196,6 +196,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 uploadDidFinish()
                 return
             }
+            for image in imagesToUpload {
+                let hash = (try? McuMgrImage(data: image.data).hash)
+                let hashString = hash?.hexEncodedString(options: [.prepend0x, .upperCase]) ?? "(Unknown)"
+                log(msg: "Scheduling Image \(image.image) Slot \(image.slot) Hash \(hashString) for upload", atLevel: .verbose)
+            }
             _ = imageManager.upload(images: imagesToUpload, using: configuration, delegate: self)
         }
     }
