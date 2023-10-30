@@ -407,6 +407,15 @@ public final class BootloaderInfoResponse: McuMgrResponse {
         case directXIPWithRevert = 5
         case RAMLoader = 6
         
+        /**
+         Intended for use cases where it's not important to know what kind of DirectXIP
+         variant this Bootloader Mode might represent, but instead, whether it's
+         DirectXIP or not.
+         */
+        public var isDirectXIP: Bool {
+            return self == .directXIPNoRevert || self == .directXIPWithRevert
+        }
+        
         public var debugDescription: String {
             switch self {
             case .unknown:

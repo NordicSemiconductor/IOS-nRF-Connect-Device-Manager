@@ -822,8 +822,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         guard state == .disconnected else {
             return
         }
-        self.log(msg: "Device has disconnected", atLevel: .info)
-        self.log(msg: "Reconnecting...", atLevel: .verbose)
+        
+        self.log(msg: "Device Has Disconnected", atLevel: .verbose)
         let timeSinceReset: TimeInterval
         if let resetResponseTime = resetResponseTime {
             let now = Date()
@@ -833,12 +833,20 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             timeSinceReset = 0
         }
         let remainingTime = configuration.estimatedSwapTime - timeSinceReset
-        if remainingTime > 0 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) { [weak self] in
-                self?.reconnect()
-            }
-        } else {
+        
+        // If DirectXIP, regardless of variant, there's no swap time. So we try to reconnect
+        // immediately.
+        let waitForReconnectRequired = !configuration.bootloaderMode.isDirectXIP
+            && remainingTime > .leastNonzeroMagnitude
+        guard waitForReconnectRequired else {
             reconnect()
+            return
+        }
+        
+        self.log(msg: "Waiting \(Int(configuration.estimatedSwapTime)) (Swap Time) Seconds Before Attempting to Reconnect...", atLevel: .info)
+        DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) { [weak self] in
+            self?.log(msg: "Reconnecting...", atLevel: .info)
+            self?.reconnect()
         }
     }
     
@@ -898,8 +906,13 @@ private extension FirmwareUpgradeManager {
 
 public struct FirmwareUpgradeConfiguration: Codable {
     
-    /// Estimated time required for swapping images, in seconds.
-    /// If the mode is set to `.testAndConfirm`, the manager will try to reconnect after this time. 0 by default.
+    /**
+     Estimated time required for swapping images, in seconds.
+    
+     If the mode is set to `.testAndConfirm`, the manager will try to reconnect after this time. 0 by default.
+     
+     Note: This setting is ignored if `bootloaderMode` is in any DirectXIP variant, since there's no swap whatsoever when DirectXIP is involved. Hence, why we can upload the same Image (though different hash) to either slot.
+     */
     public var estimatedSwapTime: TimeInterval
     /// If enabled, after successful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
     public var eraseAppSettings: Bool
