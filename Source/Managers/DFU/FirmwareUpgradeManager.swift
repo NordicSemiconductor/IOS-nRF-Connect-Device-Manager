@@ -396,7 +396,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        var updatedImages = self.images
+        var discardedImages: [FirmwareUpgradeImage] = []
         // We need to loop over the indices, because we change the array from within it.
         // So 'for image in self.images' would make each 'image' not reflect changes.
         for i in self.images.indices {
@@ -425,14 +425,11 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     self.log(msg: "Image \(image.image) has already been uploaded.", atLevel: .application)
                     
                     for skipImage in self.images ?? [] where skipImage.image == image.image {
-                        // Mark as Uploaded so we skip it over.
+                        // Remove all Target Slot(s) for this Image.
+                        discardedImages.append(skipImage)
+                        // Mark as Uploaded so we skip it over in the for-loop.
                         self.mark(skipImage, as: \.uploaded)
                     }
-                    
-                    // Remove all Target Slot(s) for this Image.
-                    updatedImages?.removeAll(where: {
-                        $0.image == image.image
-                    })
                     continue
                 }
                 
@@ -440,10 +437,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 // we need to chose one of the two to upload.
                 if let activeResponseImage = responseImages.first(where: {
                     $0.image == image.image && $0.active
-                }) {
-                    updatedImages?.removeAll(where: {
-                        $0.image == image.image && $0.slot == activeResponseImage.slot
-                    })
+                }), let activeImage = self.images.first(where: { $0.image == activeResponseImage.image && $0.slot == activeResponseImage.slot }) {
+                    discardedImages.append(activeImage)
                     self.log(msg: "Two possible slots available for Image \(image.image). Image \(image.image) Slot \(activeResponseImage.slot) is marked as currently Active, so we're uploading to the alternative Slot.", atLevel: .application)
                 }
             } else {
@@ -451,8 +446,10 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             }
         }
         
-        // Update, in case some Image(s) don't need to be uploaded.
-        self.images = updatedImages
+        // Remove discarded images.
+        self.images = self.images.filter({
+            !discardedImages.contains($0)
+        })
         
         // Validation successful, begin with image upload.
         self.upload()
