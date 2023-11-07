@@ -331,10 +331,17 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         guard let self = self else { return }
         
         guard error == nil, let response, response.rc != 8 else {
-            self.log(msg: "Device capabilities not supported.", atLevel: .warning)
-            self.configuration.reassemblyBufferSize = 0
+            self.log(msg: "Device capabilities not supported.", atLevel: .info)
+            if self.configuration.pipeliningEnabled {
+                self.log(msg: "Disabling Pipelining since device capabilities are not supported.", atLevel: .debug)
+                self.configuration.pipelineDepth = 1
+            }
+            if self.configuration.reassemblyBufferSize > 0 {
+                self.log(msg: "Disabling Reassembly since device capabilities are not supported.", atLevel: .debug)
+                self.configuration.reassemblyBufferSize = 0
+            }
             if self.configuration.eraseAppSettings {
-                self.log(msg: "Cancelling 'Erase App Settings' since device capabilities are not supported.", atLevel: .info)
+                self.log(msg: "Cancelling 'Erase App Settings' since device capabilities are not supported.", atLevel: .debug)
                 self.configuration.eraseAppSettings = false
             }
             self.bootloaderInfo() // Continue to Bootloader Info.
