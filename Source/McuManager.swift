@@ -127,6 +127,7 @@ open class McuManager {
             }
         }
         
+        robBuffer.logDelegate = logDelegate
         robBuffer.expectingValue(for: packetSequenceNumber)
         send(data: packetData, timeout: timeout, callback: _callback)
         rotateSequenceNumber()
