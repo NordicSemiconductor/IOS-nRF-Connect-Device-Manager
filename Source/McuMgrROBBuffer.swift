@@ -29,6 +29,8 @@ public struct McuMgrROBBuffer<Key: Hashable & Comparable, Value> {
     
     // MARK: API
     
+    public weak var logDelegate: McuMgrLogDelegate?
+    
     subscript(_ key: Key) -> Value? {
         buffer[key]
     }
@@ -53,9 +55,8 @@ public struct McuMgrROBBuffer<Key: Hashable & Comparable, Value> {
                 pendingKeys.removeFirst()
             } else {
                 pendingKeys.remove(at: i)
-                if #available(iOS 10.0, *) {
-                    os_log("%{public}@", log: .default, type: .info, "Received key \(key) OoO (Out of Order).")
-                }
+                logDelegate?.log("Received key \(key) OoO (Out of Order).", ofCategory: .transport,
+                                 atLevel: .debug)
             }
             return valueReceivedInOrder
         }
