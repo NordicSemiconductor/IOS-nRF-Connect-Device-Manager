@@ -16,6 +16,17 @@ import SwiftCBOR
  */
 public typealias McuSequenceNumber = UInt8
 
+extension McuSequenceNumber {
+    
+    mutating func rotate() {
+        self = self == .max ? 0 : self + 1
+    }
+    
+    static func random() -> McuSequenceNumber {
+        McuSequenceNumber.random(in: UInt8.min...UInt8.max)
+    }
+}
+
 open class McuManager {
     class var TAG: McuMgrLogCategory { .default }
     
@@ -61,9 +72,8 @@ open class McuManager {
     
     private var smpVersion: McuMgrVersion = .SMPv2
     
-    /// Each 'send' command gets its own Sequence Number, which we rotate
-    /// within the bounds of an unsigned UInt8 [0...255].
-    private var nextSequenceNumber: McuSequenceNumber = UInt8.random(in: 0...255)
+    /// Each 'send' command gets its own Sequence Number to begin with.
+    private var nextSequenceNumber: McuSequenceNumber = .random()
     
     /**
      Sequence Number Response ReOrder Buffer
@@ -130,7 +140,7 @@ open class McuManager {
         robBuffer.logDelegate = logDelegate
         robBuffer.enqueueExpectation(for: packetSequenceNumber)
         send(data: packetData, timeout: timeout, callback: _callback)
-        rotateSequenceNumber()
+        nextSequenceNumber.rotate()
     }
     
     public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {
@@ -257,10 +267,6 @@ extension McuManager {
     
     func log(msg: @autoclosure () -> String, atLevel level: McuMgrLogLevel) {
         logDelegate?.log(msg(), ofCategory: Self.TAG, atLevel: level)
-    }
-    
-    private func rotateSequenceNumber() {
-        nextSequenceNumber = nextSequenceNumber == .max ? 0 : nextSequenceNumber + 1
     }
 }
 
