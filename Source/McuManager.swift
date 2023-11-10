@@ -107,7 +107,7 @@ open class McuManager {
             }
             
             do {
-                guard try self.robBuffer.receivedInOrder((response, error), for: packetSequenceNumber) else { return }
+                guard try self.robBuffer.received((response, error), for: packetSequenceNumber) else { return }
                 try self.robBuffer.deliver { responseSequenceNumber, response in
                     let responseResult = response as? (T?, (any Error)?)
                     if let response = responseResult?.0 {
@@ -128,7 +128,7 @@ open class McuManager {
         }
         
         robBuffer.logDelegate = logDelegate
-        robBuffer.expectingValue(for: packetSequenceNumber)
+        robBuffer.enqueueExpectation(for: packetSequenceNumber)
         send(data: packetData, timeout: timeout, callback: _callback)
         rotateSequenceNumber()
     }
