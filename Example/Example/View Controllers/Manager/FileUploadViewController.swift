@@ -72,6 +72,10 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
             ?? FilesController.defaultPartition
     }
     
+    private var uploadTimestamp: Date!
+    private var uploadImageSize: Int!
+    private var initialBytes: Int!
+    
     private func refreshDestination() {
         if let _ = fileData {
             destination.text = "/\(partition)/\(fileName.text!)"
@@ -92,6 +96,25 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
 extension FileUploadViewController: FileUploadDelegate {
     
     func uploadProgressDidChange(bytesSent: Int, fileSize: Int, timestamp: Date) {
+        if uploadImageSize == nil || uploadImageSize != fileSize {
+            uploadTimestamp = timestamp
+            uploadImageSize = fileSize
+            initialBytes = bytesSent
+        }
+        
+        // Date.timeIntervalSince1970 returns seconds
+        let msSinceUploadBegan = max((timestamp.timeIntervalSince1970 - uploadTimestamp.timeIntervalSince1970) * 1000, 1)
+        let speedInKiloBytesPerSecond: Double
+        if bytesSent < fileSize {
+            let bytesSentSinceUploadBegan = bytesSent - initialBytes
+            // bytes / ms = kB/s
+            speedInKiloBytesPerSecond = Double(bytesSentSinceUploadBegan) / msSinceUploadBegan
+        } else {
+            // bytes / ms = kB/s
+            speedInKiloBytesPerSecond = Double(fileSize - initialBytes) / msSinceUploadBegan
+        }
+        
+        status.text = "UPLOADING... (\(String(format: "%.2f", speedInKiloBytesPerSecond))) kB/s)"
         progress.setProgress(Float(bytesSent) / Float(fileSize), animated: true)
     }
     
