@@ -18,10 +18,6 @@ public typealias McuSequenceNumber = UInt8
 
 extension McuSequenceNumber {
     
-    mutating func rotate() {
-        self = self == .max ? 0 : self + 1
-    }
-    
     static func random() -> McuSequenceNumber {
         McuSequenceNumber.random(in: UInt8.min...UInt8.max)
     }
@@ -140,7 +136,8 @@ open class McuManager {
         robBuffer.logDelegate = logDelegate
         robBuffer.enqueueExpectation(for: packetSequenceNumber)
         send(data: packetData, timeout: timeout, callback: _callback)
-        nextSequenceNumber.rotate()
+        // Use of Overflow operator
+        nextSequenceNumber = nextSequenceNumber &+ 1
     }
     
     public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {
