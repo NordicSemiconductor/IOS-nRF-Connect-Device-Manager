@@ -57,8 +57,7 @@ public struct McuMgrPackage {
     func hashString() throws -> String {
         var result = ""
         for (i, image) in images.enumerated() {
-            let hash = try McuMgrImage(data: image.data).hash
-            let hashString = hash.hexEncodedString(options: .upperCase)
+            let hashString = image.hash.hexEncodedString(options: .upperCase)
             result += "0x\(hashString.prefix(6))...\(hashString.suffix(6)) (\(imageName(at: i)))"
             guard i != images.count - 1 else { continue }
             result += "\n"
@@ -98,7 +97,8 @@ fileprivate extension McuMgrPackage {
     
     static func extractImageFromBinFile(from url: URL) throws -> [ImageManager.Image] {
         let binData = try Data(contentsOf: url)
-        return [ImageManager.Image(image: 0, data: binData)]
+        let binHash = try McuMgrImage(data: binData).hash
+        return [ImageManager.Image(image: 0, hash: binHash, data: binData)]
     }
     
     static func extractImageFromZipFile(from url: URL) throws -> [ImageManager.Image] {
@@ -125,7 +125,8 @@ fileprivate extension McuMgrPackage {
                 throw McuMgrPackage.Error.manifestImageNotFound
             }
             let imageData = try Data(contentsOf: imageURL)
-            return ImageManager.Image(manifestFile, data: imageData)
+            let imageHash = try McuMgrImage(data: imageData).hash
+            return ImageManager.Image(manifestFile, hash: imageHash, data: imageData)
         }
         try unzippedURLs.forEach { url in
             try fileManager.removeItem(at: url)
