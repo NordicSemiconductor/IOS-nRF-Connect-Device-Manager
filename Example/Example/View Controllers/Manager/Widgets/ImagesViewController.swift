@@ -77,7 +77,7 @@ class ImagesViewController: UIViewController , McuMgrViewController{
         let alertController = UIAlertController(title: "Select image", message: nil, preferredStyle: .actionSheet)
         for image in responseImages {
             guard !image.confirmed else { continue }
-            let title = "Image \(image.image!), slot \(image.slot!)"
+            let title = "Image \(image.image), slot \(image.slot)"
             alertController.addAction(UIAlertAction(title: title, style: .default) { action in
                 callback(image.hash)
             })
@@ -134,8 +134,8 @@ class ImagesViewController: UIViewController , McuMgrViewController{
         var info = "Split status: \(response.splitStatus ?? 0)"
         
         for image in images {
-            info += "\n\nImage: \(image.image!), Slot: \(image.slot!)\n" +
-                "• Version: \(image.version!)\n" +
+            info += "\n\nImage: \(image.image), Slot: \(image.slot)\n" +
+                "• Version: \(image.version ?? "Unknown")\n" +
                 "• Hash: \(Data(image.hash).hexEncodedString(options: .upperCase))\n" +
                 "• Flags: "
             if image.bootable {
