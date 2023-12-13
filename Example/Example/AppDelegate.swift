@@ -62,6 +62,14 @@ extension AppDelegate: McuMgrLogDelegate {
         }
     }
     
+    func minLogLevel() -> McuMgrLogLevel {
+        #if DEBUG
+        return .debug
+        #else
+        return .info
+        #endif
+    }
+    
 }
 
 extension McuMgrLogLevel {

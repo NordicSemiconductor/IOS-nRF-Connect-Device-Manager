@@ -174,7 +174,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                     let waitInterval = min(timeout, McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL)
                     sleep(UInt32(waitInterval))
                     if let header = try? McuMgrHeader(data: data) {
-                        self.log(msg: "Retry \(i + 1) for Seq. No. \(header.sequenceNumber)", atLevel: .info)
+                        self.log(msg: "Retry \(i + 1) for seq: \(header.sequenceNumber)", atLevel: .info)
                     } else {
                         self.log(msg: "Retry \(i + 1) (Unknown Header Type)", atLevel: .info)
                     }
@@ -270,7 +270,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                     return .failure(McuMgrTransportError.connectionTimeout)
                 }
                 // continue
-                log(msg: "Central Manager  ready", atLevel: .verbose)
+                log(msg: "Central Manager ready", atLevel: .info)
                 targetPeripheral = target
             }
         }
@@ -300,11 +300,11 @@ extension McuMgrBleTransport: McuMgrTransport {
                 state = .connecting
                 centralManager.connect(targetPeripheral)
             case .connecting:
-                log(msg: "Device is connecting. Wait...", atLevel: .info)
+                log(msg: "Device is connecting...", atLevel: .info)
                 state = .connecting
                 // Do nothing. It will switch to .connected or .disconnected.
             case .disconnecting:
-                log(msg: "Device is disconnecting. Wait...", atLevel: .info)
+                log(msg: "Device is disconnecting...", atLevel: .info)
                 // If the peripheral's connection state is transitioning, wait and retry
                 return .failure(McuMgrTransportError.waitAndRetry)
             @unknown default:
@@ -417,7 +417,6 @@ extension McuMgrBleTransport: McuMgrTransport {
                 if writesSent > McuMgrBleTransportConstant.WRITE_VALUE_BUFFER_SIZE, #available(iOS 11.0, *) {
                     var waitAttempts = 0
                     while !peripheral.canSendWriteWithoutResponse {
-                        print("Waiting for Peripheral to be ready...")
                         usleep(McuMgrBleTransportConstant.CONNECTION_BUFFER_WAIT_TIME_USECONDS)
                         waitAttempts += 1
                         if waitAttempts > 6 {
@@ -436,7 +435,9 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
     
     internal func log(msg: @autoclosure () -> String, atLevel level: McuMgrLogLevel) {
-        logDelegate?.log(msg(), ofCategory: .transport, atLevel: level)
+        if let logDelegate, level >= logDelegate.minLogLevel() {
+            logDelegate.log(msg(), ofCategory: .transport, atLevel: level)
+        }
     }
 }
 

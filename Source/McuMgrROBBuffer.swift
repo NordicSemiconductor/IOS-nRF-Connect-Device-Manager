@@ -68,8 +68,7 @@ public struct McuMgrROBBuffer<Key: Hashable & Comparable, Value> {
             guard let i = expectedKeys.firstIndex(where: { $0 == key }) else {
                 if outOfOrderKeys.contains(key) {
                     buffer[key] = value
-                    logDelegate?.log("Received missing OoO (Out of Order) Key \(key).",
-                                     ofCategory: .transport, atLevel: .debug)
+                    log(msg: "Received missing OoO (Out of Order) Key \(key).", atLevel: .debug)
                     outOfOrderKeys.remove(key)
                     return outOfOrderKeys.isEmpty
                 } else {
@@ -94,8 +93,8 @@ public struct McuMgrROBBuffer<Key: Hashable & Comparable, Value> {
                 outOfOrderKeys.insert($0)
             }
             
-            logDelegate?.log("Received Value for Key \(key) OoO (Out of Order). Expected \(lowestExpectedKey) instead.",
-                             ofCategory: .transport, atLevel: .debug)
+            log(msg: "Received Value for Key \(key) OoO (Out of Order). Expected \(lowestExpectedKey) instead.",
+                atLevel: .debug)
             expectedKeys.removeAll(where: { $0 <= key })
             return false // Wait until we next receive a value.
         }
@@ -126,4 +125,14 @@ public struct McuMgrROBBuffer<Key: Hashable & Comparable, Value> {
             }
         }
     }
+}
+
+private extension McuMgrROBBuffer {
+    
+    func log(msg: @autoclosure () -> String, atLevel level: McuMgrLogLevel) {
+        if let logDelegate, level >= logDelegate.minLogLevel() {
+            logDelegate.log(msg(), ofCategory: .transport, atLevel: level)
+        }
+    }
+    
 }

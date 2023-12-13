@@ -88,7 +88,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
         
-        log(msg: "Upgrade started with \(images.count) images using '\(configuration.upgradeMode)' mode",
+        log(msg: "Upgrade started with \(images.count) image(s) using '\(configuration.upgradeMode)' mode",
             atLevel: .application)
         if #available(iOS 10.0, watchOS 3.0, *) {
             dispatchPrecondition(condition: .onQueue(.main))
@@ -188,7 +188,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 .filter { !$0.uploaded }
                 .map { ImageManager.Image($0) }
             guard !imagesToUpload.isEmpty else {
-                log(msg: "Nothing to be uploaded", atLevel: .info)
+                log(msg: "Nothing to be uploaded", atLevel: .application)
                 // Allow Library Apps to show 100% Progress in this case.
                 DispatchQueue.main.async { [weak self] in
                     self?.delegate?.uploadProgressDidChange(bytesSent: 100, imageSize: 100, 
@@ -199,8 +199,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             }
             for image in imagesToUpload {
                 let hash = (try? McuMgrImage(data: image.data).hash)
-                let hashString = hash?.hexEncodedString(options: [.prepend0x, .upperCase]) ?? "(Unknown)"
-                log(msg: "Scheduling Image \(image.image) Slot \(image.slot) Hash \(hashString) for upload", atLevel: .verbose)
+                let hashString = hash?.hexEncodedString(options: [.prepend0x, .upperCase]) ?? "Unknown"
+                log(msg: "Scheduling upload (hash: \(hashString)) for image \(image.image) (slot: \(image.slot))", atLevel: .application)
             }
             _ = imageManager.upload(images: imagesToUpload, using: configuration, delegate: self)
         }
@@ -209,7 +209,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func test(_ image: FirmwareUpgradeImage) {
         objc_sync_setState(.test)
         if !paused {
-            log(msg: "Sending Test command for image \(image.image) Slot \(image.slot)...", atLevel: .verbose)
+            log(msg: "Sending Image Test command for image \(image.image) (slot: \(image.slot))...", atLevel: .verbose)
             imageManager.test(hash: [UInt8](image.hash), callback: testCallback)
         }
     }
@@ -217,7 +217,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     private func confirm(_ image: FirmwareUpgradeImage) {
         objc_sync_setState(.confirm)
         if !paused {
-            log(msg: "Sending Confirm command to Image \(image.image) Slot \(image.slot)...", atLevel: .verbose)
+            log(msg: "Sending Image Confirm command to image \(image.image) (slot \(image.slot))...", atLevel: .verbose)
             imageManager.confirm(hash: [UInt8](image.hash), callback: confirmCallback)
         }
     }
@@ -332,25 +332,25 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         guard let self = self else { return }
         
         guard error == nil, let response, response.rc != 8 else {
-            self.log(msg: "Device capabilities not supported.", atLevel: .info)
+            self.log(msg: "Mcu Manager parameters not supported", atLevel: .warning)
             if self.configuration.pipeliningEnabled {
-                self.log(msg: "Disabling Pipelining since device capabilities are not supported.", atLevel: .debug)
+                self.log(msg: "Disabling Pipelining since device capabilities are not supported.", atLevel: .verbose)
                 self.configuration.pipelineDepth = 1
             }
             if self.configuration.reassemblyBufferSize > 0 {
-                self.log(msg: "Disabling Reassembly since device capabilities are not supported.", atLevel: .debug)
+                self.log(msg: "Disabling Reassembly since device capabilities are not supported.", atLevel: .verbose)
                 self.configuration.reassemblyBufferSize = 0
             }
             if self.configuration.eraseAppSettings {
-                self.log(msg: "Cancelling 'Erase App Settings' since device capabilities are not supported.", atLevel: .debug)
+                self.log(msg: "Cancelling 'Erase App Settings' since device capabilities are not supported.", atLevel: .verbose)
                 self.configuration.eraseAppSettings = false
             }
             self.bootloaderInfo() // Continue to Bootloader Info.
             return
         }
         
-        self.log(msg: "Device capabilities received.", atLevel: .application)
-        self.log(msg: "Setting SAR buffer size to \(response.bufferSize) bytes.", atLevel: .debug)
+        self.log(msg: "Mcu Manager parameters received (\(response.bufferCount) x \(response.bufferSize))", atLevel: .application)
+        self.log(msg: "Setting SAR buffer size to \(response.bufferSize) bytes.", atLevel: .verbose)
         self.configuration.reassemblyBufferSize = response.bufferSize
         self.bootloaderInfo() // Continue to Bootloader Info.
     }
@@ -361,12 +361,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         guard let self = self else { return }
         
         guard error == nil, let response, response.rc != 8 else {
-            self.log(msg: "Bootloader Mode Unknown.", atLevel: .debug)
+            self.log(msg: "Bootloader info not supported", atLevel: .warning)
             self.validate() // Continue Upload
             return
         }
         
-        self.log(msg: "Bootloader Info received.", atLevel: .application)
+        self.log(msg: "Bootloader info received (mode: \(response.mode?.debugDescription ?? "Unknown"))",
+                 atLevel: .application)
         self.configuration.bootloaderMode = response.mode ?? self.configuration.bootloaderMode
         if self.configuration.bootloaderMode == .directXIPNoRevert {
             // Mark all images as confirmed for DirectXIP No Revert, because there's no need.
@@ -394,10 +395,10 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         guard let response = response else {
-            self.fail(error: FirmwareUpgradeError.unknown("Validation response is nil!"))
+            self.fail(error: FirmwareUpgradeError.unknown("Image List response is nil."))
             return
         }
-        self.log(msg: "Validation response: \(response)", atLevel: .info)
+        self.log(msg: "Image List response: \(response)", atLevel: .application)
         // Check for an error return code.
         if let error = response.getError() {
             self.fail(error: error)
@@ -435,7 +436,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 if let alternativeAlreadyUploaded = responseImages.first(where: {
                     $0.image == image.image && $0.slot == imageForAlternativeSlotAvailable.slot
                 }), Data(alternativeAlreadyUploaded.hash) == imageForAlternativeSlotAvailable.hash {
-                    self.log(msg: "Image \(image.image) has already been uploaded.", atLevel: .application)
+                    self.log(msg: "Image \(image.image) has already been uploaded", atLevel: .debug)
                     
                     for skipImage in self.images ?? [] where skipImage.image == image.image {
                         // Remove all Target Slot(s) for this Image.
@@ -452,7 +453,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     $0.image == image.image && $0.active
                 }), let activeImage = self.images.first(where: { $0.image == activeResponseImage.image && $0.slot == activeResponseImage.slot }) {
                     discardedImages.append(activeImage)
-                    self.log(msg: "Two possible slots available for Image \(image.image). Image \(image.image) Slot \(activeResponseImage.slot) is marked as currently Active, so we're uploading to the alternative Slot.", atLevel: .application)
+                    self.log(msg: "Two possible slots available. Image \(image.image) (slot: \(activeResponseImage.slot)) is active, uploading to the secondary slot", atLevel: .debug)
                 }
             } else {
                 self.validateSecondarySlotUpload(of: image, with: responseImages)
@@ -477,12 +478,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         // If the image is already confirmed...
         if responseImage.confirmed {
             // ...there's no need to send any commands for this image.
-            log(msg: "Image \(uploadImage.image) Slot \(uploadImage.image) already Active", atLevel: .application)
+            log(msg: "Image: \(uploadImage.image) (slot: \(uploadImage.image)) already active", atLevel: .debug)
             mark(uploadImage, as: \.confirmed)
             mark(uploadImage, as: \.tested)
         } else {
             // Otherwise, the image must be in test mode.
-            log(msg: "Image \(uploadImage.image) Slot \(uploadImage.image) already Active in Test Mode", atLevel: .application)
+            log(msg: "Image \(uploadImage.image) (slot: \(uploadImage.image)) already active in Test Mode", atLevel: .debug)
             mark(uploadImage, as: \.tested)
         }
     }
@@ -502,10 +503,10 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     // ...check if we can continue.
                     // A confirmed image cannot be un-confirmed and made tested.
                     guard self.configuration.upgradeMode != .testOnly else {
-                        fail(error: FirmwareUpgradeError.unknown("Image \(image.image) already confirmed. Can't be tested!"))
+                        fail(error: FirmwareUpgradeError.unknown("Image \(image.image) already confirmed. Can't be tested."))
                         return
                     }
-                    log(msg: "Image \(image.image) Slot \(secondary.slot) already uploaded and confirmed", atLevel: .application)
+                    log(msg: "Image \(image.image) (slot: \(secondary.slot)) already uploaded and confirmed", atLevel: .debug)
                     mark(image, as: \.confirmed)
                     return
                 }
@@ -513,13 +514,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 // If the test command was sent to this image...
                 if secondary.pending {
                     // ...mark it as tested.
-                    log(msg: "Image \(image.image) Slot \(secondary.slot) already uploaded and tested", atLevel: .application)
+                    log(msg: "Image \(image.image) (slot: \(secondary.slot)) already uploaded and tested", atLevel: .debug)
                     mark(image, as: \.tested)
                     return
                 }
                 
                 // Otherwise, the test or confirm commands will be sent later, depending on the mode.
-                log(msg: "Image \(image.image) already uploaded", atLevel: .application)
+                log(msg: "Image \(image.image) already uploaded", atLevel: .debug)
             } else {
                 // Seems like the secondary slot for this image number is already taken
                 // by some other firmware.
@@ -531,8 +532,8 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     guard let primary = responseImages.first(where: {
                         $0.image == image.image && $0.slot == image.slot
                     }) else { return }
-                    log(msg: "Secondary slot of Image \(image.image) is already confirmed", atLevel: .warning)
-                    log(msg: "Confirming Image \(primary.image) Slot \(primary.slot)...", atLevel: .verbose)
+                    log(msg: "Secondary slot of image \(image.image) is already confirmed", atLevel: .warning)
+                    log(msg: "Confirming image \(primary.image) (slot: \(primary.slot))...", atLevel: .verbose)
                     listConfirm(image: primary)
                     return
                 }
@@ -541,7 +542,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 // erase or test the slot. Therefore, we must reset the device
                 // (which will swap and run the test image) and revalidate the new image state.
                 if secondary.pending {
-                    log(msg: "Image \(image.image) Slot \(secondary.slot) is already pending", atLevel: .warning)
+                    log(msg: "Image \(image.image) (slot \(secondary.slot)) is already pending", atLevel: .warning)
                     log(msg: "Resetting the device...", atLevel: .verbose)
                     // reset() can't be called here, as it changes the state to RESET.
                     defaultManager.transporter.addObserver(self)
@@ -550,7 +551,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     return
                 }
                 // Otherwise, do nothing, as the old firmware will be overwritten by the new one.
-                log(msg: "Secondary Slot of image \(image.image) will be overwritten", atLevel: .warning)
+                log(msg: "Secondary slot of image \(image.image) will be overwritten", atLevel: .warning)
             }
         }
     }
@@ -565,9 +566,10 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 return
             }
             guard let response = response else {
-                self.fail(error: FirmwareUpgradeError.unknown("Test response is nil!"))
+                self.fail(error: FirmwareUpgradeError.unknown("Image Confirm response is nil."))
                 return
             }
+            self.log(msg: "Image Confirm response: \(response)", atLevel: .application)
             if let error = response.getError() {
                 self.fail(error: error)
                 return
@@ -578,7 +580,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 return
             }
             // TODO: Perhaps adding a check to verify if the image was indeed confirmed?
-            self.log(msg: "Image \(image.image) confirmed", atLevel: .application)
+            self.log(msg: "Image \(image.image) confirmed", atLevel: .debug)
             self.listCallback(response, nil)
         }
     }
@@ -600,10 +602,10 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         guard let response = response else {
-            self.fail(error: FirmwareUpgradeError.unknown("Test response is nil!"))
+            self.fail(error: FirmwareUpgradeError.unknown("Image Test response is nil."))
             return
         }
-        self.log(msg: "Test response: \(response)", atLevel: .info)
+        self.log(msg: "Image Test response: \(response)", atLevel: .application)
         // Check for McuMgrReturnCode error.
         if let error = response.getError() {
             self.fail(error: error)
@@ -617,7 +619,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
 
         // Check that we have the correct number of images in the responseImages array.
         guard responseImages.count >= self.images.count else {
-            self.fail(error: FirmwareUpgradeError.unknown("Test response expected \(self.images.count) or more images, but received \(responseImages.count) instead."))
+            self.fail(error: FirmwareUpgradeError.unknown("Expected \(self.images.count) or more images, but received \(responseImages.count) instead."))
             return
         }
         
@@ -625,7 +627,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             guard let targetSlot = responseImages.first(where: {
                 $0.image == image.image && Data($0.hash) == image.hash
             }) else {
-                self.fail(error: FirmwareUpgradeError.unknown("Unable to find Uploaded Image \(image.image) Slot \(image.slot) in Test Response."))
+                self.fail(error: FirmwareUpgradeError.unknown("No image \(image.image) (slot: \(image.slot)) in Test Response."))
                 return
             }
             
@@ -639,14 +641,14 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                 }
                 
                 // If we've sent it the TEST Command, the slot must be in pending state to pass test.
-                self.fail(error: FirmwareUpgradeError.unknown("Image \(image.image) Slot \(image.slot) was sent Test Command but it did not switch to a pending state."))
+                self.fail(error: FirmwareUpgradeError.unknown("Image \(image.image) (slot: \(image.slot)) was tested but it did not switch to a pending state."))
                 return
             }
             self.mark(image, as: \.tested)
         }
         
         // Test image succeeded. Begin device reset.
-        self.log(msg: "All Test commands sent", atLevel: .application)
+        self.log(msg: "All Test commands sent", atLevel: .debug)
         self.reset()
     }
     
@@ -666,11 +668,10 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         guard let response else {
-            self.fail(error: FirmwareUpgradeError.unknown("Confirmation response is nil!"))
+            self.fail(error: FirmwareUpgradeError.unknown("Image Confirm response is nil."))
             return
         }
-        self.log(msg: "Confirmation response: \(response)", atLevel: .info)
-        
+        self.log(msg: "Image Confirm response: \(response)", atLevel: .application)
         // Check for McuMgrReturnCode error.
         if let error = response.getError() {
             self.fail(error: error)
@@ -710,7 +711,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     
                     if !image.confirmed {
                         if image.confirmSent {
-                            self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) Slot \(targetSlot.slot) is not in a Permanent state after sending Confirm Command."))
+                            self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) (slot: \(targetSlot.slot)) was confirmed, but did not switch to permanent state."))
                         } else {
                             self.confirm(image)
                             self.mark(image, as: \.confirmSent)
@@ -731,7 +732,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
                     }
                     
                     if image.confirmSent && !targetSlot.confirmed {
-                        self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) Slot \(targetSlot.slot) was sent Confirm command but is not in a Confirmed state."))
+                        self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) (slot: \(targetSlot.slot)) was confirmed, but did not switch to permanent state."))
                         return
                     }
                     
@@ -743,7 +744,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             }
         }
         
-        self.log(msg: "Work Complete!", atLevel: .verbose)
         self.log(msg: "Upgrade complete", atLevel: .application)
         switch self.configuration.upgradeMode {
         case .confirmOnly:
@@ -773,13 +773,13 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         guard let response = response else {
-            self.fail(error: FirmwareUpgradeError.unknown("Erase app settings response is nil!"))
+            self.fail(error: FirmwareUpgradeError.unknown("Erase app settings response is nil."))
             return
         }
         
         switch response.result {
         case .success:
-            self.log(msg: "Erasing app settings completed", atLevel: .application)
+            self.log(msg: "App settings erased", atLevel: .application)
         case .failure:
             // rc != 0 is OK, meaning that this feature is not supported. DFU should continue.
             self.log(msg: "Erasing app settings not supported", atLevel: .warning)
@@ -811,7 +811,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         guard let response = response else {
-            self.fail(error: FirmwareUpgradeError.unknown("Reset response is nil!"))
+            self.fail(error: FirmwareUpgradeError.unknown("Reset response is nil."))
             return
         }
         // Check for McuMgrReturnCode error.
@@ -831,7 +831,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        self.log(msg: "Device Has Disconnected", atLevel: .verbose)
+        self.log(msg: "Device has disconnected", atLevel: .info)
         let timeSinceReset: TimeInterval
         if let resetResponseTime = resetResponseTime {
             let now = Date()
@@ -851,7 +851,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
             return
         }
         
-        self.log(msg: "Waiting \(Int(configuration.estimatedSwapTime)) (Swap Time) Seconds Before Attempting to Reconnect...", atLevel: .info)
+        self.log(msg: "Waiting \(Int(configuration.estimatedSwapTime)) seconds reconnecting...", atLevel: .info)
         DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) { [weak self] in
             self?.log(msg: "Reconnecting...", atLevel: .info)
             self?.reconnect()
@@ -906,7 +906,9 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
 private extension FirmwareUpgradeManager {
     
     func log(msg: @autoclosure () -> String, atLevel level: McuMgrLogLevel) {
-        logDelegate?.log(msg(), ofCategory: .dfu, atLevel: level)
+        if let logDelegate, level >= logDelegate.minLogLevel() {
+            logDelegate.log(msg(), ofCategory: .dfu, atLevel: level)
+        }
     }
 }
 
@@ -1070,7 +1072,7 @@ extension FirmwareUpgradeError: LocalizedError {
         case .connectionFailedAfterReset:
             return "Connection failed after reset"
         case .untestedImageFound(let image, let slot):
-            return "Image \(image), slot \(slot) found to be not Tested after Reset"
+            return "Image \(image) (slot: \(slot)) found to be not Tested after Reset"
         }
     }
     
@@ -1124,7 +1126,7 @@ public enum FirmwareUpgradeMode: Codable, CustomDebugStringConvertible, CaseIter
     
     /**
      Upload Only is a very particular mode. It ignores Bootloader Info, does not
-     test nor confirm any uploded images. It does list/verify, proceed to upload
+     test nor confirm any uploaded images. It does list/verify, proceed to upload
      the images, and reset. It is not recommended for use, except perhaps for
      DirectXIP use cases where the Bootloader is unreliable.
      */
