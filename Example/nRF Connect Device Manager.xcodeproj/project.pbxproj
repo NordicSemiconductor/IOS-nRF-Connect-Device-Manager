@@ -33,7 +33,6 @@
 		BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */; };
 		BD5A285D20CB44AF0061F0EE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285B20CB44AF0061F0EE /* Main.storyboard */; };
 		BD5A285F20CB44B00061F0EE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285E20CB44B00061F0EE /* Assets.xcassets */; };
-		BD5A286220CB44B00061F0EE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A286020CB44B00061F0EE /* LaunchScreen.storyboard */; };
 		E7F00904AD78FC61457F0B06 /* Pods_nRF_Connect_Device_Manager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C75D2DC863EB4235DE2F466B /* Pods_nRF_Connect_Device_Manager.framework */; };
 		F07D73AC2AE9AE3A00ED6B9A /* StringConvertibles.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07D73AB2AE9AE3A00ED6B9A /* StringConvertibles.swift */; };
 /* End PBXBuildFile section */
@@ -68,7 +67,6 @@
 		BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerViewController.swift; sourceTree = "<group>"; };
 		BD5A285C20CB44AF0061F0EE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BD5A285E20CB44B00061F0EE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		BD5A286120CB44B00061F0EE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BD5A286320CB44B00061F0EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C75D2DC863EB4235DE2F466B /* Pods_nRF_Connect_Device_Manager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_nRF_Connect_Device_Manager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9EB68FC3504F79AE1891044 /* Pods-nRF Connect Device Manager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nRF Connect Device Manager.debug.xcconfig"; path = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager.debug.xcconfig"; sourceTree = "<group>"; };
@@ -199,7 +197,6 @@
 				524DCFD7210B421E000E110D /* Util */,
 				BD5A285720CB44AF0061F0EE /* AppDelegate.swift */,
 				BD5A285B20CB44AF0061F0EE /* Main.storyboard */,
-				BD5A286020CB44B00061F0EE /* LaunchScreen.storyboard */,
 				BD5A285E20CB44B00061F0EE /* Assets.xcassets */,
 				BD5A286320CB44B00061F0EE /* Info.plist */,
 			);
@@ -282,7 +279,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BD5A286220CB44B00061F0EE /* LaunchScreen.storyboard in Resources */,
 				BD5A285F20CB44B00061F0EE /* Assets.xcassets in Resources */,
 				BD5A285D20CB44AF0061F0EE /* Main.storyboard in Resources */,
 			);
@@ -392,14 +388,6 @@
 				BD5A285C20CB44AF0061F0EE /* Base */,
 			);
 			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		BD5A286020CB44B00061F0EE /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				BD5A286120CB44B00061F0EE /* Base */,
-			);
-			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
