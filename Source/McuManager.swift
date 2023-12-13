@@ -118,10 +118,10 @@ open class McuManager {
                     let responseResult = response as? (T?, (any Error)?)
                     if let response = responseResult?.0 {
                         self.smpVersion = McuMgrVersion(rawValue: response.header.version) ?? .SMPv1
-                        self.log(msg: "Response (Version: \(self.smpVersion), Group: \(self.group), seq: \(responseSequenceNumber), ID: \(response.header!.commandId!)): \(response)",
+                        self.log(msg: "Response (\(self.smpVersion), group: \(self.group), seq: \(responseSequenceNumber), command: \(commandId)): \(response)",
                                  atLevel: .verbose)
                     } else if let error = responseResult?.1 {
-                        self.log(msg: "Request (Version: \(self.smpVersion), Group: \(self.group), seq: \(responseSequenceNumber)) failed: \(error.localizedDescription))",
+                        self.log(msg: "Request (\(self.smpVersion), group: \(self.group), seq: \(responseSequenceNumber), command: \(commandId)) failed: \(error.localizedDescription)",
                                  atLevel: .error)
                     }
                     callback(responseResult?.0, responseResult?.1)
@@ -263,7 +263,9 @@ open class McuManager {
 extension McuManager {
     
     func log(msg: @autoclosure () -> String, atLevel level: McuMgrLogLevel) {
-        logDelegate?.log(msg(), ofCategory: Self.TAG, atLevel: level)
+        if let logDelegate, level >= logDelegate.minLogLevel() {
+            logDelegate.log(msg(), ofCategory: Self.TAG, atLevel: level)
+        }
     }
 }
 

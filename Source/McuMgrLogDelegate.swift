@@ -37,6 +37,14 @@ public enum McuMgrLogLevel: Int {
     }
 }
 
+extension McuMgrLogLevel: Comparable {
+    
+    public static func < (lhs: McuMgrLogLevel, rhs: McuMgrLogLevel) -> Bool {
+        return lhs.rawValue < rhs.rawValue
+    }
+    
+}
+
 /// The log category indicates the component that created the log entry.
 public enum McuMgrLogCategory: String {
     case transport         = "Transport"
@@ -64,4 +72,15 @@ public protocol McuMgrLogDelegate: AnyObject {
     func log(_ msg: String,
              ofCategory category: McuMgrLogCategory,
              atLevel level: McuMgrLogLevel)
+    
+    /// Returns the minimum log level to be logged.
+    func minLogLevel() -> McuMgrLogLevel
+}
+
+public extension McuMgrLogDelegate {
+    
+    func minLogLevel() -> McuMgrLogLevel {
+        return .debug
+    }
+    
 }
