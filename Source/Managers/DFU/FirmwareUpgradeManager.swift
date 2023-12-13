@@ -333,18 +333,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         
         guard error == nil, let response, response.rc != 8 else {
             self.log(msg: "Mcu Manager parameters not supported", atLevel: .warning)
-            if self.configuration.pipeliningEnabled {
-                self.log(msg: "Disabling Pipelining since device capabilities are not supported.", atLevel: .verbose)
-                self.configuration.pipelineDepth = 1
-            }
-            if self.configuration.reassemblyBufferSize > 0 {
-                self.log(msg: "Disabling Reassembly since device capabilities are not supported.", atLevel: .verbose)
-                self.configuration.reassemblyBufferSize = 0
-            }
-            if self.configuration.eraseAppSettings {
-                self.log(msg: "Cancelling 'Erase App Settings' since device capabilities are not supported.", atLevel: .verbose)
-                self.configuration.eraseAppSettings = false
-            }
             self.bootloaderInfo() // Continue to Bootloader Info.
             return
         }
