@@ -488,24 +488,24 @@ extension McuMgrImageStateResponse {
         // MARK: Properties
         
         /// The (zero) index of this image.
-        public var image: UInt64! { unsignedUInt64(defaultValue: 0) }
+        public var image: UInt64 { unsignedUInt64(defaultValue: 0) }
         /// The (zero) index of this image slot (0 for primary, 1 for secondary).
-        public var slot: UInt64! { unsignedUInt64() }
+        public var slot: UInt64 { unsignedUInt64(defaultValue: 0) }
         /// The version of the image.
-        public var version: String! { utf8String() }
-        /// The sha256 hash of the image.
-        public var hash: [UInt8]! { byteString() }
+        public var version: String? { utf8String() }
+        /// The SHA256 hash of the image.
+        public var hash: [UInt8] { byteString() }
         /// Bootable flag.
-        public var bootable: Bool! { boolean() }
+        public var bootable: Bool { boolean() }
         /// Pending flag. A pending image will be booted into on reset.
-        public var pending: Bool! { boolean() }
+        public var pending: Bool { boolean() }
         /// Confirmed flag. A confirmed image will always be booted into (unless
         /// another image is pending.
-        public var confirmed: Bool! { boolean() }
+        public var confirmed: Bool { boolean() }
         /// Active flag. Set if the image in this slot is active.
-        public var active: Bool! { boolean() }
+        public var active: Bool { boolean() }
         /// Permanent flag. Set if this image is permanent.
-        public var permanent: Bool! { boolean() }
+        public var permanent: Bool { boolean() }
         
         // MARK: CustomDebugStringConvertible
         
@@ -528,23 +528,23 @@ extension McuMgrImageStateResponse {
         
         // MARK: Private
         
-        private func unsignedUInt64(forKey key: String = #function, defaultValue: UInt64? = nil) -> UInt64! {
+        private func unsignedUInt64(forKey key: String = #function, defaultValue: UInt64) -> UInt64 {
             guard case let CBOR.unsignedInt(int)? = cbor?[.utf8String(key)] else { return defaultValue }
             return int
         }
         
-        private func utf8String(forKey key: String = #function) -> String! {
+        private func utf8String(forKey key: String = #function) -> String? {
             guard case let CBOR.utf8String(string)? = cbor?[.utf8String(key)] else { return nil }
             return string
         }
         
-        private func byteString(forKey key: String = #function) -> [UInt8]! {
-            guard case let CBOR.byteString(cString)? = cbor?[.utf8String(key)] else { return nil }
+        private func byteString(forKey key: String = #function) -> [UInt8] {
+            guard case let CBOR.byteString(cString)? = cbor?[.utf8String(key)] else { return [] }
             return cString
         }
         
-        private func boolean(forKey key: String = #function) -> Bool! {
-            guard case let CBOR.boolean(bool)? = cbor?[.utf8String(key)] else { return nil }
+        private func boolean(forKey key: String = #function) -> Bool {
+            guard case let CBOR.boolean(bool)? = cbor?[.utf8String(key)] else { return false }
             return bool
         }
     }
