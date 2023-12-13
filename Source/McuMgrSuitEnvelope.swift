@@ -70,7 +70,7 @@ public class McuMgrSuitDigest: CBORMappable {
                             throw McuMgrSuitParseError.digestValueNotFound
                         }
                         // Fix for CBOR library when parsing negativeInt(s)
-                        self.digests.append((type - 1, Data(from: value)))
+                        self.digests.append((type - 1, Data( value)))
                     default:
                         throw McuMgrImageParseError.insufficientData
                     }
