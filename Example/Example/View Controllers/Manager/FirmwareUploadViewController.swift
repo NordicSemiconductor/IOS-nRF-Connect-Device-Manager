@@ -68,7 +68,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
     @IBAction func setChunkSize(_ sender: Any) {
         let alertController = UIAlertController(title: "Set chunk size", message: "0 means default (MTU size)", preferredStyle: .alert)
-        alertController.addTextField { (textField) in
+        alertController.addTextField { textField in
             textField.placeholder = "\(self.uploadConfiguration.reassemblyBufferSize)"
             textField.keyboardType = .decimalPad
         }
