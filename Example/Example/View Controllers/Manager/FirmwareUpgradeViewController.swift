@@ -129,7 +129,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     private func setPipelineDepth() {
         let alertController = UIAlertController(title: "Number of buffers", message: nil, preferredStyle: .actionSheet)
-        let values = [2, 3, 4, 5, 6]
+        let values = [2, 3, 4, 5, 6, 7, 8]
         values.forEach { value in
             let title = value == values.first ? "Disabled" : "\(value)"
             alertController.addAction(UIAlertAction(title: title, style: .default) {
