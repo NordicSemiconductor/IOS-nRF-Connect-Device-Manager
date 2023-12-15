@@ -30,7 +30,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var progress: UIProgressView!
     
     @IBAction func selectFirmware(_ sender: UIButton) {
-        let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive"]
+        let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive", "org.ietf.suit", "public.data"]
         let importMenu = UIDocumentMenuViewController(documentTypes: supportedDocumentTypes,
                                                       in: .import)
         importMenu.delegate = self
