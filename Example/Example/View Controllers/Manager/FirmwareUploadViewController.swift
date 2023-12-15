@@ -56,7 +56,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     @IBAction func setDfuAlignment(_ sender: UIButton) {
         let alertController = UIAlertController(title: "Byte alignment", message: nil, preferredStyle: .actionSheet)
         ImageUploadAlignment.allCases.forEach { alignmentValue in
-            let text = "\(alertController)"
+            let text = "\(alignmentValue)"
             alertController.addAction(UIAlertAction(title: text, style: .default) {
                 action in
                 self.dfuByteAlignment.text = text
