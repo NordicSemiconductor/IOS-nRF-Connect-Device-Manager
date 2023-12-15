@@ -39,6 +39,8 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>This application connects to Bluetooth LE devices with SMP service.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
