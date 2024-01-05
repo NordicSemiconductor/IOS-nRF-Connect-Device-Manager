@@ -198,20 +198,16 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private func startFirmwareUpgrade(envelope: McuMgrSuitEnvelope) {
-        // -16 is the currently only supported mode cose-alg-sha-256 = -16
-        //
-        // OPTIONAL to implement in SUIT and currently not supported:
-        // cose-alg-shake128 = -18
-        // cose-alg-sha-384 = -43
-        // cose-alg-sha-512 = -44
-        // cose-alg-shake256 = -45
-        guard let supportedDigest = envelope.digest.digests.first(where: {
-            $0.type == -16
-        }) else { return }
         do {
+            // sha256 is the currently only supported mode.
+            // The rest are optional to implement in SUIT.
+            guard let sha256Hash = envelope.digest.hash(for: .sha256) else {
+                throw McuMgrSuitParseError.supportedAlgorithmNotFound
+            }
+            
             dfuManagerConfiguration.suitMode = true
             dfuManagerConfiguration.upgradeMode = .uploadOnly
-            try dfuManager.start(hash: supportedDigest.hash, data: envelope.data, using: dfuManagerConfiguration)
+            try dfuManager.start(hash: sha256Hash, data: envelope.data, using: dfuManagerConfiguration)
         } catch {
             status.textColor = .systemRed
             status.text = error.localizedDescription

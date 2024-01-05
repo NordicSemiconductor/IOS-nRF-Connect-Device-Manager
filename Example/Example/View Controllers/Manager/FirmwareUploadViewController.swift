@@ -175,18 +175,14 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     }
     
     private func startFirmwareUpload(envelope: McuMgrSuitEnvelope) {
-        // -16 is the currently only supported mode cose-alg-sha-256 = -16
-        //
-        // OPTIONAL to implement in SUIT and currently not supported:
-        // cose-alg-shake128 = -18
-        // cose-alg-sha-384 = -43
-        // cose-alg-sha-512 = -44
-        // cose-alg-shake256 = -45
-        guard let supportedDigest = envelope.digest.digests.first(where: {
-            $0.type == -16
-        }) else { return }
+        // sha256 is the currently only supported mode.
+        // The rest are optional to implement in SUIT.
+        guard let sha256Hash = envelope.digest.hash(for: .sha256) else {
+            uploadDidFail(with: McuMgrSuitParseError.supportedAlgorithmNotFound)
+            return
+        }
         uploadWillStart()
-        let image = ImageManager.Image(image: 0, hash: supportedDigest.hash, data: envelope.data)
+        let image = ImageManager.Image(image: 0, hash: sha256Hash, data: envelope.data)
         _ = imageManager.upload(images: [image], using: uploadConfiguration, delegate: self)
     }
 }
