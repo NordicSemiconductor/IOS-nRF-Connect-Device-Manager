@@ -17,9 +17,9 @@ This repository is a fork of the [McuManager iOS Library](https://github.com/Juu
 
 ## Compatible Devices
 
-| nRF52 Series | nRF53 Series | nRF91 Series |
-| :---: | :----: | :---: |
-| ![](nRF52-Series-small.png) | ![](nRF53-Series-small.png) | ![](nRF91-Series-small.png) |
+| nRF52 Series | nRF53 Series | nRF54 Series | nRF91 Series |
+| :---: | :----: | :---: | :---: |
+| ![](nRF52-Series-small.png) | ![](nRF53-Series-small.png) | ![](nRF54-Series-small.png) | ![](nRF91-Series-small.png) |
 
 This library is designed to work with the SMP Transport over BLE. It is implemented and maintained by Nordic Semiconductor, **but it should work any devices communicating via SMP Protocol**. If you encounter an issue communicating with a device using any chip, not just Nordic, please file an Issue.
 
