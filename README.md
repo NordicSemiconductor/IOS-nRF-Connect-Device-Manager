@@ -102,7 +102,7 @@ McuManager are organized by functionality into command groups. In _mcumgr-ios_, 
 
 Firmware upgrade is generally a four step process performed using commands from the `image` and `default` commands groups: `upload`, `test`, `reset`, and `confirm`.
 
-This library provides a `FirmwareUpgradeManager` as a convinience for upgrading the image running on a device. 
+This library provides `FirmwareUpgradeManager` as a convenience for upgrading the image running on a device. 
 
 ## FirmwareUpgradeManager
 
@@ -179,6 +179,38 @@ do {
 
 Have a look at `FirmwareUpgradeViewController.swift` from the Example project for a more detailed usage sample.
 
+### SUIT Example
+
+SUIT, or [Software Update for the Internet of Things](https://datatracker.ietf.org/wg/suit/about/), is another method of DFU that also makes use of the existing SMP Bluetooth Service. However, it places a lot of the logic (read: blame) onto the target firmware or device rather than the sender. This simplifies the internal process, but also makes parsing the raw CBOR more complicated. Regardless, from the sender's perspective, we only need to send the Data in full, and allow the target to figure things out. The only other argument needed is the Hash which, supports different Modes, also known as Types or Algorithms. The list of SUIT Algorithms includes SHA256, SHAKE128, SHA384, SHA512 and SHAKE256. Of these, the **only currently supported mode is SHA256**.
+
+```swift
+do {
+    // Initialize the BLE transporter using a scanned peripheral
+    let bleTransport = McuMgrBleTransport(cbPeripheral)
+
+    // Initialize the FirmwareUpgradeManager using the transport and a delegate
+    let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
+
+    // Parse McuMgrSuitEnvelope from File URL
+    let envelope = try McuMgrSuitEnvelope(from: dfuSuitEnvelopeUrl)
+
+    // Look for valid Algorithm Hash 
+    guard let sha256Hash = envelope.digest.hash(for: .sha256) else {
+        throw McuMgrSuitParseError.supportedAlgorithmNotFound
+    }
+
+    // Set Configuration for SUIT
+    var configuration = FirmwareUpgradeConfiguration()
+    configuration.suitMode = true
+    // Other Upgrade Modes can be set, but upgrade will fail since
+    // SUIT doesn't support TEST and CONFIRM commands for example. 
+    configuration.upgradeMode = .uploadOnly
+    try dfuManager.start(hash: sha256Hash, data: envelope.data, using: configuration)
+} catch {
+    // Handle errors from McuMgrSuitEnvelope init, start() API call, etc.
+}
+```
+
 ### Firmware Upgrade Mode
 
 McuManager firmware upgrades can be performed following slightly different procedures. These different upgrade modes determine the commands sent after the `upload` step. The `FirmwareUpgradeManager` can be configured to perform these upgrade variations by setting the `upgradeMode` in `FirmwareUpgradeManager`'s `configuration` property, explained below. (NOTE: this was previously set with `mode` property of `FirmwareUpgradeManager`, now removed) The different firmware upgrade modes are as follows:
@@ -206,6 +238,7 @@ In version 1.2, new features were introduced to speed-up the Upload speeds, mirr
 * **`eraseAppSettings`**: This is not a speed-related feature. Instead, setting this to `true` means all app data on the device, including Bond Information, Number of Steps, Login or anything else are all erased. If there are any major data changes to the new firmware after the update, like a complete change of functionality or a new update with different save structures, this is recommended. Set to `true` by default.
 * **`upgradeMode`**: Firmware Upgrade Mode. See Section above for an in-depth explanation of all possible Upgrade Modes.
 * **`bootloaderMode`**: The Bootloader Mode is not necessarily intended to be a setting. It behaves as a setting if the target firmware does not offer a valid response to Bootloader Info request, for example, if it's not supported. What it does is inform iOSMcuMgrLibrary of the supported operations by the Bootloader. For example, if `upgradeMode` is set to `confirmOnly` but the Bootloader is in DirectXIP with no Revert mode, sending a Confirm command will be returned with an error. Which means, no Confirm command will be sent, despite the `upgradeMode` being set so. So yes, it's yet another layer of complexity from SMP / McuManager we have to deal with.
+* **`suitMode`**: An internal flag which, due to how the library is structured, needs to be exposed somewhere. SUIT has the benefit of using SMP, but the detriment of skipping many of its steps. So we need a way to inform the DFU code several of these steps need to be jumped and other conditions to be disregarded. TL;DR only set to `true` for SUIT Data. 
 
 #### Configuration Example
 
