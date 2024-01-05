@@ -33,7 +33,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     // MARK: - IBAction(s)
     
     @IBAction func selectFirmware(_ sender: UIButton) {
-        let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive", "org.ietf.suit", "public.data"]
+        let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive", "com.apple.font-suitcase"]
         let importMenu = UIDocumentMenuViewController(documentTypes: supportedDocumentTypes,
                                                       in: .import)
         importMenu.delegate = self
