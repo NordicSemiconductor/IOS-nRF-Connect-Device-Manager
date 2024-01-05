@@ -45,7 +45,9 @@ public struct McuMgrSuitEnvelope {
 
 public class McuMgrSuitDigest: CBORMappable {
     
-    public var digests: [(type: Int, hash: Data)] = []
+    // MARK: Properties
+    
+    private var modes: [Mode] = []
     
     // MARK: Init
     
@@ -63,14 +65,15 @@ public class McuMgrSuitDigest: CBORMappable {
                     let arrayCbor = try CBOR.decode(array)
                     switch arrayCbor {
                     case .array(let digest):
-                        guard let type = digest[0].value as? Int else {
+                        // -1 is a Fix for CBOR library when parsing negativeInt(s)
+                        guard let type = digest[0].value as? Int,
+                              let algorithm = Algorithm(rawValue: type - 1) else {
                             throw McuMgrSuitParseError.digestTypeNotFound
                         }
                         guard let value = digest[1].value as? [UInt8] else {
                             throw McuMgrSuitParseError.digestValueNotFound
                         }
-                        // Fix for CBOR library when parsing negativeInt(s)
-                        self.digests.append((type - 1, Data( value)))
+                        self.modes.append(Mode(algorithm: algorithm, hash: Data(value)))
                     default:
                         throw McuMgrImageParseError.insufficientData
                     }
@@ -85,15 +88,57 @@ public class McuMgrSuitDigest: CBORMappable {
     
     // MARK: API
     
+    public func hash(for algorithm: Algorithm) -> Data? {
+        return modes.first(where: { $0.algorithm == algorithm })?.hash
+    }
+    
     public func hashString() -> String {
         var result = ""
-        for digest in digests {
+        for digest in modes {
             let hashString = Data(digest.hash).hexEncodedString(options: .upperCase)
             result += "0x\(hashString)"
-            guard digest.hash != digests.last?.hash else { continue }
+            guard digest.hash != modes.last?.hash else { continue }
             result += "\n"
         }
         return result
+    }
+}
+
+// MARK: - McuMgrSuitDigest.Algorithm
+
+extension McuMgrSuitDigest {
+    
+    public enum Algorithm: Int, RawRepresentable {
+        /**
+         This is the (currently) only supported mode.
+         */
+        case sha256 = -16
+        /**
+         Considered OPTIONAL for SUIT Implementation and currently **NOT SUPPORTED**.
+         */
+        case shake128 = -18
+        /**
+         Considered OPTIONAL for SUIT Implementation and currently **NOT SUPPORTED**.
+         */
+        case sha384 = -43
+        /**
+         Considered OPTIONAL for SUIT Implementation and currently **NOT SUPPORTED**.
+         */
+        case sha512 = -44
+        /**
+         Considered OPTIONAL for SUIT Implementation and currently **NOT SUPPORTED**.
+         */
+        case shake256 = -45
+    }
+}
+
+// MARK: - McuMgrSuitDigest.Mode
+
+extension McuMgrSuitDigest {
+    
+    struct Mode {
+        let algorithm: Algorithm
+        let hash: Data
     }
 }
 
@@ -106,6 +151,7 @@ public enum McuMgrSuitParseError: LocalizedError {
     case digestTypeNotFound
     case digestValueNotFound
     case unableToParseDigest
+    case supportedAlgorithmNotFound
     
     public var errorDescription: String? {
         switch self {
@@ -121,6 +167,8 @@ public enum McuMgrSuitParseError: LocalizedError {
             return "The Digest value could not be found or parsed."
         case .unableToParseDigest:
             return "The Digest CBOR Data was found, but could not be parsed or some essential elements were missing."
+        case .supportedAlgorithmNotFound:
+            return "Currently the only supported Algorithm / Mode is SHA256. All other modes are considered OPTIONAL for a valid SUIT implementation as of this time."
         }
     }
 }
