@@ -176,7 +176,6 @@ public class McuMgrImageTlvTrailerEntry {
     public static let MIN_SIZE = 4
     
     public let type: UInt8
-    // __pad: UInt8
     public let length: UInt16
     public let value: Data
     
@@ -190,9 +189,9 @@ public class McuMgrImageTlvTrailerEntry {
         
         var offset = offset
         type = data[offset]
-        offset += 2 // Increment offset and account for extra byte of padding.
+        offset += MemoryLayout<UInt8>.size
         length = data.read(offset: offset)
-        offset += 2 // Move offset past length.
+        offset += MemoryLayout<UInt16>.size
         value = data[Int(offset)..<Int(offset + Int(length))]
         size = McuMgrImageTlvTrailerEntry.MIN_SIZE + Int(length)
     }
