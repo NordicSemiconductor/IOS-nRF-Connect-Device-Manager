@@ -189,6 +189,9 @@ public class McuMgrImageTlvTrailerEntry {
         
         var offset = offset
         type = data[offset]
+        // Advance 1 byte for read
+        offset += MemoryLayout<UInt8>.size
+        // Advance 1 byte for padding (MIN_SIZE = 4)
         offset += MemoryLayout<UInt8>.size
         length = data.read(offset: offset)
         offset += MemoryLayout<UInt16>.size
