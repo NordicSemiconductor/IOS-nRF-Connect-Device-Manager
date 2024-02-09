@@ -19,9 +19,19 @@ public class McuMgrImage {
     
     public init(data: Data) throws {
         self.data = data
-        self.header = try McuMgrImageHeader(data: data)
-        self.tlv = try McuMgrImageTlv(data: data, imageHeader: header)
-        self.hash = tlv.hash
+        let header = try McuMgrImageHeader(data: data)
+        self.header = header
+        let offset = Int(header.headerSize) + Int(header.imageSize)
+        var tlv = try McuMgrImageTlv(data: data, imageHeader: header, at: offset)
+        if let info = tlv.tlvInfo, info.isProtected {
+            tlv = try McuMgrImageTlv(data: data, imageHeader: header, at: offset + Int(info.total))
+        }
+        self.tlv = tlv
+        if let hash = tlv.hash {
+            self.hash = hash
+        } else {
+            throw McuMgrImageParseError.hashNotFound
+        }
     }
 }
 
@@ -106,25 +116,27 @@ public struct McuMgrImageTlv {
     
     public var tlvInfo: McuMgrImageTlvInfo?
     public var trailerTlvEntries: [McuMgrImageTlvTrailerEntry]
+    public var hash: Data?
     
-    public let hash: Data
-    
-    public init(data: Data, imageHeader: McuMgrImageHeader) throws {
-        var offset = Int(imageHeader.headerSize) + Int(imageHeader.imageSize)
-        let end = data.count
+    public init(data: Data, imageHeader: McuMgrImageHeader, at offset: Int) throws {
+        var localOffset = offset
+        var end = data.count
         
         // Parse the tlv info header (Not included in legacy version).
         if !imageHeader.isLegacy() {
-            try tlvInfo = McuMgrImageTlvInfo(data: data, offset: offset)
-            offset += MemoryLayout<McuMgrImageTlvInfo>.size
+            let tlvInfo = try McuMgrImageTlvInfo(data: data, offset: localOffset)
+            localOffset += MemoryLayout<McuMgrImageTlvInfo>.size
+            end = localOffset + Int(tlvInfo.total)
+            self.tlvInfo = tlvInfo
         }
         
         // Parse each tlv entry.
         trailerTlvEntries = [McuMgrImageTlvTrailerEntry]()
         var hashEntry: McuMgrImageTlvTrailerEntry?
-        while offset + McuMgrImageTlvTrailerEntry.MIN_SIZE < end {
-            let tlvEntry = try McuMgrImageTlvTrailerEntry(data: data, offset: offset)
+        while localOffset + McuMgrImageTlvTrailerEntry.MIN_SIZE < end {
+            let tlvEntry = try McuMgrImageTlvTrailerEntry(data: data, offset: localOffset)
             trailerTlvEntries.append(tlvEntry)
+            
             // Set the hash if this entry's type matches the hash's type
             if imageHeader.isLegacy() && tlvEntry.type == McuMgrImageTlv.IMG_TLV_SHA256_V1 ||
                 !imageHeader.isLegacy() && tlvEntry.type == McuMgrImageTlv.IMG_TLV_SHA256 {
@@ -132,15 +144,10 @@ public struct McuMgrImageTlv {
             }
             
             // Increment offset.
-            offset += tlvEntry.size
+            localOffset += tlvEntry.size
         }
         
-        // Set the hash. If not found, throw an error.
-        if let hashEntry {
-            hash = hashEntry.value
-        } else {
-            throw McuMgrImageParseError.hashNotFound
-        }
+        hash = hashEntry?.value
     }
 }
 
@@ -155,8 +162,8 @@ public struct McuMgrImageTlvInfo {
     
     public init(data: Data, offset: Int) throws {
         magic = data.read(offset: offset)
-        total = data.read(offset: offset + 2)
-        if magic != McuMgrImageTlv.IMG_TLV_UNPROTECTED_INFO_MAGIC 
+        total = data.read(offset: offset + MemoryLayout<UInt16>.size)
+        if magic != McuMgrImageTlv.IMG_TLV_UNPROTECTED_INFO_MAGIC
             && magic != McuMgrImageTlv.IMG_TLV_PROTECTED_INFO_MAGIC {
             throw McuMgrImageParseError.invalidTlvInfoMagic
         }
