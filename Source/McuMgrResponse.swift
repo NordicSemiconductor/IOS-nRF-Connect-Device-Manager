@@ -318,6 +318,33 @@ public class McuMgrTaskStatsResponse: McuMgrResponse {
     }
 }
 
+// MARK: - McuMgrExecResponse
+
+public class McuMgrExecResponse: McuMgrResponse {
+    
+    /// Command output.
+    public var output: String?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.utf8String(output)? = cbor?["o"] {
+            self.output = output
+        }
+    }
+    
+    public override func getError() -> LocalizedError? {
+        switch result {
+        case .success:
+            return nil
+        case .failure(let error):
+            guard let shellError = ShellManagerError(rawValue: rc) else {
+                return error
+            }
+            return shellError
+        }
+    }
+}
+
 public class McuMgrMemoryPoolStatsResponse: McuMgrResponse {
     
     /// A map of task names to task statistics.
