@@ -6,6 +6,8 @@
 
 import Foundation
 
+// MARK: - McuMgrLogLevel
+
 /// Log level.
 ///
 /// Logger application may filter log entries based on their level.
@@ -45,6 +47,8 @@ extension McuMgrLogLevel: Comparable {
     
 }
 
+// MARK: - McuMgrLogCategory
+
 /// The log category indicates the component that created the log entry.
 public enum McuMgrLogCategory: String {
     case transport         = "Transport"
@@ -58,9 +62,11 @@ public enum McuMgrLogCategory: String {
     case stats             = "StatsManager"
     case dfu               = "DFU"
     case basic             = "BasicManager"
+    case shell             = "ShellManager"
 }
 
-/// The Logger delegate.
+// MARK: - McuMgrLogDelegate
+
 public protocol McuMgrLogDelegate: AnyObject {
     
     /// Provides the delegate with content intended to be logged.
@@ -82,5 +88,4 @@ public extension McuMgrLogDelegate {
     func minLogLevel() -> McuMgrLogLevel {
         return .debug
     }
-    
 }

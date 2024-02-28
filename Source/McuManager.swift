@@ -321,7 +321,7 @@ public enum McuMgrGroup: UInt16 {
     case run = 7
     /// File System command group (FileSystemManager).
     case filesystem = 8
-    /// Shell Command Group (Not Implemented).
+    /// Shell Command Group (ShellManager).
     case shell = 9
     /// Per user command group, value must be >= 64.
     case perUser = 64
