@@ -58,7 +58,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     ///
     /// Use this convenience call of ``start(images:using:)`` if you're only
     /// updating the App Core (i.e. no Multi-Image).
-    /// - parameter hash: The hash of the Image to be uploaded, used for comparison to check if it isn't present yet on the target firmware.
+    /// - parameter hash: The hash of the Image to be uploaded, used for comparison with the target firmware.
     /// - parameter data: `Data` to upload to App Core (Image 0).
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
     public func start(hash: Data, data: Data, using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
