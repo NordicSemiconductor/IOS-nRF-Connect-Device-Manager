@@ -338,7 +338,12 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         self.log(msg: "Mcu Manager parameters received (\(response.bufferCount) x \(response.bufferSize))", atLevel: .application)
-        self.log(msg: "Setting SAR buffer size to \(response.bufferSize) bytes.", atLevel: .verbose)
+        response.bufferSize = UInt64(UInt32.max)
+        if response.bufferSize > UInt16.max {
+            response.bufferSize = UInt64(UInt16.max)
+            self.log(msg: "Parameters SAR Buffer Size is larger than maximum of \(UInt16.max) bytes. Reducing Buffer Size to maximum value.", atLevel: .warning)
+        }
+        self.log(msg: "Setting SAR Buffer Size to \(response.bufferSize) bytes.", atLevel: .verbose)
         self.configuration.reassemblyBufferSize = response.bufferSize
         self.bootloaderInfo() // Continue to Bootloader Info.
     }
@@ -924,6 +929,8 @@ public struct FirmwareUpgradeConfiguration: Codable {
     /// side to merge it all back. Thus, increasing transfer speeds.
     ///
     /// Can be used in conjunction with SMP Pipelining.
+    ///
+    /// **Cannot exceed `UInt16.max` value of 65535.**
     public var reassemblyBufferSize: UInt64
     /// Previously set directly in `FirmwareUpgradeManager`, it has since been moved here, to the Configuration. It modifies the steps after `upload` step in Firmware Upgrade that need to be performed for the Upgrade process to be considered Successful.
     public var upgradeMode: FirmwareUpgradeMode
@@ -957,7 +964,7 @@ public struct FirmwareUpgradeConfiguration: Codable {
         self.eraseAppSettings = eraseAppSettings
         self.pipelineDepth = pipelineDepth
         self.byteAlignment = byteAlignment
-        self.reassemblyBufferSize = reassemblyBufferSize
+        self.reassemblyBufferSize = min(reassemblyBufferSize, UInt64(UInt16.max))
         self.upgradeMode = upgradeMode
         self.bootloaderMode = bootloaderMode
         self.suitMode = false
