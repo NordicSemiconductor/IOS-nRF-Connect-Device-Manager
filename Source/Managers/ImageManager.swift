@@ -201,6 +201,9 @@ public class ImageManager: McuManager {
         // Note that pipelining requires the use of byte-alignment, otherwise we
         // can't predict how many bytes the firmware will accept in each chunk.
         uploadConfiguration = configuration
+        // Don't exceed UInt16.max payload size.
+        uploadConfiguration.reassemblyBufferSize = min(uploadConfiguration.reassemblyBufferSize, UInt64(UInt16.max))
+        
         if let bleTransport = transporter as? McuMgrBleTransport {
             bleTransport.numberOfParallelWrites = configuration.pipelineDepth
             bleTransport.chunkSendDataToMtuSize = configuration.reassemblyBufferSize != 0

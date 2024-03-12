@@ -66,7 +66,8 @@ public class FileSystemManager: McuManager {
                                                      offset: UInt64(offset))
         
         // Get the length of file data to send.
-        let maxPacketSize = max(uploadConfiguration.reassemblyBufferSize, UInt64(mtu))
+        let maxReassemblySize = min(uploadConfiguration.reassemblyBufferSize, UInt64(UInt16.max))
+        let maxPacketSize = max(maxReassemblySize, UInt64(mtu))
         var maxDataLength = maxPacketSize - UInt64(packetOverhead)
         if uploadConfiguration.byteAlignment != .disabled {
             maxDataLength = (maxDataLength / uploadConfiguration.byteAlignment.rawValue) * uploadConfiguration.byteAlignment.rawValue
@@ -167,7 +168,8 @@ public class FileSystemManager: McuManager {
         
         // Note that pipelining requires the use of byte-alignment, otherwise we
         // can't predict how many bytes the firmware will accept in each chunk.
-        self.uploadConfiguration = configuration
+        uploadConfiguration = configuration
+        uploadConfiguration.reassemblyBufferSize = min(uploadConfiguration.reassemblyBufferSize, UInt64(UInt16.max))
         if let bleTransport = transporter as? McuMgrBleTransport {
             bleTransport.numberOfParallelWrites = configuration.pipelineDepth
             bleTransport.chunkSendDataToMtuSize = configuration.reassemblyBufferSize != 0
