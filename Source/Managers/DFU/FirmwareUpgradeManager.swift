@@ -338,7 +338,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         
         self.log(msg: "Mcu Manager parameters received (\(response.bufferCount) x \(response.bufferSize))", atLevel: .application)
-        response.bufferSize = UInt64(UInt32.max)
         if response.bufferSize > UInt16.max {
             response.bufferSize = UInt64(UInt16.max)
             self.log(msg: "Parameters SAR Buffer Size is larger than maximum of \(UInt16.max) bytes. Reducing Buffer Size to maximum value.", atLevel: .warning)
