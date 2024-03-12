@@ -97,6 +97,7 @@ McuManager are organized by functionality into command groups. In _mcumgr-ios_, 
 * **`RunTestManager`**: Runs tests on the device.
 * **`FileSystemManager`**: Download/upload files from the device file system.
 * **`BasicManager`**: Send 'Erase App Settings' command to the device.
+* **`ShellManager`**: Send McuMgr Shell commands to the device.
 
 # Firmware Upgrade
 
@@ -106,58 +107,101 @@ This library provides `FirmwareUpgradeManager` as a convenience for upgrading th
 
 ## FirmwareUpgradeManager
 
-A `FirmwareUpgradeManager` provides an easy way to perform firmware upgrades on a device. A `FirmwareUpgradeManager` must be initialized with an `McuMgrTransport` which defines the transport scheme and device. Once initialized, a `FirmwareUpgradeManager` can perform one firmware upgrade at a time. Firmware upgrades are started using the `start(data: Data)` method and can be paused, resumed, and canceled using `pause()`, `resume()`, and `cancel()` respectively.
+A `FirmwareUpgradeManager` provides an easy way to perform firmware upgrades on a device. A `FirmwareUpgradeManager` must be initialized with an `McuMgrTransport` which defines the transport scheme and device. Once initialized, a `FirmwareUpgradeManager` can perform one firmware upgrade at a time. Firmware upgrades are started using the `start(hash: Data, data: Data)` method and can be paused, resumed, and canceled using `pause()`, `resume()`, and `cancel()` respectively.
 
 ### Legacy / App Core-Only Upgrade Example
+
 ```swift
-// Initialize the BLE transporter using a scanned peripheral
-let bleTransport = McuMgrBleTransport(cbPeripheral)
+do {
+    // Initialize the BLE transporter using a scanned peripheral
+    let bleTransport = McuMgrBleTransport(cbPeripheral)
 
-// Initialize the FirmwareUpgradeManager using the transport and a delegate
-let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
+    // Initialize the FirmwareUpgradeManager using the transport and a delegate
+    let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
 
-// Start the firmware upgrade with the image data
-dfuManager.start(data: imageData)
+    let imageData = /* Read Image Data */
+    let imageHash = try McuMgrImage(data: imageData).hash
+
+    // Start the firmware upgrade with the image data
+    dfuManager.start(hash: imageHash, data: imageData)
+} catch {
+    // Reading File / Image, Hash, etc. errors here.
+}
 ```
 
 **Note**: Always make your start/pause/cancel DFU API calls from the Main Thread.
 
-### Multi-Image DFU Example
-```swift
-extension ImageManager {
-    
-    public typealias Image = (image: Int, data: Data)
+### Why Hash, now?
 
-    [...]
+Hash was added as a parameter as part of our support for SUIT and DirectXIP (for more information, see below). It is now possible, with SUIT, to selectively pick from within a single 'image' different hashes to Upload for the same 'slot'. Therefore, a way to determine which specific bag of bytes of the same Image the user wants to upload is required. There were two ways of solving this - trying to make the library 'smart' and remove work, or, provide the library user (developer) the freedom to decide. It is a pain to have to add a new parameter, but we have alternative APIs to try to help with this process.
+
+### Multi-Image DFU Example
+
+```swift
+public class ImageManager: McuManager {
+    
+    public struct Image {
+        public let image: Int
+        public let slot: Int
+        public let hash: Data
+        public let data: Data
+
+        /* ... */
+    }
 }
 ```
 
-The above is the input format for Multi-Image DFU call, where an input of `0` for the `image` parameter means **App Core**, and an input of `1` means **Net Core**. These assignments are of course subject to change as we expand the capabilities of our products.
+The above is the input format for Multi-Image DFU call, where a value of `0` for the `image` parameter means **App Core**, and an input of `1` means **Net Core**. These representations are of course subject to change as we expand the capabilities of our products. For the `slot` parameter, you will typically want to set it to `1`, which is the alternate slot that is currently not in use for that specific core. Then, after upload, the firmware device will reset to swap over its slots, making the contents previously uploaded to slot `1` (now in slot `0` after the swap) as active, and vice-versa.
 
-With this, it's straightforward to make a call to start DFU for either or both cores:
+With the Image struct at hand, it's straightforward to make a call to start DFU for either or both cores:
 
 ```swift
-// Initialize the BLE transporter using a scanned peripheral
-let bleTransport = McuMgrBleTransport(cbPeripheral)
+try {
+    // Initialize the BLE transport using a scanned peripheral
+    let bleTransport = McuMgrBleTransport(cbPeripheral)
 
-// Initialize the FirmwareUpgradeManager using the transport and a delegate
-let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
+    // Initialize the FirmwareUpgradeManager using the transport and a delegate
+    let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
 
-// Build Multi-Image DFU parameters
-let images: [ImageManager.Image] = [
-    (image: 0, data: appCoreData), // App Core
-    (image: 1, data: netCoreData) // Net Core
-]
+    // Build Multi-Image DFU parameters
+    let appCoreData = try Data(contentsOf: appCoreFileURL)
+    let appCoreDataHash = try McuMgrImage(data: appCoreData).hash
+    let netCoreData = try Data(contentsOf: netCoreFileURL)
+    let netCoreDataHash = try McuMgrImage(data: netCoreData).hash
+    
+    let images: [ImageManager.Image] = [
+        (image: 0, slot: 1, hash: appCoreDataHash, data: appCoreData),
+        (image: 1, slot: 1, hash: netCoreDataHash, data: netCoreData)
+    ]
 
-// Start Multi-Image DFU firmware upgrade
-dfuManager.start(images: images)
+    // Start Multi-Image DFU firmware upgrade
+    dfuManager.start(images: images)
+} catch {
+    // Errors here.
+}
+```
+
+Whereas non-DirectXIP packages target the secondary / non-active slot, also known as slot `1`, for each `ImageManager.Image`, special attention must be given to DirectXIP packages. Since they provide multiple hashes of the same `ImageManager.Image`, one for each available slot. This is because firmware supporting DirectXIP can boot from either slot, not requiring a swap. So, for DirectXIP the `[ImageManager.Image]` array might closer to:
+
+```swift
+    // Build DirectXIP parameters
+    let appCoreSlotZeroData = try Data(contentsOf: appCoreSlotZeroURL)
+    let appCoreSlotZeroHash = try McuMgrImage(data: appCoreSlotZeroData).hash
+    let appCoreSlotOneData = try Data(contentsOf: appCoreSlotOneURL)
+    let appCoreSlotOneHash = try McuMgrImage(data: appCoreSlotOneData).hash
+    
+    let directXIP: [ImageManager.Image] = [
+        (image: 0, slot: 0, hash: appCoreSlotZeroHash, data: appCoreSlotZeroData),
+        (image: 0, slot: 1, hash: appCoreSlotOneHash, data: appCoreSlotOneData)
+    ]
+
 ```
 
 ### Multi-Image DFU Format
 
 Usually, when performing Multi-Image DFU, the delivery format of the attached images for each core will be in a `.zip` file. This is because the `.zip` file allows us to bundle the necessary information, including the images for each core and which image should be uploaded to each core. This association between the image files, usually in `.bin` format, and which core they should be uploaded to, is written in a mandatory JSON format called the Manifest. This `manifest.json` is generated by our nRF Connect SDK as part of our Zephyr build system, [as documented here](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/app_dev/build_and_config_system/index.html). You can look at the `McuMgrManifest` struct definition within the library for an insight into the information contained within the manifest.
 
-Now, the issue is that there's a gap between the aforementioned API, and the output from our Zephyr build system, which is a `.zip` file. To bridge this gap, we wrote `McuMgrPackage`, which takes a `URL` in its `init()` function. So, given the `URL` to the `.zip` file, it is possible to start Multi-Image DFU like this:
+Now, the issue is that there's a gap between the aforementioned API, and the output from our Zephyr build system, which is a `.zip` file. To bridge this gap, we wrote `McuMgrPackage`, which takes a `URL` in its `init()` function. So, given the `URL` to the `.zip` file, it is possible to kickstart Multi-Image DFU in this manner:
 
 ```swift
 do {
@@ -178,6 +222,8 @@ do {
 ```
 
 Have a look at `FirmwareUpgradeViewController.swift` from the Example project for a more detailed usage sample.
+
+Because of the JSON Manifest Parsing nature of the `McuMgrPackage` method, you might encounter corner cases / crashes. If you find these, please report them back to us. But regardless, the McuMgrPackage shortcut is a wrapper that initialises the aforementioned `[ImageManager.Image]` array API. So you can always fallback to that.
 
 ### SUIT Example
 
