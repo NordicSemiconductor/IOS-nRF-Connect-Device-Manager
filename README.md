@@ -112,6 +112,8 @@ A `FirmwareUpgradeManager` provides an easy way to perform firmware upgrades on 
 ### Legacy / App Core-Only Upgrade Example
 
 ```swift
+import iOSMcuManagerLibrary
+
 do {
     // Initialize the BLE transporter using a scanned peripheral
     let bleTransport = McuMgrBleTransport(cbPeripheral)
@@ -151,11 +153,13 @@ public class ImageManager: McuManager {
 }
 ```
 
-The above is the input format for Multi-Image DFU call, where a value of `0` for the `image` parameter means **App Core**, and an input of `1` means **Net Core**. These representations are of course subject to change as we expand the capabilities of our products. For the `slot` parameter, you will typically want to set it to `1`, which is the alternate slot that is currently not in use for that specific core. Then, after upload, the firmware device will reset to swap over its slots, making the contents previously uploaded to slot `1` (now in slot `0` after the swap) as active, and vice-versa.
+The above is the input type for Multi-Image DFU call, where a value of `0` for the `image` parameter means **App Core**, and an input of `1` means **Net Core**. These representations are of course subject to change as we expand the capabilities of our products. For the `slot` parameter, you will typically want to set it to `1`, which is the alternate slot that is currently not in use for that specific core. Then, after upload, the firmware device will reset to swap over its slots, making the contents previously uploaded to slot `1` (now in slot `0` after the swap) as active, and vice-versa.
 
 With the Image struct at hand, it's straightforward to make a call to start DFU for either or both cores:
 
 ```swift
+import iOSMcuManagerLibrary
+
 try {
     // Initialize the BLE transport using a scanned peripheral
     let bleTransport = McuMgrBleTransport(cbPeripheral)
@@ -184,6 +188,13 @@ try {
 Whereas non-DirectXIP packages target the secondary / non-active slot, also known as slot `1`, for each `ImageManager.Image`, special attention must be given to DirectXIP packages. Since they provide multiple hashes of the same `ImageManager.Image`, one for each available slot. This is because firmware supporting DirectXIP can boot from either slot, not requiring a swap. So, for DirectXIP the `[ImageManager.Image]` array might closer to:
 
 ```swift
+import iOSMcuManagerLibrary
+
+try {
+    /*
+    Initialise transport & manager as above.
+    */
+
     // Build DirectXIP parameters
     let appCoreSlotZeroData = try Data(contentsOf: appCoreSlotZeroURL)
     let appCoreSlotZeroHash = try McuMgrImage(data: appCoreSlotZeroData).hash
@@ -194,7 +205,12 @@ Whereas non-DirectXIP packages target the secondary / non-active slot, also know
         (image: 0, slot: 0, hash: appCoreSlotZeroHash, data: appCoreSlotZeroData),
         (image: 0, slot: 1, hash: appCoreSlotOneHash, data: appCoreSlotOneData)
     ]
-
+    
+    // Start DirectXIP Firmware Upgrade
+    dfuManager.start(images: directXIP)
+} catch {
+    // Errors here.
+}
 ```
 
 ### Multi-Image DFU Format
@@ -204,6 +220,8 @@ Usually, when performing Multi-Image DFU, the delivery format of the attached im
 Now, the issue is that there's a gap between the aforementioned API, and the output from our Zephyr build system, which is a `.zip` file. To bridge this gap, we wrote `McuMgrPackage`, which takes a `URL` in its `init()` function. So, given the `URL` to the `.zip` file, it is possible to kickstart Multi-Image DFU in this manner:
 
 ```swift
+import iOSMcuManagerLibrary
+
 do {
     // Initialize the BLE transporter using a scanned peripheral
     let bleTransport = McuMgrBleTransport(cbPeripheral)
@@ -230,6 +248,8 @@ Because of the JSON Manifest Parsing nature of the `McuMgrPackage` method, you m
 SUIT, or [Software Update for the Internet of Things](https://datatracker.ietf.org/wg/suit/about/), is another method of DFU that also makes use of the existing SMP Bluetooth Service. However, it places a lot of the logic (read: blame) onto the target firmware or device rather than the sender. This simplifies the internal process, but also makes parsing the raw CBOR more complicated. Regardless, from the sender's perspective, we only need to send the Data in full, and allow the target to figure things out. The only other argument needed is the Hash which, supports different Modes, also known as Types or Algorithms. The list of SUIT Algorithms includes SHA256, SHAKE128, SHA384, SHA512 and SHAKE256. Of these, the **only currently supported mode is SHA256**.
 
 ```swift
+import iOSMcuManagerLibrary
+
 do {
     // Initialize the BLE transporter using a scanned peripheral
     let bleTransport = McuMgrBleTransport(cbPeripheral)
@@ -291,6 +311,8 @@ In version 1.2, new features were introduced to speed-up the Upload speeds, mirr
 [This is the way](https://www.youtube.com/watch?v=uelA7KRLINA) to start DFU with your own custom `FirmwareUpgradeConfiguration`:
 
 ```swift
+import iOSMcuManagerLibrary
+
 // Setup
 let bleTransport = McuMgrBleTransport(cbPeripheral)
 let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
@@ -321,6 +343,8 @@ Setting `logDelegate` property in a manager gives access to low level logs, that
 
 ### Example
 ```swift
+import iOSMcuManagerLibrary
+
 // Initialize the BLE transporter using a scanned peripheral
 let bleTransport = McuMgrBleTransport(cbPeripheral)
 bleTransporter.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
