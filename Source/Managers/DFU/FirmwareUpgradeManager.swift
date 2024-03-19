@@ -23,6 +23,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
     
     private var images: [FirmwareUpgradeImage]!
     private var configuration: FirmwareUpgradeConfiguration!
+    private var boolotader: BootloaderInfoResponse.Bootloader!
     
     private var state: FirmwareUpgradeState
     private var paused: Bool
@@ -84,6 +85,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         
         self.images = try images.map { try FirmwareUpgradeImage($0) }
         self.configuration = configuration
+        self.boolotader = nil
         
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
@@ -169,7 +171,15 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         objc_sync_setState(.bootloaderInfo)
         if !paused {
             log(msg: "Requesting Bootloader Info...", atLevel: .verbose)
-            defaultManager.bootloaderInfo(query: .mode, callback: bootloaderInfoCallback)
+            defaultManager.bootloaderInfo(query: .name, callback: bootloaderInfoCallback)
+        }
+    }
+    
+    private func bootloaderMode() {
+        objc_sync_setState(.bootloaderInfo)
+        if !paused {
+            log(msg: "Requesting Bootloader Mode...", atLevel: .verbose)
+            defaultManager.bootloaderInfo(query: .mode, callback: bootloaderModeCallback)
         }
     }
     
@@ -344,21 +354,45 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         }
         self.log(msg: "Setting SAR Buffer Size to \(response.bufferSize) bytes.", atLevel: .verbose)
         self.configuration.reassemblyBufferSize = response.bufferSize
-        self.bootloaderInfo() // Continue to Bootloader Info.
+        self.bootloaderInfo() // Continue to Bootloader Mode.
     }
     
     // MARK: Bootloader Info Callback
     
     private lazy var bootloaderInfoCallback: McuMgrCallback<BootloaderInfoResponse> = { [weak self] response, error in
-        guard let self = self else { return }
+        guard let self else { return }
         
         guard error == nil, let response, response.rc != 8 else {
-            self.log(msg: "Bootloader info not supported", atLevel: .warning)
+            self.log(msg: "Bootloader Info not supported.", atLevel: .warning)
+            self.log(msg: "Assuming MCUBoot Bootloader.", atLevel: .debug)
+            self.boolotader = .mcuboot
             self.validate() // Continue Upload
             return
         }
         
-        self.log(msg: "Bootloader info received (mode: \(response.mode?.debugDescription ?? "Unknown"))",
+        self.log(msg: "Bootloader Info received (Name: \(response.bootloader?.description ?? "Unknown"))",
+                 atLevel: .application)
+        self.boolotader = response.bootloader
+        if self.boolotader == .suit {
+            self.log(msg: "Detected SUIT Bootloader. Skipping Bootloader Mode request.", atLevel: .debug)
+        } else {
+            // Query McuBoot Mode since SUIT does not support this request.
+            self.bootloaderMode()
+        }
+    }
+    
+    // MARK: Bootloader Mode Callback
+    
+    private lazy var bootloaderModeCallback: McuMgrCallback<BootloaderInfoResponse> = { [weak self] response, error in
+        guard let self else { return }
+        
+        guard error == nil, let response, response.rc != 8 else {
+            self.log(msg: "Bootloader Mode not supported", atLevel: .warning)
+            self.validate() // Continue Upload
+            return
+        }
+        
+        self.log(msg: "Bootloader Mode received (Mode: \(response.mode?.debugDescription ?? "Unknown"))",
                  atLevel: .application)
         self.configuration.bootloaderMode = response.mode ?? self.configuration.bootloaderMode
         if self.configuration.bootloaderMode == .directXIPNoRevert {
@@ -944,7 +978,7 @@ public struct FirmwareUpgradeConfiguration: Codable {
     /**
      SUIT (Software Update for Internet of Things) Images don't support many McuMgr Commands,
      like Reset. And 'Upgrade Modes' don't make sense for it either. We want to keep the same
-     frontend API but we need our backened to know to ignore things such as RESET for SUIT. We
+     frontend API but we need our backend to know to ignore things such as RESET for SUIT. We
      wanted to add a new UpgradeMode, but that was going to cause other issues. So instead, this
      toggle is the solution.
      */
