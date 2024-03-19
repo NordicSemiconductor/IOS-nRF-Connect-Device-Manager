@@ -13,6 +13,7 @@ import SwiftCBOR
 public struct McuMgrSuitEnvelope {
     
     public let digest: McuMgrSuitDigest
+    public let manifest: McuMgrSuitManifest?
     public let data: Data
     
     // MARK: Init
@@ -28,6 +29,7 @@ public struct McuMgrSuitEnvelope {
         switch cbor {
         case .tagged(_, let cbor):
             self.digest = try McuMgrSuitDigest(cbor: cbor[0x2])
+            self.manifest = try? McuMgrSuitManifest(cbor: cbor[0x3])
         default:
             throw McuMgrSuitParseError.digestMapNotFound
         }
