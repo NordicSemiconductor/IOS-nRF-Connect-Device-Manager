@@ -424,7 +424,24 @@ public final class AppInfoResponse: McuMgrResponse {
 
 public final class BootloaderInfoResponse: McuMgrResponse {
     
-    public enum Mode: Int, Codable, CustomDebugStringConvertible {
+    public enum Bootloader: String, Codable, CustomDebugStringConvertible {
+        case unknown = ""
+        case mcuboot = "MCUboot"
+        case suit = "SUIT"
+        
+        public var description: String {
+            switch self {
+            case .unknown:
+                return "Unknown"
+            case .mcuboot, .suit:
+                return rawValue
+            }
+        }
+        
+        public var debugDescription: String { description }
+    }
+    
+    public enum Mode: Int, Codable, CustomStringConvertible, CustomDebugStringConvertible {
         case unknown = -1
         case singleApplication = 0
         case swapUsingScratch = 1
@@ -443,7 +460,7 @@ public final class BootloaderInfoResponse: McuMgrResponse {
             return self == .directXIPNoRevert || self == .directXIPWithRevert
         }
         
-        public var debugDescription: String {
+        public var description: String {
             switch self {
             case .unknown:
                 return "Unknown"
@@ -463,16 +480,18 @@ public final class BootloaderInfoResponse: McuMgrResponse {
                 return "RAM Loader"
             }
         }
+        
+        public var debugDescription: String { description }
     }
     
-    public var bootloader: String?
+    public var bootloader: Bootloader?
     public var mode: Mode?
     public var noDowngrade: Bool?
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
-        if case let CBOR.utf8String(bootloader)? = cbor?["bootloader"] {
-            self.bootloader = bootloader
+        if case let CBOR.utf8String(bootloaderString)? = cbor?["bootloader"] {
+            self.bootloader = Bootloader(rawValue: bootloaderString)
         }
         if case let CBOR.unsignedInt(mode)? = cbor?["mode"] {
             self.mode = Mode(rawValue: Int(mode))

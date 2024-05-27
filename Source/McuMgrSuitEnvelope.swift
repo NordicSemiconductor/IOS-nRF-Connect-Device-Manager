@@ -15,6 +15,11 @@ public struct McuMgrSuitEnvelope {
     public let digest: McuMgrSuitDigest
     public let data: Data
     
+    /**
+     In-Development, therefore, not marked as Public yet.
+     */
+    let manifest: McuMgrSuitManifest?
+    
     // MARK: Init
     
     public init(from url: URL) throws {
@@ -28,6 +33,7 @@ public struct McuMgrSuitEnvelope {
         switch cbor {
         case .tagged(_, let cbor):
             self.digest = try McuMgrSuitDigest(cbor: cbor[0x2])
+            self.manifest = try? McuMgrSuitManifest(cbor: cbor[0x3])
         default:
             throw McuMgrSuitParseError.digestMapNotFound
         }

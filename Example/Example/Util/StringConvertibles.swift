@@ -22,28 +22,3 @@ extension PeripheralState: CustomStringConvertible {
     
 }
 
-extension BootloaderInfoResponse.Mode: CustomStringConvertible {
-    
-    public var description: String {
-        switch self {
-        case .unknown:
-            return "Unknown"
-        case .singleApplication:
-            return "Single application"
-        case .swapUsingScratch:
-            return "Swap using scratch partition"
-        case .overwrite:
-            return "Overwrite (upgrade-only)"
-        case .swapNoScratch:
-            return "Swap without scratch"
-        case .directXIPNoRevert:
-            return "Direct-XIP without revert"
-        case .directXIPWithRevert:
-            return "Direct-XIP with revert"
-        case .RAMLoader:
-            return "RAM Loader"
-        }
-    }
-    
-}
-

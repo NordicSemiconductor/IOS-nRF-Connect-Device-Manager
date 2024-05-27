@@ -8,6 +8,8 @@ import UIKit
 import iOSMcuManagerLibrary
 import CoreBluetooth
 
+// MARK: - DeviceStatusDelegate
+
 protocol DeviceStatusDelegate: AnyObject {
     func connectionStateDidChange(_ state: PeripheralState)
     func bootloaderNameReceived(_ name: String)
@@ -16,14 +18,16 @@ protocol DeviceStatusDelegate: AnyObject {
     func mcuMgrParamsReceived(buffers: Int, size: Int)
 }
 
-class BaseViewController: UITabBarController {
+// MARK: - BaseViewController
+
+final class BaseViewController: UITabBarController {
     weak var deviceStatusDelegate: DeviceStatusDelegate? {
         didSet {
             if let state {
                 deviceStatusDelegate?.connectionStateDidChange(state)
             }
-            if let bootloaderName {
-                deviceStatusDelegate?.bootloaderNameReceived(bootloaderName)
+            if let bootloader {
+                deviceStatusDelegate?.bootloaderNameReceived(bootloader.description)
             }
             if let bootloaderMode {
                 deviceStatusDelegate?.bootloaderModeReceived(bootloaderMode)
@@ -54,11 +58,10 @@ class BaseViewController: UITabBarController {
             }
         }
     }
-    private var bootloaderName: String? {
+    private var bootloader: BootloaderInfoResponse.Bootloader? {
         didSet {
-            if let bootloaderName {
-                deviceStatusDelegate?.bootloaderNameReceived(bootloaderName)
-            }
+            guard let bootloader else { return }
+            deviceStatusDelegate?.bootloaderNameReceived(bootloader.description)
         }
     }
     private var bootloaderMode: BootloaderInfoResponse.Mode? {
@@ -92,6 +95,8 @@ class BaseViewController: UITabBarController {
     }
 }
 
+// MARK: - PeripheralDelegate
+
 extension BaseViewController: PeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didChangeStateTo state: PeripheralState) {
@@ -107,14 +112,12 @@ extension BaseViewController: PeripheralDelegate {
                 }
                 defaultManager.applicationInfo(format: [.kernelName, .kernelVersion]) { [weak self] response, error in
                     self?.appInfoOutput = response?.response
-                 
+
                     defaultManager.bootloaderInfo(query: .name) { [weak self] response, error in
-                        self?.bootloaderName = response?.bootloader
-                        
-                        if response?.bootloader == "MCUboot" {
-                            defaultManager.bootloaderInfo(query: .mode) { [weak self] response, error in
-                                self?.bootloaderMode = response?.mode
-                            }
+                        self?.bootloader = response?.bootloader
+                        guard response?.bootloader == .mcuboot else { return }
+                        defaultManager.bootloaderInfo(query: .mode) { [weak self] response, error in
+                            self?.bootloaderMode = response?.mode
                         }
                     }
                 }
