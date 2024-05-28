@@ -325,6 +325,8 @@ public enum McuMgrGroup: UInt16 {
     case shell = 9
     /// Per user command group, value must be >= 64.
     case perUser = 64
+    /// SUIT Command Group (SuitManager).
+    case suit = 66
     
     /** 
      * Basic command group (BasicManager).
