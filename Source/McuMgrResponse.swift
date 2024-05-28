@@ -270,6 +270,8 @@ public class McuMgrEchoResponse: McuMgrResponse {
     }
 }
 
+// MARK: - McuMgrTaskStatsResponse
+
 public class McuMgrTaskStatsResponse: McuMgrResponse {
     
     /// A map of task names to task statistics.
@@ -345,6 +347,8 @@ public class McuMgrExecResponse: McuMgrResponse {
     }
 }
 
+// MARK: - McuMgrMemoryPoolStatsResponse
+
 public class McuMgrMemoryPoolStatsResponse: McuMgrResponse {
     
     /// A map of task names to task statistics.
@@ -378,6 +382,8 @@ public class McuMgrMemoryPoolStatsResponse: McuMgrResponse {
     }
 }
 
+// MARK: - McuMgrDateTimeResponse
+
 public class McuMgrDateTimeResponse: McuMgrResponse {
     
     /// String representation of the datetime on the device.
@@ -403,6 +409,61 @@ public final class McuMgrParametersResponse: McuMgrResponse {
         
         if case let CBOR.unsignedInt(bufferSize)? = cbor?["buf_size"] { self.bufferSize = bufferSize }
         if case let CBOR.unsignedInt(bufferCount)? = cbor?["buf_count"] { self.bufferCount = bufferCount }
+    }
+}
+
+// MARK: - McuMgrManifestListResponse
+
+public final class McuMgrManifestListResponse: McuMgrResponse {
+    
+    public class Manifest: CBORMappable {
+        
+        public enum Role: UInt64 {
+            /// Manifest role uninitialized (invalid).
+            case unknown = 0x00
+            /// Manifest describes the entry-point for all Nordic-controlled manifests.
+            case secTop = 0x10
+            /// Manifest describes SDFW firmware and recovery updates.
+            case secSDFW = 0x11
+            /// Manifest describes SYSCTRL firmware update and boot procedures.
+            case secSYSCTRL = 0x12
+            /// Manifest describes the entry-point for all OEM-controlled manifests.
+            case appRoot = 0x20
+            /// Manifest describes OEM-specific recovery procedure.
+            case appRecovery = 0x21
+            /// Manifest describes OEM-specific binaries, specific for application core.
+            case appLocalOne = 0x22
+            /// Manifest describes OEM-specific binaries, specific for application core.
+            case appLocalTwo = 0x23
+            /// Manifest describes OEM-specific binaries, specific for application core.
+            case appLocalThree = 0x24
+            /// Manifest describes radio part of OEM-specific recovery procedure.
+            case radioRecovery = 0x30
+            /// Manifest describes OEM-specific binaries, specific for radio core.
+            case radioLocalOne = 0x31
+            /// Manifest describes OEM-specific binaries, specific for radio core.
+            case radioLocalTwo = 0x32
+        }
+        
+        public var role: Role?
+        
+        public required init(cbor: CBOR?) throws {
+            try super.init(cbor: cbor)
+            if case let CBOR.unsignedInt(roleValue)? = cbor?["role"] {
+                self.role = Role(rawValue: roleValue)
+            }
+        }
+    }
+    
+    public var manifests: [Manifest]
+    
+    public required init(cbor: CBOR?) throws {
+        if case let CBOR.array(manifests)? = cbor?["manifests"] {
+            self.manifests = try CBOR.toObjectArray(array: manifests) ?? []
+        } else {
+            self.manifests = []
+        }
+        try super.init(cbor: cbor)
     }
 }
 
@@ -596,6 +657,8 @@ extension McuMgrImageStateResponse {
     }
 }
 
+// MARK: - McuMgrUploadResponse
+
 public class McuMgrUploadResponse: McuMgrResponse {
     
     /// Offset to send the next packet of image data from.
@@ -612,6 +675,8 @@ public class McuMgrUploadResponse: McuMgrResponse {
         }
     }
 }
+
+// MARK: - McuMgrCoreLoadResponse
 
 public class McuMgrCoreLoadResponse: McuMgrResponse {
     
@@ -646,6 +711,8 @@ public class McuMgrFsUploadResponse: McuMgrResponse {
     }
 }
 
+// MARK: - McuMgrFsDownloadResponse
+
 public class McuMgrFsDownloadResponse: McuMgrResponse {
     
     /// Offset to send the next packet of image data from.
@@ -662,6 +729,8 @@ public class McuMgrFsDownloadResponse: McuMgrResponse {
         if case let CBOR.byteString(data)? = cbor?["data"] {self.data = data}
     }
 }
+
+// MARK: - McuMgrFilesystemCrc32Response
 
 public class McuMgrFilesystemCrc32Response: McuMgrResponse {
     
@@ -691,6 +760,8 @@ public class McuMgrFilesystemCrc32Response: McuMgrResponse {
     }
 }
 
+// MARK: - McuMgrFilesystemSha256Response
+
 public class McuMgrFilesystemSha256Response: McuMgrResponse {
     
     // Type of hash/checksum that was performed.
@@ -718,6 +789,8 @@ public class McuMgrFilesystemSha256Response: McuMgrResponse {
         }
     }
 }
+
+// MARK: - McuMgrFilesystemStatusResponse
 
 public class McuMgrFilesystemStatusResponse: McuMgrResponse {
     
@@ -749,6 +822,8 @@ public class McuMgrLevelListResponse: McuMgrResponse {
     }
 }
 
+// MARK: - McuMgrLogListResponse
+
 public class McuMgrLogListResponse: McuMgrResponse {
     
     /// Log levels.
@@ -761,6 +836,8 @@ public class McuMgrLogListResponse: McuMgrResponse {
         }
     }
 }
+
+// MARK: - McuMgrLogResponse
 
 public class McuMgrLogResponse: McuMgrResponse {
     
@@ -849,6 +926,8 @@ public class McuMgrStatsResponse: McuMgrResponse {
         }
     }
 }
+
+// MARK: - McuMgrStatsListResponse
 
 public class McuMgrStatsListResponse: McuMgrResponse {
     
