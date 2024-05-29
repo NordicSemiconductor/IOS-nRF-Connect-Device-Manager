@@ -1023,7 +1023,7 @@ public struct FirmwareUpgradeConfiguration: Codable {
         return pipelineDepth > 1
     }
     
-    public init(estimatedSwapTime: TimeInterval = 0.0, eraseAppSettings: Bool = true, pipelineDepth: Int = 1,
+    public init(estimatedSwapTime: TimeInterval = 0.0, eraseAppSettings: Bool = false, pipelineDepth: Int = 1,
                 byteAlignment: ImageUploadAlignment = .disabled, reassemblyBufferSize: UInt64 = 0,
                 upgradeMode: FirmwareUpgradeMode = .confirmOnly,
                 bootloaderMode: BootloaderInfoResponse.Mode = .unknown, suitMode: Bool = false) {
