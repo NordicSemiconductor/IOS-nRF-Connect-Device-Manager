@@ -102,7 +102,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     // nRF52840 requires ~ 10 seconds for swapping images.
     // Adjust this parameter for your device.
     private var dfuManagerConfiguration = FirmwareUpgradeConfiguration(
-        estimatedSwapTime: 10.0, eraseAppSettings: true, pipelineDepth: 3, byteAlignment: .fourByte)
+        estimatedSwapTime: 10.0, eraseAppSettings: false, pipelineDepth: 3, byteAlignment: .fourByte)
     private var initialBytes: Int = 0
     private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
