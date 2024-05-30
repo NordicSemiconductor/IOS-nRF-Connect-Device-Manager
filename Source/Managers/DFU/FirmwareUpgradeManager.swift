@@ -390,8 +390,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     // MARK: Bootloader Info Callback
     
     private lazy var manifestListCallback: SuitManifestManager.ManifestCallback = { [weak self] response, error in
-        guard let self else { return }
-        print(response)
+        guard let self, let suitEnvelope = images.first?.data else { return }
+        suitManager.upload(suitEnvelope, delegate: self)
     }
     
     // MARK: Bootloader Mode Callback
