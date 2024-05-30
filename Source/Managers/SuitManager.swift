@@ -49,6 +49,10 @@ public class SuitManager: McuManager {
         case resourceUpload = 4
     }
     
+    private var offset: UInt64 = 0
+    private var envelopeData: Data?
+    private weak var uploadDelegate: (any ImageUploadDelegate)?
+    
     // MARK: Init
     
     public init(transporter: McuMgrTransport) {
@@ -79,5 +83,111 @@ public class SuitManager: McuManager {
         ]
         send(op: .read, commandId: SuitID.manifestState, payload: payload,
              callback: fixCallback)
+    }
+    
+    public func upload(_ data: Data, delegate: ImageUploadDelegate?) {
+        offset = 0
+        envelopeData = data
+        uploadDelegate = delegate
+        upload(data, at: offset)
+    }
+    
+    private func upload(_ data: Data, at offset: UInt64) {
+        let payloadLength = maxDataPacketLengthFor(data: data, offset: offset)
+        
+        let chunkOffset = offset
+        let chunkEnd = min(chunkOffset + payloadLength, UInt64(data.count))
+        var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
+                                      "off": CBOR.unsignedInt(chunkOffset)]
+        let uploadTimeoutInSeconds: Int
+        if chunkOffset == 0 {
+            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
+            // When uploading offset 0, we might trigger an erase on the firmware's end.
+            // Hence, the longer timeout.
+            uploadTimeoutInSeconds = McuManager.DEFAULT_SEND_TIMEOUT_SECONDS
+        } else {
+            uploadTimeoutInSeconds = McuManager.FAST_TIMEOUT
+        }
+        send(op: .write, commandId: SuitID.envelopeUpload, payload: payload,
+             timeout: uploadTimeoutInSeconds, callback: uploadCallback)
+    }
+    
+    // MARK: uploadCallback
+    
+    private lazy var uploadCallback: McuMgrCallback<McuMgrUploadResponse> = { [weak self] response, error in
+        guard let self else { return }
+        
+        guard let envelopeData else {
+            self.uploadDelegate?.uploadDidFail(with: ImageUploadError.invalidData)
+            return
+        }
+        
+        // Check for an error.
+        if let error {
+            if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
+                do {
+                    try self.setMtu(newMtu)
+                    self.upload(envelopeData, at: 0)
+                    
+                } catch let mtuResetError {
+                    self.uploadDelegate?.uploadDidFail(with: mtuResetError)
+                }
+                return
+            }
+            self.uploadDelegate?.uploadDidFail(with: error)
+            return
+        }
+        
+        guard let response else {
+            self.uploadDelegate?.uploadDidFail(with: ImageUploadError.invalidPayload)
+            return
+        }
+        
+        if let error = response.getError() {
+            self.uploadDelegate?.uploadDidFail(with: error)
+            return
+        }
+        
+        if let offset = response.off {
+            self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: envelopeData.count, timestamp: Date())
+            if offset < envelopeData.count {
+                self.upload(envelopeData, at: offset)
+            } else {
+                // Assume success
+                self.uploadDelegate?.uploadDidFinish()
+            }
+        }
+    }
+    
+    // MARK: Packet Calculation
+    
+    private func maxDataPacketLengthFor(data: Data,  offset: UInt64) -> UInt64 {
+        guard offset < data.count else { return UInt64(McuMgrHeader.HEADER_LENGTH) }
+        
+        let remainingBytes = UInt64(data.count) - offset
+        let packetOverhead = calculatePacketOverhead(data: data, offset: offset)
+        let maxDataLength = UInt64(mtu) - UInt64(packetOverhead)
+        return min(maxDataLength, remainingBytes)
+    }
+    
+    private func calculatePacketOverhead(data: Data, offset: UInt64) -> Int {
+        // Get the Mcu Manager header.
+        var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8]([0])),
+                                      "off":  CBOR.unsignedInt(offset)]
+        // If this is the initial packet we have to include the length of the
+        // entire image.
+        if offset == 0 {
+            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
+        }
+        // Build the packet and return the size.
+        let packet = McuManager.buildPacket(scheme: transporter.getScheme(), version: .SMPv2, op: .write,
+                                            flags: 0, group: group.rawValue, sequenceNumber: 0,
+                                            commandId: SuitID.envelopeUpload, payload: payload)
+        var packetOverhead = packet.count + 5
+        if transporter.getScheme().isCoap() {
+            // Add 25 bytes to packet overhead estimate for the CoAP header.
+            packetOverhead = packetOverhead + 25
+        }
+        return packetOverhead
     }
 }
