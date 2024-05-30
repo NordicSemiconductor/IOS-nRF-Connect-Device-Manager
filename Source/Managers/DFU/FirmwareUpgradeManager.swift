@@ -9,11 +9,12 @@ import CoreBluetooth
 
 // MARK: - FirmwareUpgradeManager
 
-public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObserver {
+public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserver {
     
     private let imageManager: ImageManager
     private let defaultManager: DefaultManager
     private let basicManager: BasicManager
+    private let suitManifestManager: SuitManifestManager
     private let suitManager: SuitManager
     private weak var delegate: FirmwareUpgradeDelegate?
     
@@ -34,6 +35,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         didSet {
             imageManager.logDelegate = logDelegate
             defaultManager.logDelegate = logDelegate
+            suitManifestManager.logDelegate = logDelegate
         }
     }
     
@@ -48,6 +50,7 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.defaultManager = DefaultManager(transporter: transporter)
         self.basicManager = BasicManager(transporter: transporter)
         self.suitManager = SuitManager(transporter: transporter)
+        self.suitManifestManager = SuitManifestManager(transporter: transporter)
         self.delegate = delegate
         self.state = .none
         self.paused = false
@@ -182,14 +185,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         if !paused {
             log(msg: "Requesting Bootloader Mode...", atLevel: .verbose)
             defaultManager.bootloaderInfo(query: .mode, callback: bootloaderModeCallback)
-        }
-    }
-    
-    func listManifests() {
-        objc_sync_setState(.validate)
-        if !paused {
-            log(msg: "Requesting Bootloader Mode...", atLevel: .verbose)
-            suitManager.listManifests(callback: listManifestCallback)
         }
     }
     
@@ -385,11 +380,18 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         self.boolotader = response.bootloader
         if self.boolotader == .suit {
             self.log(msg: "Detected SUIT Bootloader. Skipping Bootloader Mode request.", atLevel: .debug)
-            self.listManifests()
+            self.suitManifestManager.listManifest(callback: manifestListCallback)
         } else {
             // Query McuBoot Mode since SUIT does not support this request.
             self.bootloaderMode()
         }
+    }
+    
+    // MARK: Bootloader Info Callback
+    
+    private lazy var manifestListCallback: SuitManifestManager.ManifestCallback = { [weak self] response, error in
+        guard let self else { return }
+        print(response)
     }
     
     // MARK: Bootloader Mode Callback
@@ -504,29 +506,6 @@ public class FirmwareUpgradeManager : FirmwareUpgradeController, ConnectionObser
         
         // Validation successful, begin with image upload.
         self.upload()
-    }
-    
-    // MARK: List Manifests Callback
-    
-    private lazy var listManifestCallback: McuMgrCallback<McuMgrManifestListResponse> = { [weak self] response, error in
-        guard let self else { return }
-        
-        guard error == nil, let response, response.rc != 8 else {
-            self.log(msg: "List Manifest Callback not Supported.", atLevel: .error)
-            return
-        }
-        
-//        self.log(msg: "Bootloader Mode received (Mode: \(response.mode?.debugDescription ?? "Unknown"))",
-//                 atLevel: .application)
-//        self.configuration.bootloaderMode = response.mode ?? self.configuration.bootloaderMode
-//        if self.configuration.bootloaderMode == .directXIPNoRevert {
-//            // Mark all images as confirmed for DirectXIP No Revert, because there's no need.
-//            // No Revert means we just Reset and the firmware will handle it.
-//            for image in self.images {
-//                self.mark(image, as: \.confirmed)
-//            }
-//        }
-//        self.validate() // Continue Upload
     }
     
     private func targetSlotMatch(for responseImage: McuMgrImageStateResponse.ImageSlot,

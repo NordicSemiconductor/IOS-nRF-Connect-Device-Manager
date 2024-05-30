@@ -418,7 +418,7 @@ public final class McuMgrManifestListResponse: McuMgrResponse {
     
     public class Manifest: CBORMappable {
         
-        public enum Role: UInt64 {
+        public enum Role: UInt64, CustomStringConvertible {
             /// Manifest role uninitialized (invalid).
             case unknown = 0x00
             /// Manifest describes the entry-point for all Nordic-controlled manifests.
@@ -443,6 +443,29 @@ public final class McuMgrManifestListResponse: McuMgrResponse {
             case radioLocalOne = 0x31
             /// Manifest describes OEM-specific binaries, specific for radio core.
             case radioLocalTwo = 0x32
+            
+            public var description: String {
+                switch self {
+                case .unknown:
+                    return "Unknown"
+                case .secTop:
+                    return "Entry-point for all Nordic-controlled manifests"
+                case .secSDFW:
+                    return "SDFW firmware and recovery updates"
+                case .secSYSCTRL:
+                    return "SYSCTRL firmware update and boot procedures"
+                case .appRoot:
+                    return "Entry-point for all OEM-controlled manifests"
+                case .appRecovery:
+                    return "OEM-Specific Application Core Recovery procedure"
+                case .appLocalOne, .appLocalTwo, .appLocalThree:
+                    return "OEM-Specific Binary for Application Core"
+                case .radioRecovery:
+                    return "OEM-Specific Radio Core Recovery procedure"
+                case .radioLocalOne, .radioLocalTwo:
+                    return "OEM-Specific Binary for Radio Core"
+                }
+            }
         }
         
         public var role: Role?
@@ -464,6 +487,113 @@ public final class McuMgrManifestListResponse: McuMgrResponse {
             self.manifests = []
         }
         try super.init(cbor: cbor)
+    }
+}
+
+// MARK: - McuMgrManifestStateResponse
+
+public final class McuMgrManifestStateResponse: McuMgrResponse {
+    
+    public var classID: [UInt8]?
+    public var vendorID: [UInt8]?
+    public var downgradePreventionPolicy: DowngradePreventionPolicy?
+    public var independentUpdateabilityPolicy: IndependentUpdateabilityPolicy?
+    public var signatureVerificationPolicy: SignatureVerificationPolicy?
+    public var digest: [UInt8]?
+    public var digestAlgorithm: DigestAlgorithm?
+    public var signatureCheck: SignatureVerification?
+    public var sequenceNumber: UInt64?
+    
+    public enum DigestAlgorithm: Int {
+        case sha256 = -16
+        case sha512 = -44
+    }
+    
+    public enum SignatureVerification: UInt64 {
+        case notChecked = 2
+        case failed = 3
+        case passed = 4
+    }
+    
+    public enum DowngradePreventionPolicy: UInt64 {
+        /**
+         No downgrade prevention.
+         */
+        case disabled = 1
+        /**
+         Update forbidden if candidate version is lower than installed version.
+         */
+        case enabled = 2
+        /**
+         Unknown downgrade prevention policy.
+         */
+        case unknown = 3
+    }
+    
+    public enum IndependentUpdateabilityPolicy: UInt64 {
+        /**
+         Independent update is forbidden.
+         */
+        case denied = 1
+        /**
+         Independent update is allowed.
+         */
+        case allowed = 2
+        /**
+         Unknown independent updateability policy.
+         */
+        case unknown = 3
+    }
+    
+    public enum SignatureVerificationPolicy: UInt64 {
+        /**
+         Do not verify manifest signature.
+         */
+        case disabled = 1
+        /**
+         Verify the manifest signature only when performing an update.
+         */
+        case enabledOnUpdate = 2
+        /**
+         Verify the manifest signature both when performing an update and booting.
+         */
+        case enabledOnUpdateAndBoot = 3
+        /**
+         Unknown signature verification policy.
+         */
+        case unknown
+    }
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.byteString(classID)? = cbor?["class_id"] {
+            self.classID = classID
+        }
+        if case let CBOR.byteString(vendorID)? = cbor?["vendor_id"] {
+            self.vendorID = vendorID
+        }
+        if case let CBOR.unsignedInt(downgradePreventionPolicy)? = cbor?["downgrade_prevention_policy"] {
+            self.downgradePreventionPolicy = DowngradePreventionPolicy(rawValue: downgradePreventionPolicy)
+        }
+        if case let CBOR.unsignedInt(independentUpdateabilityPolicy)? = cbor?["independent_updateability_policy"] {
+            self.independentUpdateabilityPolicy = IndependentUpdateabilityPolicy(rawValue: independentUpdateabilityPolicy)
+        }
+        if case let CBOR.unsignedInt(signatureVerificationPolicy)? = cbor?["signature_verification_policy"] {
+            self.signatureVerificationPolicy = SignatureVerificationPolicy(rawValue: signatureVerificationPolicy)
+        }
+        if case let CBOR.byteString(digest)? = cbor?["digest"] {
+            self.digest = digest
+        }
+        if case let CBOR.unsignedInt(signatureCheck)? = cbor?["signature_check"] {
+            self.signatureCheck = SignatureVerification(rawValue: signatureCheck)
+        }
+        if case let CBOR.negativeInt(digestAlgorithm)? = cbor?["digest_algorithm"] {
+            // -1 due to a known CBOR library issue when parsing negative integers.
+            self.digestAlgorithm = DigestAlgorithm(rawValue: (Int(digestAlgorithm) * -1) - 1)
+        }
+        if case let CBOR.unsignedInt(sequenceNumber)? = cbor?["sequence_number"] {
+            self.sequenceNumber = sequenceNumber
+        }
     }
 }
 

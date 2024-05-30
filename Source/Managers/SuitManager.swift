@@ -57,7 +57,27 @@ public class SuitManager: McuManager {
     
     // MARK: API
     
+    /**
+     Command allows to get information about roles of manifests supported by the device.
+     */
     public func listManifests(callback: @escaping McuMgrCallback<McuMgrManifestListResponse>) {
         send(op: .read, commandId: SuitID.manifestList, payload: nil, callback: callback)
+    }
+    
+    /**
+     Command allows to get information about the configuration of supported manifests
+     and selected attributes of installed manifests of specified role (asynchronous).
+     */
+    public func getManifestState(for role: McuMgrManifestListResponse.Manifest.Role,
+                                 callback: @escaping McuMgrCallback<McuMgrManifestStateResponse>) {
+        let fixCallback: McuMgrCallback<McuMgrManifestStateResponse> = { response, error in
+            callback(response, error)
+        }
+        
+        let payload: [String:CBOR] = [
+            "role": CBOR.unsignedInt(role.rawValue)
+        ]
+        send(op: .read, commandId: SuitID.manifestState, payload: payload,
+             callback: fixCallback)
     }
 }
