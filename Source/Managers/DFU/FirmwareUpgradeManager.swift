@@ -25,7 +25,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     
     private var images: [FirmwareUpgradeImage]!
     private var configuration: FirmwareUpgradeConfiguration!
-    private var boolotader: BootloaderInfoResponse.Bootloader!
+    private var bootloader: BootloaderInfoResponse.Bootloader!
     
     private var state: FirmwareUpgradeState
     private var paused: Bool
@@ -90,7 +90,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         
         self.images = try images.map { try FirmwareUpgradeImage($0) }
         self.configuration = configuration
-        self.boolotader = nil
+        self.bootloader = nil
         
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
@@ -370,15 +370,15 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         guard error == nil, let response, response.rc != 8 else {
             self.log(msg: "Bootloader Info not supported.", atLevel: .warning)
             self.log(msg: "Assuming MCUBoot Bootloader.", atLevel: .debug)
-            self.boolotader = .mcuboot
+            self.bootloader = .mcuboot
             self.validate() // Continue Upload
             return
         }
         
         self.log(msg: "Bootloader Info received (Name: \(response.bootloader?.description ?? "Unknown"))",
                  atLevel: .application)
-        self.boolotader = response.bootloader
-        if self.boolotader == .suit {
+        self.bootloader = response.bootloader
+        if self.bootloader == .suit {
             self.log(msg: "Detected SUIT Bootloader. Skipping Bootloader Mode request.", atLevel: .debug)
             self.suitManifestManager.listManifest(callback: manifestListCallback)
         } else {
