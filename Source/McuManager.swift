@@ -23,7 +23,7 @@ extension McuSequenceNumber {
     }
 }
 
-open class McuManager {
+open class McuManager : NSObject {
     class var TAG: McuMgrLogCategory { .default }
     
     //**************************************************************************
