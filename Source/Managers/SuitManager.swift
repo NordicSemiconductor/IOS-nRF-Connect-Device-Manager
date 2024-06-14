@@ -69,6 +69,19 @@ public class SuitManager: McuManager {
     }
     
     /**
+     * Poll for required image
+     *
+     * SUIT command sequence has the ability of conditional execution of directives, i.e. based on the digest of installed image. That opens a scenario where SUIT candidate envelope contains only SUIT manifests, images (those required to be updated) are fetched by the device only if it is necessary. In that case, the device informs the SMP client that specific image is required via callback (and this is what this command implements), and then the SMP client uploads requested image. Due to the fact that SMP is designed in client-server pattern and lack of server-sent notifications, implementation is based on polling.
+     *
+     * After sending the Envelope, the client should periodically poll the device to check if an image is required.
+     *
+     * - Parameter callback: the asynchronous callback.
+     */
+    public func poll(callback: @escaping McuMgrCallback<McuMgrPollResponse>) {
+        send(op: .read, commandId: SuitID.pollImageState, payload: nil, callback: callback)
+    }
+    
+    /**
      Command allows to get information about the configuration of supported manifests
      and selected attributes of installed manifests of specified role (asynchronous).
      */
@@ -154,14 +167,40 @@ public class SuitManager: McuManager {
                 self.upload(envelopeData, at: offset)
             } else {
                 // Assume success
-                self.uploadDelegate?.uploadDidFinish()
+                // Next up: polling. The Device might tell us it needs something.
+                self.poll(callback: pollingCallback)
             }
+        }
+    }
+    
+    // MARK: pollingCallback
+    
+    private lazy var pollingCallback: McuMgrCallback<McuMgrPollResponse> = { [weak self] response, error in
+        guard let self else { return }
+        
+        if let error {
+            // Assume success, error is most likely due to disconnection.
+            // Disconnection means firmware moved on and doesn't need anything from us.
+            self.uploadDelegate?.uploadDidFinish()
+        }
+        
+        if let response {
+            if response.sessionID == nil, response.sessionID == nil {
+                // Empty response means 'keep waiting'. So we'll just retry.
+                let waitIntervalSeconds = 1
+                sleep(UInt32(waitIntervalSeconds))
+                self.poll(callback: self.pollingCallback)
+                return
+            }
+            
+            // TODO: Continue implementation.
+            self.uploadDelegate?.uploadDidFinish()
         }
     }
     
     // MARK: Packet Calculation
     
-    private func maxDataPacketLengthFor(data: Data,  offset: UInt64) -> UInt64 {
+    private func maxDataPacketLengthFor(data: Data, offset: UInt64) -> UInt64 {
         guard offset < data.count else { return UInt64(McuMgrHeader.HEADER_LENGTH) }
         
         let remainingBytes = UInt64(data.count) - offset

@@ -597,6 +597,53 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
     }
 }
 
+// MARK: - McuMgrPollResponse
+
+public final class McuMgrPollResponse: McuMgrResponse {
+    
+    public enum Resource {
+        case file(named: String)
+    }
+    
+    /**
+     * Session identifier. Non-zero value, unique for image request.
+     * Not provided if there is no pending image request.
+     */
+    public var sessionID: UInt64?
+    
+    /**
+     * Resource identifier, typically in form of a URI.
+     * Not provided if there is no pending image request.
+     */
+    public var resourceID: [UInt8]?
+    
+    /**
+     * Checks whether the device is awaiting a resource.
+     *  - Returns: `true`, if the client should deliver requested image to proceed with the update, false otherwise.
+     */
+    public var isRequestingResource: Bool { sessionID != nil }
+    
+    public var resource: Resource? {
+        guard let resourceID else { return nil }
+        let resourceString = String(cString: resourceID)
+        if resourceString.hasPrefix("file://") {
+            let filename = String(resourceString.suffix(from: "file://".endIndex))
+            return .file(named: filename)
+        }
+        return nil
+    }
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.unsignedInt(sessionID)? = cbor?["stream_session_id"] {
+            self.sessionID = sessionID
+        }
+        if case let CBOR.byteString(resourceID)? = cbor?["resource_id"] {
+            self.resourceID = resourceID
+        }
+    }
+}
+
 // MARK: - AppInfoResponse
 
 public final class AppInfoResponse: McuMgrResponse {
