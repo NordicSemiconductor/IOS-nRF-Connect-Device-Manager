@@ -46,7 +46,7 @@ final class McuMgrBleTransportWriteState {
     
     func received(sequenceNumber: McuSequenceNumber, data: Data) {
         lockingQueue.async {
-            if  self.state[sequenceNumber]?.chunk == nil {
+            if self.state[sequenceNumber]?.chunk == nil {
                 // If we do not have any current response data, this is the initial
                 // packet in a potentially fragmented response. Get the expected
                 // length of the full response and initialize the responseData with
