@@ -15,10 +15,11 @@ public struct McuMgrManifest: Codable {
     public let formatVersion: Int
     public let time: Int
     public let files: [File]
+    public let name: String?
     
     enum CodingKeys: String, CodingKey {
         case formatVersion = "format-version"
-        case time, files
+        case time, files, name
     }
     
     static let LoadAddressRegEx: NSRegularExpression! =
@@ -61,9 +62,11 @@ extension McuMgrManifest {
          */
         public let slot: Int
         public let type: String
+        public let content: ContentType
         public let board: String
         public let soc: String
         public let loadAddress: Int
+        public let bootloader: BootloaderInfoResponse.Bootloader
         
         public var image: Int {
             _image ?? _imageIndex ?? 0
@@ -108,7 +111,7 @@ extension McuMgrManifest {
             type = try values.decode(String.self, forKey: .type)
             board = try values.decode(String.self, forKey: .board)
             soc = try values.decode(String.self, forKey: .soc)
-            loadAddress = try values.decode(Int.self, forKey: .loadAddress)
+            content = ContentType(rawValue: type) ?? .unknown
             
             let slotString = try? values.decode(String.self, forKey: .slot)
             slot = Int(slotString ?? "") ?? 1
@@ -119,10 +122,16 @@ extension McuMgrManifest {
             // Direct XIP, then the standard 'mcuBoot_version' will be there. But we can't discard
             // both being present. In which case, 'XIP' is more feature-complete.
             mcuBootVersion = _mcuBootXipVersion ?? version
+            bootloader = mcuBootVersion != nil ? .mcuboot : .suit
+            // Load Address is an MCUBoot Manifest requirement.
+            // For SUIT it's not set, so we set it to zero for backwards compatibility.
+            loadAddress = bootloader == .mcuboot
+                ? try values.decode(Int.self, forKey: .loadAddress)
+                : .zero
             
             _image = try? values.decode(Int.self, forKey: ._image)
             let imageIndexString = try? values.decode(String.self, forKey: ._imageIndex)
-            guard let imageIndexString = imageIndexString else {
+            guard let imageIndexString else {
                 _imageIndex = nil
                 return
             }
@@ -132,6 +141,31 @@ extension McuMgrManifest {
                                                        debugDescription: "`imageIndex` could not be parsed from String to Int.")
             }
             _imageIndex = imageIndex
+        }
+    }
+}
+
+// MARK: - ContentType
+
+public extension McuMgrManifest.File {
+    
+    enum ContentType: String, RawRepresentable, CustomStringConvertible {
+        case unknown
+        case suitEnvelope = "suit-envelope"
+        case bin
+        case application
+        
+        public var description: String {
+            switch self {
+            case .unknown:
+                return "Unknown (Temporary or In-Development)"
+            case .suitEnvelope:
+                return "SUIT Envelope"
+            case .bin:
+                return "Binary"
+            case .application:
+                return "Application"
+            }
         }
     }
 }
