@@ -122,7 +122,13 @@ extension McuMgrManifest {
             // Direct XIP, then the standard 'mcuBoot_version' will be there. But we can't discard
             // both being present. In which case, 'XIP' is more feature-complete.
             mcuBootVersion = _mcuBootXipVersion ?? version
-            bootloader = mcuBootVersion != nil ? .mcuboot : .suit
+            if content == .suitEnvelope {
+                bootloader = .suit
+            } else if mcuBootVersion != nil {
+                bootloader = .mcuboot
+            } else {
+                bootloader = .unknown
+            }
             // Load Address is an MCUBoot Manifest requirement.
             // For SUIT it's not set, so we set it to zero for backwards compatibility.
             loadAddress = bootloader == .mcuboot
