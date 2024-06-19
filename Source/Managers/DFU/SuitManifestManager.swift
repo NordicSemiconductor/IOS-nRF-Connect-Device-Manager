@@ -39,6 +39,12 @@ public class SuitManifestManager {
         listManifests()
     }
     
+    public func provide(_ resource: FirmwareUpgradeManager.Resource) {
+        // TODO: Work In Progress.
+    }
+    
+    // MARK: Private
+    
     private func listManifests() {
         self.logDelegate?.log("Requesting List of Manifests...", ofCategory: .suit,
                               atLevel: .verbose)
@@ -57,7 +63,7 @@ public class SuitManifestManager {
         }
     }
     
-    // MARK: List Manifests Callback
+    // MARK: List Manifest Callback
     
     private lazy var listManifestCallback: McuMgrCallback<McuMgrManifestListResponse> = { [weak self] response, error in
         guard let self else { return }
@@ -77,6 +83,8 @@ public class SuitManifestManager {
         }
         self.validateNext()
     }
+    
+    // MARK: Role State Callback
     
     private lazy var roleStateCallback: McuMgrCallback<McuMgrManifestStateResponse> = { [weak self] response, error in
         guard let self else { return }

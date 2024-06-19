@@ -11,6 +11,14 @@ import CoreBluetooth
 
 public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserver {
     
+    // MARK: Resource
+    
+    public enum Resource {
+        case file(named: String)
+    }
+    
+    // MARK: Private Properties
+    
     private let imageManager: ImageManager
     private let defaultManager: DefaultManager
     private let basicManager: BasicManager
@@ -41,9 +49,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     
     private var resetResponseTime: Date?
     
-    //**************************************************************************
-    // MARK: Initializer
-    //**************************************************************************
+    // MARK: Init
     
     public init(transporter: McuMgrTransport, delegate: FirmwareUpgradeDelegate?) {
         self.imageManager = ImageManager(transporter: transporter)
@@ -56,9 +62,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         self.paused = false
     }
     
-    //**************************************************************************
     // MARK: Control Functions
-    //**************************************************************************
     
     /// Start the firmware upgrade.
     ///
@@ -105,6 +109,17 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         delegate?.upgradeDidStart(controller: self)
         
         requestMcuMgrParameters()
+    }
+    
+    /**
+     For SUIT (Software Update for Internet of Things), the target device might request some resource via the ``SuitFirmwareUpgradeDelegate/uploadRequestsResource(_:)`` callback. After that happens, `FirmwareUpgradeManager` will wait until the requested ``FirmwareUpgradeManager/Resource`` is provided via this API.
+     
+     - parameter resource: The requested ``FirmwareUpgradeManager/Resource``.
+     */
+    public func provideResource(_ resource: Resource) {
+        objc_sync_enter(self)
+        suitManifestManager.provide(resource)
+        objc_sync_exit(self)
     }
     
     public func cancel() {
@@ -1194,40 +1209,58 @@ public enum FirmwareUpgradeMode: Codable, CustomDebugStringConvertible, CaseIter
 /// Callbacks for firmware upgrades started using FirmwareUpgradeManager.
 public protocol FirmwareUpgradeDelegate: AnyObject {
     
-    /// Called when the upgrade has started.
-    ///
-    /// - parameter controller: The controller that may be used to pause,
-    ///   resume or cancel the upgrade.
+    /**
+     Called when the upgrade has started.
+     
+     - parameter controller: The controller that may be used to pause, resume or cancel the upgrade.
+     */
     func upgradeDidStart(controller: FirmwareUpgradeController)
     
-    /// Called when the firmware upgrade state has changed.
-    ///
-    /// - parameter previousState: The state before the change.
-    /// - parameter newState: The new state.
+    /**
+     Called when the firmware upgrade state has changed.
+     
+     - parameter previousState: The state before the change.
+     - parameter newState: The new state.
+     */
     func upgradeStateDidChange(from previousState: FirmwareUpgradeState, to newState: FirmwareUpgradeState)
     
-    /// Called when the firmware upgrade has succeeded.
+    /**
+     Called when the firmware upgrade has succeeded.
+     */
     func upgradeDidComplete()
     
-    /// Called when the firmware upgrade has failed.
-    ///
-    /// - parameter state: The state in which the upgrade has failed.
-    /// - parameter error: The error.
+    /**
+     Called when the firmware upgrade has failed.
+     
+     - parameter state: The state in which the upgrade has failed.
+     - parameter error: The error.
+     */
     func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error)
     
-    /// Called when the firmware upgrade has been cancelled using cancel()
-    /// method. The upgrade may be cancelled only during uploading the image.
-    /// When the image is uploaded, the test and/or confirm commands will be
-    /// sent depending on the mode.
+    /**
+     Called when the firmware upgrade has been cancelled using cancel() method. The upgrade may be cancelled only during uploading the image.
+     When the image is uploaded, the test and/or confirm commands will be sent depending on the mode.
+     */
     func upgradeDidCancel(state: FirmwareUpgradeState)
     
-    /// Called when the upload progress has changed.
-    ///
-    /// - parameter bytesSent: Number of bytes sent so far.
-    /// - parameter imageSize: Total number of bytes to be sent.
-    /// - parameter timestamp: The time that the successful response packet for
-    ///   the progress was received.
+    /**
+     Called when the upload progress has changed.
+     
+     - parameter bytesSent: Number of bytes sent so far.
+     - parameter imageSize: Total number of bytes to be sent.
+     - parameter timestamp: The time that the successful response packet for the progress was received.
+     */
     func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date)
+}
+
+// MARK: - SuitFirmwareUpgradeDelegate
+
+public protocol SuitFirmwareUpgradeDelegate: FirmwareUpgradeDelegate {
+    
+    /**
+     In SUIT (Software Update for the Internet of Things), various resources, such as specific files, URL contents, etc. may be requested by the firmware device. When it does, this callback will be triggered.
+     */
+    func uploadRequestsResource(_ resource: FirmwareUpgradeManager.Resource)
 }
 
 // MARK: - FirmwareUpgradeImage

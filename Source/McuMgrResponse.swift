@@ -601,10 +601,6 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
 
 public final class McuMgrPollResponse: McuMgrResponse {
     
-    public enum Resource {
-        case file(named: String)
-    }
-    
     /**
      * Session identifier. Non-zero value, unique for image request.
      * Not provided if there is no pending image request.
@@ -623,7 +619,7 @@ public final class McuMgrPollResponse: McuMgrResponse {
      */
     public var isRequestingResource: Bool { sessionID != nil }
     
-    public var resource: Resource? {
+    public var resource: FirmwareUpgradeManager.Resource? {
         guard let resourceID else { return nil }
         let resourceString = String(cString: resourceID)
         if resourceString.hasPrefix("file://") {
