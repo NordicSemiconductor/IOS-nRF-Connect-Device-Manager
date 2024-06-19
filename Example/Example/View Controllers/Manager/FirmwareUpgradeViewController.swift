@@ -340,6 +340,15 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
     }
 }
 
+// MARK: - Suit Upgrade Delegate
+
+extension FirmwareUpgradeViewController: SuitFirmwareUpgradeDelegate {
+    
+    func uploadRequestsResource(_ resource: FirmwareUpgradeManager.Resource) {
+        print("Work-in-Progress")
+    }
+}
+
 // MARK: - Document Picker
 
 extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPickerDelegate {
