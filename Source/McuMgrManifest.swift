@@ -155,7 +155,7 @@ extension McuMgrManifest {
 
 public extension McuMgrManifest.File {
     
-    enum ContentType: String, RawRepresentable, CustomStringConvertible {
+    enum ContentType: String, RawRepresentable, Codable, CustomStringConvertible {
         case unknown
         case suitEnvelope = "suit-envelope"
         case bin
@@ -164,7 +164,7 @@ public extension McuMgrManifest.File {
         public var description: String {
             switch self {
             case .unknown:
-                return "Unknown (Temporary or In-Development)"
+                return "Unknown"
             case .suitEnvelope:
                 return "SUIT Envelope"
             case .bin:
