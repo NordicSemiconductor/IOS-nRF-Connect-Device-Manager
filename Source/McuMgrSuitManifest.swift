@@ -71,13 +71,9 @@ class McuMgrSuitCommonStructure: CBORMappable {
 
 class McuMgrSuitSharedSequence: CBORMappable {
     
-    public var conditionVendorIdentifier: UInt64?
     public var conditionClassIdentifier: UInt64?
     
     public required init(cbor: CBOR?) throws {
-        if case let CBOR.unsignedInt(vendorIdentifier)? = cbor?[1] {
-            self.conditionVendorIdentifier = vendorIdentifier
-        }
         if case let CBOR.unsignedInt(classIdentifier)? = cbor?[2] {
             self.conditionClassIdentifier = classIdentifier
         }
