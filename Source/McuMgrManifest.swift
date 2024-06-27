@@ -12,6 +12,8 @@ import Foundation
 
 public struct McuMgrManifest: Codable {
     
+    // MARK: Public Properties
+    
     public let formatVersion: Int
     public let time: Int
     public let files: [File]
@@ -24,6 +26,8 @@ public struct McuMgrManifest: Codable {
     
     static let LoadAddressRegEx: NSRegularExpression! =
         try? NSRegularExpression(pattern: #"\"load_address\":0x[0-9a-z]+,"#, options: [.caseInsensitive])
+    
+    // MARK: Init
     
     public init(from url: URL) throws {
         guard let data = try? Data(contentsOf: url),
@@ -41,6 +45,12 @@ public struct McuMgrManifest: Codable {
         } catch {
             throw Error.unableToDecodeJSON
         }
+    }
+    
+    // MARK: API
+    
+    public func envelopeFile() -> File? {
+        files.first(where: { $0.content == .suitEnvelope })
     }
 }
 

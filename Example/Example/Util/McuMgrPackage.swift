@@ -120,13 +120,22 @@ fileprivate extension McuMgrPackage {
             throw McuMgrPackage.Error.manifestFileNotFound
         }
         let manifest = try McuMgrManifest(from: dfuManifestURL)
-        let images = try manifest.files.compactMap { manifestFile -> ImageManager.Image in
-            guard let imageURL = unzippedURLs.first(where: { $0.absoluteString.contains(manifestFile.file) }) else {
+        let images: [ImageManager.Image]
+        if let envelopeFile = manifest.envelopeFile() {
+            guard let envelopeURL = unzippedURLs.first(where: { $0.absoluteString.contains(envelopeFile.file) }) else {
                 throw McuMgrPackage.Error.manifestImageNotFound
             }
-            let imageData = try Data(contentsOf: imageURL)
-            let imageHash = try McuMgrImage(data: imageData).hash
-            return ImageManager.Image(manifestFile, hash: imageHash, data: imageData)
+            let suitEnvelope = try McuMgrSuitEnvelope(from: envelopeURL)
+            return [suitEnvelope.image()].compactMap({ $0 })
+        } else {
+            images = try manifest.files.compactMap { manifestFile -> ImageManager.Image in
+                guard let imageURL = unzippedURLs.first(where: { $0.absoluteString.contains(manifestFile.file) }) else {
+                    throw McuMgrPackage.Error.manifestImageNotFound
+                }
+                let imageData = try Data(contentsOf: imageURL)
+                let imageHash = try McuMgrImage(data: imageData).hash
+                return ImageManager.Image(manifestFile, hash: imageHash, data: imageData)
+            }
         }
         try unzippedURLs.forEach { url in
             try fileManager.removeItem(at: url)
