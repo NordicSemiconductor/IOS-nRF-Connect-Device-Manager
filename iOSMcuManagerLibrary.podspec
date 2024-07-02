@@ -17,4 +17,5 @@ Pod::Spec.new do |s|
   s.requires_arc = true
 
   s.dependency "SwiftCBOR", "0.4.4"
+  s.dependency "ZIPFoundation", "0.9.11"
 end

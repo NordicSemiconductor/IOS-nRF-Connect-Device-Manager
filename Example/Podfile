@@ -3,8 +3,6 @@ use_frameworks!
 
 project 'nRF Connect Device Manager'
 
-pod 'ZIPFoundation', '~> 0.9.11'
-
 target 'nRF Connect Device Manager' do
   pod 'iOSMcuManagerLibrary', :path => '../'
 end
