@@ -611,7 +611,7 @@ public final class McuMgrPollResponse: McuMgrResponse {
      * Resource identifier, typically in form of a URI.
      * Not provided if there is no pending image request.
      */
-    public var resourceID: [UInt8]?
+    public var resourceID: String?
     
     /**
      * Checks whether the device is awaiting a resource.
@@ -621,10 +621,9 @@ public final class McuMgrPollResponse: McuMgrResponse {
     
     public var resource: FirmwareUpgradeManager.Resource? {
         guard let resourceID else { return nil }
-        let resourceString = String(cString: resourceID)
-        if resourceString.hasPrefix("file://") {
-            let filename = String(resourceString.suffix(from: "file://".endIndex))
-            return .file(named: filename)
+        if resourceID.hasPrefix("file://") {
+            let filename = String(resourceID.suffix(from: "file://".endIndex))
+            return .file(name: filename)
         }
         return nil
     }
@@ -635,7 +634,7 @@ public final class McuMgrPollResponse: McuMgrResponse {
             self.sessionID = sessionID
         }
         if case let CBOR.byteString(resourceID)? = cbor?["resource_id"] {
-            self.resourceID = resourceID
+            self.resourceID = String(bytes: Data(resourceID), encoding: .utf8)
         }
     }
 }

@@ -13,8 +13,22 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     
     // MARK: Resource
     
-    public enum Resource {
-        case file(named: String)
+    public enum Resource: CustomStringConvertible {
+        case file(name: String)
+        
+        init?(resourceID: String) {
+            guard let filename = resourceID.components(separatedBy: "//").last else {
+                return nil
+            }
+            self = .file(name: String(filename))
+        }
+        
+        public var description: String {
+            switch self {
+            case .file(let name):
+                return "file://\(name)"
+            }
+        }
     }
     
     // MARK: Private Properties
@@ -43,6 +57,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         didSet {
             imageManager.logDelegate = logDelegate
             defaultManager.logDelegate = logDelegate
+            suitManager.logDelegate = logDelegate
             suitManifestManager.logDelegate = logDelegate
         }
     }
@@ -114,11 +129,12 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     /**
      For SUIT (Software Update for Internet of Things), the target device might request some resource via the ``SuitFirmwareUpgradeDelegate/uploadRequestsResource(_:)`` callback. After that happens, `FirmwareUpgradeManager` will wait until the requested ``FirmwareUpgradeManager/Resource`` is provided via this API.
      
-     - parameter resource: The requested ``FirmwareUpgradeManager/Resource``.
+     - parameter resource: The resource being provided ``FirmwareUpgradeManager/Resource``.
+     - parameter data: The bytes of the resource itself.
      */
-    public func provideResource(_ resource: Resource) {
+    public func uploadResource(_ resource: Resource, image: ImageManager.Image) {
         objc_sync_enter(self)
-        suitManifestManager.provide(resource)
+        suitManager.uploadResource(image.data)
         objc_sync_exit(self)
     }
     
@@ -395,18 +411,13 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         self.bootloader = response.bootloader
         if self.bootloader == .suit {
             self.log(msg: "Detected SUIT Bootloader. Skipping Bootloader Mode request.", atLevel: .debug)
-            self.suitManifestManager.listManifest(callback: manifestListCallback)
+            guard let suitEnvelope = self.images.first?.data else { return }
+            self.objc_sync_setState(.upload)
+            self.suitManager.upload(suitEnvelope, delegate: self)
         } else {
             // Query McuBoot Mode since SUIT does not support this request.
             self.bootloaderMode()
         }
-    }
-    
-    // MARK: Bootloader Info Callback
-    
-    private lazy var manifestListCallback: SuitManifestManager.ManifestCallback = { [weak self] response, error in
-        guard let self, let suitEnvelope = images.first?.data else { return }
-        suitManager.upload(suitEnvelope, delegate: self)
     }
     
     // MARK: Bootloader Mode Callback
@@ -1106,18 +1117,28 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     }
 }
 
+// MARK: - FirmwareUpgradeManager
+
+extension FirmwareUpgradeManager: SuitManagerDelegate {
+    
+    public func uploadRequestsResource(_ resource: Resource) {
+        guard let suitDelegate = delegate as? SuitFirmwareUpgradeDelegate else {
+            delegate?.upgradeDidFail(inState: .upload, with: SuitUpgradeError.suitDelegateRequiredForResource(resource))
+            return
+        }
+        suitDelegate.uploadRequestsResource(resource)
+    }
+}
+
 //******************************************************************************
 // MARK: - FirmwareUpgradeError
 //******************************************************************************
 
-public enum FirmwareUpgradeError: Error {
+public enum FirmwareUpgradeError: Error, LocalizedError {
     case unknown(String)
     case invalidResponse(McuMgrResponse)
     case connectionFailedAfterReset
     case untestedImageFound(image: Int, slot: Int)
-}
-
-extension FirmwareUpgradeError: LocalizedError {
     
     public var errorDescription: String? {
         switch self {
@@ -1131,7 +1152,6 @@ extension FirmwareUpgradeError: LocalizedError {
             return "Image \(image) (slot: \(slot)) found to be not Tested after Reset"
         }
     }
-    
 }
 
 //******************************************************************************
@@ -1324,5 +1344,4 @@ extension FirmwareUpgradeImage: Equatable {
     public static func == (lhs: FirmwareUpgradeImage, rhs: FirmwareUpgradeImage) -> Bool {
         return lhs.hash == rhs.hash
     }
-    
 }

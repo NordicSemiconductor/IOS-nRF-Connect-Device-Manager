@@ -15,6 +15,8 @@ import ZIPFoundation
 public struct McuMgrPackage {
     
     let images: [ImageManager.Image]
+    let envelope: McuMgrSuitEnvelope?
+    let resources: [ImageManager.Image]?
     
     // MARK: - Init
     
@@ -22,26 +24,49 @@ public struct McuMgrPackage {
         switch UTI.forFile(url) {
         case .bin:
             self.images = try Self.extractImageFromBinFile(from: url)
+            self.envelope = nil
+            self.resources = nil
         case .zip:
-            self.images = try Self.extractImageFromZipFile(from: url)
+            self = try Self.extractImageFromZipFile(from: url)
+        case .suit:
+            self = try Self.extractImageFromSuitFile(from: url)
         default:
             throw McuMgrPackage.Error.notAValidDocument
         }
     }
     
+    private init(images: [ImageManager.Image], envelope: McuMgrSuitEnvelope?,
+                 resources: [ImageManager.Image]?) {
+        self.images = images
+        self.envelope = envelope
+        self.resources = resources
+    }
+    
     // MARK: - API
     
     func imageName(at index: Int) -> String {
-        let coreName: String
-        switch images[index].image {
-        case 0: 
-            coreName = "App Core"
-        case 1: 
-            coreName = "Net Core"
-        default: 
-            coreName = "Image \(index)"
+        guard let name =  images[index].name else {
+            let coreName: String
+            switch images[index].image {
+            case 0:
+                coreName = "App Core"
+            case 1:
+                coreName = "Net Core"
+            default:
+                coreName = "Image \(index)"
+            }
+            return "\(coreName) Slot \(images[index].slot)"
         }
-        return "\(coreName) Slot \(images[index].slot)"
+        return name
+    }
+    
+    func image(forResource resource: FirmwareUpgradeManager.Resource) -> ImageManager.Image? {
+        switch resource {
+        case .file(let name):
+            return resources?.first(where: {
+                ($0.name?.caseInsensitiveCompare(name)) == .orderedSame
+            })
+        }
     }
     
     func sizeString() -> String {
@@ -73,6 +98,7 @@ extension McuMgrPackage {
     enum Error: Swift.Error, LocalizedError {
         case deniedAccessToScopedResource, notAValidDocument, unableToAccessCacheDirectory
         case manifestFileNotFound, manifestImageNotFound
+        case resourceNotFound(_ resource: FirmwareUpgradeManager.Resource)
         
         var errorDescription: String? {
             switch self {
@@ -86,6 +112,8 @@ extension McuMgrPackage {
                 return "DFU Manifest File not found."
             case .manifestImageNotFound:
                 return "DFU Image specified in Manifest not found."
+            case .resourceNotFound(let resource):
+                return "Unable to find requested \(resource.description) resource."
             }
         }
     }
@@ -101,7 +129,16 @@ fileprivate extension McuMgrPackage {
         return [ImageManager.Image(image: 0, hash: binHash, data: binData)]
     }
     
-    static func extractImageFromZipFile(from url: URL) throws -> [ImageManager.Image] {
+    static func extractImageFromSuitFile(from url: URL) throws -> Self {
+        let envelope = try McuMgrSuitEnvelope(from: url)
+        let algorithm = McuMgrSuitDigest.Algorithm.sha256
+        guard let hash = envelope.digest.hash(for: algorithm) else {
+            throw McuMgrSuitParseError.supportedAlgorithmNotFound
+        }
+        return McuMgrPackage(images: [ImageManager.Image(image: 0, hash: hash, data: envelope.data)], envelope: envelope, resources: nil)
+    }
+    
+    static func extractImageFromZipFile(from url: URL) throws -> Self {
         guard let cacheDirectoryPath = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first else {
             throw McuMgrPackage.Error.unableToAccessCacheDirectory
         }
@@ -121,12 +158,25 @@ fileprivate extension McuMgrPackage {
         }
         let manifest = try McuMgrManifest(from: dfuManifestURL)
         let images: [ImageManager.Image]
+        let envelope: McuMgrSuitEnvelope?
+        let resources: [ImageManager.Image]?
         if let envelopeFile = manifest.envelopeFile() {
             guard let envelopeURL = unzippedURLs.first(where: { $0.absoluteString.contains(envelopeFile.file) }) else {
                 throw McuMgrPackage.Error.manifestImageNotFound
             }
-            let suitEnvelope = try McuMgrSuitEnvelope(from: envelopeURL)
-            return [suitEnvelope.image()].compactMap({ $0 })
+            envelope = try McuMgrSuitEnvelope(from: envelopeURL)
+            resources = try manifest.files
+                .filter({ $0.content != .suitEnvelope })
+                .compactMap({ file in
+                    guard let imageURL = unzippedURLs.first(where: { $0.absoluteString.contains(file.file) }) else {
+                        return nil
+                    }
+                    let data = try Data(contentsOf: imageURL)
+                    // Hash does not matter here. Wish I could get proper hash(es) for
+                    // resources. But in SUIT, we can't.
+                    return ImageManager.Image(file, hash: Data(), data: data)
+                })
+            images = [envelope?.image()].compactMap({ $0 })
         } else {
             images = try manifest.files.compactMap { manifestFile -> ImageManager.Image in
                 guard let imageURL = unzippedURLs.first(where: { $0.absoluteString.contains(manifestFile.file) }) else {
@@ -136,11 +186,13 @@ fileprivate extension McuMgrPackage {
                 let imageHash = try McuMgrImage(data: imageData).hash
                 return ImageManager.Image(manifestFile, hash: imageHash, data: imageData)
             }
+            envelope = nil
+            resources = nil
         }
+        
         try unzippedURLs.forEach { url in
             try fileManager.removeItem(at: url)
         }
-        
-        return images
+        return McuMgrPackage(images: images, envelope: envelope, resources: resources)
     }
 }

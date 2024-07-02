@@ -120,7 +120,7 @@ public class McuMgrSuitDigest: CBORMappable {
 
 extension McuMgrSuitDigest {
     
-    public enum Algorithm: Int, RawRepresentable {
+    public enum Algorithm: Int, RawRepresentable, CustomStringConvertible {
         /**
          This is the (currently) only supported mode.
          */
@@ -141,6 +141,21 @@ extension McuMgrSuitDigest {
          Considered OPTIONAL for SUIT Implementation and currently **NOT SUPPORTED**.
          */
         case shake256 = -45
+        
+        public var description: String {
+            switch self {
+            case .sha256:
+                return "SHA256"
+            case .shake128:
+                return "SHAKE128"
+            case .sha384:
+                return "SHA384"
+            case .sha512:
+                return "SHA512"
+            case .shake256:
+                return "SHAKE256"
+            }
+        }
     }
 }
 
