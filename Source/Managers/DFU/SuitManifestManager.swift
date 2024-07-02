@@ -39,10 +39,6 @@ public class SuitManifestManager {
         listManifests()
     }
     
-    public func provide(_ resource: FirmwareUpgradeManager.Resource) {
-        // TODO: Work In Progress.
-    }
-    
     // MARK: Private
     
     private func listManifests() {
@@ -95,5 +91,18 @@ public class SuitManifestManager {
         self.responses.append(response)
         self.roleIndex? += 1
         self.validateNext()
+    }
+}
+
+// MARK: - SuitUpgradeError
+
+public enum SuitUpgradeError: Error, LocalizedError {
+    case suitDelegateRequiredForResource(_ resource: FirmwareUpgradeManager.Resource)
+    
+    public var errorDescription: String? {
+        switch self {
+        case .suitDelegateRequiredForResource(let resource):
+            return "A \(String(describing: SuitFirmwareUpgradeDelegate.self)) delegate is required since the firmware is requesting resource \(resource.description)."
+        }
     }
 }

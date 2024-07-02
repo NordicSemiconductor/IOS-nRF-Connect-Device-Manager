@@ -12,6 +12,10 @@ import SwiftCBOR
 
 public class SuitManager: McuManager {
     
+    private static let POLLING_WINDOW_MS = 5000
+    private static let POLLING_INTERVAL_MS = 150
+    private static let MAX_POLL_ATTEMPTS: Int = POLLING_WINDOW_MS / POLLING_INTERVAL_MS
+    
     // MARK: TAG
     
     override class var TAG: McuMgrLogCategory { .suit }
@@ -46,12 +50,14 @@ public class SuitManager: McuManager {
         /**
          Command delivers a packet of a resource requested by the target device.
          */
-        case resourceUpload = 4
+        case uploadResource = 4
     }
     
     private var offset: UInt64 = 0
-    private var envelopeData: Data?
-    private weak var uploadDelegate: (any ImageUploadDelegate)?
+    private var uploadData: Data?
+    private var pollAttempts: Int = 0
+    private var sessionID: UInt64?
+    private weak var uploadDelegate: SuitManagerDelegate?
     
     // MARK: Init
     
@@ -59,26 +65,13 @@ public class SuitManager: McuManager {
         super.init(group: McuMgrGroup.suit, transporter: transporter)
     }
     
-    // MARK: API
+    // MARK: List
     
     /**
      Command allows to get information about roles of manifests supported by the device.
      */
     public func listManifests(callback: @escaping McuMgrCallback<McuMgrManifestListResponse>) {
         send(op: .read, commandId: SuitID.manifestList, payload: nil, callback: callback)
-    }
-    
-    /**
-     * Poll for required image
-     *
-     * SUIT command sequence has the ability of conditional execution of directives, i.e. based on the digest of installed image. That opens a scenario where SUIT candidate envelope contains only SUIT manifests, images (those required to be updated) are fetched by the device only if it is necessary. In that case, the device informs the SMP client that specific image is required via callback (and this is what this command implements), and then the SMP client uploads requested image. Due to the fact that SMP is designed in client-server pattern and lack of server-sent notifications, implementation is based on polling.
-     *
-     * After sending the Envelope, the client should periodically poll the device to check if an image is required.
-     *
-     * - Parameter callback: the asynchronous callback.
-     */
-    public func poll(callback: @escaping McuMgrCallback<McuMgrPollResponse>) {
-        send(op: .read, commandId: SuitID.pollImageState, payload: nil, callback: callback)
     }
     
     /**
@@ -98,10 +91,39 @@ public class SuitManager: McuManager {
              callback: fixCallback)
     }
     
-    public func upload(_ data: Data, delegate: ImageUploadDelegate?) {
+    // MARK: Poll
+    
+    /**
+     * Poll for required image
+     *
+     * SUIT command sequence has the ability of conditional execution of directives, i.e. based on the digest of installed image. That opens a scenario where SUIT candidate envelope contains only SUIT manifests, images (those required to be updated) are fetched by the device only if it is necessary. In that case, the device informs the SMP client that specific image is required via callback (and this is what this command implements), and then the SMP client uploads requested image. Due to the fact that SMP is designed in client-server pattern and lack of server-sent notifications, implementation is based on polling.
+     *
+     * After sending the Envelope, the client should periodically poll the device to check if an image is required.
+     *
+     * - Parameter callback: the asynchronous callback.
+     */
+    public func poll(callback: @escaping McuMgrCallback<McuMgrPollResponse>) {
+        send(op: .read, commandId: SuitID.pollImageState, payload: nil, callback: callback)
+    }
+    
+    // MARK: Upload
+    
+    public func upload(_ data: Data, delegate: SuitManagerDelegate?) {
         offset = 0
-        envelopeData = data
+        pollAttempts = 0
+        uploadData = data
         uploadDelegate = delegate
+        sessionID = nil
+        upload(data, at: offset)
+    }
+    
+    // MARK: Upload Resource
+    
+    public func uploadResource(_ data: Data) {
+        offset = 0
+        pollAttempts = 0
+        uploadData = data
+        // Keep uploadDelegate AND sessionID
         upload(data, at: offset)
     }
     
@@ -110,8 +132,11 @@ public class SuitManager: McuManager {
         
         let chunkOffset = offset
         let chunkEnd = min(chunkOffset + payloadLength, UInt64(data.count))
-        var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
+        var payload: [String: CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
                                       "off": CBOR.unsignedInt(chunkOffset)]
+        if let sessionID {
+            payload.updateValue(CBOR.unsignedInt(sessionID), forKey: "stream_session_id")
+        }
         let uploadTimeoutInSeconds: Int
         if chunkOffset == 0 {
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
@@ -121,7 +146,8 @@ public class SuitManager: McuManager {
         } else {
             uploadTimeoutInSeconds = McuManager.FAST_TIMEOUT
         }
-        send(op: .write, commandId: SuitID.envelopeUpload, payload: payload,
+        let commandID: SuitID = sessionID == nil ? .envelopeUpload : .uploadResource
+        send(op: .write, commandId: commandID, payload: payload,
              timeout: uploadTimeoutInSeconds, callback: uploadCallback)
     }
     
@@ -130,7 +156,7 @@ public class SuitManager: McuManager {
     private lazy var uploadCallback: McuMgrCallback<McuMgrUploadResponse> = { [weak self] response, error in
         guard let self else { return }
         
-        guard let envelopeData else {
+        guard let uploadData else {
             self.uploadDelegate?.uploadDidFail(with: ImageUploadError.invalidData)
             return
         }
@@ -140,8 +166,7 @@ public class SuitManager: McuManager {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
                 do {
                     try self.setMtu(newMtu)
-                    self.upload(envelopeData, at: 0)
-                    
+                    self.upload(uploadData, at: 0)
                 } catch let mtuResetError {
                     self.uploadDelegate?.uploadDidFail(with: mtuResetError)
                 }
@@ -162,9 +187,9 @@ public class SuitManager: McuManager {
         }
         
         if let offset = response.off {
-            self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: envelopeData.count, timestamp: Date())
-            if offset < envelopeData.count {
-                self.upload(envelopeData, at: offset)
+            self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: uploadData.count, timestamp: Date())
+            if offset < uploadData.count {
+                self.upload(uploadData, at: offset)
             } else {
                 // Assume success
                 // Next up: polling. The Device might tell us it needs something.
@@ -185,16 +210,37 @@ public class SuitManager: McuManager {
         }
         
         if let response {
-            if response.sessionID == nil, response.sessionID == nil {
-                // Empty response means 'keep waiting'. So we'll just retry.
-                let waitIntervalSeconds = 1
-                sleep(UInt32(waitIntervalSeconds))
-                self.poll(callback: self.pollingCallback)
+            guard response.rc != 8 else {
+                // Not supported, so either no polling or device restarted.
+                // It means success / continue.
+                self.uploadDelegate?.uploadDidFinish()
                 return
             }
             
-            // TODO: Continue implementation.
-            self.uploadDelegate?.uploadDidFinish()
+            guard let resourceID = response.resourceID,
+                  let resource = FirmwareUpgradeManager.Resource(resourceID: resourceID),
+                  let sessionID = response.sessionID else {
+                guard pollAttempts < Self.MAX_POLL_ATTEMPTS else {
+                    // Assume success / device doesn't require anything.
+                    self.uploadDelegate?.uploadDidFinish()
+                    return
+                }
+                
+                // Empty response means 'keep waiting'. So we'll just retry.
+                let waitTime: DispatchTimeInterval = .milliseconds(Self.POLLING_INTERVAL_MS)
+                DispatchQueue.main.asyncAfter(deadline: .now() + waitTime) { [unowned self] in
+                    self.pollAttempts += 1
+                    self.poll(callback: self.pollingCallback)
+                }
+                return
+            }
+            
+            self.sessionID = sessionID
+            guard self.uploadDelegate != nil else {
+                self.uploadDelegate?.uploadDidFail(with: SuitUpgradeError.suitDelegateRequiredForResource(resource))
+                return
+            }
+            self.uploadDelegate?.uploadRequestsResource(resource)
         }
     }
     
@@ -213,6 +259,10 @@ public class SuitManager: McuManager {
         // Get the Mcu Manager header.
         var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8]([0])),
                                       "off":  CBOR.unsignedInt(offset)]
+        if let sessionID {
+            payload.updateValue(CBOR.unsignedInt(sessionID), forKey: "stream_session_id")
+        }
+        
         // If this is the initial packet we have to include the length of the
         // entire image.
         if offset == 0 {
@@ -229,4 +279,14 @@ public class SuitManager: McuManager {
         }
         return packetOverhead
     }
+}
+
+// MARK: - SuitManagerDelegate
+
+public protocol SuitManagerDelegate: ImageUploadDelegate {
+    
+    /**
+     In SUIT (Software Update for the Internet of Things), various resources, such as specific files, URL contents, etc. may be requested by the firmware device. When it does, this callback will be triggered.
+     */
+    func uploadRequestsResource(_ resource: FirmwareUpgradeManager.Resource)
 }

@@ -58,12 +58,12 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     @IBAction func start(_ sender: UIButton) {
-        if let package {
-            selectMode(for: package)
-        } else if let envelope {
+        if let envelope = package?.envelope {
             // SUIT has "no mode" to select
             // (We use modes in the code only, but SUIT has no concept of upload modes)
             startFirmwareUpgrade(envelope: envelope)
+        } else if let package {
+            selectMode(for: package)
         }
     }
     
@@ -90,7 +90,6 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private var package: McuMgrPackage?
-    private var envelope: McuMgrSuitEnvelope?
     private var dfuManager: FirmwareUpgradeManager!
     var transporter: McuMgrTransport! {
         didSet {
@@ -345,7 +344,13 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
 extension FirmwareUpgradeViewController: SuitFirmwareUpgradeDelegate {
     
     func uploadRequestsResource(_ resource: FirmwareUpgradeManager.Resource) {
-        print("Work-in-Progress")
+        guard let package else { return }
+        guard let resourceImage = package.image(forResource: resource) else {
+            upgradeDidFail(inState: .upload,
+                           with: McuMgrPackage.Error.resourceNotFound(resource))
+            return
+        }
+        dfuManager.uploadResource(resource, image: resourceImage)
     }
 }
 
@@ -353,29 +358,20 @@ extension FirmwareUpgradeViewController: SuitFirmwareUpgradeDelegate {
 
 extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPickerDelegate {
     
-    func documentMenu(_ documentMenu: UIDocumentMenuViewController, didPickDocumentPicker documentPicker: UIDocumentPickerViewController) {
+    func documentMenu(_ documentMenu: UIDocumentMenuViewController,
+                      didPickDocumentPicker documentPicker: UIDocumentPickerViewController) {
         documentPicker.delegate = self
         present(documentPicker, animated: true, completion: nil)
     }
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
         self.package = nil
-        self.envelope = nil
         
         switch parseAsMcuMgrPackage(url) {
         case .success(let package):
             self.package = package
         case .failure(let error):
-            if error is McuMgrPackage.Error {
-                switch parseAsSuitEnvelope(url) {
-                case .success(let envelope):
-                    self.envelope = envelope
-                case .failure(let error):
-                    onParseError(error, for: url)
-                }
-            } else {
-                onParseError(error, for: url)
-            }
+            onParseError(error, for: url)
         }
         (parent as! ImageController).innerViewReloaded()
     }
@@ -388,7 +384,11 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             fileName.text = url.lastPathComponent
             fileSize.text = package.sizeString()
             fileSize.numberOfLines = 0
-            fileHash.text = try package.hashString()
+            if let envelope = package.envelope {
+                fileHash.text = envelope.digest.hashString()
+            } else {
+                fileHash.text = try package.hashString()
+            }
             fileHash.numberOfLines = 0
             
             status.textColor = .secondary
@@ -409,35 +409,8 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
         }
     }
     
-    func parseAsSuitEnvelope(_ url: URL) -> Result<McuMgrSuitEnvelope, Error> {
-        do {
-            let envelope = try McuMgrSuitEnvelope(from: url)
-            fileName.text = url.lastPathComponent
-            fileSize.text = envelope.sizeString()
-            fileSize.numberOfLines = 0
-            fileHash.text = envelope.digest.hashString()
-            fileHash.numberOfLines = 0
-            
-            status.textColor = .secondary
-            status.text = "READY"
-            status.numberOfLines = 0
-            actionStart.isEnabled = true
-            
-            dfuSwapTime.text = "\(dfuManagerConfiguration.estimatedSwapTime)s"
-            dfuSwapTime.numberOfLines = 0
-            dfuNumberOfBuffers.text = dfuManagerConfiguration.pipelineDepth == 1 ? "Disabled" : "\(dfuManagerConfiguration.pipelineDepth + 1)"
-            dfuNumberOfBuffers.numberOfLines = 0
-            dfuByteAlignment.text = "\(dfuManagerConfiguration.byteAlignment)"
-            dfuByteAlignment.numberOfLines = 0
-            return .success(envelope)
-        } catch {
-            return .failure(error)
-        }
-    }
-    
     func onParseError(_ error: Error, for url: URL) {
         self.package = nil
-        envelope = nil
         fileName.text = url.lastPathComponent
         fileSize.text = ""
         fileHash.text = ""

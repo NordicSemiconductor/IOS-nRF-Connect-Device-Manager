@@ -15,6 +15,7 @@ public class ImageManager: McuManager {
     // MARK: Image
     
     public struct Image {
+        public let name: String?
         public let image: Int
         public let slot: Int
         public let hash: Data
@@ -26,6 +27,7 @@ public class ImageManager: McuManager {
          target `slot` 0 (Primary) for upload.
          */
         public init(image: Int, slot: Int = 1, hash: Data, data: Data) {
+            self.name = nil
             self.image = image
             self.slot = slot
             self.hash = hash
@@ -33,6 +35,7 @@ public class ImageManager: McuManager {
         }
         
         public init(_ manifest: McuMgrManifest.File, hash: Data, data: Data) {
+            self.name = manifest.file
             self.image = manifest.image
             self.slot = manifest.slot
             self.hash = hash
@@ -40,6 +43,7 @@ public class ImageManager: McuManager {
         }
         
         internal init(_ image: FirmwareUpgradeImage) {
+            self.name = nil
             self.image = image.image
             self.slot = image.slot
             self.hash = image.hash

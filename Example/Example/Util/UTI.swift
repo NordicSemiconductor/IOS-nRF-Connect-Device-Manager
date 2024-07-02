@@ -19,6 +19,7 @@ import UIKit
 enum UTI: String, CaseIterable {
     case zip
     case bin
+    case suit
     
     // MARK: - Properties
     
@@ -28,6 +29,8 @@ enum UTI: String, CaseIterable {
             return ["public.zip-archive", "com.pkware.zip-archive"]
         case .bin:
             return ["com.apple.macbinary-archive"]
+        case .suit:
+            return ["com.apple.font-suitcase"]
         }
     }
     
