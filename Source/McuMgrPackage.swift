@@ -1,26 +1,25 @@
 //
 //  McuMgrPackage.swift
-//  nRF Connect Device Manager
+//  iOSMcuManagerLibrary
 //
 //  Created by Dinesh Harjani on 18/1/22.
 //  Copyright © 2022 Nordic Semiconductor ASA. All rights reserved.
 //
 
 import Foundation
-import iOSMcuManagerLibrary
 import ZIPFoundation
 
 // MARK: - McuMgrPackage
 
 public struct McuMgrPackage {
     
-    let images: [ImageManager.Image]
-    let envelope: McuMgrSuitEnvelope?
+    public let images: [ImageManager.Image]
+    public let envelope: McuMgrSuitEnvelope?
     let resources: [ImageManager.Image]?
     
     // MARK: - Init
     
-    init(from url: URL) throws {
+    public init(from url: URL) throws {
         switch UTI.forFile(url) {
         case .bin:
             self.images = try Self.extractImageFromBinFile(from: url)
@@ -44,8 +43,8 @@ public struct McuMgrPackage {
     
     // MARK: - API
     
-    func imageName(at index: Int) -> String {
-        guard let name =  images[index].name else {
+    public func imageName(at index: Int) -> String {
+        guard let name = images[index].name else {
             let coreName: String
             switch images[index].image {
             case 0:
@@ -60,7 +59,7 @@ public struct McuMgrPackage {
         return name
     }
     
-    func image(forResource resource: FirmwareUpgradeManager.Resource) -> ImageManager.Image? {
+    public func image(forResource resource: FirmwareUpgradeManager.Resource) -> ImageManager.Image? {
         switch resource {
         case .file(let name):
             return resources?.first(where: {
@@ -69,7 +68,7 @@ public struct McuMgrPackage {
         }
     }
     
-    func sizeString() -> String {
+    public func sizeString() -> String {
         var sizeString = ""
         for (i, image) in images.enumerated() {
             sizeString += "\(image.data.count) bytes (\(imageName(at: i)))"
@@ -79,7 +78,7 @@ public struct McuMgrPackage {
         return sizeString
     }
     
-    func hashString() throws -> String {
+    public func hashString() throws -> String {
         var result = ""
         for (i, image) in images.enumerated() {
             let hashString = image.hash.hexEncodedString(options: .upperCase)
@@ -93,14 +92,14 @@ public struct McuMgrPackage {
 
 // MARK: - McuMgrPackage.Error
 
-extension McuMgrPackage {
+public extension McuMgrPackage {
     
     enum Error: Swift.Error, LocalizedError {
         case deniedAccessToScopedResource, notAValidDocument, unableToAccessCacheDirectory
         case manifestFileNotFound, manifestImageNotFound
         case resourceNotFound(_ resource: FirmwareUpgradeManager.Resource)
         
-        var errorDescription: String? {
+        public var errorDescription: String? {
             switch self {
             case .deniedAccessToScopedResource:
                 return "Access to Scoped Resource (iCloud?) Denied."

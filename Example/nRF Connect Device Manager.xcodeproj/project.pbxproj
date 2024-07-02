@@ -27,8 +27,6 @@
 		5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273624ACA7F4008F528C /* IntroViewController.swift */; };
 		5266273824ACA883008F528C /* NordicButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273524ACA7A1008F528C /* NordicButton.swift */; };
 		5274C2622796CEC40043D7CA /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5274C2612796CEC40043D7CA /* SettingsViewController.swift */; };
-		AA02AA5A2796E57E003040D5 /* McuMgrPackage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA02AA592796E57E003040D5 /* McuMgrPackage.swift */; };
-		AA02AA5C2796E67E003040D5 /* UTI.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA02AA5B2796E67E003040D5 /* UTI.swift */; };
 		BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285720CB44AF0061F0EE /* AppDelegate.swift */; };
 		BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */; };
 		BD5A285D20CB44AF0061F0EE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285B20CB44AF0061F0EE /* Main.storyboard */; };
@@ -60,8 +58,6 @@
 		5266273624ACA7F4008F528C /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		5274C2612796CEC40043D7CA /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		8CC828C02D6175238385D59A /* Pods-nRF Connect Device Manager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nRF Connect Device Manager.release.xcconfig"; path = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager.release.xcconfig"; sourceTree = "<group>"; };
-		AA02AA592796E57E003040D5 /* McuMgrPackage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McuMgrPackage.swift; sourceTree = "<group>"; };
-		AA02AA5B2796E67E003040D5 /* UTI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTI.swift; sourceTree = "<group>"; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A285720CB44AF0061F0EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -140,8 +136,6 @@
 			isa = PBXGroup;
 			children = (
 				524DCFD8210B4241000E110D /* UIColor.swift */,
-				AA02AA5B2796E67E003040D5 /* UTI.swift */,
-				AA02AA592796E57E003040D5 /* McuMgrPackage.swift */,
 				F07D73AB2AE9AE3A00ED6B9A /* StringConvertibles.swift */,
 			);
 			path = Util;
@@ -367,8 +361,6 @@
 				524DCFD9210B4241000E110D /* UIColor.swift in Sources */,
 				5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */,
 				526270A4210B8E8000FC17D4 /* ImageController.swift in Sources */,
-				AA02AA5C2796E67E003040D5 /* UTI.swift in Sources */,
-				AA02AA5A2796E57E003040D5 /* McuMgrPackage.swift in Sources */,
 				5264C1DE210F640F0044FBBA /* McuMgrViewController.swift in Sources */,
 				524DCFD4210B1C17000E110D /* DeviceController.swift in Sources */,
 				5215762D212320F300C21B0C /* LogsStatsController.swift in Sources */,
