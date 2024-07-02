@@ -1,6 +1,6 @@
 //
 //  UTI.swift
-//  nRF Connect Device Manager
+//  iOSMcuManagerLibrary
 //
 //  Created by Dinesh Harjani on 18/1/22.
 //  Copyright © 2022 Nordic Semiconductor ASA. All rights reserved.
@@ -42,6 +42,10 @@ enum UTI: String, CaseIterable {
         }
     }
     
+    static func forFile(_ file: URL) -> UTI? {
+        return typeOf(file).flatMap({ from($0) })
+    }
+    
     private static func typeOf(_ url: URL) -> String? {
 #if os(macOS)
         return try? NSWorkspace.shared.type(ofFile: url.path)
@@ -49,9 +53,5 @@ enum UTI: String, CaseIterable {
         let document = UIDocument(fileURL: url)
         return document.fileType
 #endif
-    }
-    
-    static func forFile(_ file: URL) -> UTI? {
-        return typeOf(file).flatMap({ from($0) })
     }
 }
