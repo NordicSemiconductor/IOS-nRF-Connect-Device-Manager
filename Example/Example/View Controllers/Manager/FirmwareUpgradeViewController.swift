@@ -58,11 +58,12 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     @IBAction func start(_ sender: UIButton) {
-        if let envelope = package?.envelope {
+        guard let package else { return }
+        if package.isForSUIT {
             // SUIT has "no mode" to select
             // (We use modes in the code only, but SUIT has no concept of upload modes)
-            startFirmwareUpgrade(envelope: envelope)
-        } else if let package {
+            startFirmwareUpgrade(package: package)
+        } else {
             selectMode(for: package)
         }
     }
@@ -142,7 +143,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private func setByteAlignment() {
-        let alertController = UIAlertController(title: "Byte alignment", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Byte Alignment", message: nil, preferredStyle: .actionSheet)
         ImageUploadAlignment.allCases.forEach { alignmentValue in
             let text = "\(alignmentValue)"
             alertController.addAction(UIAlertAction(title: text, style: .default) {
@@ -159,7 +160,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private func selectMode(for package: McuMgrPackage) {
-        let alertController = UIAlertController(title: "Select mode", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Select Mode", message: nil, preferredStyle: .actionSheet)
         FirmwareUpgradeMode.allCases.forEach { upgradeMode in
             let text = "\(upgradeMode)"
             alertController.addAction(UIAlertAction(title: text, style: .default) {
@@ -187,26 +188,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     private func startFirmwareUpgrade(package: McuMgrPackage) {
         do {
-            dfuManagerConfiguration.suitMode = false
-            try dfuManager.start(images: package.images, using: dfuManagerConfiguration)
-        } catch {
-            status.textColor = .systemRed
-            status.text = error.localizedDescription
-            actionStart.isEnabled = false
-        }
-    }
-    
-    private func startFirmwareUpgrade(envelope: McuMgrSuitEnvelope) {
-        do {
-            // sha256 is the currently only supported mode.
-            // The rest are optional to implement in SUIT.
-            guard let sha256Hash = envelope.digest.hash(for: .sha256) else {
-                throw McuMgrSuitParseError.supportedAlgorithmNotFound
-            }
-            
-            dfuManagerConfiguration.suitMode = true
-            dfuManagerConfiguration.upgradeMode = .uploadOnly
-            try dfuManager.start(hash: sha256Hash, data: envelope.data, using: dfuManagerConfiguration)
+            try dfuManager.start(package: package, using: dfuManagerConfiguration)
         } catch {
             status.textColor = .systemRed
             status.text = error.localizedDescription
@@ -387,7 +369,7 @@ extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPicke
             if let envelope = package.envelope {
                 fileHash.text = envelope.digest.hashString()
             } else {
-                fileHash.text = try package.hashString()
+                fileHash.text = package.hashString()
             }
             fileHash.numberOfLines = 0
             

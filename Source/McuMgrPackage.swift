@@ -22,7 +22,7 @@ public struct McuMgrPackage {
     public init(from url: URL) throws {
         switch UTI.forFile(url) {
         case .bin:
-            self.images = try Self.extractImageFromBinFile(from: url)
+            self.images = try [ImageManager.Image(fromBinFile: url)]
             self.envelope = nil
             self.resources = nil
         case .zip:
@@ -42,6 +42,8 @@ public struct McuMgrPackage {
     }
     
     // MARK: - API
+    
+    public var isForSUIT: Bool { envelope != nil }
     
     public func imageName(at index: Int) -> String {
         guard let name = images[index].name else {
@@ -78,7 +80,7 @@ public struct McuMgrPackage {
         return sizeString
     }
     
-    public func hashString() throws -> String {
+    public func hashString() -> String {
         var result = ""
         for (i, image) in images.enumerated() {
             let hashString = image.hash.hexEncodedString(options: .upperCase)
@@ -121,12 +123,6 @@ public extension McuMgrPackage {
 // MARK: - Private
 
 fileprivate extension McuMgrPackage {
-    
-    static func extractImageFromBinFile(from url: URL) throws -> [ImageManager.Image] {
-        let binData = try Data(contentsOf: url)
-        let binHash = try McuMgrImage(data: binData).hash
-        return [ImageManager.Image(image: 0, hash: binHash, data: binData)]
-    }
     
     static func extractImageFromSuitFile(from url: URL) throws -> Self {
         let envelope = try McuMgrSuitEnvelope(from: url)
@@ -181,9 +177,7 @@ fileprivate extension McuMgrPackage {
                 guard let imageURL = unzippedURLs.first(where: { $0.absoluteString.contains(manifestFile.file) }) else {
                     throw McuMgrPackage.Error.manifestImageNotFound
                 }
-                let imageData = try Data(contentsOf: imageURL)
-                let imageHash = try McuMgrImage(data: imageData).hash
-                return ImageManager.Image(manifestFile, hash: imageHash, data: imageData)
+                return try ImageManager.Image(fromBinFile: imageURL)
             }
             envelope = nil
             resources = nil
@@ -193,5 +187,16 @@ fileprivate extension McuMgrPackage {
             try fileManager.removeItem(at: url)
         }
         return McuMgrPackage(images: images, envelope: envelope, resources: resources)
+    }
+}
+
+// MARK: - Image Extension
+
+fileprivate extension ImageManager.Image {
+    
+    init(fromBinFile url: URL) throws {
+        let binData = try Data(contentsOf: url)
+        let binHash = try McuMgrImage(data: binData).hash
+        self.init(image: 0, hash: binHash, data: binData)
     }
 }

@@ -81,11 +81,40 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     
     /// Start the firmware upgrade.
     ///
+    /// This is the full-featured API to start DFU update, including support for Multi-Image uploads, DirectXIP, and SUIT. It is a seamless API.
+    /// - parameter package: The (`McrMgrPackage`) to upload.
+    /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
+    public func start(package: McuMgrPackage,
+                      using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
+        guard let envelope = package.envelope else {
+            // McuMgr mode.
+            var mcuMgrConfiguration = configuration
+            mcuMgrConfiguration.suitMode = false
+            try start(images: package.images, using: mcuMgrConfiguration)
+            return
+        }
+        
+        // sha256 is the currently only supported mode.
+        // The rest are optional to implement in SUIT.
+        guard let sha256Hash = envelope.digest.hash(for: .sha256) else {
+            throw McuMgrSuitParseError.supportedAlgorithmNotFound
+        }
+        let image = ImageManager.Image(image: 0, hash: sha256Hash, data: envelope.data)
+        
+        var suitConfiguration = configuration
+        suitConfiguration.suitMode = true
+        suitConfiguration.upgradeMode = .uploadOnly
+        try start(images: [image], using: suitConfiguration)
+    }
+    
+    /// Start the firmware upgrade.
+    ///
     /// Use this convenience call of ``start(images:using:)`` if you're only
     /// updating the App Core (i.e. no Multi-Image).
     /// - parameter hash: The hash of the Image to be uploaded, used for comparison with the target firmware.
     /// - parameter data: `Data` to upload to App Core (Image 0).
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
+    @available(*, deprecated, message: "start(package:using:) is now a far more convenient call. Therefore this API is henceforth marked as deprecated and will be removed in a future release.")
     public func start(hash: Data, data: Data, using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
         try start(images: [ImageManager.Image(image: 0, hash: hash, data: data)],
                   using: configuration)
