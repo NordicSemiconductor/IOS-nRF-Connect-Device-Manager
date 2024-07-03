@@ -12,6 +12,8 @@ import SwiftCBOR
 
 public class SuitManager: McuManager {
     
+    // MARK: Constants
+    
     private static let POLLING_WINDOW_MS = 5000
     private static let POLLING_INTERVAL_MS = 150
     private static let MAX_POLL_ATTEMPTS: Int = POLLING_WINDOW_MS / POLLING_INTERVAL_MS
@@ -57,6 +59,7 @@ public class SuitManager: McuManager {
     private var uploadData: Data?
     private var pollAttempts: Int = 0
     private var sessionID: UInt64?
+    private var state: SuitManagerState = .none
     private weak var uploadDelegate: SuitManagerDelegate?
     
     // MARK: Init
@@ -106,25 +109,27 @@ public class SuitManager: McuManager {
         send(op: .read, commandId: SuitID.pollImageState, payload: nil, callback: callback)
     }
     
-    // MARK: Upload
+    // MARK: Upload Envelope
     
-    public func upload(_ data: Data, delegate: SuitManagerDelegate?) {
+    public func uploadEnvelope(_ envelopeData: Data, delegate: SuitManagerDelegate?) {
         offset = 0
         pollAttempts = 0
-        uploadData = data
+        uploadData = envelopeData
         uploadDelegate = delegate
         sessionID = nil
-        upload(data, at: offset)
+        state = .uploadingEnvelope
+        upload(envelopeData, at: offset)
     }
     
     // MARK: Upload Resource
     
-    public func uploadResource(_ data: Data) {
+    public func uploadResource(_ resourceData: Data) {
         offset = 0
         pollAttempts = 0
-        uploadData = data
+        uploadData = resourceData
+        state = .uploadingResource
         // Keep uploadDelegate AND sessionID
-        upload(data, at: offset)
+        upload(resourceData, at: offset)
     }
     
     private func upload(_ data: Data, at offset: UInt64) {
@@ -191,8 +196,10 @@ public class SuitManager: McuManager {
             if offset < uploadData.count {
                 self.upload(uploadData, at: offset)
             } else {
-                // Assume success
-                // Next up: polling. The Device might tell us it needs something.
+                // Listen for disconnection event, which signals update is complete.
+                transport.addObserver(self)
+                // While waiting for disconnection, poll.
+                // The Device might tell us it needs a resource.
                 self.poll(callback: pollingCallback)
             }
         }
@@ -202,6 +209,13 @@ public class SuitManager: McuManager {
     
     private lazy var pollingCallback: McuMgrCallback<McuMgrPollResponse> = { [weak self] response, error in
         guard let self else { return }
+        
+        guard state.isInProgress else {
+            // Success means firmware device disconnected, which can trigger errors.
+            // So if we've considered the upload successful already, we don't care
+            // about this callback.
+            return
+        }
         
         if let error {
             // Assume success, error is most likely due to disconnection.
@@ -240,6 +254,9 @@ public class SuitManager: McuManager {
                 self.uploadDelegate?.uploadDidFail(with: SuitUpgradeError.suitDelegateRequiredForResource(resource))
                 return
             }
+            // Stop listening for disconnection since firmware has requested a resource.
+            self.transport.removeObserver(self)
+            // Ask API user for the requested resource.
             self.uploadDelegate?.uploadRequestsResource(resource)
         }
     }
@@ -279,6 +296,41 @@ public class SuitManager: McuManager {
             packetOverhead = packetOverhead + 25
         }
         return packetOverhead
+    }
+}
+
+// MARK: - ConnectionObserver
+
+extension SuitManager: ConnectionObserver {
+    
+    public func transport(_ transport: McuMgrTransport, didChangeStateTo state: McuMgrTransportState) {
+        // Disregard other states.
+        guard state == .disconnected else { return }
+        
+        log(msg: "Device has disconnected.", atLevel: .info)
+        transport.removeObserver(self)
+        
+        // Device disconnected when we expected it -> Success.
+        self.state = .success
+        // Firmware Upgrade complete.
+        uploadDelegate?.uploadDidFinish()
+    }
+}
+
+// MARK: SuitManagerState
+
+enum SuitManagerState {
+    case none
+    case uploadingEnvelope, uploadingResource
+    case success
+    
+    var isInProgress: Bool {
+        switch self {
+        case .none, .success:
+            return false
+        case .uploadingEnvelope, .uploadingResource:
+            return true
+        }
     }
 }
 
