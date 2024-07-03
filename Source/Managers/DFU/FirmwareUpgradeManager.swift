@@ -36,7 +36,6 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     private let imageManager: ImageManager
     private let defaultManager: DefaultManager
     private let basicManager: BasicManager
-    private let suitManifestManager: SuitManifestManager
     private let suitManager: SuitManager
     private weak var delegate: FirmwareUpgradeDelegate?
     
@@ -58,7 +57,6 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             imageManager.logDelegate = logDelegate
             defaultManager.logDelegate = logDelegate
             suitManager.logDelegate = logDelegate
-            suitManifestManager.logDelegate = logDelegate
         }
     }
     
@@ -71,7 +69,6 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         self.defaultManager = DefaultManager(transport: transport)
         self.basicManager = BasicManager(transport: transport)
         self.suitManager = SuitManager(transport: transport)
-        self.suitManifestManager = SuitManifestManager(transport: transport)
         self.delegate = delegate
         self.state = .none
         self.paused = false
@@ -1152,7 +1149,7 @@ extension FirmwareUpgradeManager: SuitManagerDelegate {
     
     public func uploadRequestsResource(_ resource: Resource) {
         guard let suitDelegate = delegate as? SuitFirmwareUpgradeDelegate else {
-            delegate?.upgradeDidFail(inState: .upload, with: SuitUpgradeError.suitDelegateRequiredForResource(resource))
+            delegate?.upgradeDidFail(inState: .upload, with: SuitManagerError.suitDelegateRequiredForResource(resource))
             return
         }
         suitDelegate.uploadRequestsResource(resource)
