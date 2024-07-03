@@ -314,7 +314,7 @@ extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPicker
             fileName.text = url.lastPathComponent
             fileSize.text = package.sizeString()
             fileSize.numberOfLines = 0
-            fileHash.text = try package.hashString()
+            fileHash.text = package.hashString()
             fileHash.numberOfLines = 0
             
             dfuNumberOfBuffers.text = uploadConfiguration.pipelineDepth == 1 ? "Disabled" : "\(uploadConfiguration.pipelineDepth + 1)"
