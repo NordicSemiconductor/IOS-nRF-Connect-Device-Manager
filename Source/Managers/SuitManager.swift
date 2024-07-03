@@ -61,8 +61,8 @@ public class SuitManager: McuManager {
     
     // MARK: Init
     
-    public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.suit, transporter: transporter)
+    public init(transport: McuMgrTransport) {
+        super.init(group: McuMgrGroup.suit, transport: transport)
     }
     
     // MARK: List
@@ -269,11 +269,12 @@ public class SuitManager: McuManager {
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
         }
         // Build the packet and return the size.
-        let packet = McuManager.buildPacket(scheme: transporter.getScheme(), version: .SMPv2, op: .write,
-                                            flags: 0, group: group.rawValue, sequenceNumber: 0,
-                                            commandId: SuitID.envelopeUpload, payload: payload)
+        let packet = McuManager.buildPacket(scheme: transport.getScheme(), version: .SMPv2,
+                                            op: .write, flags: 0, group: group.rawValue,
+                                            sequenceNumber: 0, commandId: SuitID.envelopeUpload,
+                                            payload: payload)
         var packetOverhead = packet.count + 5
-        if transporter.getScheme().isCoap() {
+        if transport.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.
             packetOverhead = packetOverhead + 25
         }

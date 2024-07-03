@@ -20,9 +20,9 @@ class SettingsViewController: UIViewController, McuMgrViewController {
     }
     
     private var basicManager: BasicManager!
-    var transporter: McuMgrTransport! {
+    var transport: McuMgrTransport! {
         didSet {
-            basicManager = BasicManager(transporter: transporter)
+            basicManager = BasicManager(transport: transport)
             basicManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }

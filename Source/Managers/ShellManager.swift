@@ -27,8 +27,8 @@ public class ShellManager: McuManager {
     
     // MARK: Init
     
-    public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.shell, transporter: transporter)
+    public init(transport: McuMgrTransport) {
+        super.init(group: McuMgrGroup.shell, transport: transport)
     }
     
     // MARK: API

@@ -54,8 +54,8 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
         messageReceivedBackground.image = receivedBackground
         
         let baseController = parent as! BaseViewController
-        let transporter = baseController.transporter!
-        defaultManager = DefaultManager(transporter: transporter)
+        let transport: McuMgrTransport! = baseController.transport
+        defaultManager = DefaultManager(transport: transport)
         defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
     }
     
@@ -104,7 +104,7 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
                 } catch McuManagerError.mtuValueHasNotChanged {
                     // If MTU value did not change, try reassembly.
                     if let messageText = self?.messageSent.text,
-                       let bleTransport = self?.defaultManager.transporter as? McuMgrBleTransport,
+                       let bleTransport = self?.defaultManager.transport as? McuMgrBleTransport,
                        !bleTransport.chunkSendDataToMtuSize {
                         bleTransport.chunkSendDataToMtuSize = true
                         self?.send(message: messageText)

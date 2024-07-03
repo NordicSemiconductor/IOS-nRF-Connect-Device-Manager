@@ -46,9 +46,9 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
         }
     }
     
-    var transporter: McuMgrTransport! {
+    var transport: McuMgrTransport! {
         didSet {
-            fsManager = FileSystemManager(transporter: transporter)
+            fsManager = FileSystemManager(transport: transport)
             fsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }

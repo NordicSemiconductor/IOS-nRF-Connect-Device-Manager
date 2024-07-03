@@ -28,8 +28,7 @@ open class McuMgrResponse: CBORMappable {
     // MARK: Response Properties
     //**************************************************************************
 
-    /// The transport scheme used by the transporter. This is used to determine
-    /// how to parse the raw packet.
+    /// The transport's scheme. This is used to determine how to parse the raw packet.
     public var scheme: McuMgrScheme!
     
     /// The response's raw packet data. For CoAP transport schemes, this will
@@ -95,7 +94,7 @@ open class McuMgrResponse: CBORMappable {
     /// CBOR payload. An object of type <T> will be initialized which will map
     /// the CBOR payload values to the values in the object.
     ///
-    /// - parameter scheme: the transport scheme of the transporter.
+    /// - parameter scheme: the transport's scheme.
     /// - parameter data: The response's raw packet data.
     /// - parameter coapPayload: (Optional) payload for CoAP transport schemes.
     /// - parameter coapCode: (Optional) CoAP response code.
@@ -171,7 +170,7 @@ open class McuMgrResponse: CBORMappable {
     /// CBOR payload, An object of type <T> will be initialized which will map
     /// the CBOR payload values to the values in the object.
     ///
-    /// - parameter scheme: the transport scheme of the transporter.
+    /// - parameter scheme: the transport's scheme.
     /// - parameter data: The response's raw packet data.
     ///
     /// - returns: The McuMgrResponse on success or nil on failure.
@@ -187,7 +186,7 @@ open class McuMgrResponse: CBORMappable {
     /// CBOR payload, An object of type <T> will be initialized which will map
     /// the CBOR payload values to the values in the object.
     ///
-    /// - parameter scheme: The transport scheme of the transporter.
+    /// - parameter scheme: The transport's scheme.
     /// - parameter data: The response's raw packet data.
     /// - parameter coapPayload: The CoAP payload of the response.
     /// - parameter codeClass: The CoAP response code class.

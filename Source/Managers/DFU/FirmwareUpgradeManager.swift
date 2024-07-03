@@ -66,12 +66,12 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     
     // MARK: Init
     
-    public init(transporter: McuMgrTransport, delegate: FirmwareUpgradeDelegate?) {
-        self.imageManager = ImageManager(transporter: transporter)
-        self.defaultManager = DefaultManager(transporter: transporter)
-        self.basicManager = BasicManager(transporter: transporter)
-        self.suitManager = SuitManager(transporter: transporter)
-        self.suitManifestManager = SuitManifestManager(transporter: transporter)
+    public init(transport: McuMgrTransport, delegate: FirmwareUpgradeDelegate?) {
+        self.imageManager = ImageManager(transport: transport)
+        self.defaultManager = DefaultManager(transport: transport)
+        self.basicManager = BasicManager(transport: transport)
+        self.suitManager = SuitManager(transport: transport)
+        self.suitManifestManager = SuitManifestManager(transport: transport)
         self.delegate = delegate
         self.state = .none
         self.paused = false
@@ -307,7 +307,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         objc_sync_setState(.reset)
         if !paused {
             log(msg: "Sending Reset command...", atLevel: .verbose)
-            defaultManager.transporter.addObserver(self)
+            defaultManager.transport.addObserver(self)
             defaultManager.reset(callback: resetCallback)
         }
     }
@@ -639,7 +639,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
                     log(msg: "Image \(image.image) (slot \(secondary.slot)) is already pending", atLevel: .warning)
                     log(msg: "Resetting the device...", atLevel: .verbose)
                     // reset() can't be called here, as it changes the state to RESET.
-                    defaultManager.transporter.addObserver(self)
+                    defaultManager.transport.addObserver(self)
                     defaultManager.reset(callback: self.resetCallback)
                     // The validate() method will be called again.
                     return
@@ -954,7 +954,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     
     /// Reconnect to the device and continue the
     private func reconnect() {
-        imageManager.transporter.connect { [weak self] result in
+        imageManager.transport.connect { [weak self] result in
             guard let self = self else {
                 return
             }

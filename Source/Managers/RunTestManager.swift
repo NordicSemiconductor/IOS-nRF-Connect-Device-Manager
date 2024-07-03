@@ -21,8 +21,8 @@ public class RunTestManager: McuManager {
     // MARK: Initializers
     //**************************************************************************
 
-    public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.run, transporter: transporter)
+    public init(transport: McuMgrTransport) {
+        super.init(group: McuMgrGroup.run, transport: transport)
     }
     
     //**************************************************************************

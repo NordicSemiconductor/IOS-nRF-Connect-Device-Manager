@@ -92,9 +92,9 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     private var package: McuMgrPackage?
     private var dfuManager: FirmwareUpgradeManager!
-    var transporter: McuMgrTransport! {
+    var transport: McuMgrTransport! {
         didSet {
-            dfuManager = FirmwareUpgradeManager(transporter: transporter, delegate: self)
+            dfuManager = FirmwareUpgradeManager(transport: transport, delegate: self)
             dfuManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }

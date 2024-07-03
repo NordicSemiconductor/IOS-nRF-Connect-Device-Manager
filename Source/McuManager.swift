@@ -49,7 +49,7 @@ open class McuManager : NSObject {
     //**************************************************************************
 
     /// Handles transporting Mcu Manager commands.
-    public let transporter: McuMgrTransport
+    public let transport: McuMgrTransport
     
     /// The command group used for in the header of commands sent using this Mcu
     /// Manager.
@@ -80,10 +80,10 @@ open class McuManager : NSObject {
     // MARK: Initializers
     //**************************************************************************
 
-    public init(group: McuMgrGroup, transporter: McuMgrTransport) {
+    public init(group: McuMgrGroup, transport: McuMgrTransport) {
         self.group = group
-        self.transporter = transporter
-        self.mtu = McuManager.getDefaultMtu(scheme: transporter.getScheme())
+        self.transport = transport
+        self.mtu = McuManager.getDefaultMtu(scheme: transport.getScheme())
     }
     
     // MARK: - Send
@@ -102,8 +102,9 @@ open class McuManager : NSObject {
         log(msg: "Sending \(op) command (Version: \(smpVersion), Group: \(group), seq: \(nextSequenceNumber), ID: \(commandId)): \(payload?.debugDescription ?? "nil")",
             atLevel: .verbose)
         let packetSequenceNumber = nextSequenceNumber
-        let packetData = McuManager.buildPacket(scheme: transporter.getScheme(), version: smpVersion,
-                                                op: op, flags: flags, group: group.rawValue,
+        let packetData = McuManager.buildPacket(scheme: transport.getScheme(),
+                                                version: smpVersion, op: op,
+                                                flags: flags, group: group.rawValue,
                                                 sequenceNumber: packetSequenceNumber,
                                                 commandId: commandId, payload: payload)
         let _callback: McuMgrCallback<T> = { [weak self] (response, error) -> Void in
@@ -141,14 +142,14 @@ open class McuManager : NSObject {
     }
     
     public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {
-        transporter.send(data: data, timeout: timeout, callback: callback)
+        transport.send(data: data, timeout: timeout, callback: callback)
     }
     
     //**************************************************************************
     // MARK: Build Request Packet
     //**************************************************************************
     
-    /// Build a McuManager request packet based on the transporter scheme.
+    /// Build a McuManager request packet based on the transport scheme.
     ///
     /// - parameter scheme: The transport scheme.
     /// - parameter version: The SMP Version.
@@ -159,7 +160,7 @@ open class McuManager : NSObject {
     /// - parameter commandId: The command id.
     /// - parameter payload: The request payload.
     ///
-    /// - returns: The raw packet data to send to the transporter.
+    /// - returns: The raw packet data to send to the transport.
     public static func buildPacket<R: RawRepresentable>(scheme: McuMgrScheme,
                                                         version: McuMgrVersion,
                                                         op: McuMgrOperation,
@@ -239,7 +240,7 @@ open class McuManager : NSObject {
     /// scheme is BLE, the iOS version is used to determine the MTU. If the
     /// scheme is UDP, the MTU returned is always 1024.
     ///
-    /// - parameter scheme: the transporter
+    /// - parameter scheme: the transport
     public static func getDefaultMtu(scheme: McuMgrScheme) -> Int {
         // BLE MTU is determined by the version of iOS running on the device
         if scheme.isBle() {

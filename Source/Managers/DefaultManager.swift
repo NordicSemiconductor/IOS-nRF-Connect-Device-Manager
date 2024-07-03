@@ -46,8 +46,8 @@ public class DefaultManager: McuManager {
     // MARK: Initializers
     //**************************************************************************
 
-    public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.OS, transporter: transporter)
+    public init(transport: McuMgrTransport) {
+        super.init(group: McuMgrGroup.OS, transport: transport)
     }
     
     // MARK: - Commands
@@ -63,8 +63,9 @@ public class DefaultManager: McuManager {
     public func echo(_ echo: String, callback: @escaping McuMgrCallback<McuMgrEchoResponse>) {
         let payload: [String:CBOR] = ["d": CBOR.utf8String(echo)]
         
-        let echoPacket = McuManager.buildPacket(scheme: transporter.getScheme(), version: .SMPv2,
-                                                op: .write, flags: 0, group: McuMgrGroup.OS.rawValue,
+        let echoPacket = McuManager.buildPacket(scheme: transport.getScheme(),
+                                                version: .SMPv2, op: .write,
+                                                flags: 0, group: McuMgrGroup.OS.rawValue,
                                                 sequenceNumber: 0, commandId: ID.echo, payload: payload)
         
         guard echoPacket.count <= BasicManager.MAX_ECHO_MESSAGE_SIZE_BYTES else {
