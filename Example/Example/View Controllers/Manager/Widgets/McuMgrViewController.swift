@@ -9,5 +9,5 @@ import iOSMcuManagerLibrary
 
 protocol McuMgrViewController {
 
-    var transporter: McuMgrTransport! { get set }
+    var transport: McuMgrTransport! { get set }
 }

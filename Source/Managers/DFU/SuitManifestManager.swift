@@ -22,8 +22,8 @@ public class SuitManifestManager {
     
     // MARK: Init
     
-    public init(transporter: McuMgrTransport) {
-        self.suitManager = SuitManager(transporter: transporter)
+    public init(transport: McuMgrTransport) {
+        self.suitManager = SuitManager(transport: transport)
         self.roles = []
         self.responses = []
     }

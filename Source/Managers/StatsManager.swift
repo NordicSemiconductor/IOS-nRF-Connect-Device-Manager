@@ -25,8 +25,8 @@ public class StatsManager: McuManager {
     // MARK: Initializers
     //**************************************************************************
 
-    public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.statistics, transporter: transporter)
+    public init(transport: McuMgrTransport) {
+        super.init(group: McuMgrGroup.statistics, transport: transport)
     }
     
     //**************************************************************************

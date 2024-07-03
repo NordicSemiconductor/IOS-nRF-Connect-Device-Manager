@@ -57,9 +57,9 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
         fsManager.cancelTransfer()
     }
     
-    var transporter: McuMgrTransport! {
+    var transport: McuMgrTransport! {
         didSet {
-            fsManager = FileSystemManager(transporter: transporter)
+            fsManager = FileSystemManager(transport: transport)
             fsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }

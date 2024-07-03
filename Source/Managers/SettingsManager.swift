@@ -20,8 +20,8 @@ public class SettingsManager: McuManager {
     
     // MARK: Initializers
 
-    public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.settings, transporter: transporter)
+    public init(transport: McuMgrTransport) {
+        super.init(group: McuMgrGroup.settings, transport: transport)
     }
     
     // MARK: Commands

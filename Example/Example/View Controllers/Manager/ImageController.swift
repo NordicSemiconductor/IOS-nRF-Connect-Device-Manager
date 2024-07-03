@@ -30,10 +30,10 @@ class ImageController: UITableViewController {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let baseController = parent as! BaseViewController
-        let transporter = baseController.transporter!
+        let transport: McuMgrTransport! = baseController.transport
         
         var destination = segue.destination as? McuMgrViewController
-        destination?.transporter = transporter
+        destination?.transport = transport
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

@@ -68,8 +68,8 @@ class LogsStatsController: UITableViewController {
     
     override func viewDidLoad() {
         let baseController = parent as! BaseViewController
-        let transporter = baseController.transporter!
-        statsManager = StatsManager(transporter: transporter)
+        let transport = baseController.transport!
+        statsManager = StatsManager(transport: transport)
         statsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
     }
     

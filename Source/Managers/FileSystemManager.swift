@@ -25,8 +25,8 @@ public class FileSystemManager: McuManager {
     
     // MARK: Init
     
-    public init(transporter: McuMgrTransport) {
-        super.init(group: McuMgrGroup.filesystem, transporter: transporter)
+    public init(transport: McuMgrTransport) {
+        super.init(group: McuMgrGroup.filesystem, transport: transport)
     }
     
     // MARK: Download
@@ -170,7 +170,7 @@ public class FileSystemManager: McuManager {
         // can't predict how many bytes the firmware will accept in each chunk.
         uploadConfiguration = configuration
         uploadConfiguration.reassemblyBufferSize = min(uploadConfiguration.reassemblyBufferSize, UInt64(UInt16.max))
-        if let bleTransport = transporter as? McuMgrBleTransport {
+        if let bleTransport = transport as? McuMgrBleTransport {
             bleTransport.numberOfParallelWrites = configuration.pipelineDepth
             bleTransport.chunkSendDataToMtuSize = configuration.reassemblyBufferSize != 0
         }
@@ -568,11 +568,12 @@ public class FileSystemManager: McuManager {
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
         }
         // Build the packet and return the size.
-        let packet = McuManager.buildPacket(scheme: transporter.getScheme(), version: .SMPv2, op: .write,
-                                            flags: 0, group: group.rawValue, sequenceNumber: 0,
-                                            commandId: FilesystemID.file, payload: payload)
+        let packet = McuManager.buildPacket(scheme: transport.getScheme(), version: .SMPv2,
+                                            op: .write, flags: 0, group: group.rawValue,
+                                            sequenceNumber: 0, commandId: FilesystemID.file,
+                                            payload: payload)
         var packetOverhead = packet.count + 5
-        if transporter.getScheme().isCoap() {
+        if transport.getScheme().isCoap() {
             // Add 25 bytes to packet overhead estimate for the CoAP header.
             packetOverhead = packetOverhead + 25
         }

@@ -25,8 +25,8 @@ public class BasicManager: McuManager {
     
     // MARK: - Init
     
-    public init(transporter: McuMgrTransport) {
-        super.init(group: .basic, transporter: transporter)
+    public init(transport: McuMgrTransport) {
+        super.init(group: .basic, transport: transport)
     }
     
     // MARK: - Commands

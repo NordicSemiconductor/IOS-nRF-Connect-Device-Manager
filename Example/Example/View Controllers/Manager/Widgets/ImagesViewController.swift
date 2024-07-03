@@ -57,11 +57,11 @@ class ImagesViewController: UIViewController , McuMgrViewController{
     private var lastResponse: McuMgrImageStateResponse?
     private var imageManager: ImageManager!
     private var defaultManager: DefaultManager!
-    var transporter: McuMgrTransport! {
+    var transport: McuMgrTransport! {
         didSet {
-            imageManager = ImageManager(transporter: transporter)
+            imageManager = ImageManager(transport: transport)
             imageManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
-            defaultManager = DefaultManager(transporter: transporter)
+            defaultManager = DefaultManager(transport: transport)
             defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }

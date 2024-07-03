@@ -41,13 +41,13 @@ final class BaseViewController: UITabBarController {
         }
     }
     
-    var transporter: McuMgrTransport!
+    var transport: McuMgrTransport!
     var peripheral: DiscoveredPeripheral! {
         didSet {
-            let bleTransporter = McuMgrBleTransport(peripheral.basePeripheral)
-            bleTransporter.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
-            bleTransporter.delegate = self
-            transporter = bleTransporter
+            let bleTransport = McuMgrBleTransport(peripheral.basePeripheral)
+            bleTransport.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
+            bleTransport.delegate = self
+            transport = bleTransport
         }
     }
     
@@ -91,7 +91,7 @@ final class BaseViewController: UITabBarController {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        transporter?.close()
+        transport?.close()
     }
 }
 
@@ -103,7 +103,7 @@ extension BaseViewController: PeripheralDelegate {
         self.state = state
         
         if state == .connected {
-            let defaultManager = DefaultManager(transporter: transporter)
+            let defaultManager = DefaultManager(transport: transport)
             defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
             defaultManager.params { [weak self] response, error in
                 if let count = response?.bufferCount,

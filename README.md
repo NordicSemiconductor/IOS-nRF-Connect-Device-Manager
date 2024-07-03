@@ -116,7 +116,7 @@ A `FirmwareUpgradeManager` provides an easy way to perform firmware upgrades on 
 import iOSMcuManagerLibrary
 
 do {
-    // Initialize the BLE transporter using a scanned peripheral
+    // Initialize the BLE transport using a scanned peripheral
     let bleTransport = McuMgrBleTransport(cbPeripheral)
 
     // Initialize the FirmwareUpgradeManager using the transport and a delegate
@@ -224,7 +224,7 @@ Now, the issue is that there's a gap between the aforementioned API, and the out
 import iOSMcuManagerLibrary
 
 do {
-    // Initialize the BLE transporter using a scanned peripheral
+    // Initialize the BLE transport using a scanned peripheral
     let bleTransport = McuMgrBleTransport(cbPeripheral)
 
     // Initialize the FirmwareUpgradeManager using the transport and a delegate
@@ -252,7 +252,7 @@ SUIT, or [Software Update for the Internet of Things](https://datatracker.ietf.o
 import iOSMcuManagerLibrary
 
 do {
-    // Initialize the BLE transporter using a scanned peripheral
+    // Initialize the BLE transport using a scanned peripheral
     let bleTransport = McuMgrBleTransport(cbPeripheral)
 
     // Initialize the FirmwareUpgradeManager using the transport and a delegate
@@ -346,9 +346,9 @@ Setting `logDelegate` property in a manager gives access to low level logs, that
 ```swift
 import iOSMcuManagerLibrary
 
-// Initialize the BLE transporter using a scanned peripheral
+// Initialize the BLE transport using a scanned peripheral
 let bleTransport = McuMgrBleTransport(cbPeripheral)
-bleTransporter.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
+bleTransport.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
 
 // Initialize the DeviceManager using the transport and a delegate
 let deviceManager = DeviceManager(bleTransport, delegate)
