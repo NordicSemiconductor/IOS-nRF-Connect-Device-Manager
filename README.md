@@ -1,3 +1,8 @@
+> [!NOTE]  
+> This repository is a fork of the [McuManager iOS Library](https://github.com/JuulLabs-OSS/mcumgr-ios), which is no longer being supported by its original maintainer. As of 2021, we have taken ownership of the library, so all new features and bug fixes will be added here. Please, migrate your projects to point to this Git repsository in order to get future updates. See [migration guide](https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager#migration-from-the-original-repo).
+
+# nRF Connect Device Manager
+
 ![Swift](https://img.shields.io/badge/Swift-5.10-f05237.svg)
 ![Platforms](https://img.shields.io/badge/Platforms-iOS%20|%20iPadOS%20|%20macOS-333333.svg)
 [![License](https://img.shields.io/github/license/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/blob/master/LICENSE)
@@ -5,17 +10,16 @@
 [![Swift Package Manager](https://img.shields.io/badge/SwiftPM-Compatible-brightgreen)](https://swift.org/package-manager/)
 [![CocoaPods](https://img.shields.io/badge/CocoaPods-Compatible-brightgreen)](https://cocoapods.org/)
 
-# nRF Connect Device Manager
+nRF Connect Device Manager library is compatible with [McuManager (or McuMgr for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview) and [SUIT (shorthand for Software Update for the Internet of Things)](). McuManager is a management subsystem supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt. McuManager relies on its own [McuBoot](https://docs.mcuboot.com/) bootloader for secure bootstrapping after a firmware update and, uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), for communication over Bluetooth LE. The SMP Transport definition for Bluetooth Low Energy, which this library implements, [can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
 
-nRF Connect Device Manager library is compatible with [McuManager (McuMgr, for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview), a management subsystem supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt.  **It is the recommended protocol for Device Firmware Update(s) on new Nordic-powered devices going forward and should not be confused with the previous protocol, NordicDFU, serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library)**. McuManager uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), to send and receive message requests from compatible devices. The SMP Transport definition for Bluetooth Low Energy, which this library implements, [can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
+SUIT and McuManager are related, but not interchangeable. SUIT relies on its own bootloader, but communicates over the SMP Service. Additionally, SUIT supports some functionalities from McuManager, but is not guaranteed to do so. It's best to always check if a McuManager feature is supported by sending the request, rather than assuming it is.
 
 The library provides a transport agnostic implementation of the McuManager protocol. It contains a default implementation for BLE transport.
 
 > Minimum required iOS version is 9.0, originally released in Fall of 2015.
 
-### Note
-
-This repository is a fork of the [McuManager iOS Library](https://github.com/JuulLabs-OSS/mcumgr-ios), which is no longer being supported by its original maintainer. As of 2021, we have taken ownership of the library, so all new features and bug fixes will be added here. Please, migrate your projects to point to this Git repsository in order to get future updates. See [migration guide](https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager#migration-from-the-original-repo).
+> [!Warning]  
+> This library, the default & main API for Device Firmware Update by Nordic Semiconductor, **should not be confused with the previous protocol, NordicDFU**, serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library).
 
 ## Compatible Devices
 
@@ -112,6 +116,9 @@ This library provides `FirmwareUpgradeManager` as a convenience for upgrading th
 
 A `FirmwareUpgradeManager` provides an easy way to perform firmware upgrades on a device. A `FirmwareUpgradeManager` must be initialized with an `McuMgrTransport` which defines the transport scheme and device. Once initialized, a `FirmwareUpgradeManager` can perform one firmware upgrade at a time. Firmware upgrades are started using the `start(hash: Data, data: Data)` method and can be paused, resumed, and canceled using `pause()`, `resume()`, and `cancel()` respectively.
 
+> [!CAUTION]
+> **Always** make your start/pause/cancel DFU API calls from the Main Thread.
+
 ### Legacy / App Core-Only Upgrade Example
 
 ```swift
@@ -133,8 +140,6 @@ do {
     // Reading File / Image, Hash, etc. errors here.
 }
 ```
-
-**Note**: Always make your start/pause/cancel DFU API calls from the Main Thread.
 
 ### Why Hash, now?
 
@@ -248,7 +253,12 @@ Because of the JSON Manifest Parsing nature of the `McuMgrPackage` method, you m
 
 ### SUIT Example
 
-SUIT, or [Software Update for the Internet of Things](https://datatracker.ietf.org/wg/suit/about/), is another method of DFU that also makes use of the existing SMP Bluetooth Service. However, it places a lot of the logic (read: blame) onto the target firmware or device rather than the sender. This simplifies the internal process, but also makes parsing the raw CBOR more complicated. Regardless, from the sender's perspective, we only need to send the Data in full, and allow the target to figure things out. The only other argument needed is the Hash which, supports different Modes, also known as Types or Algorithms. The list of SUIT Algorithms includes SHA256, SHAKE128, SHA384, SHA512 and SHAKE256. Of these, the **only currently supported mode is SHA256**.
+SUIT, unlike McuManager, places a lot of the logic (read: blame) for firmware update onto the target device rather than the sender (aka 'you', the API user). This simplifies the internal process, but also makes parsing the raw Data and its contents much more complicated. For example, we can't ascertain the proper Hash signature of every component (file) sent to the firmware because rather than a fixed binary for each Slot or Core, SUIT is designed to represent a sequence of instructions for the bootloader to execute. This means the hashes for the final binaries to be flashed change on-the-fly during the firmware update on the target device's end.
+
+From the sender's perspective, we only need to send "the Data" in full, and allow the target to figure things out. This pack of bytes represents what we call the SUIT Envelope, which is the sequence of instructions for the firmware to run, akin to the code we write before feeding it into a compiler. These instructions might require other files outside the Envelope itself, known as resources, which will be requested via API Callback. There resources are usually part of a `.zip` package that includes the SUIT Envelope and a Manifest file similar to McuManager's. 
+
+> [!NOTE]  
+> **Resources don't need to have a valid Hash attached to them** since, as explained above, only the target device knows the proper Hash. **But the Envelope's Hash is required**, and it supports different Modes, also known as Types or Algorithms. The list of SUIT Algorithms includes SHA256, SHAKE128, SHA384, SHA512 and SHAKE256. Of these, the **only currently supported mode is SHA256**.
 
 ```swift
 import iOSMcuManagerLibrary
@@ -296,8 +306,6 @@ McuManager firmware upgrades can be performed following slightly different proce
 The `FirmwareUpgradeManager` contains an additional state, `validate`, which precedes the upload. The `validate` state checks the current image state of the device in an attempt to bypass certain states of the firmware upgrade. For example, if the image to upgrade to already exists in slot 1 on the device, the `FirmwareUpgradeManager` will skip `upload` and move directly to `test` (or `confirm` if `.confirmOnly` mode has been set) from `validate`. If the uploaded image is already active, and confirmed in slot 0, the upgrade will succeed immediately. In short, the `validate` state makes it easy to reattempt an upgrade without needing to re-upload the image or manually determine where to start.
 
 ### Firmware Upgrade Configuration
-
-![nRF53 Dual-Core SoC Diagram, which supports all of these features.](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/_images/ieee802154_nrf53_singleprot_design.svg)
 
 In version 1.2, new features were introduced to speed-up the Upload speeds, mirroring the work first done on the Android side, and they're all available through the new `FirmwareUpgradeConfiguration` struct.
 
