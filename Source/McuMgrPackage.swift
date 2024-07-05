@@ -137,16 +137,15 @@ fileprivate extension McuMgrPackage {
         guard let cacheDirectoryPath = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first else {
             throw McuMgrPackage.Error.unableToAccessCacheDirectory
         }
-        let cacheDirectoryURL = URL(fileURLWithPath: cacheDirectoryPath, isDirectory: true)
+        
+        let unzipLocationPath = cacheDirectoryPath + "/" + UUID().uuidString + "/"
+        let unzipLocationURL = URL(filePath: unzipLocationPath, directoryHint: .isDirectory)
         
         let fileManager = FileManager()
-        let contentURLs = try fileManager.contentsOfDirectory(at: cacheDirectoryURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
-        contentURLs.forEach { url in
-            _ = try? fileManager.removeItem(at: url)
-        }
-        
-        try fileManager.unzipItem(at: url, to: cacheDirectoryURL)
-        let unzippedURLs = try fileManager.contentsOfDirectory(at: cacheDirectoryURL, includingPropertiesForKeys: nil, options: [])
+        try fileManager.createDirectory(atPath: unzipLocationPath,
+                                        withIntermediateDirectories: false)
+        try fileManager.unzipItem(at: url, to: unzipLocationURL)
+        let unzippedURLs = try fileManager.contentsOfDirectory(at: unzipLocationURL, includingPropertiesForKeys: nil, options: [])
         
         guard let dfuManifestURL = unzippedURLs.first(where: { $0.pathExtension == "json" }) else {
             throw McuMgrPackage.Error.manifestFileNotFound
