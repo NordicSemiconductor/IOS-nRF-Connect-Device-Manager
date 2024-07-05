@@ -6,6 +6,7 @@
 
 import UIKit
 import iOSMcuManagerLibrary
+import UniformTypeIdentifiers
 
 final class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
     
@@ -34,8 +35,9 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     @IBAction func selectFirmware(_ sender: UIButton) {
         let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive", "com.apple.font-suitcase"]
-        let importMenu = UIDocumentMenuViewController(documentTypes: supportedDocumentTypes,
-                                                      in: .import)
+        let contentTypes = supportedDocumentTypes.compactMap { UTType($0) }
+        let importMenu = UIDocumentPickerViewController(forOpeningContentTypes: contentTypes,
+                                                        asCopy: true)
         importMenu.delegate = self
         importMenu.popoverPresentationController?.sourceView = actionSelect
         present(importMenu, animated: true, completion: nil)
@@ -338,15 +340,10 @@ extension FirmwareUpgradeViewController: SuitFirmwareUpgradeDelegate {
 
 // MARK: - Document Picker
 
-extension FirmwareUpgradeViewController: UIDocumentMenuDelegate, UIDocumentPickerDelegate {
+extension FirmwareUpgradeViewController: UIDocumentPickerDelegate {
     
-    func documentMenu(_ documentMenu: UIDocumentMenuViewController,
-                      didPickDocumentPicker documentPicker: UIDocumentPickerViewController) {
-        documentPicker.delegate = self
-        present(documentPicker, animated: true, completion: nil)
-    }
-    
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
+    func documentPicker(_ controller: UIDocumentPickerViewController,
+                        didPickDocumentAt url: URL) {
         self.package = nil
         
         switch parseAsMcuMgrPackage(url) {

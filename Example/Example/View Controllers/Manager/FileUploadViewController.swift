@@ -6,6 +6,7 @@
 
 import UIKit
 import iOSMcuManagerLibrary
+import UniformTypeIdentifiers
 
 class FileUploadViewController: UIViewController, McuMgrViewController {
 
@@ -22,7 +23,10 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var actionCancel: UIButton!
     
     @IBAction func selectFile(_ sender: UIButton) {
-        let importMenu = UIDocumentMenuViewController(documentTypes: ["public.data", "public.content"], in: .import)
+        let supportedDocumentTypes = ["public.data", "public.content"]
+        let contentTypes = supportedDocumentTypes.compactMap { UTType($0) }
+        let importMenu = UIDocumentPickerViewController(forOpeningContentTypes: contentTypes,
+                                                        asCopy: true)
         importMenu.delegate = self
         importMenu.popoverPresentationController?.sourceView = actionSelect
         present(importMenu, animated: true, completion: nil)
@@ -155,13 +159,8 @@ extension FileUploadViewController: FileUploadDelegate {
 }
 
 // MARK: - Document Picker
-extension FileUploadViewController: UIDocumentMenuDelegate, UIDocumentPickerDelegate {
-    
-    func documentMenu(_ documentMenu: UIDocumentMenuViewController,
-                      didPickDocumentPicker documentPicker: UIDocumentPickerViewController) {
-        documentPicker.delegate = self
-        present(documentPicker, animated: true, completion: nil)
-    }
+
+extension FileUploadViewController: UIDocumentPickerDelegate {
     
     func documentPicker(_ controller: UIDocumentPickerViewController,
                         didPickDocumentAt url: URL) {
