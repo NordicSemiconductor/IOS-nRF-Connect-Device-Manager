@@ -84,10 +84,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     public func start(package: McuMgrPackage,
                       using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
         guard let envelope = package.envelope else {
-            // McuMgr mode.
-            var mcuMgrConfiguration = configuration
-            mcuMgrConfiguration.suitMode = false
-            try start(images: package.images, using: mcuMgrConfiguration)
+            try start(images: package.images, using: configuration)
             return
         }
         
@@ -99,7 +96,6 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         let image = ImageManager.Image(image: 0, hash: sha256Hash, data: envelope.data)
         
         var suitConfiguration = configuration
-        suitConfiguration.suitMode = true
         suitConfiguration.upgradeMode = .uploadOnly
         try start(images: [image], using: suitConfiguration)
     }
@@ -1040,24 +1036,17 @@ public struct FirmwareUpgradeConfiguration: Codable {
     ///
     /// Set to `.Unknown` by default, since BootloaderInfo is a new addition for NCS 2.5 / SMPv2.
     public var bootloaderMode: BootloaderInfoResponse.Mode
-    /**
-     SUIT (Software Update for Internet of Things) Images don't support many McuMgr Commands,
-     like Reset. And 'Upgrade Modes' don't make sense for it either. We want to keep the same
-     frontend API but we need our backend to know to ignore things such as RESET for SUIT. We
-     wanted to add a new UpgradeMode, but that was going to cause other issues. So instead, this
-     toggle is the solution.
-     */
-    public var suitMode: Bool
     
     /// SMP Pipelining is considered Enabled for `pipelineDepth` values larger than `1`.
     public var pipeliningEnabled: Bool {
         return pipelineDepth > 1
     }
     
-    public init(estimatedSwapTime: TimeInterval = 0.0, eraseAppSettings: Bool = false, pipelineDepth: Int = 1,
-                byteAlignment: ImageUploadAlignment = .disabled, reassemblyBufferSize: UInt64 = 0,
+    public init(estimatedSwapTime: TimeInterval = 0.0, eraseAppSettings: Bool = false, 
+                pipelineDepth: Int = 1, byteAlignment: ImageUploadAlignment = .disabled,
+                reassemblyBufferSize: UInt64 = 0,
                 upgradeMode: FirmwareUpgradeMode = .confirmOnly,
-                bootloaderMode: BootloaderInfoResponse.Mode = .unknown, suitMode: Bool = false) {
+                bootloaderMode: BootloaderInfoResponse.Mode = .unknown) {
         self.estimatedSwapTime = estimatedSwapTime
         self.eraseAppSettings = eraseAppSettings
         self.pipelineDepth = pipelineDepth
@@ -1065,7 +1054,6 @@ public struct FirmwareUpgradeConfiguration: Codable {
         self.reassemblyBufferSize = min(reassemblyBufferSize, UInt64(UInt16.max))
         self.upgradeMode = upgradeMode
         self.bootloaderMode = bootloaderMode
-        self.suitMode = false
     }
 }
 
@@ -1134,9 +1122,9 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
                 return
             }
         case .uploadOnly:
-            // Nothing to do in SUIT since does not support RESET Command and will
+            // Nothing to do in SUIT since it does not support RESET Command and will
             // throw an Error if Reset is sent.
-            guard !configuration.suitMode else { break }
+            guard bootloader != .suit else { break }
             reset()
         }
         success()
