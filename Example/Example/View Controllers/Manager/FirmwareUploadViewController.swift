@@ -35,6 +35,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         let contentTypes = supportedDocumentTypes.compactMap { UTType($0) }
         let importMenu = UIDocumentPickerViewController(forOpeningContentTypes: contentTypes,
                                                         asCopy: true)
+        importMenu.allowsMultipleSelection = false
         importMenu.delegate = self
         importMenu.popoverPresentationController?.sourceView = actionSelect
         present(importMenu, animated: true, completion: nil)
