@@ -6,6 +6,7 @@
 
 import UIKit
 import iOSMcuManagerLibrary
+import UniformTypeIdentifiers
 
 // MARK: - FirmwareUploadViewController
 
@@ -31,8 +32,9 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
     @IBAction func selectFirmware(_ sender: UIButton) {
         let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive", "com.apple.font-suitcase"]
-        let importMenu = UIDocumentMenuViewController(documentTypes: supportedDocumentTypes,
-                                                      in: .import)
+        let contentTypes = supportedDocumentTypes.compactMap { UTType($0) }
+        let importMenu = UIDocumentPickerViewController(forOpeningContentTypes: contentTypes,
+                                                        asCopy: true)
         importMenu.delegate = self
         importMenu.popoverPresentationController?.sourceView = actionSelect
         present(importMenu, animated: true, completion: nil)
@@ -277,14 +279,10 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
 
 // MARK: - Document Picker
 
-extension FirmwareUploadViewController: UIDocumentMenuDelegate, UIDocumentPickerDelegate {
+extension FirmwareUploadViewController: UIDocumentPickerDelegate {
     
-    func documentMenu(_ documentMenu: UIDocumentMenuViewController, didPickDocumentPicker documentPicker: UIDocumentPickerViewController) {
-        documentPicker.delegate = self
-        present(documentPicker, animated: true, completion: nil)
-    }
-    
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
+    func documentPicker(_ controller: UIDocumentPickerViewController,
+                        didPickDocumentAt url: URL) {
         self.package = nil
         self.envelope = nil
         
