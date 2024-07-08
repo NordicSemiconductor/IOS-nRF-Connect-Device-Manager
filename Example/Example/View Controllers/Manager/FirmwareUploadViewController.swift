@@ -101,12 +101,12 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
     static let uploadImages = [0, 1, 2, 3]
     @IBAction func start(_ sender: UIButton) {
-        if let package {
-            startFirmwareUpload(package: package)
-        } else if let envelope {
+        if let envelope = package?.envelope {
             // SUIT has "no mode" to select
             // (We use modes in the code only, but SUIT has no concept of upload modes)
             startFirmwareUpload(envelope: envelope)
+        } else if let package {
+            startFirmwareUpload(package: package)
         }
     }
     
@@ -133,7 +133,6 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     }
     
     private var package: McuMgrPackage?
-    private var envelope: McuMgrSuitEnvelope?
     private var imageManager: ImageManager!
     var transport: McuMgrTransport! {
         didSet {
@@ -285,29 +284,19 @@ extension FirmwareUploadViewController: UIDocumentPickerDelegate {
     func documentPicker(_ controller: UIDocumentPickerViewController,
                         didPickDocumentAt url: URL) {
         self.package = nil
-        self.envelope = nil
         
-        switch parseAsMcuMgrPackage(url) {
+        switch parse(url) {
         case .success(let package):
             self.package = package
         case .failure(let error):
-            if error is McuMgrPackage.Error {
-                switch parseAsSuitEnvelope(url) {
-                case .success(let envelope):
-                    self.envelope = envelope
-                case .failure(let error):
-                    onParseError(error, for: url)
-                }
-            } else {
-                onParseError(error, for: url)
-            }
+            onParseError(error, for: url)
         }
         (parent as! ImageController).innerViewReloaded()
     }
     
     // MARK: - Private
     
-    func parseAsMcuMgrPackage(_ url: URL) -> Result<McuMgrPackage, Error> {
+    func parse(_ url: URL) -> Result<McuMgrPackage, Error> {
         do {
             let package = try McuMgrPackage(from: url)
             fileName.text = url.lastPathComponent
@@ -330,32 +319,8 @@ extension FirmwareUploadViewController: UIDocumentPickerDelegate {
         }
     }
     
-    func parseAsSuitEnvelope(_ url: URL) -> Result<McuMgrSuitEnvelope, Error> {
-        do {
-            let envelope = try McuMgrSuitEnvelope(from: url)
-            fileName.text = url.lastPathComponent
-            fileSize.text = envelope.sizeString()
-            fileSize.numberOfLines = 0
-            fileHash.text = envelope.digest.hashString()
-            fileHash.numberOfLines = 0
-            
-            dfuNumberOfBuffers.text = uploadConfiguration.pipelineDepth == 1 ? "Disabled" : "\(uploadConfiguration.pipelineDepth + 1)"
-            dfuByteAlignment.text = "\(uploadConfiguration.byteAlignment)"
-            dfuChunkSize.text = "\(uploadConfiguration.reassemblyBufferSize)"
-            
-            status.textColor = .secondary
-            status.text = "READY"
-            status.numberOfLines = 0
-            actionStart.isEnabled = true
-            return .success(envelope)
-        } catch {
-            return .failure(error)
-        }
-    }
-    
     func onParseError(_ error: Error, for url: URL) {
         self.package = nil
-        envelope = nil
         fileName.text = url.lastPathComponent
         fileSize.text = ""
         fileHash.text = ""
