@@ -618,7 +618,7 @@ public final class McuMgrPollResponse: McuMgrResponse {
      */
     public var isRequestingResource: Bool { sessionID != nil }
     
-    public var resource: FirmwareUpgradeManager.Resource? {
+    public var resource: FirmwareUpgradeResource? {
         guard let resourceID else { return nil }
         if resourceID.hasPrefix("file://") {
             let filename = String(resourceID.suffix(from: "file://".endIndex))

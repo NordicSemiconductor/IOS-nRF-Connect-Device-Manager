@@ -11,26 +11,6 @@ import CoreBluetooth
 
 public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserver {
     
-    // MARK: Resource
-    
-    public enum Resource: CustomStringConvertible {
-        case file(name: String)
-        
-        init?(resourceID: String) {
-            guard let filename = resourceID.components(separatedBy: "//").last else {
-                return nil
-            }
-            self = .file(name: String(filename))
-        }
-        
-        public var description: String {
-            switch self {
-            case .file(let name):
-                return "file://\(name)"
-            }
-        }
-    }
-    
     // MARK: Private Properties
     
     private let imageManager: ImageManager
@@ -149,14 +129,14 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     }
     
     /**
-     For SUIT (Software Update for Internet of Things), the target device might request some resource via the ``SuitFirmwareUpgradeDelegate/uploadRequestsResource(_:)`` callback. After that happens, `FirmwareUpgradeManager` will wait until the requested ``FirmwareUpgradeManager/Resource`` is provided via this API.
+     For SUIT (Software Update for Internet of Things), the target device might request some resource via the ``SuitFirmwareUpgradeDelegate/uploadRequestsResource(_:)`` callback. After that happens, `FirmwareUpgradeManager` will wait until the requested ``FirmwareUpgradeResource`` is provided via this API.
      
-     - parameter resource: The resource being provided ``FirmwareUpgradeManager/Resource``.
+     - parameter resource: The resource being provided ``FirmwareUpgradeResource``.
      - parameter data: The bytes of the resource itself.
      */
-    public func uploadResource(_ resource: Resource, image: ImageManager.Image) {
+    public func uploadResource(_ resource: FirmwareUpgradeResource, data: Data) {
         objc_sync_enter(self)
-        suitManager.uploadResource(image.data)
+        suitManager.uploadResource(data)
         objc_sync_exit(self)
     }
     
@@ -1135,7 +1115,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
 
 extension FirmwareUpgradeManager: SuitManagerDelegate {
     
-    public func uploadRequestsResource(_ resource: Resource) {
+    public func uploadRequestsResource(_ resource: FirmwareUpgradeResource) {
         guard let suitDelegate = delegate as? SuitFirmwareUpgradeDelegate else {
             delegate?.upgradeDidFail(inState: .upload, with: SuitManagerError.suitDelegateRequiredForResource(resource))
             return
@@ -1294,7 +1274,7 @@ public protocol SuitFirmwareUpgradeDelegate: FirmwareUpgradeDelegate {
     /**
      In SUIT (Software Update for the Internet of Things), various resources, such as specific files, URL contents, etc. may be requested by the firmware device. When it does, this callback will be triggered.
      */
-    func uploadRequestsResource(_ resource: FirmwareUpgradeManager.Resource)
+    func uploadRequestsResource(_ resource: FirmwareUpgradeResource)
 }
 
 // MARK: - FirmwareUpgradeImage

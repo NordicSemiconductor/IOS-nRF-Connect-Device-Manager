@@ -290,7 +290,7 @@ public class SuitManager: McuManager {
             }
             
             guard let resourceID = response.resourceID,
-                  let resource = FirmwareUpgradeManager.Resource(resourceID: resourceID),
+                  let resource = FirmwareUpgradeResource(resourceID),
                   let sessionID = response.sessionID else {
                 guard pollAttempts < Self.MAX_POLL_ATTEMPTS else {
                     // Assume success / device doesn't require anything.
@@ -395,7 +395,7 @@ enum SuitManagerState {
 // MARK: - SuitManagerError
 
 public enum SuitManagerError: Error, LocalizedError {
-    case suitDelegateRequiredForResource(_ resource: FirmwareUpgradeManager.Resource)
+    case suitDelegateRequiredForResource(_ resource: FirmwareUpgradeResource)
     
     public var errorDescription: String? {
         switch self {
@@ -412,5 +412,5 @@ public protocol SuitManagerDelegate: ImageUploadDelegate {
     /**
      In SUIT (Software Update for the Internet of Things), various resources, such as specific files, URL contents, etc. may be requested by the firmware device. When it does, this callback will be triggered.
      */
-    func uploadRequestsResource(_ resource: FirmwareUpgradeManager.Resource)
+    func uploadRequestsResource(_ resource: FirmwareUpgradeResource)
 }

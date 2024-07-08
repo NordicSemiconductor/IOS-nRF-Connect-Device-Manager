@@ -328,14 +328,14 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
 
 extension FirmwareUpgradeViewController: SuitFirmwareUpgradeDelegate {
     
-    func uploadRequestsResource(_ resource: FirmwareUpgradeManager.Resource) {
+    func uploadRequestsResource(_ resource: FirmwareUpgradeResource) {
         guard let package else { return }
         guard let resourceImage = package.image(forResource: resource) else {
             upgradeDidFail(inState: .upload,
                            with: McuMgrPackage.Error.resourceNotFound(resource))
             return
         }
-        dfuManager.uploadResource(resource, image: resourceImage)
+        dfuManager.uploadResource(resource, data: resourceImage.data)
     }
 }
 
