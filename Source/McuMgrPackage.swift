@@ -139,7 +139,7 @@ fileprivate extension McuMgrPackage {
         }
         
         let unzipLocationPath = cacheDirectoryPath + "/" + UUID().uuidString + "/"
-        let unzipLocationURL = URL(filePath: unzipLocationPath, directoryHint: .isDirectory)
+        let unzipLocationURL = URL(fileURLWithPath: unzipLocationPath, isDirectory: true)
         
         let fileManager = FileManager()
         try fileManager.createDirectory(atPath: unzipLocationPath,
