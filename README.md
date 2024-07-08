@@ -27,7 +27,7 @@ The library provides a transport agnostic implementation of the McuManager proto
 | :---: | :----: | :---: | :---: |
 | ![](nRF52-Series-small.png) | ![](nRF53-Series-small.png) | ![](nRF54-Series-small.png) | ![](nRF91-Series-small.png) |
 
-This library is designed to work with the SMP Transport over BLE. It is implemented and maintained by Nordic Semiconductor, **but it should work any devices communicating via SMP Protocol**. If you encounter an issue communicating with a device using any chip, not just Nordic, please file an Issue.
+This library is designed to work with the SMP Transport over BLE. It is implemented and maintained by Nordic Semiconductor, but it should work any devices communicating via SMP Protocol. **If you encounter an issue communicating with a device using any chip, not just Nordic, please file an Issue**.
 
 ## Library Adoption into an Existing Project (Install)
 
@@ -88,11 +88,11 @@ open nRF\ Connect\ Device\ Manager.xcworkspace
 
 # Introduction
 
-McuManager is an application layer protocol used to manage and monitor microcontrollers running Apache Mynewt and Zephyr. More specifically, McuManagr implements over-the-air (OTA) firmware upgrades, log and stat collection, and file-system and configuration management.
+McuManager is an application layer protocol used to manage and monitor microcontrollers running Apache Mynewt and Zephyr. More specifically, McuManager implements over-the-air (OTA) firmware upgrades, logs, stats, file-system and configuration management. Devices running SUIT as their bootloader might respond to McuManager commands, but it is not guaranteed.
 
 ## Command Groups
 
-McuManager are organized by functionality into command groups. In _mcumgr-ios_, command groups are called managers and extend the `McuManager` class. The managers (groups) implemented in _mcumgr-ios_ are:
+McuManager is organized by functionality into command groups. In _mcumgr-ios_, command groups are called managers and extend the `McuManager` class. The managers (groups) implemented in _mcumgr-ios_ are:
 
 * **`DefaultManager`**: Contains commands relevant to the OS. This includes task and memory pool statistics, device time read & write, and device reset.
 * **`ImageManager`**: Manage image state on the device and perform image uploads.
@@ -104,22 +104,22 @@ McuManager are organized by functionality into command groups. In _mcumgr-ios_, 
 * **`FileSystemManager`**: Download/upload files from the device file system.
 * **`BasicManager`**: Send 'Erase App Settings' command to the device.
 * **`ShellManager`**: Send McuMgr Shell commands to the device.
-* **`SuitManager`**: Send SUIT (Software Update for Internet of Things)-specific commands to the device.
+* **`SuitManager`**: Send SUIT (Software Update for Internet of Things)-specific commands to the device. This applies to devices running SUIT as their bootloader.
 
 # Firmware Upgrade
 
 Firmware upgrade is generally a four step process performed using commands from the `image` and `default` commands groups: `upload`, `test`, `reset`, and `confirm`.
 
-This library provides `FirmwareUpgradeManager` as a convenience for upgrading the image running on a device. 
+This library provides `FirmwareUpgradeManager` as a convenience for upgrading the image running on a device. `FirmwareUpgradeManager` will forward McuMgr/McuBoot-specific commands to `ImageManager`, or redirect them to `SuitManager` if a SUIT upgrade procedure (such as the upload being a SUIT Envelope) is detected.
 
 ## FirmwareUpgradeManager
 
-A `FirmwareUpgradeManager` provides an easy way to perform firmware upgrades on a device. A `FirmwareUpgradeManager` must be initialized with an `McuMgrTransport` which defines the transport scheme and device. Once initialized, a `FirmwareUpgradeManager` can perform one firmware upgrade at a time. Firmware upgrades are started using the `start(hash: Data, data: Data)` method and can be paused, resumed, and canceled using `pause()`, `resume()`, and `cancel()` respectively.
+`FirmwareUpgradeManager` provides an easy way to perform firmware upgrades on a device. A `FirmwareUpgradeManager` must be initialized with an `McuMgrTransport` which defines the transport scheme and device. Once initialized, `FirmwareUpgradeManager` can perform one firmware upgrade at a time. Firmware upgrades are started using the `start(package: McuMgrPackage)` function and can be paused, resumed, and canceled using `pause()`, `resume()`, and `cancel()` respectively.
 
 > [!CAUTION]
 > **Always** make your start/pause/cancel DFU API calls from the Main Thread.
 
-### Legacy / App Core-Only Upgrade Example
+### McuMgrPackage API
 
 ```swift
 import iOSMcuManagerLibrary
@@ -131,21 +131,31 @@ do {
     // Initialize the FirmwareUpgradeManager using the transport and a delegate
     let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
 
-    let imageData = /* Read Image Data */
-    let imageHash = try McuMgrImage(data: imageData).hash
+    let packageURL = /* Obtain URL to the file user wants to Upload */
+    let package = try McuMgrPackage(from: packageURL)
 
-    // Start the firmware upgrade with the image data
-    dfuManager.start(hash: imageHash, data: imageData)
+    // Start the firmware upgrade with the given package
+    dfuManager.start(package: package)
 } catch {
-    // Reading File / Image, Hash, etc. errors here.
+    // Package initialisation errors here.
 }
 ```
 
-### Why Hash, now?
+This is our new, improved, all-conquering API. You create a `McuMgrPackage`, and you give it to the `FirmwareUpgradeManager`. [There's no Step Three](https://www.youtube.com/watch?v=A0QK0JfHzhg&pp). This API supports:
 
-Hash was added as a parameter as part of our support for SUIT and DirectXIP (for more information, see below). It is now possible, with SUIT, to selectively pick from within a single 'image' different hashes to Upload for the same 'slot'. Therefore, a way to determine which specific bag of bytes of the same Image the user wants to upload is required. There were two ways of solving this - trying to make the library 'smart' and remove work, or, provide the library user (developer) the freedom to decide. It is a pain to have to add a new parameter, but we have alternative APIs to try to help with this process.
+- [x] .bin file(s) (Single-Core nRF52xxx) McuMgr Application Upgrade
+- [x] .suit file(s) (Canonical nRF54xx) SUIT Upgrade
+- [x] .zip file(s)
+  - [x] DirectXIP (nRF52840) McuMgr Upgrade
+  - [x] Multi-Image (Application Core, Network Core nRF5340) McuMgr Upgrade
+  - [x] Multi-Image (Polling - Resources Required nRF54xx) SUIT Upgrade
+- [ ] Custom Uploads
 
-### Multi-Image DFU Example
+This is the API you should be using 99% of the time, unless you want to do something specific. For example, you want to unpack your own package, and upload only certain images / resources for specific cores, which is very rare.
+
+Have a look at `FirmwareUpgradeViewController.swift` from the Example project for a more detailed usage sample.
+
+### Custom Multi-Image Upload Example
 
 ```swift
 public class ImageManager: McuManager {
@@ -161,7 +171,9 @@ public class ImageManager: McuManager {
 }
 ```
 
-The above is the input type for Multi-Image DFU call, where a value of `0` for the `image` parameter means **App Core**, and an input of `1` means **Net Core**. These representations are of course subject to change as we expand the capabilities of our products. For the `slot` parameter, you will typically want to set it to `1`, which is the alternate slot that is currently not in use for that specific core. Then, after upload, the firmware device will reset to swap over its slots, making the contents previously uploaded to slot `1` (now in slot `0` after the swap) as active, and vice-versa.
+The above is the input type for Image-based API call, where a value of `0` for the `image` parameter means **App Core**, and an input of `1` means **Net Core**. These representations were originally intended for McuMgr/McuBoot based products, and not SUIT. In SUIT, there's no concept of 'image' or 'slot', so they're ignored. But to keep the same API reusable for McuMgr/McuBoot and SUIT devices, but we keep them for backwards compatibility. 
+
+For McuMgr/McuBoot, you will typically want to set it the `slot` parameter to `1`, which is the alternate slot that is currently not in use for that specific core. Then, after upload, the firmware device will reset to swap over its slots, making the contents previously uploaded to slot `1` (now in slot `0` after the swap) as active, and vice-versa.
 
 With the Image struct at hand, it's straightforward to make a call to start DFU for either or both cores:
 
@@ -193,7 +205,9 @@ try {
 }
 ```
 
-Whereas non-DirectXIP packages target the secondary / non-active slot, also known as slot `1`, for each `ImageManager.Image`, special attention must be given to DirectXIP packages. Since they provide multiple hashes of the same `ImageManager.Image`, one for each available slot. This is because firmware supporting DirectXIP can boot from either slot, not requiring a swap. So, for DirectXIP the `[ImageManager.Image]` array might closer to:
+### DirectXIP Provision
+
+Whereas non-DirectXIP packages target the secondary / non-active slot, also known as slot `1` for each `ImageManager.Image`, special attention must be given to DirectXIP packages. Since they provide multiple hashes for the same `ImageManager.Image`, one for each available slot. This is because firmware supporting DirectXIP can boot from either slot, not requiring a swap. So, for DirectXIP the `[ImageManager.Image]` array might look closer to:
 
 ```swift
 import iOSMcuManagerLibrary
@@ -223,42 +237,20 @@ try {
 
 ### Multi-Image DFU Format
 
-Usually, when performing Multi-Image DFU, the delivery format of the attached images for each core will be in a `.zip` file. This is because the `.zip` file allows us to bundle the necessary information, including the images for each core and which image should be uploaded to each core. This association between the image files, usually in `.bin` format, and which core they should be uploaded to, is written in a mandatory JSON format called the Manifest. This `manifest.json` is generated by our nRF Connect SDK as part of our Zephyr build system, [as documented here](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/app_dev/build_and_config_system/index.html). You can look at the `McuMgrManifest` struct definition within the library for an insight into the information contained within the manifest.
+Usually, when performing Multi-Image DFU, and even SUIT updates, the delivery format of the attached images for each core will be in a `.zip` file. This is because the `.zip` file allows us to bundle the necessary information, including the images for each core and which image should be uploaded to each core. This association between the image files, usually in `.bin` format, and which core they should be uploaded to, is written in a mandatory JSON format called the Manifest. This `manifest.json` is generated by our nRF Connect SDK as part of our Zephyr build system, [as documented here](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/app_dev/build_and_config_system/index.html). You can look at the `McuMgrManifest` struct definition within the library for an insight into the information contained within the manifest.
 
-Now, the issue is that there's a gap between the aforementioned API, and the output from our Zephyr build system, which is a `.zip` file. To bridge this gap, we wrote `McuMgrPackage`, which takes a `URL` in its `init()` function. So, given the `URL` to the `.zip` file, it is possible to kickstart Multi-Image DFU in this manner:
+To bridge the gap between the Custom Image Upload API and the output from our Zephyr build system, we wrote `McuMgrPackage`, which takes a `URL` in its `init()` function. Because of the JSON Manifest Parsing nature of the `McuMgrPackage` method, you might encounter corner cases / crashes. If you find these, please report them back to us. But regardless, the McuMgrPackage shortcut is a wrapper that initialises the aforementioned `[ImageManager.Image]` array API. So you can always fallback to that.
 
-```swift
-import iOSMcuManagerLibrary
-
-do {
-    // Initialize the BLE transport using a scanned peripheral
-    let bleTransport = McuMgrBleTransport(cbPeripheral)
-
-    // Initialize the FirmwareUpgradeManager using the transport and a delegate
-    let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
-
-    // Read Multi-Image DFU package
-    let dfuPackage = try McuMgrPackage(from: dfuPackageUrl)
-
-    // Start Multi-Image DFU firmware upgrade
-    dfuManager.start(images: dfuPackage.images)
-} catch {
-    // try McuMgrPackage(from:) will throw McuMgrPackage.Error(s) here.
-}
-```
-
-Have a look at `FirmwareUpgradeViewController.swift` from the Example project for a more detailed usage sample.
-
-Because of the JSON Manifest Parsing nature of the `McuMgrPackage` method, you might encounter corner cases / crashes. If you find these, please report them back to us. But regardless, the McuMgrPackage shortcut is a wrapper that initialises the aforementioned `[ImageManager.Image]` array API. So you can always fallback to that.
-
-### SUIT Example
+### Tell me about SUIT
 
 SUIT, unlike McuManager, places a lot of the logic (read: blame) for firmware update onto the target device rather than the sender (aka 'you', the API user). This simplifies the internal process, but also makes parsing the raw Data and its contents much more complicated. For example, we can't ascertain the proper Hash signature of every component (file) sent to the firmware because rather than a fixed binary for each Slot or Core, SUIT is designed to represent a sequence of instructions for the bootloader to execute. This means the hashes for the final binaries to be flashed change on-the-fly during the firmware update on the target device's end.
 
-From the sender's perspective, we only need to send "the Data" in full, and allow the target to figure things out. This pack of bytes represents what we call the SUIT Envelope, which is the sequence of instructions for the firmware to run, akin to the code we write before feeding it into a compiler. These instructions might require other files outside the Envelope itself, known as resources, which will be requested via API Callback. There resources are usually part of a `.zip` package that includes the SUIT Envelope and a Manifest file similar to McuManager's. 
+From the sender's perspective, we only need to send "the Data" in full, and allow the target to figure things out. This pack of bytes represents what we call the SUIT Envelope, which is the sequence of instructions for the firmware to run, akin to the code we write before feeding it into a compiler. These instructions might require other files outside the Envelope itself, known as resources, which will be requested via API Callback. These resources are usually part of a `.zip` package that includes the SUIT Envelope and a Manifest file derivative from McuManager's. 
 
 > [!NOTE]  
 > **Resources don't need to have a valid Hash attached to them** since, as explained above, only the target device knows the proper Hash. **But the Envelope's Hash is required**, and it supports different Modes, also known as Types or Algorithms. The list of SUIT Algorithms includes SHA256, SHAKE128, SHA384, SHA512 and SHAKE256. Of these, the **only currently supported mode is SHA256**.
+
+Here's sample code in case you'd like to set up a SUIT upgrade using the `ImageManager.Image` API:
 
 ```swift
 import iOSMcuManagerLibrary
@@ -278,21 +270,28 @@ do {
         throw McuMgrSuitParseError.supportedAlgorithmNotFound
     }
 
-    // Set Configuration for SUIT
-    var configuration = FirmwareUpgradeConfiguration()
-    configuration.suitMode = true
-    // Other Upgrade Modes can be set, but upgrade will fail since
-    // SUIT doesn't support TEST and CONFIRM commands for example. 
-    configuration.upgradeMode = .uploadOnly
-    try dfuManager.start(hash: sha256Hash, data: envelope.data, using: configuration)
+    let suitImage = ImageManager.Image(image: 0, hash: sha256Hash, data: envelope.data)
+    try dfuManager.start(images: [suitImage])
 } catch {
     // Handle errors from McuMgrSuitEnvelope init, start() API call, etc.
 }
 ```
 
+#### SuitFirmwareUpgradeDelegate
+
+The delegate type you usually give `FirmwareUpgradeManager` is `FirmwareUpgradeDelegate`. This will cover any needs for McuMgr/McuBoot upgrades, as well as the 'Canonical' variant of SUIT, meaning only the Envelope needs to be sent. However, when the upgrade file is a `.zip` file, there might be additional resources, such as files, that the target firmware might request. When this happens, a `SuitFirmwareUpgradeDelegate`, an extension of `FirmwareUpgradeDelegate`, is required. `SuitFirmwareUpgradeDelegate` adds a new function to inform you of when a resource is needed. Most of the time, the requested resource will be part of the `.zip` package, so it'll be a very simple implementation. Here's an example:
+
+```swift
+
+func uploadRequestsResource(_ resource: FirmwareUpgradeResource) {
+    let image: ImageManager.Image! = package?.image(forResource: resource)
+    firmwareUpgradeManager.uploadResource(resource, data: image.data)
+}
+```
+
 ### Firmware Upgrade Mode
 
-McuManager firmware upgrades can be performed following slightly different procedures. These different upgrade modes determine the commands sent after the `upload` step. The `FirmwareUpgradeManager` can be configured to perform these upgrade variations by setting the `upgradeMode` in `FirmwareUpgradeManager`'s `configuration` property, explained below. (NOTE: this was previously set with `mode` property of `FirmwareUpgradeManager`, now removed) The different firmware upgrade modes are as follows:
+McuManager firmware upgrades can be performed following slightly different procedures. These different upgrade modes determine the commands sent after the `upload` step. `FirmwareUpgradeManager` can be configured to perform these upgrade variations by setting the `upgradeMode` in `FirmwareUpgradeManager`'s `configuration` property, explained below. (NOTE: this was previously set with `mode` property of `FirmwareUpgradeManager`, now removed) The different firmware upgrade modes are as follows:
 
 * **`.testAndConfirm`**: This mode is the **default and recommended mode** for performing upgrades due to it's ability to recover from a bad firmware upgrade. The process for this mode is `upload`, `test`, `reset`, `confirm`. 
 * **`.confirmOnly`**: This mode is **not recommended, except for Multi-Image DFU where it is the only supported mode**. If the device fails to boot into the new image, it will not be able to recover and will need to be re-flashed. The process for this mode is `upload`, `confirm`, `reset`.
@@ -303,7 +302,7 @@ McuManager firmware upgrades can be performed following slightly different proce
 
 `FirmwareUpgradeManager` acts as a simple, mostly linear state machine which is determined by the `mode`. As the manager moves through the firmware upgrade process, state changes are provided through the `FirmwareUpgradeDelegate`'s `upgradeStateDidChange` method.
 
-The `FirmwareUpgradeManager` contains an additional state, `validate`, which precedes the upload. The `validate` state checks the current image state of the device in an attempt to bypass certain states of the firmware upgrade. For example, if the image to upgrade to already exists in slot 1 on the device, the `FirmwareUpgradeManager` will skip `upload` and move directly to `test` (or `confirm` if `.confirmOnly` mode has been set) from `validate`. If the uploaded image is already active, and confirmed in slot 0, the upgrade will succeed immediately. In short, the `validate` state makes it easy to reattempt an upgrade without needing to re-upload the image or manually determine where to start.
+`FirmwareUpgradeManager` contains an additional state, `validate`, which precedes the upload. The `validate` state checks the current image state of the device in an attempt to bypass certain states of the firmware upgrade. For example, if the image to upgrade to already exists in slot 1 on the device, `FirmwareUpgradeManager` will skip `upload` and move directly to `test` (or `confirm` if `.confirmOnly` mode has been set) from `validate`. If the uploaded image is already active, and confirmed in slot 0, the upgrade will succeed immediately. In short, the `validate` state makes it easy to reattempt an upgrade without needing to re-upload the image or manually determine where to start.
 
 ### Firmware Upgrade Configuration
 
@@ -331,27 +330,22 @@ let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
 let nonPipelinedConfiguration = FirmwareUpgradeConfiguration(
     estimatedSwapTime: 10.0, eraseAppSettings: false, pipelineDepth: 2,
 )
-
-// Legacy / App-Core Only DFU Example
-dfuManager.start(data: imageData, using: nonPipelinedConfiguration)
+dfuManager.start(package: package, using: nonPipelinedConfiguration)
 
 // Pipelined Example
 let pipelinedConfiguration = FirmwareUpgradeConfiguration(
     estimatedSwapTime: 10.0, eraseAppSettings: true, pipelineDepth: 4,
     byteAlignment: .fourByte
 )
-
-// Multi-Image DFU Example
-dfuManager.start(images: images, using: pipelinedConfiguration)
+dfuManager.start(package: package, using: pipelinedConfiguration)
 ```
-
-**Note**: You can of course mix-and-match configurations and the input parameter type of the images to upload.
 
 # Logging
 
 Setting `logDelegate` property in a manager gives access to low level logs, that can help debugging both the app and your device. Messages are logged on 6 log levels, from `.debug` to `.error`, and additionally contain a `McuMgrLogCategory`, which identifies the originating component. Additionally, the `logDelegate` property of `McuMgrBleTransport` provides access to the BLE Transport logs.
 
 ### Example
+
 ```swift
 import iOSMcuManagerLibrary
 
