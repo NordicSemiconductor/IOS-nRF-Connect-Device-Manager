@@ -176,7 +176,9 @@ fileprivate extension McuMgrPackage {
                 guard let imageURL = unzippedURLs.first(where: { $0.absoluteString.contains(manifestFile.file) }) else {
                     throw McuMgrPackage.Error.manifestImageNotFound
                 }
-                return try ImageManager.Image(fromBinFile: imageURL)
+                let imageData = try Data(contentsOf: imageURL)
+                let imageHash = try McuMgrImage(data: imageData).hash
+                return ImageManager.Image(manifestFile, hash: imageHash, data: imageData)
             }
             envelope = nil
             resources = nil
