@@ -61,7 +61,7 @@ public struct McuMgrPackage {
         return name
     }
     
-    public func image(forResource resource: FirmwareUpgradeManager.Resource) -> ImageManager.Image? {
+    public func image(forResource resource: FirmwareUpgradeResource) -> ImageManager.Image? {
         switch resource {
         case .file(let name):
             return resources?.first(where: {
@@ -99,7 +99,7 @@ public extension McuMgrPackage {
     enum Error: Swift.Error, LocalizedError {
         case deniedAccessToScopedResource, notAValidDocument, unableToAccessCacheDirectory
         case manifestFileNotFound, manifestImageNotFound
-        case resourceNotFound(_ resource: FirmwareUpgradeManager.Resource)
+        case resourceNotFound(_ resource: FirmwareUpgradeResource)
         
         public var errorDescription: String? {
             switch self {
