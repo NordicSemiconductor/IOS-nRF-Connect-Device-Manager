@@ -93,11 +93,18 @@ public class SuitManager: McuManager {
         guard let i = roleIndex else { return }
         if i < roles.count {
             let role = roles[i]
-            logDelegate?.log("Sending Manifest State command for Role \(role.description)", ofCategory: .suit,
-                                  atLevel: .verbose)
+            logDelegate?.log("Sending Manifest State command for Role \(role.description)",
+                             ofCategory: .suit, atLevel: .verbose)
             getManifestState(for: role, callback: roleStateCallback)
         } else {
+            let mandatoryHeaderData = McuManager.buildPacket(scheme: .ble, version: .SMPv2,
+                                                             op: .read, flags: 0,
+                                                             group: McuMgrGroup.suit.rawValue,
+                                                             sequenceNumber: 0,
+                                                             commandId: SuitID.manifestList,
+                                                             payload: [:])
             let suitResponse = try? SuitListResponse(cbor: nil)
+            suitResponse?.header = try? McuMgrHeader(data: mandatoryHeaderData)
             suitResponse?.states = responses
             callback?(suitResponse, nil)
         }
