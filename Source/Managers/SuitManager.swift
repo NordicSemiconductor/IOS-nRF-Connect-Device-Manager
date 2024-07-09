@@ -64,7 +64,7 @@ public class SuitManager: McuManager {
     private var state: SuitManagerState = .none
     private weak var uploadDelegate: SuitManagerDelegate?
     
-    private var callback: ManifestCallback?
+    private var callback: McuMgrCallback<SuitListResponse>?
     private var roleIndex: Int?
     private var roles: [McuMgrManifestListResponse.Manifest.Role] = []
     private var responses: [McuMgrManifestStateResponse] = []
@@ -77,16 +77,16 @@ public class SuitManager: McuManager {
     
     // MARK: List
     
-    public typealias ManifestCallback = ([McuMgrManifestStateResponse], Error?) -> Void
     /**
      Command allows to get information about roles of manifests supported by the device.
      */
-    public func listManifest(callback: @escaping ManifestCallback) {
+    public func listManifest(callback: @escaping McuMgrCallback<SuitListResponse>) {
         self.callback = callback
         roleIndex = 0
         roles = []
         responses = []
-        send(op: .read, commandId: SuitID.manifestList, payload: nil, callback: listManifestCallback)
+        send(op: .read, commandId: SuitID.manifestList, payload: nil, 
+             callback: listManifestCallback)
     }
     
     private func validateNext() {
@@ -97,7 +97,9 @@ public class SuitManager: McuManager {
                                   atLevel: .verbose)
             getManifestState(for: role, callback: roleStateCallback)
         } else {
-            callback?(responses, nil)
+            let suitResponse = try? SuitListResponse(cbor: nil)
+            suitResponse?.states = responses
+            callback?(suitResponse, nil)
         }
     }
     
@@ -108,7 +110,7 @@ public class SuitManager: McuManager {
         
         guard error == nil, let response, response.rc != 8 else {
             self.logDelegate?.log("List Manifest Callback not Supported.", ofCategory: .suit, atLevel: .error)
-            self.callback?([], error)
+            self.callback?(nil, error)
             return
         }
         
