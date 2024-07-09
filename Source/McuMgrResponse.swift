@@ -503,64 +503,89 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
     public var signatureCheck: SignatureVerification?
     public var sequenceNumber: UInt64?
     
-    public enum DigestAlgorithm: Int {
+    public enum DigestAlgorithm: Int, RawRepresentable, Codable, CustomStringConvertible {
         case sha256 = -16
         case sha512 = -44
+        
+        public var description: String {
+            switch self {
+            case .sha256:
+                return "SHA256"
+            case .sha512:
+                return "SHA512"
+            }
+        }
     }
     
-    public enum SignatureVerification: UInt64 {
+    public enum SignatureVerification: UInt64, RawRepresentable, Codable, CustomStringConvertible {
         case notChecked = 2
         case failed = 3
         case passed = 4
+        
+        public var description: String {
+            switch self {
+            case .notChecked:
+                return "Signature Verification is not performed."
+            case .failed:
+                return "Signature Verification has failed."
+            case .passed:
+                return "Signature Verification passed."
+            }
+        }
     }
     
-    public enum DowngradePreventionPolicy: UInt64 {
-        /**
-         No downgrade prevention.
-         */
+    public enum DowngradePreventionPolicy: UInt64, RawRepresentable, Codable, CustomStringConvertible {
         case disabled = 1
-        /**
-         Update forbidden if candidate version is lower than installed version.
-         */
         case enabled = 2
-        /**
-         Unknown downgrade prevention policy.
-         */
         case unknown = 3
+        
+        public var description: String {
+            switch self {
+            case .disabled:
+                return "No downgrade prevention."
+            case .enabled:
+                return "Update forbidden if candidate version is lower than installed version."
+            case .unknown:
+                return "Unknown downgrade prevention policy."
+            }
+        }
     }
     
-    public enum IndependentUpdateabilityPolicy: UInt64 {
-        /**
-         Independent update is forbidden.
-         */
+    public enum IndependentUpdateabilityPolicy: UInt64, RawRepresentable, Codable, CustomStringConvertible {
         case denied = 1
-        /**
-         Independent update is allowed.
-         */
         case allowed = 2
-        /**
-         Unknown independent updateability policy.
-         */
         case unknown = 3
+        
+        public var description: String {
+            switch self {
+            case .denied:
+                return "Independent update is forbidden."
+            case .allowed:
+                return "Independent update is allowed."
+            case .unknown:
+                return "Unknown independent updateability policy."
+            }
+        }
     }
     
-    public enum SignatureVerificationPolicy: UInt64 {
-        /**
-         Do not verify manifest signature.
-         */
+    public enum SignatureVerificationPolicy: UInt64, RawRepresentable, Codable, CustomStringConvertible {
         case disabled = 1
-        /**
-         Verify the manifest signature only when performing an update.
-         */
         case enabledOnUpdate = 2
-        /**
-         Verify the manifest signature both when performing an update and booting.
-         */
         case enabledOnUpdateAndBoot = 3
-        /**
-         Unknown signature verification policy.
-         */
         case unknown
+        
+        public var description: String {
+            switch self {
+            case .disabled:
+                return "Do not verify manifest signature."
+            case .enabledOnUpdate:
+                return "Verify the manifest signature only when performing an update."
+            case .enabledOnUpdateAndBoot:
+                return "Verify the manifest signature both when performing an update and booting."
+            case .unknown:
+                return "Unknown signature verification policy."
+            }
+        }
     }
     
     public required init(cbor: CBOR?) throws {
