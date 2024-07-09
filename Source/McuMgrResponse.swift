@@ -596,6 +596,23 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
     }
 }
 
+// MARK: - SuitListResponse
+
+/**
+ This response type is not a part of the McuMgr/SUIT Protocol. We've added it to make the library API side match what most other APIs do, which is to return a ``McuMgrResponse`` for List in ``SuitManager``.
+ */
+public final class SuitListResponse: McuMgrResponse {
+    
+    public var states: [McuMgrManifestStateResponse]?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.array(states)? = cbor?["states"] {
+            self.states = try CBOR.toObjectArray(array: states) ?? []
+        }
+    }
+}
+
 // MARK: - McuMgrPollResponse
 
 public final class McuMgrPollResponse: McuMgrResponse {
