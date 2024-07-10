@@ -97,6 +97,11 @@ public class SuitManager: McuManager {
                              ofCategory: .suit, atLevel: .verbose)
             getManifestState(for: role, callback: roleStateCallback)
         } else {
+            guard roles.count == responses.count else {
+                callback?(nil, SuitManagerError.listRoleResponseMismatch(roleCount: roles.count, responseCount: responses.count))
+                return
+            }
+            
             let mandatoryHeaderData = McuManager.buildPacket(scheme: .ble, version: .SMPv2,
                                                              op: .read, flags: 0,
                                                              group: McuMgrGroup.suit.rawValue,
@@ -105,6 +110,7 @@ public class SuitManager: McuManager {
                                                              payload: [:])
             let suitResponse = try? SuitListResponse(cbor: nil)
             suitResponse?.header = try? McuMgrHeader(data: mandatoryHeaderData)
+            suitResponse?.roles = roles
             suitResponse?.states = responses
             callback?(suitResponse, nil)
         }
@@ -405,11 +411,14 @@ enum SuitManagerState {
 
 public enum SuitManagerError: Error, LocalizedError {
     case suitDelegateRequiredForResource(_ resource: FirmwareUpgradeResource)
+    case listRoleResponseMismatch(roleCount: Int, responseCount: Int)
     
     public var errorDescription: String? {
         switch self {
         case .suitDelegateRequiredForResource(let resource):
             return "A \(String(describing: SuitFirmwareUpgradeDelegate.self)) delegate is required since the firmware is requesting resource \(resource.description)."
+        case .listRoleResponseMismatch(let roleCount, let responseCount):
+            return "The number of returned List Roles (\(roleCount) does not match the Manifest States \(responseCount)."
         }
     }
 }

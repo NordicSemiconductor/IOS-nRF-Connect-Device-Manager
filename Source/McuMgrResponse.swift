@@ -628,12 +628,22 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
  */
 public final class SuitListResponse: McuMgrResponse {
     
+    public var roles: [McuMgrManifestListResponse.Manifest.Role]?
     public var states: [McuMgrManifestStateResponse]?
     
+    /**
+     Disclaimer: this is not used. I wrote this to make the library look good. The sole purpose of ``SuitListResponse`` is to have a ``McuMgrResponse`` type to return for its own LIST command variant.
+     */
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
+        if case let CBOR.array(roles)? = cbor?["roles"] {
+            self.roles = roles.compactMap { (cbor: CBOR) -> McuMgrManifestListResponse.Manifest.Role? in
+                guard case let CBOR.unsignedInt(roleValue) = cbor else { return nil }
+                return McuMgrManifestListResponse.Manifest.Role(rawValue: roleValue)
+            }
+        }
         if case let CBOR.array(states)? = cbor?["states"] {
-            self.states = try CBOR.toObjectArray(array: states) ?? []
+            self.states = try CBOR.toObjectArray(array: states)
         }
     }
 }
