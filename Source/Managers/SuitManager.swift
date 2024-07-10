@@ -273,7 +273,7 @@ public class SuitManager: McuManager {
                 self.transport.addObserver(self)
                 // While waiting for disconnection, poll.
                 // The Device might tell us it needs a resource.
-                self.poll(callback: pollingCallback)
+                self.poll(callback: self.pollingCallback)
             }
         }
     }
