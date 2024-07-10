@@ -130,7 +130,7 @@ public class SuitManager: McuManager {
         let roles = response.manifests.compactMap(\.role)
         self.roleIndex = 0
         self.roles = roles
-        if #available(iOS 13.0, *) {
+        if #available(iOS 13.0, macOS 10.5, *) {
             let rolesList = ListFormatter.localizedString(byJoining: roles.map(\.description))
             self.logDelegate?.log("Received Response with Roles: \(rolesList)", ofCategory: .suit, atLevel: .debug)
         }
@@ -232,9 +232,9 @@ public class SuitManager: McuManager {
     // MARK: uploadCallback
     
     private lazy var uploadCallback: McuMgrCallback<McuMgrUploadResponse> = { [weak self] response, error in
-        guard let self else { return }
+        guard let self = self else { return }
         
-        guard let uploadData else {
+        guard let uploadData = self.uploadData else {
             self.uploadDelegate?.uploadDidFail(with: ImageUploadError.invalidData)
             return
         }
@@ -270,7 +270,7 @@ public class SuitManager: McuManager {
                 self.upload(uploadData, at: offset)
             } else {
                 // Listen for disconnection event, which signals update is complete.
-                transport.addObserver(self)
+                self.transport.addObserver(self)
                 // While waiting for disconnection, poll.
                 // The Device might tell us it needs a resource.
                 self.poll(callback: pollingCallback)
@@ -281,9 +281,9 @@ public class SuitManager: McuManager {
     // MARK: pollingCallback
     
     private lazy var pollingCallback: McuMgrCallback<McuMgrPollResponse> = { [weak self] response, error in
-        guard let self else { return }
+        guard let self = self else { return }
         
-        guard state.isInProgress else {
+        guard self.state.isInProgress else {
             // Success means firmware device disconnected, which can trigger errors.
             // So if we've considered the upload successful already, we don't care
             // about this callback.
@@ -307,7 +307,7 @@ public class SuitManager: McuManager {
             guard let resourceID = response.resourceID,
                   let resource = FirmwareUpgradeResource(resourceID),
                   let sessionID = response.sessionID else {
-                guard pollAttempts < Self.MAX_POLL_ATTEMPTS else {
+                guard self.pollAttempts < Self.MAX_POLL_ATTEMPTS else {
                     // Assume success / device doesn't require anything.
                     self.uploadDelegate?.uploadDidFinish()
                     return
