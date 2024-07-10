@@ -18,7 +18,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  iOSMcuManagerLibrary: 1c5dbb04f22072843a2fc9201acc24dad203b9da
+  iOSMcuManagerLibrary: ad3d47acf17b36954f1173ea5ead110921b84f76
   SwiftCBOR: ce5354ec8b660da2d6fc754462881119dbe1f963
   ZIPFoundation: b1f0de4eed33e74a676f76e12559ab6b75990197
 
