@@ -1,5 +1,5 @@
 PODS:
-  - iOSMcuManagerLibrary (1.6.1):
+  - iOSMcuManagerLibrary (1.7):
     - SwiftCBOR (= 0.4.4)
     - ZIPFoundation (= 0.9.11)
   - SwiftCBOR (0.4.4)
@@ -18,7 +18,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  iOSMcuManagerLibrary: 3310ba3dc05705bfb00281d76aa04ab1a3d585b0
+  iOSMcuManagerLibrary: b356381b99b23f1f4b71beabfaf3faeebb2bd81b
   SwiftCBOR: ce5354ec8b660da2d6fc754462881119dbe1f963
   ZIPFoundation: b1f0de4eed33e74a676f76e12559ab6b75990197
 
