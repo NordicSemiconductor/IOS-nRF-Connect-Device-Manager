@@ -16,7 +16,7 @@ SUIT and McuManager are related, but not interchangeable. SUIT relies on its own
 
 The library provides a transport agnostic implementation of the McuManager protocol. It contains a default implementation for BLE transport.
 
-> Minimum required iOS version is 9.0, originally released in Fall of 2015.
+> Minimum required iOS version is 12.0, originally released in Fall of 2018.
 
 > [!Warning]  
 > This library, the default & main API for Device Firmware Update by Nordic Semiconductor, **should not be confused with the previous protocol, NordicDFU**, serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library).
