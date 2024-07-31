@@ -379,7 +379,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     private lazy var mcuManagerParametersCallback: McuMgrCallback<McuMgrParametersResponse> = { [weak self] response, error in
         guard let self = self else { return }
         
-        guard error == nil, let response, response.rc != 8 else {
+        guard error == nil, let response, response.rc != .unsupported else {
             self.log(msg: "Mcu Manager parameters not supported", atLevel: .warning)
             self.bootloaderInfo() // Continue to Bootloader Info.
             return
@@ -400,7 +400,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     private lazy var bootloaderInfoCallback: McuMgrCallback<BootloaderInfoResponse> = { [weak self] response, error in
         guard let self else { return }
         
-        guard error == nil, let response, response.rc != 8 else {
+        guard error == nil, let response, response.rc != .unsupported else {
             self.log(msg: "Bootloader Info not supported.", atLevel: .warning)
             self.log(msg: "Assuming MCUBoot Bootloader.", atLevel: .debug)
             self.bootloader = .mcuboot
@@ -427,7 +427,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     private lazy var bootloaderModeCallback: McuMgrCallback<BootloaderInfoResponse> = { [weak self] response, error in
         guard let self else { return }
         
-        guard error == nil, let response, response.rc != 8 else {
+        guard error == nil, let response, response.rc != .unsupported else {
             self.log(msg: "Bootloader Mode not supported", atLevel: .warning)
             self.validate() // Continue Upload
             return

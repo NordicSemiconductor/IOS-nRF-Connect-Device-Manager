@@ -13,10 +13,11 @@ open class McuMgrResponse: CBORMappable {
     // MARK: Value Mapping
     //**************************************************************************
     
-    /// Every McuMgrResponse will contain a return code value. If the original
-    /// response packet does not contain a "rc", the success value of 0 is
-    /// assumed.
-    public var rc: UInt64 = 0
+    /**
+     All `McuMgrResponse`(s) contain a ``McuMgrResponse/rc`` return code value.
+     If the response packet does not contain a code, success (`.ok`) is assumed.
+     */
+    public var rc: McuMgrReturnCode = .ok
     
     /**
      In SMPv2, when a Request makes it into a specific Group, that Group may
@@ -62,7 +63,7 @@ open class McuMgrResponse: CBORMappable {
             self.groupRC = try McuMgrGroupReturnCode(map: err)
         }
         if case let CBOR.unsignedInt(rc)? = cbor?["rc"] {
-            self.rc = rc
+            self.rc = McuMgrReturnCode(rawValue: rc) ?? .ok
         }
     }
     
@@ -151,10 +152,10 @@ open class McuMgrResponse: CBORMappable {
         response.header = header
         response.scheme = scheme
         response.rawData = bytes
-        if let groupRC = response.groupRC, groupRC.rc != 0 {
+        if let groupRC = response.groupRC, groupRC.rc != .ok {
             response.result = .failure(.groupCode(groupRC))
-        } else if let returnCode = McuMgrReturnCode(rawValue: response.rc), returnCode != .ok {
-            response.result = .failure(.returnCode(returnCode))
+        } else if response.rc != .ok {
+            response.result = .failure(.returnCode(response.rc))
         } else {
             response.result = .success(())
         }
@@ -338,7 +339,7 @@ public class McuMgrExecResponse: McuMgrResponse {
         case .success:
             return nil
         case .failure(let error):
-            guard let shellError = ShellManagerError(rawValue: rc) else {
+            guard let shellError = ShellManagerError(rawValue: rc.rawValue) else {
                 return error
             }
             return shellError

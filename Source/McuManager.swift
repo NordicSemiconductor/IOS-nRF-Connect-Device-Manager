@@ -383,11 +383,13 @@ public enum McuMgrError: Error, LocalizedError {
     }
 }
 
+// MARK: - McuMgrGroupReturnCode
+
 public class McuMgrGroupReturnCode: CBORMappable {
     
     public var group: UInt64 = 0
     
-    public var rc: UInt64 = 0
+    public var rc: McuMgrReturnCode = .ok
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
@@ -395,7 +397,7 @@ public class McuMgrGroupReturnCode: CBORMappable {
             self.group = group
         }
         if case let CBOR.unsignedInt(rc)? = cbor?["rc"] {
-            self.rc = rc
+            self.rc = McuMgrReturnCode(rawValue: rc) ?? .ok
         }
     }
     
@@ -405,42 +407,44 @@ public class McuMgrGroupReturnCode: CBORMappable {
             self.group = group
         }
         if case let CBOR.unsignedInt(rc)? = map["rc"] {
-            self.rc = rc
+            self.rc = McuMgrReturnCode(rawValue: rc) ?? .ok
         }
     }
     
     public func groupError() -> LocalizedError? {
-        guard rc != 0 else { return nil }
+        guard rc != .ok else { return nil }
         
         let error: LocalizedError?
         switch McuMgrGroup(rawValue: UInt16(group)) {
         case .OS:
-            error = OSManagerError(rawValue: rc)
+            error = OSManagerError(rawValue: rc.rawValue)
         case .image:
-            error = ImageManagerError(rawValue: rc)
+            error = ImageManagerError(rawValue: rc.rawValue)
         case .statistics:
-            error = StatsManagerError(rawValue: rc)
+            error = StatsManagerError(rawValue: rc.rawValue)
         case .settings:
-            error = SettingsManagerError(rawValue: rc)
+            error = SettingsManagerError(rawValue: rc.rawValue)
         case .filesystem:
-            error = FileSystemManagerError(rawValue: rc)
+            error = FileSystemManagerError(rawValue: rc.rawValue)
         case .basic:
-            error = BasicManagerError(rawValue: rc)
+            error = BasicManagerError(rawValue: rc.rawValue)
         default:
             // Passthrough to McuMgr 'RC' Errors for Unknown
             // or Unsupported values.
-            error = McuManagerError.returnCodeValue(rc)
+            error = McuManagerError.returnCodeValue(rc.rawValue)
         }
-        return error ?? McuManagerError.returnCodeValue(rc)
+        return error ?? McuManagerError.returnCodeValue(rc.rawValue)
     }
 }
 
 // MARK: - McuMgrReturnCode
 
-/// Return codes for Mcu Manager responses.
-///
-/// Each Mcu Manager response will contain a "rc" key with one of these return
-/// codes.
+/**
+ Return codes for `McuMgrResponse`.
+ 
+ All Mcu Manager responses contain a "rc" key with a return code. If
+ they don't, `.ok` is assumed.
+ */
 public enum McuMgrReturnCode: UInt64, Error {
     case ok                = 0
     case unknown           = 1
@@ -454,6 +458,9 @@ public enum McuMgrReturnCode: UInt64, Error {
     case corruptPayload    = 9
     case busy              = 10
     case accessDenied      = 11
+    case unsupportedTooOld = 12
+    case unsupportedTooNew = 13
+    case userDefinedError  = 256
     
     case unrecognized
     
@@ -494,8 +501,18 @@ extension McuMgrReturnCode: CustomStringConvertible {
             return "Busy, try again later" // Busy processing previous SMP Request
         case .accessDenied:
             return "Access denied" // Are You Trying to Downgrade to a Lower Image Version?
+        case .unsupportedTooOld:
+            return "Requested SMP McuMgr protocol version is too old"
+        case .unsupportedTooNew:
+            return "Requested SMP McuMgr protocol version is too new"
+        case .userDefinedError:
+            return "User-Defined Error"
         default:
-            return "Unrecognized (RC: \(rawValue))"
+            if rawValue >= McuMgrReturnCode.userDefinedError.rawValue {
+                return "User-Defined Error (Code: \(rawValue))"
+            } else {
+                return "Unrecognized (RC: \(rawValue))"
+            }
         }
     }
 }
