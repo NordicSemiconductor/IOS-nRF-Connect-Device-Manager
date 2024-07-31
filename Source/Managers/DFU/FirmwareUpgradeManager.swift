@@ -1101,6 +1101,18 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
                 mark(firstUntestedImage, as: \.testSent)
                 return
             }
+            if configuration.upgradeMode == FirmwareUpgradeMode.testAndConfirm {
+                if let firstUnconfirmedImage = images.first(where: {
+                    $0.uploaded && $0.tested && !$0.confirmed && !$0.confirmSent }
+                ) {
+                    confirm(firstUnconfirmedImage)
+                    // We might send 'Confirm', but the firmware might not change the flag to reflect it.
+                    // If we don't track this internally, we could enter into an infinite loop always trying
+                    // to Confirm an image.
+                    mark(firstUnconfirmedImage, as: \.confirmSent)
+                    return
+                }
+            }
         case .uploadOnly:
             // Nothing to do in SUIT since it does not support RESET Command and will
             // throw an Error if Reset is sent.
