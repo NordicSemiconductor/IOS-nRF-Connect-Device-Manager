@@ -121,7 +121,7 @@ public class SuitManager: McuManager {
     private lazy var listManifestCallback: McuMgrCallback<McuMgrManifestListResponse> = { [weak self] response, error in
         guard let self else { return }
         
-        guard error == nil, let response, response.rc != .unsupported else {
+        guard error == nil, let response, response.rc.isSupported() else {
             self.logDelegate?.log("List Manifest Callback not Supported.", ofCategory: .suit, atLevel: .error)
             self.callback?(nil, error)
             return
@@ -141,7 +141,7 @@ public class SuitManager: McuManager {
     
     private lazy var roleStateCallback: McuMgrCallback<McuMgrManifestStateResponse> = { [weak self] response, error in
         guard let self else { return }
-        guard error == nil, let response, response.rc != .unsupported else {
+        guard error == nil, let response, response.rc.isSupported() else {
             self.logDelegate?.log("List Manifest Callback not Supported.", ofCategory: .suit, atLevel: .error)
             return
         }
@@ -297,8 +297,8 @@ public class SuitManager: McuManager {
         }
         
         if let response {
-            guard response.rc != .unsupported else {
-                // Not supported, so either no polling or device restarted.
+            guard response.rc.isSupported() else {
+                // Not supported, so either no polling, or device restarted.
                 // It means success / continue.
                 self.uploadDelegate?.uploadDidFinish()
                 return
