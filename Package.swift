@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "iOSMcuManagerLibrary",
-    platforms: [.iOS(.v9), .macOS(.v10_13)],
+    platforms: [.iOS(.v12), .macOS(.v10_13)],
     products: [
         .library(
             name: "iOSMcuManagerLibrary",
@@ -14,7 +14,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/unrelentingtech/SwiftCBOR.git",
-            .exact("0.4.4")
+            .exact("0.4.7")
         ),
         .package(url: "https://github.com/weichsel/ZIPFoundation.git",
             .upToNextMajor(from: "0.9.0")
