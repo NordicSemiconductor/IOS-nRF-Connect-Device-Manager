@@ -468,6 +468,15 @@ public enum McuMgrReturnCode: UInt64, Error {
         return self == .ok
     }
     
+    public func isSupported() -> Bool {
+        switch self {
+        case .unsupported, .unsupportedTooOld, .unsupportedTooNew:
+            return false
+        default:
+            return true
+        }
+    }
+    
     public func isError() -> Bool {
         return self != .ok
     }
