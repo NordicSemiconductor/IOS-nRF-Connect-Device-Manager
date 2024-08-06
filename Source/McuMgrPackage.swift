@@ -98,6 +98,7 @@ public extension McuMgrPackage {
     
     enum Error: Swift.Error, LocalizedError {
         case deniedAccessToScopedResource, notAValidDocument, unableToAccessCacheDirectory
+        case dfuFolderNotFound
         case manifestFileNotFound, manifestImageNotFound
         case resourceNotFound(_ resource: FirmwareUpgradeResource)
         
@@ -115,6 +116,8 @@ public extension McuMgrPackage {
                 return "DFU Image specified in Manifest not found."
             case .resourceNotFound(let resource):
                 return "Unable to find requested \(resource.description) resource."
+            case .dfuFolderNotFound:
+                return "DFU Folder not found."
             }
         }
     }
@@ -146,10 +149,31 @@ fileprivate extension McuMgrPackage {
                                         withIntermediateDirectories: false)
         try fileManager.unzipItem(at: url, to: unzipLocationURL)
         let unzippedURLs = try fileManager.contentsOfDirectory(at: unzipLocationURL, includingPropertiesForKeys: nil, options: [])
-        
-        guard let dfuManifestURL = unzippedURLs.first(where: { $0.pathExtension == "json" }) else {
+
+        var manifestURL: URL?
+        if let manifestFileURL = unzippedURLs.first(where: { $0.pathExtension == "json" }) {
+            // attempt direct extraction
+            manifestURL = manifestFileURL
+        } else {
+            // unarchiving resulted in a folder being created
+            // attempt to extract from contents of folder
+
+            guard let dfuFolderURL = unzippedURLs.first else {
+                throw McuMgrPackage.Error.dfuFolderNotFound
+            }
+
+            let dfuContents = try fileManager.contentsOfDirectory(at: dfuFolderURL, includingPropertiesForKeys: nil, options: [])
+            guard let manifestFileURL = dfuContents.first(where: { $0.pathExtension == "json" }) else {
+                throw McuMgrPackage.Error.manifestFileNotFound
+            }
+            
+            manifestURL = manifestFileURL
+        }
+
+        guard let dfuManifestURL = manifestURL else {
             throw McuMgrPackage.Error.manifestFileNotFound
         }
+
         let manifest = try McuMgrManifest(from: dfuManifestURL)
         let images: [ImageManager.Image]
         let envelope: McuMgrSuitEnvelope?
