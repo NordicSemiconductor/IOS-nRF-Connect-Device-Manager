@@ -32,9 +32,8 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
     @IBAction func selectFirmware(_ sender: UIButton) {
         let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive", "com.apple.font-suitcase"]
-        let contentTypes = supportedDocumentTypes.compactMap { UTType($0) }
-        let importMenu = UIDocumentPickerViewController(forOpeningContentTypes: contentTypes,
-                                                        asCopy: true)
+        let importMenu = UIDocumentPickerViewController(documentTypes: supportedDocumentTypes,
+                                                        in: .import)
         importMenu.allowsMultipleSelection = false
         importMenu.delegate = self
         importMenu.popoverPresentationController?.sourceView = actionSelect

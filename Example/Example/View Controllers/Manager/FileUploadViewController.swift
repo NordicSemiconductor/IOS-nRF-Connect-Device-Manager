@@ -24,9 +24,8 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
     
     @IBAction func selectFile(_ sender: UIButton) {
         let supportedDocumentTypes = ["public.data", "public.content"]
-        let contentTypes = supportedDocumentTypes.compactMap { UTType($0) }
-        let importMenu = UIDocumentPickerViewController(forOpeningContentTypes: contentTypes,
-                                                        asCopy: true)
+        let importMenu = UIDocumentPickerViewController(documentTypes: supportedDocumentTypes,
+                                                        in: .import)
         importMenu.allowsMultipleSelection = false
         importMenu.delegate = self
         importMenu.popoverPresentationController?.sourceView = actionSelect
