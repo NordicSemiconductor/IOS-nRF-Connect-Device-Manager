@@ -385,13 +385,19 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             return
         }
         
-        self.log(msg: "Mcu Manager parameters received (\(response.bufferCount) x \(response.bufferSize))", atLevel: .application)
-        if response.bufferSize > UInt16.max {
-            response.bufferSize = UInt64(UInt16.max)
+        guard let bufferCount = response.bufferCount, var bufferSize = response.bufferSize else {
+            self.log(msg: "Mcu Manager parameters did not return an error, but neither did it provide valide bufferCount nor bufferSize values.", atLevel: .warning)
+            self.bootloaderInfo() // Continue to Bootloader Info.
+            return
+        }
+        
+        self.log(msg: "Mcu Manager parameters received (\(bufferCount) x \(bufferSize))", atLevel: .application)
+        if bufferSize > UInt16.max {
+            bufferSize = UInt64(UInt16.max)
             self.log(msg: "Parameters SAR Buffer Size is larger than maximum of \(UInt16.max) bytes. Reducing Buffer Size to maximum value.", atLevel: .warning)
         }
-        self.log(msg: "Setting SAR Buffer Size to \(response.bufferSize) bytes.", atLevel: .verbose)
-        self.configuration.reassemblyBufferSize = response.bufferSize
+        self.log(msg: "Setting SAR Buffer Size to \(bufferSize) bytes.", atLevel: .verbose)
+        self.configuration.reassemblyBufferSize = bufferSize
         self.bootloaderInfo() // Continue to Bootloader Mode.
     }
     
