@@ -57,17 +57,20 @@ public extension Data {
             format.append(" ")
         }
         
-        var bytes = self
-        if options.contains(.reverseEndianness) {
-            bytes.reverse()
-        }
-        
-        var body = bytes.map {
-            String(format: format, $0)
-        }.joined()
-        
-        if options.contains(.twoByteSpacing) {
-            body = body.inserting(separator: " ", every: 4)
+        var body: String = ""
+        autoreleasepool {
+            var bytes = self
+            if options.contains(.reverseEndianness) {
+                bytes.reverse()
+            }
+            
+            body = bytes.map {
+                String(format: format, $0)
+            }.joined()
+            
+            if options.contains(.twoByteSpacing) {
+                body = body.inserting(separator: " ", every: 4)
+            }
         }
         
         let prefix = options.contains(.prepend0x) ? "0x" : ""
