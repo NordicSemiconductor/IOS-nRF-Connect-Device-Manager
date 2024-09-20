@@ -8,17 +8,21 @@
 import Foundation
 import iOSMcuManagerLibrary
 
-extension PeripheralState: CustomStringConvertible {
+extension PeripheralState: @retroactive CustomStringConvertible {
     
     public var description: String {
         switch self {
-        case .connecting:    return "CONNECTING..."
-        case .initializing:  return "INITIALIZING..."
-        case .connected:     return "CONNECTED"
-        case .disconnecting: return "DISCONNECTING..."
-        case .disconnected:  return "DISCONNECTED"
+        case .connecting:
+            return "CONNECTING..."
+        case .initializing:
+            return "INITIALIZING..."
+        case .connected:
+            return "CONNECTED"
+        case .disconnecting:
+            return "DISCONNECTING..."
+        case .disconnected:
+            return "DISCONNECTED"
         }
     }
-    
 }
 

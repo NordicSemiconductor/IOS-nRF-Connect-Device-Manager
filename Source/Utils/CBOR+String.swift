@@ -9,7 +9,7 @@ import SwiftCBOR
 import Foundation
 #endif
 
-extension CBOR: CustomDebugStringConvertible {
+extension CBOR: @retroactive CustomDebugStringConvertible {
     
     public var debugDescription: String {
         switch self {
@@ -75,7 +75,7 @@ extension Dictionary where Key == CBOR, Value == CBOR {
     
 }
 
-extension CBOR.Tag: CustomDebugStringConvertible {
+extension CBOR.Tag: @retroactive CustomDebugStringConvertible {
     
     public var debugDescription: String {
         switch rawValue {
