@@ -46,6 +46,11 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
         
         if centralManager.state == .poweredOn {
             activityIndicator.startAnimating()
+            
+            let connectedPeripherals = centralManager.retrieveConnectedPeripherals(withServices: [McuMgrBleTransportConstant.SMP_SERVICE])
+            for peripheral in connectedPeripherals {
+                centralManager(centralManager, didDiscover: peripheral, advertisementData: [:], rssi: -127)
+            }
             centralManager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey : true])
         }
     }
