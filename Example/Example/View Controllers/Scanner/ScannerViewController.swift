@@ -45,13 +45,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
         super.viewDidAppear(animated)
         
         if centralManager.state == .poweredOn {
-            activityIndicator.startAnimating()
-            
-            let connectedPeripherals = centralManager.retrieveConnectedPeripherals(withServices: [McuMgrBleTransportConstant.SMP_SERVICE])
-            for peripheral in connectedPeripherals {
-                centralManager(centralManager, didDiscover: peripheral, advertisementData: [:], rssi: -127)
-            }
-            centralManager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey : true])
+            startScanner()
         }
     }
     
@@ -184,12 +178,23 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
             print("Central is not powered on")
             activityIndicator.stopAnimating()
         } else {
-            activityIndicator.startAnimating()
-            centralManager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey : true])
+            startScanner()
         }
     }
     
     // MARK: - Private helper methods
+    
+    private func startScanner() {
+        activityIndicator.startAnimating()
+        let hidService: CBUUID! = CBUUID(string: "1812")
+        let connectedPeripherals = centralManager.retrieveConnectedPeripherals(withServices: [McuMgrBleTransportConstant.SMP_SERVICE, hidService])
+        for peripheral in connectedPeripherals {
+            var advertisementData = [String: Any]()
+            advertisementData[CBAdvertisementDataLocalNameKey] = peripheral.name ?? ""
+            centralManager(centralManager, didDiscover: peripheral, advertisementData: advertisementData, rssi: -127)
+        }
+        centralManager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey : true])
+    }
     
     /// Shows the No Peripherals view.
     private func showEmptyPeripheralsView() {
