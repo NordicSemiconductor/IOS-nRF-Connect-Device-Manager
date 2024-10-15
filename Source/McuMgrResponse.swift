@@ -447,6 +447,35 @@ public final class McuMgrManifestListResponse: McuMgrResponse {
             public var description: String {
                 switch self {
                 case .unknown:
+                    return "UNKNOWN"
+                case .secTop:
+                    return "SEC_TOP"
+                case .secSDFW:
+                    return "SEC_SDFW"
+                case .secSYSCTRL:
+                    return "SEC_SYSCTRL"
+                case .appRoot:
+                    return "APP_ROOT"
+                case .appRecovery:
+                    return "APP_RECOVERY"
+                case .appLocalOne:
+                    return "APP_LOCAL_1"
+                case .appLocalTwo:
+                    return "APP_LOCAL_2"
+                case .appLocalThree:
+                    return "APP_LOCAL_3"
+                case .radioRecovery:
+                    return "RADIO_RECOVERY"
+                case .radioLocalOne:
+                    return "RADIO_LOCAL_1"
+                case .radioLocalTwo:
+                    return "RAIDO_LOCAL_2"
+                }
+            }
+            
+            public var fullDescription: String {
+                switch self {
+                case .unknown:
                     return "Unknown"
                 case .secTop:
                     return "Entry-point for all Nordic-controlled manifests"
@@ -503,6 +532,35 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
     public var digestAlgorithm: DigestAlgorithm?
     public var signatureCheck: SignatureVerification?
     public var sequenceNumber: UInt64?
+    public var semanticVersion: [Int]?
+    
+    public func classUUID() throws -> UUID? {
+        let classData = Data(classID ?? [])
+        return try? UUID(classData)
+    }
+    
+    public func vendorUUID() throws -> UUID? {
+        let vendorData = Data(vendorID ?? [])
+        return try? UUID(vendorData)
+    }
+    
+    public func sequenceNumberHexString() -> String? {
+        guard let sequenceNumber else { return nil }
+        return "0x\(String(sequenceNumber, radix: 16, uppercase: true))"
+    }
+    
+    public func semanticVersionString() -> String? {
+        guard let semanticVersion else { return nil }
+        let positiveNumbers = semanticVersion.filter({ $0 >= 0 })
+        var version = positiveNumbers
+            .map({ "\($0)" })
+            .joined(separator: ".")
+        if let negativeNumber = semanticVersion.first(where: { $0 < 0 }),
+           let release = ReleaseType(rawValue: negativeNumber) {
+            version += release.description
+        }
+        return version
+    }
     
     public enum DigestAlgorithm: Int, RawRepresentable, Codable, CustomStringConvertible {
         case sha256 = -16
@@ -511,9 +569,9 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
         public var description: String {
             switch self {
             case .sha256:
-                return "SHA256"
+                return "SHA-256"
             case .sha512:
-                return "SHA512"
+                return "SHA-512"
             }
         }
     }
@@ -524,6 +582,17 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
         case passed = 4
         
         public var description: String {
+            switch self {
+            case .notChecked:
+                return "Not Checked"
+            case .failed:
+                return "Failed"
+            case .passed:
+                return "Passed"
+            }
+        }
+        
+        public var fullDescription: String {
             switch self {
             case .notChecked:
                 return "Signature Verification is not performed."
@@ -543,6 +612,17 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
         public var description: String {
             switch self {
             case .disabled:
+                return "Disabled"
+            case .enabled:
+                return "Enabled"
+            case .unknown:
+                return "Unknown"
+            }
+        }
+        
+        public var fullDescription: String {
+            switch self {
+            case .disabled:
                 return "No downgrade prevention."
             case .enabled:
                 return "Update forbidden if candidate version is lower than installed version."
@@ -558,6 +638,17 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
         case unknown = 3
         
         public var description: String {
+            switch self {
+            case .denied:
+                return "Denied"
+            case .allowed:
+                return "Allowed"
+            case .unknown:
+                return "Unknown"
+            }
+        }
+        
+        public var fullDescription: String {
             switch self {
             case .denied:
                 return "Independent update is forbidden."
@@ -578,6 +669,19 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
         public var description: String {
             switch self {
             case .disabled:
+                return "Disabled"
+            case .enabledOnUpdate:
+                return "Enabled on Update"
+            case .enabledOnUpdateAndBoot:
+                return "Enabled on Update and Boot"
+            case .unknown:
+                return "Unknown"
+            }
+        }
+        
+        public var fullDescription: String {
+            switch self {
+            case .disabled:
                 return "Do not verify manifest signature."
             case .enabledOnUpdate:
                 return "Verify the manifest signature only when performing an update."
@@ -585,6 +689,26 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
                 return "Verify the manifest signature both when performing an update and booting."
             case .unknown:
                 return "Unknown signature verification policy."
+            }
+        }
+    }
+    
+    public enum ReleaseType: Int, RawRepresentable, Codable, CustomStringConvertible {
+        case normal = 0
+        case releaseCandidate = -1
+        case beta = -2
+        case alpha = -3
+        
+        public var description: String {
+            switch self {
+            case .normal:
+                return ""
+            case .releaseCandidate:
+                return "-rc"
+            case .beta:
+                return "-beta"
+            case .alpha:
+                return "-alpha"
             }
         }
     }
@@ -618,6 +742,11 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
         }
         if case let CBOR.unsignedInt(sequenceNumber)? = cbor?["sequence_number"] {
             self.sequenceNumber = sequenceNumber
+        }
+        
+        if case let CBOR.array(semanticVersion)? = cbor?["semantic_version"],
+           let integerArray: [Int] = try? CBOR.toArray(array: semanticVersion) {
+            self.semanticVersion = integerArray
         }
     }
 }
@@ -1179,5 +1308,31 @@ public class McuMgrConfigResponse: McuMgrResponse {
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
         if case let CBOR.utf8String(val)? = cbor?["val"] {self.val = val}
+    }
+}
+
+// MARK: - UUID(data:)
+
+extension UUID {
+    
+    enum InitError: Error {
+        case invalidData
+    }
+    
+    /**
+     [Source](https://gist.github.com/dagronf/bb1d42c5d28a25499c2e1aab9f60f6c6)
+     */
+    init(_ data: Data) throws {
+        guard data.count >= MemoryLayout<uuid_t>.size else {
+            throw InitError.invalidData
+        }
+        
+        let uuid: NSUUID = try data.withUnsafeBytes { rawBuffer in
+            guard let bytes = rawBuffer.baseAddress?.assumingMemoryBound(to: UInt8.self) else {
+                throw InitError.invalidData
+            }
+            return NSUUID(uuidBytes: bytes)
+        }
+        self = uuid as UUID
     }
 }
