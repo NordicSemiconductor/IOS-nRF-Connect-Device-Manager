@@ -53,6 +53,10 @@ public class SuitManager: McuManager {
          Command delivers a packet of a resource requested by the target device.
          */
         case uploadResource = 4
+        /**
+         Command erases DFU and DFU Cache partitions.
+         */
+        case cleanup = 6
     }
     
     // MARK: Properties
@@ -165,6 +169,16 @@ public class SuitManager: McuManager {
         ]
         send(op: .read, commandId: SuitID.manifestState, payload: payload,
              callback: fixCallback)
+    }
+    
+    // MARK: Cleanup
+    
+    /**
+     Erase DFU and DFU Cache partitions.
+     */
+    public func cleanup(callback: @escaping McuMgrCallback<McuMgrResponse>) {
+        send(op: .write, commandId: SuitID.cleanup, payload: [:],
+             callback: callback)
     }
     
     // MARK: Poll

@@ -36,7 +36,6 @@ class ImagesViewController: UIViewController , McuMgrViewController{
                 self?.suitListResponse = response
                 self?.handle(suitListResponse: response, error)
             }
-            break
         case .mcuboot, .unknown:
             imageManager.list { [weak self] response, error in
                 self?.lastResponse = response
@@ -54,6 +53,7 @@ class ImagesViewController: UIViewController , McuMgrViewController{
             }
         }
     }
+    
     @IBAction func confirm(_ sender: UIButton) {
         selectImageCore() { [weak self] imageHash in
             self?.busy()
@@ -63,15 +63,42 @@ class ImagesViewController: UIViewController , McuMgrViewController{
             }
         }
     }
+    
     @IBAction func erase(_ sender: UIButton) {
         busy()
-        imageManager.erase { [weak self] response, error in
-            if let _ = response {
-                self?.read(sender)
-            } else {
-                self?.readAction.isEnabled = true
-                self?.message.textColor = .systemRed
-                self?.message.text = "\(error!)"
+        guard let bootloader else {
+            defaultManager.bootloaderInfo(query: .name) { [weak self] response, error in
+                guard let self else { return }
+                guard error == nil, let response else {
+                    self.bootloader = .mcuboot
+                    return
+                }
+                self.bootloader = response.bootloader
+                erase(sender)
+            }
+            return
+        }
+        
+        switch bootloader {
+        case .suit:
+            suitManager.cleanup { [weak self] response, error in
+                if let error {
+                    self?.updateUI(text: error.localizedDescription, color: .systemRed, readEnabled: true)
+                } else {
+                    if let rc = response?.rc, rc != .ok {
+                        self?.updateUI(text: rc.description, color: .systemRed, readEnabled: true)
+                    } else {
+                        self?.updateUI(text: "Cleanup Successful", color: .primary, readEnabled: true)
+                    }
+                }
+            }
+        case .mcuboot, .unknown:
+            imageManager.erase { [weak self] response, error in
+                if let _ = response {
+                    self?.read(sender)
+                } else {
+                    self?.updateUI(text: error?.localizedDescription ?? "", color: .systemRed, readEnabled: true)
+                }
             }
         }
     }
