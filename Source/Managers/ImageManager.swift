@@ -18,18 +18,23 @@ public class ImageManager: McuManager {
         public let name: String?
         public let image: Int
         public let slot: Int
+        public let content: McuMgrManifest.File.ContentType
         public let hash: Data
         public let data: Data
         
         /**
-         All of the previous code / modes target `slot` 1 (Secondary) as where they
-         want the image uploaded, so that's the default. Only DirectXIP would
-         target `slot` 0 (Primary) for upload.
+         Default Initialiser.
+         
+         - parameters:
+            - slot: All of the previous code / modes target `slot` 1 (Secondary) as where they want the image uploaded, so that's the default. Only DirectXIP would target `slot` 0 (Primary) for upload.
+            - content: This is a necessary aid for complex SUIT updates involving `suitCache` resources. It defaults to `.unknown` so as to not alter the behavior of unrelated DFU operations. It can be set to other, more descriptive values, but improper use might cause erratic upload behavior.
          */
-        public init(image: Int, slot: Int = 1, hash: Data, data: Data) {
+        public init(image: Int, slot: Int = 1, content: McuMgrManifest.File.ContentType = .unknown,
+                    hash: Data, data: Data) {
             self.name = nil
             self.image = image
             self.slot = slot
+            self.content = content
             self.hash = hash
             self.data = data
         }
@@ -38,6 +43,7 @@ public class ImageManager: McuManager {
             self.name = manifest.file
             self.image = manifest.image
             self.slot = manifest.slot
+            self.content = manifest.content
             self.hash = hash
             self.data = data
         }
@@ -46,6 +52,7 @@ public class ImageManager: McuManager {
             self.name = nil
             self.image = image.image
             self.slot = image.slot
+            self.content = .unknown
             self.hash = image.hash
             self.data = image.data
         }
