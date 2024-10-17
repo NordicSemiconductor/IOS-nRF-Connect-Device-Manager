@@ -208,6 +208,26 @@ public class SuitManager: McuManager {
         upload(envelopeData, at: offset)
     }
     
+    /**
+     Equivalent of McuManager's 'Confirm' Command for SUIT.
+     
+     To trigger 'confirm' or processing of recently uploaded Envelope, we need to send an 'upload envelope' command specifying data size of zero, offset zero and no defer install (which defaults to false anyway).
+     */
+    public func processRecentlyUploadedEnvelope(callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
+        offset = 0
+        pollAttempts = 0
+        uploadData = nil
+        uploadDelegate = nil
+        sessionID = nil
+        state = .none
+        
+        let payload: [String: CBOR] = ["off": CBOR.unsignedInt(0),
+                                       "len": CBOR.unsignedInt(0)]
+        
+        send(op: .write, commandId: SuitID.envelopeUpload, payload: payload,
+             timeout: McuManager.DEFAULT_SEND_TIMEOUT_SECONDS, callback: callback)
+    }
+    
     // MARK: Upload Resource
     
     public func uploadResource(_ resourceData: Data) {
@@ -219,13 +239,16 @@ public class SuitManager: McuManager {
         upload(resourceData, at: offset)
     }
     
-    private func upload(_ data: Data, at offset: UInt64) {
+    private func upload(_ data: Data, deferInstall: Bool = false, at offset: UInt64) {
         let payloadLength = maxDataPacketLengthFor(data: data, offset: offset)
         
         let chunkOffset = offset
         let chunkEnd = min(chunkOffset + payloadLength, UInt64(data.count))
         var payload: [String: CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
                                       "off": CBOR.unsignedInt(chunkOffset)]
+        if deferInstall {
+            payload["defer_install"] = CBOR.boolean(deferInstall)
+        }
         if let sessionID {
             payload.updateValue(CBOR.unsignedInt(sessionID), forKey: "stream_session_id")
         }
