@@ -167,6 +167,7 @@ public extension McuMgrManifest.File {
     
     enum ContentType: String, RawRepresentable, Codable, CustomStringConvertible {
         case unknown
+        case suitCache = "cache"
         case suitEnvelope = "suit-envelope"
         case bin
         case application
@@ -175,6 +176,8 @@ public extension McuMgrManifest.File {
             switch self {
             case .unknown:
                 return "Unknown"
+            case .suitCache:
+                return "SUIT Cache"
             case .suitEnvelope:
                 return "SUIT Envelope"
             case .bin:
