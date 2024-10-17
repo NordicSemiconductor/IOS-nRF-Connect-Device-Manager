@@ -17,29 +17,18 @@ class ImagesViewController: UIViewController , McuMgrViewController{
     
     @IBAction func read(_ sender: UIButton) {
         busy()
-        guard let bootloader else {
-            defaultManager.bootloaderInfo(query: .name) { [weak self] response, error in
-                guard let self else { return }
-                guard error == nil, let response else {
-                    self.bootloader = .mcuboot
-                    return
+        requestBootloaderIfNecessary(sender: sender) { [weak self] sender, bootloader in
+            switch bootloader {
+            case .suit:
+                self?.suitManager.listManifest { [weak self] response, error in
+                    self?.suitListResponse = response
+                    self?.handle(suitListResponse: response, error)
                 }
-                self.bootloader = response.bootloader
-                read(sender)
-            }
-            return
-        }
-        
-        switch bootloader {
-        case .suit:
-            suitManager.listManifest { [weak self] response, error in
-                self?.suitListResponse = response
-                self?.handle(suitListResponse: response, error)
-            }
-        case .mcuboot, .unknown:
-            imageManager.list { [weak self] response, error in
-                self?.lastResponse = response
-                self?.handle(response, error)
+            case .mcuboot, .unknown:
+                self?.imageManager.list { [weak self] response, error in
+                    self?.lastResponse = response
+                    self?.handle(response, error)
+                }
             }
         }
     }
@@ -55,49 +44,57 @@ class ImagesViewController: UIViewController , McuMgrViewController{
     }
     
     @IBAction func confirm(_ sender: UIButton) {
-        selectImageCore() { [weak self] imageHash in
-            self?.busy()
-            self?.imageManager.confirm(hash: imageHash) { [weak self] response, error in
-                self?.lastResponse = response
-                self?.handle(response, error)
+        requestBootloaderIfNecessary(sender: sender) { [weak self] sender, bootloader in
+            switch bootloader {
+            case .suit:
+                self?.busy()
+                self?.suitManager.processRecentlyUploadedEnvelope { [weak self] response, error in
+                    switch response?.result {
+                    case .success:
+                        self?.updateUI(text: "Success!", color: .primary, readEnabled: true)
+                    case .failure(let error):
+                        self?.updateUI(text: error.localizedDescription,
+                                       color: .systemRed, readEnabled: true)
+                    case .none:
+                        self?.updateUI(text: "Unknown Error",
+                                       color: .systemRed, readEnabled: true)
+                    }
+                }
+            case .mcuboot, .unknown:
+                self?.selectImageCore() { [weak self] imageHash in
+                    self?.busy()
+                    self?.imageManager.confirm(hash: imageHash) { [weak self] response, error in
+                        self?.lastResponse = response
+                        self?.handle(response, error)
+                    }
+                }
             }
         }
     }
     
     @IBAction func erase(_ sender: UIButton) {
         busy()
-        guard let bootloader else {
-            defaultManager.bootloaderInfo(query: .name) { [weak self] response, error in
-                guard let self else { return }
-                guard error == nil, let response else {
-                    self.bootloader = .mcuboot
-                    return
-                }
-                self.bootloader = response.bootloader
-                erase(sender)
-            }
-            return
-        }
-        
-        switch bootloader {
-        case .suit:
-            suitManager.cleanup { [weak self] response, error in
-                if let error {
-                    self?.updateUI(text: error.localizedDescription, color: .systemRed, readEnabled: true)
-                } else {
-                    if let rc = response?.rc, rc != .ok {
-                        self?.updateUI(text: rc.description, color: .systemRed, readEnabled: true)
+        requestBootloaderIfNecessary(sender: sender) { [weak self] sender, bootloader in
+            switch bootloader {
+            case .suit:
+                self?.suitManager.cleanup { [weak self] response, error in
+                    if let error {
+                        self?.updateUI(text: error.localizedDescription, color: .systemRed, readEnabled: true)
                     } else {
-                        self?.updateUI(text: "Cleanup Successful", color: .primary, readEnabled: true)
+                        if let rc = response?.rc, rc != .ok {
+                            self?.updateUI(text: rc.description, color: .systemRed, readEnabled: true)
+                        } else {
+                            self?.updateUI(text: "Cleanup Successful", color: .primary, readEnabled: true)
+                        }
                     }
                 }
-            }
-        case .mcuboot, .unknown:
-            imageManager.erase { [weak self] response, error in
-                if let _ = response {
-                    self?.read(sender)
-                } else {
-                    self?.updateUI(text: error?.localizedDescription ?? "", color: .systemRed, readEnabled: true)
+            case .mcuboot, .unknown:
+                self?.imageManager.erase { [weak self] response, error in
+                    if let _ = response {
+                        self?.read(sender)
+                    } else {
+                        self?.updateUI(text: error?.localizedDescription ?? "", color: .systemRed, readEnabled: true)
+                    }
                 }
             }
         }
@@ -122,6 +119,26 @@ class ImagesViewController: UIViewController , McuMgrViewController{
             defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
+    
+    // MARK: requestBootloaderIfNecessary(sender:callback:)
+    
+    private func requestBootloaderIfNecessary(sender: UIButton, callback: @escaping ((_ sender: UIButton, _ bootloader: BootloaderInfoResponse.Bootloader) -> Void)) {
+        guard let bootloader else {
+            defaultManager.bootloaderInfo(query: .name) { [weak self] response, error in
+                guard let self else { return }
+                guard error == nil, let response else {
+                    self.bootloader = .mcuboot
+                    return
+                }
+                self.bootloader = response.bootloader ?? .mcuboot
+                callback(sender, response.bootloader ?? .mcuboot)
+            }
+            return
+        }
+        callback(sender, bootloader)
+    }
+    
+    // MARK: selectImageCore(callback:)
     
     private func selectImageCore(callback: @escaping (([UInt8]) -> Void)) {
         guard let responseImages = lastResponse?.images, responseImages.count > 1 else {
