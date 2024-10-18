@@ -16,6 +16,7 @@ public struct McuMgrPackage {
     public let images: [ImageManager.Image]
     public let envelope: McuMgrSuitEnvelope?
     let resources: [ImageManager.Image]?
+    public let manifest: McuMgrManifest?
     
     // MARK: - Init
     
@@ -25,6 +26,7 @@ public struct McuMgrPackage {
             self.images = try [ImageManager.Image(fromBinFile: url)]
             self.envelope = nil
             self.resources = nil
+            self.manifest = nil
         case .zip:
             self = try Self.extractImageFromZipFile(from: url)
         case .suit:
@@ -35,10 +37,11 @@ public struct McuMgrPackage {
     }
     
     private init(images: [ImageManager.Image], envelope: McuMgrSuitEnvelope?,
-                 resources: [ImageManager.Image]?) {
+                 resources: [ImageManager.Image]?, manifest: McuMgrManifest?) {
         self.images = images
         self.envelope = envelope
         self.resources = resources
+        self.manifest = manifest
     }
     
     // MARK: - API
@@ -130,7 +133,7 @@ fileprivate extension McuMgrPackage {
         guard let hash = envelope.digest.hash(for: algorithm) else {
             throw McuMgrSuitParseError.supportedAlgorithmNotFound
         }
-        return McuMgrPackage(images: [ImageManager.Image(image: 0, hash: hash, data: envelope.data)], envelope: envelope, resources: nil)
+        return McuMgrPackage(images: [ImageManager.Image(image: 0, hash: hash, data: envelope.data)], envelope: envelope, resources: nil, manifest: nil)
     }
     
     static func extractImageFromZipFile(from url: URL) throws -> Self {
@@ -187,7 +190,7 @@ fileprivate extension McuMgrPackage {
         try unzippedURLs.forEach { url in
             try fileManager.removeItem(at: url)
         }
-        return McuMgrPackage(images: images, envelope: envelope, resources: resources)
+        return McuMgrPackage(images: images, envelope: envelope, resources: resources, manifest: manifest)
     }
 }
 
