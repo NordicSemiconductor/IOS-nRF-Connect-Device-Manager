@@ -45,7 +45,7 @@ public struct McuMgrSuitEnvelope {
     public func image() -> ImageManager.Image? {
         // Currently only supported Hash Digest Algorithm is SHA256.
         guard let hash = digest.hash(for: .sha256) else { return nil }
-        return ImageManager.Image(image: 0, hash: hash, data: data)
+        return ImageManager.Image(image: 0, content: .suitEnvelope, hash: hash, data: data)
     }
     
     public func sizeString() -> String {
