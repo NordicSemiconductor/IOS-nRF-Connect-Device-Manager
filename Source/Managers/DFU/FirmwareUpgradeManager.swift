@@ -63,24 +63,14 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
     public func start(package: McuMgrPackage,
                       using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
-        guard let envelope = package.envelope else {
+        guard package.isForSUIT else {
             try start(images: package.images, using: configuration)
             return
         }
         
-        guard let envelopeImage = envelope.image() else {
-            // Most likely reason of the image() function failing is the lack
-            // of a supported Hash Algorithm.
-            throw McuMgrSuitParseError.supportedAlgorithmNotFound
-        }
-        
-        var images: [ImageManager.Image] = [envelopeImage]
-        let resources = package.resources ?? []
-        images.append(contentsOf: resources.filter({ $0.content == .suitCache }))
-        
         var suitConfiguration = configuration
         suitConfiguration.upgradeMode = .uploadOnly
-        try start(images: images, using: suitConfiguration)
+        try start(images: package.images, using: suitConfiguration)
     }
     
     /// Start the firmware upgrade.

@@ -17,7 +17,7 @@ public struct McuMgrPackage {
     public let envelope: McuMgrSuitEnvelope?
     let resources: [ImageManager.Image]?
     
-    // MARK: - Init
+    // MARK: Init
     
     public init(from url: URL) throws {
         switch UTI.forFile(url) {
@@ -41,7 +41,7 @@ public struct McuMgrPackage {
         self.resources = resources
     }
     
-    // MARK: - API
+    // MARK: API
     
     public var isForSUIT: Bool { envelope != nil }
     
@@ -158,9 +158,23 @@ fileprivate extension McuMgrPackage {
             guard let envelopeURL = unzippedURLs.first(where: { $0.absoluteString.contains(envelopeFile.file) }) else {
                 throw McuMgrPackage.Error.manifestImageNotFound
             }
+            
             envelope = try McuMgrSuitEnvelope(from: envelopeURL)
+            let caches: [ImageManager.Image] = try manifest.files
+                .filter({ $0.content == .suitCache })
+                .compactMap({ file in
+                    guard let imageURL = unzippedURLs.first(where: { $0.absoluteString.contains(file.file) }) else {
+                        return nil
+                    }
+                    let data = try Data(contentsOf: imageURL)
+                    // Hash does not matter here.
+                    return ImageManager.Image(file, hash: Data(), data: data)
+                })
+            var combinedImages = [envelope?.image()].compactMap({ $0 })
+            combinedImages.append(contentsOf: caches)
+            images = combinedImages
             resources = try manifest.files
-                .filter({ $0.content != .suitEnvelope })
+                .filter({ $0.content != .suitEnvelope && $0.content != .suitCache })
                 .compactMap({ file in
                     guard let imageURL = unzippedURLs.first(where: { $0.absoluteString.contains(file.file) }) else {
                         return nil
@@ -170,7 +184,6 @@ fileprivate extension McuMgrPackage {
                     // resources. But in SUIT, we can't.
                     return ImageManager.Image(file, hash: Data(), data: data)
                 })
-            images = [envelope?.image()].compactMap({ $0 })
         } else {
             images = try manifest.files.compactMap { manifestFile -> ImageManager.Image in
                 guard let imageURL = unzippedURLs.first(where: { $0.absoluteString.contains(manifestFile.file) }) else {
