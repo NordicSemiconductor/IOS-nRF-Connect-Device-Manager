@@ -282,23 +282,8 @@ public class SuitManager: McuManager {
     // MARK: upload(_:deferInstall:delegate)
     
     private func upload(_ data: Data, deferInstall: Bool = false, at offset: UInt64) {
-        let payloadLength = maxDataPacketLengthFor(data: data, offset: offset)
-        
-        let chunkOffset = offset
-        let chunkEnd = min(chunkOffset + payloadLength, UInt64(data.count))
-        var payload: [String: CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
-                                      "off": CBOR.unsignedInt(chunkOffset)]
-        if let sessionID {
-            payload.updateValue(CBOR.unsignedInt(sessionID), forKey: "stream_session_id")
-        }
         var uploadTimeoutInSeconds: Int
-        if chunkOffset == 0 {
-            if deferInstall {
-                payload.updateValue(CBOR.boolean(deferInstall), forKey: "defer_install")
-            } else if let targetID {
-                payload.updateValue(CBOR.unsignedInt(targetID), forKey: "target_id")
-            }
-            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
+        if offset == 0 {
             // When uploading offset 0, we might trigger an erase on the firmware's end.
             // Hence, the longer timeout.
             uploadTimeoutInSeconds = McuManager.DEFAULT_SEND_TIMEOUT_SECONDS
@@ -317,6 +302,9 @@ public class SuitManager: McuManager {
         } else {
             commandID = .envelopeUpload
         }
+        
+        let packetLength = maxDataPacketLengthFor(data: data, offset: offset)
+        let payload = buildPayload(for: data, at: offset, with: packetLength)
         send(op: .write, commandId: commandID, payload: payload,
              timeout: uploadTimeoutInSeconds, callback: uploadCallback)
     }
@@ -486,26 +474,9 @@ public class SuitManager: McuManager {
     }
     
     private func calculatePacketOverhead(data: Data, offset: UInt64) -> Int {
-        // Get the Mcu Manager header.
-        var payload: [String:CBOR] = ["data": CBOR.byteString([UInt8]([0])),
-                                      "off":  CBOR.unsignedInt(offset)]
-        if let sessionID {
-            payload.updateValue(CBOR.unsignedInt(sessionID), forKey: "stream_session_id")
-        }
-        if let targetID {
-            payload.updateValue(CBOR.unsignedInt(targetID), forKey: "target_id")
-        }
+        let headerLength = UInt64(MemoryLayout<UInt8>.size)
+        let payload = buildPayload(for: data, at: offset, with: headerLength)
         
-        if offset == 0 {
-            let deferInstall = uploadImages.contains(where: { $0.content == .suitCache })
-            if deferInstall {
-                payload.updateValue(CBOR.boolean(deferInstall), forKey: "defer_install")
-            }
-            
-            // If this is the initial packet we have to include the length of the
-            // entire image.
-            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
-        }
         // Build the packet and return the size.
         let packet = McuManager.buildPacket(scheme: transport.getScheme(), version: .SMPv2,
                                             op: .write, flags: 0, group: group.rawValue,
@@ -517,6 +488,31 @@ public class SuitManager: McuManager {
             packetOverhead = packetOverhead + 25
         }
         return packetOverhead
+    }
+    
+    // MARK: buildPayload(for:at:)
+    
+    private func buildPayload(for data: Data, at offset: UInt64, with length: UInt64) -> [String: CBOR] {
+        let chunkOffset = offset
+        let chunkEnd = min(chunkOffset + length, UInt64(data.count))
+        var payload: [String: CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
+                                      "off": CBOR.unsignedInt(chunkOffset)]
+        if let sessionID {
+            payload.updateValue(CBOR.unsignedInt(sessionID), forKey: "stream_session_id")
+        }
+        
+        if let targetID {
+           payload.updateValue(CBOR.unsignedInt(targetID), forKey: "target_id")
+       }
+        
+        if chunkOffset == 0 {
+            let deferInstall = uploadImages.contains(where: { $0.content == .suitCache })
+            if deferInstall {
+                payload.updateValue(CBOR.boolean(deferInstall), forKey: "defer_install")
+            }
+            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
+        }
+        return payload
     }
 }
 
