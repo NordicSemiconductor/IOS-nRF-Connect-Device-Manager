@@ -418,7 +418,7 @@ public final class McuMgrManifestListResponse: McuMgrResponse {
     
     public class Manifest: CBORMappable {
         
-        public enum Role: UInt64, CustomStringConvertible {
+        public enum Role: UInt64, CustomStringConvertible, CustomDebugStringConvertible {
             /// Manifest role uninitialized (invalid).
             case unknown = 0x00
             /// Manifest describes the entry-point for all Nordic-controlled manifests.
@@ -473,7 +473,7 @@ public final class McuMgrManifestListResponse: McuMgrResponse {
                 }
             }
             
-            public var fullDescription: String {
+            public var debugDescription: String {
                 switch self {
                 case .unknown:
                     return "Unknown"
@@ -576,7 +576,7 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
         }
     }
     
-    public enum SignatureVerification: UInt64, RawRepresentable, Codable, CustomStringConvertible {
+    public enum SignatureVerification: UInt64, RawRepresentable, Codable, CustomStringConvertible, CustomDebugStringConvertible {
         case notChecked = 2
         case failed = 3
         case passed = 4
@@ -592,7 +592,7 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
             }
         }
         
-        public var fullDescription: String {
+        public var debugDescription: String {
             switch self {
             case .notChecked:
                 return "Signature Verification is not performed."
@@ -604,7 +604,7 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
         }
     }
     
-    public enum DowngradePreventionPolicy: UInt64, RawRepresentable, Codable, CustomStringConvertible {
+    public enum DowngradePreventionPolicy: UInt64, RawRepresentable, Codable, CustomStringConvertible, CustomDebugStringConvertible {
         case disabled = 1
         case enabled = 2
         case unknown = 3
@@ -620,7 +620,7 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
             }
         }
         
-        public var fullDescription: String {
+        public var debugDescription: String {
             switch self {
             case .disabled:
                 return "No downgrade prevention."
@@ -632,7 +632,7 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
         }
     }
     
-    public enum IndependentUpdateabilityPolicy: UInt64, RawRepresentable, Codable, CustomStringConvertible {
+    public enum IndependentUpdateabilityPolicy: UInt64, RawRepresentable, Codable, CustomStringConvertible, CustomDebugStringConvertible {
         case denied = 1
         case allowed = 2
         case unknown = 3
@@ -648,7 +648,7 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
             }
         }
         
-        public var fullDescription: String {
+        public var debugDescription: String {
             switch self {
             case .denied:
                 return "Independent update is forbidden."
@@ -660,7 +660,7 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
         }
     }
     
-    public enum SignatureVerificationPolicy: UInt64, RawRepresentable, Codable, CustomStringConvertible {
+    public enum SignatureVerificationPolicy: UInt64, RawRepresentable, Codable, CustomStringConvertible, CustomDebugStringConvertible {
         case disabled = 1
         case enabledOnUpdate = 2
         case enabledOnUpdateAndBoot = 3
@@ -679,7 +679,7 @@ public final class McuMgrManifestStateResponse: McuMgrResponse {
             }
         }
         
-        public var fullDescription: String {
+        public var debugDescription: String {
             switch self {
             case .disabled:
                 return "Do not verify manifest signature."
