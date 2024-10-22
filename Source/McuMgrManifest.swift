@@ -79,7 +79,7 @@ extension McuMgrManifest {
         public let bootloader: BootloaderInfoResponse.Bootloader
         
         public var image: Int {
-            _image ?? _imageIndex ?? 0
+            _image ?? _imageIndex ?? _partition ?? 0
         }
         
         /**
@@ -93,6 +93,7 @@ extension McuMgrManifest {
         
         // MARK: Private
         
+        private let _partition: Int?
         private let _image: Int?
         private let _imageIndex: Int?
         private let _mcuBootXipVersion: String?
@@ -106,6 +107,7 @@ extension McuMgrManifest {
             case mcuBootVersion = "version_MCUBOOT"
             case type, board, soc
             case loadAddress = "load_address"
+            case _partition = "partition"
             case _image = "image"
             case _imageIndex = "image_index"
             case _mcuBootXipVersion = "version_MCUBOOT+XIP"
@@ -145,6 +147,11 @@ extension McuMgrManifest {
                 ? try values.decode(Int.self, forKey: .loadAddress)
                 : .zero
             
+            if let partitionString = try? values.decode(String.self, forKey: ._partition) {
+                _partition = Int(partitionString)
+            } else {
+                _partition = nil
+            }
             _image = try? values.decode(Int.self, forKey: ._image)
             let imageIndexString = try? values.decode(String.self, forKey: ._imageIndex)
             guard let imageIndexString else {

@@ -54,6 +54,10 @@ public class SuitManager: McuManager {
          */
         case uploadResource = 4
         /**
+         Command delivers a packet of a SUIT Cache to the target device. A SUIT Cache is neither an Envelope nor a Resource. It's more akin to additional Envelope Data, but separate from it and possibly directed towards specific device partition(s) (aka 'images' in McuBoot parlance)
+         */
+        case uploadCache = 5
+        /**
          Command erases DFU and DFU Cache partitions.
          */
         case cleanup = 6
@@ -62,9 +66,12 @@ public class SuitManager: McuManager {
     // MARK: Properties
     
     private var offset: UInt64 = 0
-    private var uploadData: Data?
+    private var uploadData: Data!
+    private var uploadImages: [ImageManager.Image] = []
+    private var uploadIndex: Int = 0
     private var pollAttempts: Int = 0
     private var sessionID: UInt64?
+    private var targetID: UInt64?
     private var state: SuitManagerState = .none
     private weak var uploadDelegate: SuitManagerDelegate?
     
@@ -196,36 +203,69 @@ public class SuitManager: McuManager {
         send(op: .read, commandId: SuitID.pollImageState, payload: nil, callback: callback)
     }
     
-    // MARK: Upload Envelope
+    // MARK: upload(_:delegate:)
     
-    public func uploadEnvelope(_ envelopeData: Data, delegate: SuitManagerDelegate?) {
+    public func upload(_ images: [ImageManager.Image], delegate: SuitManagerDelegate?) {
+        // Sort Images so Envelope is at index zero.
+        uploadImages = images.sorted(by: { l, _ in
+            l.content == .suitEnvelope
+        })
+        uploadIndex = 0
+        let deferInstall = uploadImages.contains(where: { $0.content == .suitCache })
+        if deferInstall {
+            self.logDelegate?.log("Suit Cache Image Detected for Upload. Enabling `deferInstall`.", ofCategory: .suit, atLevel: .debug)
+        }
+        
         offset = 0
         pollAttempts = 0
-        uploadData = envelopeData
+        uploadData = images[uploadIndex].data
         uploadDelegate = delegate
         sessionID = nil
+        targetID = nil
         state = .uploadingEnvelope
-        upload(envelopeData, at: offset)
+        upload(uploadData, deferInstall: deferInstall, at: offset)
     }
+    
+    // MARK: processRecentlyUploadedEnvelope(callback:)
     
     /**
      Equivalent of McuManager's 'Confirm' Command for SUIT.
      
      To trigger 'confirm' or processing of recently uploaded Envelope, we need to send an 'upload envelope' command specifying data size of zero, offset zero and no defer install (which defaults to false anyway).
      */
-    public func processRecentlyUploadedEnvelope(callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
+    public func processRecentlyUploadedEnvelope(callback: @escaping McuMgrCallback<McuMgrResponse>) {
         offset = 0
         pollAttempts = 0
         uploadData = nil
-        uploadDelegate = nil
         sessionID = nil
-        state = .none
+        targetID = nil
+        state = .uploadComplete
         
-        let payload: [String: CBOR] = ["off": CBOR.unsignedInt(0),
-                                       "len": CBOR.unsignedInt(0)]
-        
+        let payload: [String: CBOR] = [
+            "off": CBOR.unsignedInt(0),
+            "len": CBOR.unsignedInt(0)
+        ]
         send(op: .write, commandId: SuitID.envelopeUpload, payload: payload,
              timeout: McuManager.DEFAULT_SEND_TIMEOUT_SECONDS, callback: callback)
+    }
+    
+    // MARK: processUploadedEnvelopeCallback
+    
+    private lazy var processUploadedEnvelopeCallback: McuMgrCallback<McuMgrResponse> = { [weak self] response, error in
+        guard let self = self else { return }
+        
+        if let error {
+            self.uploadDelegate?.uploadDidFail(with: error)
+        }
+        
+        if let response {
+            switch response.result {
+            case .failure(let error):
+                self.uploadDelegate?.uploadDidFail(with: error)
+            case .success:
+                self.startPolling()
+            }
+        }
     }
     
     // MARK: Upload Resource
@@ -239,6 +279,8 @@ public class SuitManager: McuManager {
         upload(resourceData, at: offset)
     }
     
+    // MARK: upload(_:deferInstall:delegate)
+    
     private func upload(_ data: Data, deferInstall: Bool = false, at offset: UInt64) {
         let payloadLength = maxDataPacketLengthFor(data: data, offset: offset)
         
@@ -246,14 +288,16 @@ public class SuitManager: McuManager {
         let chunkEnd = min(chunkOffset + payloadLength, UInt64(data.count))
         var payload: [String: CBOR] = ["data": CBOR.byteString([UInt8](data[chunkOffset..<chunkEnd])),
                                       "off": CBOR.unsignedInt(chunkOffset)]
-        if deferInstall {
-            payload["defer_install"] = CBOR.boolean(deferInstall)
-        }
         if let sessionID {
             payload.updateValue(CBOR.unsignedInt(sessionID), forKey: "stream_session_id")
         }
-        let uploadTimeoutInSeconds: Int
+        var uploadTimeoutInSeconds: Int
         if chunkOffset == 0 {
+            if deferInstall {
+                payload.updateValue(CBOR.boolean(deferInstall), forKey: "defer_install")
+            } else if let targetID {
+                payload.updateValue(CBOR.unsignedInt(targetID), forKey: "target_id")
+            }
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
             // When uploading offset 0, we might trigger an erase on the firmware's end.
             // Hence, the longer timeout.
@@ -261,7 +305,18 @@ public class SuitManager: McuManager {
         } else {
             uploadTimeoutInSeconds = McuManager.FAST_TIMEOUT
         }
-        let commandID: SuitID = sessionID == nil ? .envelopeUpload : .uploadResource
+        
+        let commandID: SuitID
+        if targetID != nil {
+            commandID = .uploadCache
+            // Device will probably restart itself in preparation for .cacheUpload,
+            // so we need to retry quickly.
+            uploadTimeoutInSeconds = McuManager.FAST_TIMEOUT
+        } else if sessionID != nil {
+            commandID = .uploadResource
+        } else {
+            commandID = .envelopeUpload
+        }
         send(op: .write, commandId: commandID, payload: payload,
              timeout: uploadTimeoutInSeconds, callback: uploadCallback)
     }
@@ -306,13 +361,53 @@ public class SuitManager: McuManager {
             if offset < uploadData.count {
                 self.upload(uploadData, at: offset)
             } else {
-                // Listen for disconnection event, which signals update is complete.
-                self.transport.addObserver(self)
-                // While waiting for disconnection, poll.
-                // The Device might tell us it needs a resource.
-                self.poll(callback: self.pollingCallback)
+                self.uploadIndex += 1
+                if self.uploadIndex < self.uploadImages.count {
+                    let uploadImage = self.uploadImages[self.uploadIndex]
+                    self.offset = 0
+                    self.uploadData = uploadImage.data
+                    if uploadImage.content == .suitCache {
+                        self.targetID = UInt64(uploadImage.image)
+                    }
+                    // Note: 'defer install' is not needed for SUIT Cache(s).
+                    self.upload(self.uploadData, at: self.offset)
+                } else {
+                    // Upload Finished.
+                    self.dataUploadComplete()
+                    
+                    let deferredInstall = self.uploadImages.contains(where: { $0.content == .suitCache })
+                    if deferredInstall {
+                        self.logDelegate?.log("Sending Envelope Processing (Confirm) Command due to Deferred Install.", ofCategory: .suit, atLevel: .info)
+                        self.processRecentlyUploadedEnvelope(callback: processUploadedEnvelopeCallback)
+                    } else {
+                        self.startPolling()
+                    }
+                }
             }
         }
+    }
+    
+    // MARK: dataUploadComplete()
+    
+    private func dataUploadComplete() {
+        state = .uploadComplete
+        logDelegate?.log("Data Upload Complete.", ofCategory: .suit, atLevel: .info)
+        
+        // Listen for disconnection event, which signals update is complete on device's end.
+        transport.addObserver(self)
+    }
+    
+    // MARK: startPolling()
+    
+    /**
+     Call when all Envelope and Cache uploads have been completed.
+     */
+    private func startPolling() {
+        logDelegate?.log("(SUIT) Polling Start.", ofCategory: .suit, atLevel: .info)
+        
+        // While waiting for disconnection, poll.
+        // The Device might tell us it needs a resource.
+        poll(callback: pollingCallback)
     }
     
     // MARK: pollingCallback
@@ -330,14 +425,14 @@ public class SuitManager: McuManager {
         if let error {
             // Assume success, error is most likely due to disconnection.
             // Disconnection means firmware moved on and doesn't need anything from us.
-            self.uploadDelegate?.uploadDidFinish()
+            self.declareSuccess()
         }
         
         if let response {
             guard response.rc.isSupported() else {
                 // Not supported, so either no polling, or device restarted.
                 // It means success / continue.
-                self.uploadDelegate?.uploadDidFinish()
+                self.declareSuccess()
                 return
             }
             
@@ -345,8 +440,7 @@ public class SuitManager: McuManager {
                   let resource = FirmwareUpgradeResource(resourceID),
                   let sessionID = response.sessionID else {
                 guard self.pollAttempts < Self.MAX_POLL_ATTEMPTS else {
-                    // Assume success / device doesn't require anything.
-                    self.uploadDelegate?.uploadDidFinish()
+                    self.declareSuccess()
                     return
                 }
                 
@@ -371,6 +465,15 @@ public class SuitManager: McuManager {
         }
     }
     
+    // MARK: declareSuccess()
+    
+    private func declareSuccess() {
+        logDelegate?.log("Success!", ofCategory: .suit, atLevel: .application)
+        transport.removeObserver(self)
+        state = .success
+        uploadDelegate?.uploadDidFinish()
+    }
+    
     // MARK: Packet Calculation
     
     private func maxDataPacketLengthFor(data: Data, offset: UInt64) -> UInt64 {
@@ -389,10 +492,18 @@ public class SuitManager: McuManager {
         if let sessionID {
             payload.updateValue(CBOR.unsignedInt(sessionID), forKey: "stream_session_id")
         }
+        if let targetID {
+            payload.updateValue(CBOR.unsignedInt(targetID), forKey: "target_id")
+        }
         
-        // If this is the initial packet we have to include the length of the
-        // entire image.
         if offset == 0 {
+            let deferInstall = uploadImages.contains(where: { $0.content == .suitCache })
+            if deferInstall {
+                payload.updateValue(CBOR.boolean(deferInstall), forKey: "defer_install")
+            }
+            
+            // If this is the initial packet we have to include the length of the
+            // entire image.
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
         }
         // Build the packet and return the size.
@@ -420,25 +531,23 @@ extension SuitManager: ConnectionObserver {
         log(msg: "Device has disconnected.", atLevel: .info)
         transport.removeObserver(self)
         
-        // Device disconnected when we expected it -> Success.
-        self.state = .success
-        // Firmware Upgrade complete.
-        uploadDelegate?.uploadDidFinish()
+        guard self.state == .uploadComplete else { return }
+        declareSuccess()
     }
 }
 
-// MARK: SuitManagerState
+// MARK: - SuitManagerState
 
 enum SuitManagerState {
     case none
-    case uploadingEnvelope, uploadingResource
+    case uploadingEnvelope, uploadingCache, uploadingResource, uploadComplete
     case success
     
     var isInProgress: Bool {
         switch self {
         case .none, .success:
             return false
-        case .uploadingEnvelope, .uploadingResource:
+        case .uploadingEnvelope, .uploadingCache, .uploadingResource, .uploadComplete:
             return true
         }
     }
