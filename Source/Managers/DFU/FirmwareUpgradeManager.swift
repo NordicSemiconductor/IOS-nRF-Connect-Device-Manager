@@ -54,7 +54,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         self.paused = false
     }
     
-    // MARK: Control Functions
+    // MARK: start(package:using:)
     
     /// Start the firmware upgrade.
     ///
@@ -63,21 +63,14 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
     public func start(package: McuMgrPackage,
                       using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
-        guard let envelope = package.envelope else {
+        guard package.isForSUIT else {
             try start(images: package.images, using: configuration)
             return
         }
         
-        // sha256 is the currently only supported mode.
-        // The rest are optional to implement in SUIT.
-        guard let sha256Hash = envelope.digest.hash(for: .sha256) else {
-            throw McuMgrSuitParseError.supportedAlgorithmNotFound
-        }
-        let image = ImageManager.Image(image: 0, hash: sha256Hash, data: envelope.data)
-        
         var suitConfiguration = configuration
         suitConfiguration.upgradeMode = .uploadOnly
-        try start(images: [image], using: suitConfiguration)
+        try start(images: package.images, using: suitConfiguration)
     }
     
     /// Start the firmware upgrade.
@@ -419,9 +412,9 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         self.bootloader = response.bootloader
         if self.bootloader == .suit {
             self.log(msg: "Detected SUIT Bootloader. Skipping Bootloader Mode request.", atLevel: .debug)
-            guard let suitEnvelope = self.images.first?.data else { return }
             self.objc_sync_setState(.upload)
-            self.suitManager.uploadEnvelope(suitEnvelope, delegate: self)
+            let suitImages = self.images.map { ImageManager.Image($0) }
+            self.suitManager.upload(suitImages, delegate: self)
         } else {
             // Query McuBoot Mode since SUIT does not support this request.
             self.bootloaderMode()
@@ -997,36 +990,43 @@ public struct FirmwareUpgradeConfiguration: Codable {
      Note: This setting is ignored if `bootloaderMode` is in any DirectXIP variant, since there's no swap whatsoever when DirectXIP is involved. Hence, why we can upload the same Image (though different hash) to either slot.
      */
     public var estimatedSwapTime: TimeInterval
-    /// If enabled, after successful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
+    /**
+     If enabled, after successful upload but before test/confirm/reset phase, an Erase App Settings Command will be sent and awaited before proceeding.
+     */
     public var eraseAppSettings: Bool
-    /// If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.
+    /**
+     If set to a value larger than 1, this enables SMP Pipelining, wherein multiple packets of data ('chunks') are sent at once before awaiting a response, which can lead to a big increase in transfer speed if the receiving hardware supports this feature.
+     */
     public var pipelineDepth: Int
-    /// Necessary to set when Pipeline Length is larger than 1 (SMP Pipelining Enabled) to predict offset jumps as multiple
-    /// packets are sent.
+    /**
+     Necessary to set when Pipeline Length is larger than 1 (SMP Pipelining Enabled) to predict offset jumps as multiple packets are sent.
+     */
     public var byteAlignment: ImageUploadAlignment
-    /// If set, it is used instead of the MTU Size as the maximum size of the packet. It is designed to be used with a size
-    /// larger than the MTU, meaning larger Data chunks per Sequence Number, trusting the reassembly Buffer on the receiving
-    /// side to merge it all back. Thus, increasing transfer speeds.
-    ///
-    /// Can be used in conjunction with SMP Pipelining.
-    ///
-    /// **Cannot exceed `UInt16.max` value of 65535.**
+    /**
+     If set, it is used instead of the MTU Size as the maximum size of the packet. It is designed to be used with a size larger than the MTU, meaning larger Data chunks per Sequence Number, trusting the reassembly Buffer on the receiving side to merge it all back. Thus, increasing transfer speeds.
+     
+     Can be used in conjunction with SMP Pipelining.
+     
+     - Note: **Cannot exceed `UInt16.max` value of 65535.**
+     */
     public var reassemblyBufferSize: UInt64
-    /// Previously set directly in `FirmwareUpgradeManager`, it has since been moved here, to the Configuration. It modifies the steps after `upload` step in Firmware Upgrade that need to be performed for the Upgrade process to be considered Successful.
+    /**
+     Previously set directly in `FirmwareUpgradeManager`, it has since been moved here, to the Configuration. It modifies the steps after `upload` step in Firmware Upgrade that need to be performed for the Upgrade process to be considered Successful.
+     */
     public var upgradeMode: FirmwareUpgradeMode
-    /// Provides valuable information regarding how the target device is set up to switch over to the new firmware being uploaded, if available.
-    ///
-    /// For example, in DirectXIP, some bootloaders will not accept a 'CONFIRM' Command and return an Error
-    /// that could make the DFU Library return an Error. When in reality, what the target bootloader wants
-    /// is just to receive a 'RESET' Command instead to conclude the process.
-    ///
-    /// Set to `.Unknown` by default, since BootloaderInfo is a new addition for NCS 2.5 / SMPv2.
+    /**
+     Provides valuable information regarding how the target device is set up to switch over to the new firmware being uploaded, if available.
+     
+     For example, in DirectXIP, some bootloaders will not accept a 'CONFIRM' Command and return an Error that could make the DFU Library return an Error. When in reality, what the target bootloader wants is just to receive a 'RESET' Command instead to conclude the process.
+     
+     Set to `.Unknown` by default, since BootloaderInfo is a new addition for NCS 2.5 / SMPv2.
+     */
     public var bootloaderMode: BootloaderInfoResponse.Mode
     
-    /// SMP Pipelining is considered Enabled for `pipelineDepth` values larger than `1`.
-    public var pipeliningEnabled: Bool {
-        return pipelineDepth > 1
-    }
+    /**
+     SMP Pipelining is considered Enabled for `pipelineDepth` values larger than `1`.
+     */
+    public var pipeliningEnabled: Bool { pipelineDepth > 1 }
     
     public init(estimatedSwapTime: TimeInterval = 0.0, eraseAppSettings: Bool = false, 
                 pipelineDepth: Int = 1, byteAlignment: ImageUploadAlignment = .disabled,
@@ -1185,7 +1185,7 @@ public enum FirmwareUpgradeState {
 // MARK: - FirmwareUpgradeMode
 //******************************************************************************
 
-public enum FirmwareUpgradeMode: Codable, CustomDebugStringConvertible, CaseIterable {
+public enum FirmwareUpgradeMode: Codable, CustomStringConvertible, CustomDebugStringConvertible, CaseIterable {
     /// When this mode is set, the manager will send the test and reset commands
     /// to the device after the upload is complete. The device will reboot and
     /// will run the new image on its next boot. If the new image supports
@@ -1204,21 +1204,32 @@ public enum FirmwareUpgradeMode: Codable, CustomDebugStringConvertible, CaseIter
     /// feature and SMP service and could not be confirmed otherwise.
     case confirmOnly
     
-    /// When this flag is set, the manager will first send test followed by
-    /// reset commands, then it will reconnect to the new application and will
-    /// send confirm command.
-    ///
-    /// Use this mode when the new image supports SMP service and you want to
-    /// test it before confirming.
+    /**
+     When set, the manager will first send test followed by reset commands, then it will reconnect to the new application and will send confirm command.
+     
+     Use this mode when the new image supports SMP service and you want to test it before confirming.
+     */
     case testAndConfirm
     
     /**
-     Upload Only is a very particular mode. It ignores Bootloader Info, does not
-     test nor confirm any uploaded images. It does list/verify, proceed to upload
-     the images, and reset. It is not recommended for use, except perhaps for
-     DirectXIP use cases where the Bootloader is unreliable.
+     - McuBoot/McuMgr: Upload Only ignores Bootloader Info, does not test nor confirm any uploaded images. It does list/verify, proceed to upload the images, and reset. It is not recommended for use, except perhaps for DirectXIP use cases where the Bootloader is unreliable.
+     
+     - For SUIT: Expected value for all `SUIT` variants & situations as of this release.
      */
     case uploadOnly
+    
+    public var description: String {
+        switch self {
+        case .testOnly:
+            return ".testOnly"
+        case .confirmOnly:
+            return ".confirmOnly"
+        case .testAndConfirm:
+            return ".testAndConfirm"
+        case .uploadOnly:
+            return ".uploadOnly"
+        }
+    }
     
     public var debugDescription: String {
         switch self {
@@ -1305,6 +1316,7 @@ internal struct FirmwareUpgradeImage: CustomDebugStringConvertible {
     let slot: Int
     let data: Data
     let hash: Data
+    let content: McuMgrManifest.File.ContentType
     var uploaded: Bool
     var tested: Bool
     var testSent: Bool
@@ -1318,6 +1330,7 @@ internal struct FirmwareUpgradeImage: CustomDebugStringConvertible {
         self.slot = image.slot
         self.data = image.data
         self.hash = image.hash
+        self.content = image.content
         self.uploaded = false
         self.tested = false
         self.testSent = false
@@ -1331,7 +1344,7 @@ internal struct FirmwareUpgradeImage: CustomDebugStringConvertible {
         return """
         Data: \(data)
         Hash: \(hash)
-        Image \(image), Slot \(slot)
+        Image \(image), Slot \(slot), Content \(content.description)
         Uploaded \(uploaded ? "Yes" : "No")
         Tested \(tested ? "Yes" : "No"), Test Sent \(testSent ? "Yes" : "No"),
         Confirmed \(confirmed ? "Yes" : "No"), Confirm Sent \(confirmSent ? "Yes" : "No")

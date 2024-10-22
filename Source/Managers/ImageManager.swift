@@ -52,7 +52,7 @@ public class ImageManager: McuManager {
             self.name = nil
             self.image = image.image
             self.slot = image.slot
-            self.content = .unknown
+            self.content = image.content
             self.hash = image.hash
             self.data = image.data
         }
