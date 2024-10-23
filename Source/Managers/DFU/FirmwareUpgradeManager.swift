@@ -263,6 +263,14 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
+    private func confirmAsSUIT() {
+        objc_sync_setState(.confirm)
+        if !paused {
+            log(msg: "Sending single Confirm command for SUIT upload (no Hash) via McuBoot...", atLevel: .verbose)
+            imageManager.confirm(hash: nil, callback: confirmCallback)
+        }
+    }
+    
     private func eraseAppSettings() {
         objc_sync_setState(.eraseAppSettings)
         log(msg: "Erasing app settings...", atLevel: .verbose)
@@ -403,6 +411,10 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             self.log(msg: "Bootloader Info not supported.", atLevel: .warning)
             self.log(msg: "Assuming MCUBoot Bootloader.", atLevel: .debug)
             self.bootloader = .mcuboot
+            if self.configuration.upgradeMode == .uploadOnly {
+                self.log(msg: "Switching Upgrade Mode from \(FirmwareUpgradeMode.uploadOnly) to \(FirmwareUpgradeMode.confirmOnly).", atLevel: .debug)
+                self.configuration.upgradeMode = .confirmOnly
+            }
             self.validate() // Continue Upload
             return
         }
@@ -428,6 +440,10 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         
         guard error == nil, let response, response.rc.isSupported() else {
             self.log(msg: "Bootloader Mode not supported", atLevel: .warning)
+            if self.configuration.upgradeMode == .uploadOnly {
+                self.log(msg: "Switching Upgrade Mode from \(FirmwareUpgradeMode.uploadOnly) to \(FirmwareUpgradeMode.confirmOnly).", atLevel: .debug)
+                self.configuration.upgradeMode = .confirmOnly
+            }
             self.validate() // Continue Upload
             return
         }
@@ -743,6 +759,16 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             self.fail(error: error)
             return
         }
+        
+        let suitThroughMcuBoot = images.contains(where: {
+            $0.content == .suitEnvelope || $0.content == .suitCache
+        })
+        guard !suitThroughMcuBoot else {
+            self.log(msg: "Upgrade complete", atLevel: .application)
+            self.success()
+            return
+        }
+        
         // Check that the image array exists.
         guard let responseImages = response.images, responseImages.count > 0 else {
             self.fail(error: FirmwareUpgradeError.invalidResponse(response))
@@ -817,9 +843,12 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         case .testAndConfirm:
             // No need to reset again.
             self.success()
-        case .testOnly, .uploadOnly:
+        case .testOnly:
             // Impossible!
             return
+        case .uploadOnly:
+            // (.uploadOnly is reserved for SUIT)
+            self.success()
         }
     }
     
@@ -1087,6 +1116,21 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         // If eraseAppSettings command was sent or was not requested, we can continue.
         switch configuration.upgradeMode {
         case .confirmOnly:
+            let suitThroughMcuBoot = images.contains(where: {
+                $0.content == .suitEnvelope || $0.content == .suitCache
+            })
+            if suitThroughMcuBoot {
+                // Mark all images as confirmed
+                images.forEach {
+                    mark($0, as: \.confirmSent)
+                    mark($0, as: \.confirmed)
+                }
+                
+                // We send a single confirm() command with no hash
+                confirmAsSUIT()
+                return
+            }
+            
             if let firstUnconfirmedImage = images.first(where: {
                 $0.uploaded && !$0.confirmed && !$0.confirmSent }
             ) {
