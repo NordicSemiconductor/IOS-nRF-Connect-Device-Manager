@@ -360,6 +360,8 @@ extension FirmwareUpgradeViewController: UIDocumentPickerDelegate {
     func parseAsMcuMgrPackage(_ url: URL) -> Result<McuMgrPackage, Error> {
         do {
             let package = try McuMgrPackage(from: url)
+            // let's look up the manifest content, e.g. the version
+            print("version: \(package.manifest?.files.first?.mcuBootVersion ?? "n/a")")
             fileName.text = url.lastPathComponent
             fileSize.text = package.sizeString()
             fileSize.numberOfLines = 0
