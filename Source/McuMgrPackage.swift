@@ -15,8 +15,8 @@ public struct McuMgrPackage {
     
     public let images: [ImageManager.Image]
     public let envelope: McuMgrSuitEnvelope?
-    let resources: [ImageManager.Image]?
     public let manifest: McuMgrManifest?
+    let resources: [ImageManager.Image]?
     
     // MARK: Init
     
