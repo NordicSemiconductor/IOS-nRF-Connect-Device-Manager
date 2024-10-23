@@ -98,7 +98,6 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         present(alertViewController, animated: true)
     }
     
-    static let uploadImages = [0, 1, 2, 3]
     @IBAction func start(_ sender: UIButton) {
         if let envelope = package?.envelope {
             // SUIT has "no mode" to select
