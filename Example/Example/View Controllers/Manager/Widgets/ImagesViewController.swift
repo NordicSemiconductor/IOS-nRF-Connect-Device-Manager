@@ -7,7 +7,7 @@
 import UIKit
 import iOSMcuManagerLibrary
 
-class ImagesViewController: UIViewController , McuMgrViewController{
+class ImagesViewController: UIViewController, McuMgrViewController {
     
     @IBOutlet weak var message: UILabel!
     @IBOutlet weak var readAction: UIButton!
@@ -281,6 +281,7 @@ class ImagesViewController: UIViewController , McuMgrViewController{
         message.text = text
         message.textColor = color
         readAction.isEnabled = readEnabled
+        (parent as! ImageController).innerViewReloaded()
     }
     
     private func busy() {
