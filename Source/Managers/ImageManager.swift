@@ -56,6 +56,34 @@ public class ImageManager: McuManager {
             self.hash = image.hash
             self.data = image.data
         }
+        
+        // MARK: imageName()
+        
+        public func imageName() -> String {
+            if let name {
+                return name
+            }
+            
+            guard !hash.isEmpty else {
+                return "Partition \(image)"
+            }
+            
+            switch content {
+            case .suitEnvelope:
+                return "SUIT Envelope"
+            default:
+                let coreName: String
+                switch image {
+                case 0:
+                    coreName = "App Core"
+                case 1:
+                    coreName = "Net Core"
+                default:
+                    coreName = "Image \(image)"
+                }
+                return "\(coreName) Slot \(slot)"
+            }
+        }
     }
     
     override class var TAG: McuMgrLogCategory { .image }

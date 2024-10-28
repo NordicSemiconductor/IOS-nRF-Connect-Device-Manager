@@ -22,16 +22,7 @@ public struct McuMgrPackage {
     public init(from url: URL) throws {
         switch UTI.forFile(url) {
         case .bin:
-            let binImage = try ImageManager.Image(fromBinFile: url, forTarget: 0)
-            if binImage.hash.isEmpty {
-                // Only SUIT binaries have no hash.
-                let partitions = 0...3
-                self.images = try partitions.map {
-                    try ImageManager.Image(fromBinFile: url, forTarget: $0)
-                }
-            } else {
-                self.images = [binImage]
-            }
+            self.images = try [ImageManager.Image(fromBinFile: url)]
             self.envelope = nil
             self.resources = nil
         case .zip:
@@ -54,26 +45,6 @@ public struct McuMgrPackage {
     
     public var isForSUIT: Bool { envelope != nil }
     
-    public func imageName(at index: Int) -> String {
-        guard let name = images[index].name else {
-            if images[index].hash.isEmpty {
-                return "Partition \(index)"
-            } else {
-                let coreName: String
-                switch images[index].image {
-                case 0:
-                    coreName = "App Core"
-                case 1:
-                    coreName = "Net Core"
-                default:
-                    coreName = "Image \(index)"
-                }
-                return "\(coreName) Slot \(images[index].slot)"
-            }
-        }
-        return name
-    }
-    
     public func image(forResource resource: FirmwareUpgradeResource) -> ImageManager.Image? {
         switch resource {
         case .file(let name):
@@ -86,7 +57,7 @@ public struct McuMgrPackage {
     public func sizeString() -> String {
         var sizeString = ""
         for (i, image) in images.enumerated() {
-            sizeString += "\(image.data.count) bytes (\(imageName(at: i)))"
+            sizeString += "\(image.data.count) bytes (\(image.imageName()))"
             guard i != images.count - 1 else { continue }
             sizeString += "\n"
         }
@@ -101,7 +72,7 @@ public struct McuMgrPackage {
                 result += "No Hash found"
             } else {
                 let hashString = image.hash.hexEncodedString(options: .upperCase)
-                result += "0x\(hashString.prefix(6))...\(hashString.suffix(6)) (\(imageName(at: i)))"
+                result += "0x\(hashString.prefix(6))...\(hashString.suffix(6)) (\(image.imageName()))"
             }
             guard i != images.count - 1 else { continue }
             result += "\n"
@@ -230,9 +201,9 @@ fileprivate extension ImageManager.Image {
      - Note: Due to SUIT, all files are no longer guaranteed to be able to have a hash. So,
      we must now accept `Image`(s) with no proper hash.
      */
-    init(fromBinFile url: URL, forTarget targetImage: Int) throws {
+    init(fromBinFile url: URL) throws {
         let binData = try Data(contentsOf: url)
         let binHash = try? McuMgrImage(data: binData).hash
-        self.init(image: targetImage, content: .bin, hash: binHash ?? Data(), data: binData)
+        self.init(image: 0, content: .bin, hash: binHash ?? Data(), data: binData)
     }
 }
