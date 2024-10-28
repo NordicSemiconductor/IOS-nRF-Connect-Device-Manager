@@ -132,10 +132,13 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
     private var package: McuMgrPackage?
     private var imageManager: ImageManager!
+    private var defaultManager: DefaultManager!
     var transport: McuMgrTransport! {
         didSet {
             imageManager = ImageManager(transport: transport)
             imageManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
+            defaultManager = DefaultManager(transport: transport)
+            defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
     }
     private var initialBytes: Int = 0
@@ -150,28 +153,45 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
     // MARK: - Logic
     
+    private func checkBootloader(callback: @escaping (_ bootloader: BootloaderInfoResponse.Bootloader) -> Void) {
+        defaultManager.bootloaderInfo(query: .name) { response, error in
+            guard error == nil, let response else {
+                callback(.mcuboot)
+                return
+            }
+            callback(response.bootloader ?? .mcuboot)
+        }
+    }
+    
     private func startFirmwareUpload(package: McuMgrPackage) {
         uploadImageSize = nil
-        
-        let alertController = UIAlertController(title: "Select", message: nil, preferredStyle: .actionSheet)
+        let alertController = buildSelectImageController()
         let configuration = uploadConfiguration
-        for (i, image) in package.images.enumerated() {
-            alertController.addAction(UIAlertAction(title: package.imageName(at: i), style: .default) { [weak self]
-                action in
-                self?.uploadWillStart()
-                _ = self?.imageManager.upload(images: [image],
-                                              using: configuration, delegate: self)
-            })
+        
+        checkBootloader { [weak self] bootloader in
+            let images: [ImageManager.Image]
+            
+            switch bootloader {
+            case .suit where package.images.count == 1:
+                let singleImage: ImageManager.Image! = package.images.first
+                let partitions = 0...3
+                images = partitions.map {
+                    ImageManager.Image(image: $0, hash: singleImage.hash, data: singleImage.data)
+                }
+            default:
+                images = package.images
+            }
+            
+            for image in images {
+                alertController.addAction(UIAlertAction(title: image.imageName(), style: .default) { [weak self]
+                    action in
+                    self?.uploadWillStart()
+                    _ = self?.imageManager.upload(images: [image], using: configuration, delegate: self)
+                })
+            }
+            
+            self?.present(alertController, animated: true)
         }
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-    
-        // If the device is an iPad set the popover presentation controller
-        if let presenter = alertController.popoverPresentationController {
-            presenter.sourceView = self.view
-            presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
-            presenter.permittedArrowDirections = []
-        }
-        present(alertController, animated: true)
     }
     
     private func startFirmwareUpload(envelope: McuMgrSuitEnvelope) {

@@ -15,6 +15,8 @@ class ImagesViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var confirmAction: UIButton!
     @IBOutlet weak var eraseAction: UIButton!
     
+    // MARK: read(sender:)
+    
     @IBAction func read(_ sender: UIButton) {
         busy()
         requestBootloaderIfNecessary(sender: sender) { [weak self] sender, bootloader in
@@ -33,6 +35,8 @@ class ImagesViewController: UIViewController, McuMgrViewController {
         }
     }
     
+    // MARK: test(sender:)
+    
     @IBAction func test(_ sender: UIButton) {
         selectImageCore() { [weak self] imageHash in
             self?.busy()
@@ -42,6 +46,8 @@ class ImagesViewController: UIViewController, McuMgrViewController {
             }
         }
     }
+    
+    // MARK: confirm(sender:)
     
     @IBAction func confirm(_ sender: UIButton) {
         requestBootloaderIfNecessary(sender: sender) { [weak self] sender, bootloader in
@@ -72,6 +78,8 @@ class ImagesViewController: UIViewController, McuMgrViewController {
         }
     }
     
+    // MARK: erase(sender:)
+    
     @IBAction func erase(_ sender: UIButton) {
         busy()
         requestBootloaderIfNecessary(sender: sender) { [weak self] sender, bootloader in
@@ -99,6 +107,8 @@ class ImagesViewController: UIViewController, McuMgrViewController {
             }
         }
     }
+    
+    // MARK: Properties
     
     private var defaultManager: DefaultManager!
     private var bootloader: BootloaderInfoResponse.Bootloader?
@@ -148,7 +158,7 @@ class ImagesViewController: UIViewController, McuMgrViewController {
             return
         }
         
-        let alertController = UIAlertController(title: "Select Image", message: nil, preferredStyle: .actionSheet)
+        let alertController = buildSelectImageController()
         for image in responseImages {
             guard !image.confirmed else { continue }
             let title = "Image \(image.image), slot \(image.slot)"
@@ -156,16 +166,11 @@ class ImagesViewController: UIViewController, McuMgrViewController {
                 callback(image.hash)
             })
         }
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
     
-        // If the device is an iPad set the popover presentation controller
-        if let presenter = alertController.popoverPresentationController {
-            presenter.sourceView = self.view
-            presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
-            presenter.permittedArrowDirections = []
-        }
         present(alertController, animated: true)
     }
+    
+    // MARK: viewDidLoad()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -277,12 +282,16 @@ class ImagesViewController: UIViewController, McuMgrViewController {
         return info
     }
     
+    // MARK: updateUI(text:color:readEnabled)
+    
     private func updateUI(text: String, color: UIColor, readEnabled: Bool) {
         message.text = text
         message.textColor = color
         readAction.isEnabled = readEnabled
         (parent as! ImageController).innerViewReloaded()
     }
+    
+    // MARK: busy()
     
     private func busy() {
         readAction.isEnabled = false
