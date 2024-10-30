@@ -69,6 +69,7 @@ public class SuitManager: McuManager {
     private var uploadData: Data!
     private var uploadImages: [ImageManager.Image] = []
     private var uploadIndex: Int = 0
+    private var uploadPipeline: McuMgrUploadPipeline!
     private var pollAttempts: Int = 0
     private var sessionID: UInt64?
     private var targetID: UInt64?
@@ -205,7 +206,7 @@ public class SuitManager: McuManager {
     
     // MARK: upload(_:delegate:)
     
-    public func upload(_ images: [ImageManager.Image], delegate: SuitManagerDelegate?) {
+    public func upload(_ images: [ImageManager.Image], using configuration: FirmwareUpgradeConfiguration, delegate: SuitManagerDelegate?) {
         // Sort Images so Envelope is at index zero.
         uploadImages = images.sorted(by: { l, _ in
             l.content == .suitEnvelope
@@ -220,6 +221,7 @@ public class SuitManager: McuManager {
         pollAttempts = 0
         uploadData = images[uploadIndex].data
         uploadDelegate = delegate
+        uploadPipeline = McuMgrUploadPipeline(adopting: configuration, over: transport)
         sessionID = nil
         targetID = nil
         state = .uploadingEnvelope
@@ -281,7 +283,12 @@ public class SuitManager: McuManager {
     
     // MARK: upload(_:deferInstall:delegate)
     
-    private func upload(_ data: Data, deferInstall: Bool = false, at offset: UInt64) {
+    /**
+     
+     - Returns: The expected 'return offset' value from a successful send. That is, the `offset` parameter plus the bytes from `data` parameter sent.
+     */
+    @discardableResult
+    private func upload(_ data: Data, deferInstall: Bool = false, at offset: UInt64) -> UInt64 {
         var uploadTimeoutInSeconds: Int
         if offset == 0 {
             // When uploading offset 0, we might trigger an erase on the firmware's end.
@@ -307,6 +314,7 @@ public class SuitManager: McuManager {
         let payload = buildPayload(for: data, at: offset, with: packetLength)
         send(op: .write, commandId: commandID, payload: payload,
              timeout: uploadTimeoutInSeconds, callback: uploadCallback)
+        return offset + packetLength
     }
     
     // MARK: uploadCallback
@@ -345,10 +353,21 @@ public class SuitManager: McuManager {
         }
         
         if let offset = response.off {
-            self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: uploadData.count, timestamp: Date())
+            self.uploadPipeline.receivedData(with: offset)
+            self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: uploadData.count,
+                                                         timestamp: Date())
             if offset < uploadData.count {
-                self.upload(uploadData, at: offset)
+                self.uploadPipeline.pipelinedSend(ofSize: self.uploadData.count) { [unowned self] offset in
+                    // Note: 'defer install' is not needed for SUIT Cache(s).
+                    return self.upload(uploadData, at: offset)
+                }
             } else {
+                // Don't trigger writes to another Core unless all write(s) have returned for
+                // the current one.
+                guard self.uploadPipeline.allPacketsReceived() else {
+                    return
+                }
+                
                 self.uploadIndex += 1
                 if self.uploadIndex < self.uploadImages.count {
                     let uploadImage = self.uploadImages[self.uploadIndex]
@@ -465,7 +484,9 @@ public class SuitManager: McuManager {
     // MARK: Packet Calculation
     
     private func maxDataPacketLengthFor(data: Data, offset: UInt64) -> UInt64 {
-        guard offset < data.count else { return UInt64(McuMgrHeader.HEADER_LENGTH) }
+        guard offset < data.count else {
+            return UInt64(McuMgrHeader.HEADER_LENGTH)
+        }
         
         let remainingBytes = UInt64(data.count) - offset
         let packetOverhead = calculatePacketOverhead(data: data, offset: offset)

@@ -426,7 +426,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             self.log(msg: "Detected SUIT Bootloader. Skipping Bootloader Mode request.", atLevel: .debug)
             self.objc_sync_setState(.upload)
             let suitImages = self.images.map { ImageManager.Image($0) }
-            self.suitManager.upload(suitImages, delegate: self)
+            self.suitManager.upload(suitImages, using: configuration, delegate: self)
         } else {
             // Query McuBoot Mode since SUIT does not support this request.
             self.bootloaderMode()
