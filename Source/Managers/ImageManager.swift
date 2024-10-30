@@ -156,7 +156,6 @@ public class ImageManager: McuManager {
         }
         send(op: .write, commandId: ImageID.upload, payload: payload, timeout: uploadTimeoutInSeconds,
              callback: callback)
-        uploadExpectedOffsets.append(chunkEnd)
     }
     
     /// Test the image with the provided hash.
@@ -235,7 +234,6 @@ public class ImageManager: McuManager {
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
         uploadIndex = 0
-        uploadExpectedOffsets = []
         uploadLastOffset = 0
         // Note that pipelining requires the use of byte-alignment, otherwise we
         // can't predict how many bytes the firmware will accept in each chunk.
@@ -243,10 +241,7 @@ public class ImageManager: McuManager {
         // Don't exceed UInt16.max payload size.
         uploadConfiguration.reassemblyBufferSize = min(uploadConfiguration.reassemblyBufferSize, UInt64(UInt16.max))
         
-        if let bleTransport = transport as? McuMgrBleTransport {
-            bleTransport.numberOfParallelWrites = configuration.pipelineDepth
-            bleTransport.chunkSendDataToMtuSize = configuration.reassemblyBufferSize != 0
-        }
+        uploadPipeline = McuMgrUploadPipeline(adopting: uploadConfiguration, over: transport)
         
         log(msg: "Uploading Image \(firstImage.image) with Target Slot \(firstImage.slot) (\(firstImage.data.count) bytes)...", atLevel: .verbose)
         upload(data: firstImage.data, image: firstImage.image, offset: 0,
@@ -319,7 +314,8 @@ public class ImageManager: McuManager {
     /// Current image byte offset to send from.
     private var uploadLastOffset: UInt64!
     
-    private var uploadExpectedOffsets: [UInt64] = []
+    private var uploadPipeline: McuMgrUploadPipeline!
+    
     /// The sequence of images we want to send to the device.
     private var uploadImages: [Image]?
     /// Delegate to send image upload updates to.
@@ -457,28 +453,10 @@ public class ImageManager: McuManager {
         }
         
         if let offset = response.off {
-            // We expect In-Order Responses.
-            if self.uploadExpectedOffsets.contains(offset) {
-                self.uploadLastOffset = max(self.uploadLastOffset, UInt64(offset))
-            } else {
-                // Offset Mismatch.
-                self.uploadLastOffset = offset
-                
-                if !self.uploadExpectedOffsets.isEmpty {
-                    self.uploadExpectedOffsets.removeFirst()
-                }
-                
-                // All of our previous 'sends' are invalid.
-                // Wait for all of them to return and then continue.
-                guard self.uploadExpectedOffsets.isEmpty else {
-                    return
-                }
-            }
-            self.uploadExpectedOffsets.removeAll(where: { $0 <= offset })
+            self.uploadLastOffset = offset
+            self.uploadPipeline.receivedData(with: offset)
             
             self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(self.uploadLastOffset), imageSize: currentImageData.count, timestamp: Date())
-            self.log(msg: "Response Offset: \(offset), UploadOffset: \(self.uploadLastOffset), Pending Offsets: \(self.uploadExpectedOffsets.map({ $0 })), ",
-                     atLevel: .debug)
             
             if self.uploadState == .none {
                 self.log(msg: "Upload cancelled", atLevel: .application)
@@ -510,7 +488,7 @@ public class ImageManager: McuManager {
                     
                     // Don't trigger writes to another image unless all write(s) have returned for
                     // the current one.
-                    guard self.uploadExpectedOffsets.isEmpty else {
+                    guard self.uploadPipeline.allPacketsReceived() else {
                         return
                     }
                     
@@ -518,23 +496,20 @@ public class ImageManager: McuManager {
                     self.uploadIndex += 1
                     self.uploadLastOffset = 0
                     self.imageData = images[self.uploadIndex].data
-                    self.log(msg: "Uploading image \(images[self.uploadIndex].image) with Target Slot \(images[self.uploadIndex].slot) (\(self.imageData?.count) bytes)...", atLevel: .application)
-                    self.uploadDelegate?.uploadProgressDidChange(bytesSent: 0, imageSize: images[self.uploadIndex].data.count, timestamp: Date())
+                    let imageSize = images[self.uploadIndex].data.count
+                    self.log(msg: "Uploading image \(images[self.uploadIndex].image) with Target Slot \(images[self.uploadIndex].slot) (\(imageSize) bytes)...", atLevel: .application)
+                    self.uploadDelegate?.uploadProgressDidChange(bytesSent: 0, imageSize: imageSize, timestamp: Date())
                     self.sendNext(from: UInt64(0))
                 }
                 return
             }
             
-            let currentImageDataSize = self.imageData?.count ?? 0
-            for i in 0..<(self.uploadConfiguration.pipelineDepth - self.uploadExpectedOffsets.count) {
-                guard let chunkOffset = self.uploadExpectedOffsets.last ?? self.uploadLastOffset,
-                      chunkOffset < currentImageData.count else {
-                    
-                    // No remaining chunks to be sent?
-                    self.log(msg: "No remaining chunks to be sent? chunkOffset: \(self.uploadExpectedOffsets.last ?? self.uploadLastOffset), imageData: \(currentImageDataSize).", atLevel: .warning)
-                    return
-                }
-                self.sendNext(from: chunkOffset)
+            let imageData: Data! = self.uploadImages?[self.uploadIndex].data
+            let imageSlot: Int! = self.uploadImages?[self.uploadIndex].image
+            self.uploadPipeline.pipelinedSend(ofSize: imageData.count) { [unowned self] offset in
+                let payloadLength = self.maxDataPacketLengthFor(data: imageData, image: imageSlot, offset: offset)
+                self.sendNext(from: offset)
+                return offset + payloadLength
             }
         } else {
             self.cancelUpload(error: ImageUploadError.invalidPayload)
@@ -557,10 +532,10 @@ public class ImageManager: McuManager {
         // Deallocate and nil image data pointers.
         imageData = nil
         uploadImages = nil
+        uploadPipeline = nil
         
         // Reset upload vars.
         uploadIndex = 0
-        uploadExpectedOffsets = []
         objc_sync_exit(self)
     }
     
