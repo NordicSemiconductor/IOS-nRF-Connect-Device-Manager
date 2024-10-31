@@ -283,12 +283,7 @@ public class SuitManager: McuManager {
     
     // MARK: upload(_:deferInstall:delegate)
     
-    /**
-     
-     - Returns: The expected 'return offset' value from a successful send. That is, the `offset` parameter plus the bytes from `data` parameter sent.
-     */
-    @discardableResult
-    private func upload(_ data: Data, deferInstall: Bool = false, at offset: UInt64) -> UInt64 {
+    private func upload(_ data: Data, deferInstall: Bool = false, at offset: UInt64) {
         var uploadTimeoutInSeconds: Int
         if offset == 0 {
             // When uploading offset 0, we might trigger an erase on the firmware's end.
@@ -314,7 +309,6 @@ public class SuitManager: McuManager {
         let payload = buildPayload(for: data, at: offset, with: packetLength)
         send(op: .write, commandId: commandID, payload: payload,
              timeout: uploadTimeoutInSeconds, callback: uploadCallback)
-        return offset + packetLength
     }
     
     // MARK: uploadCallback
@@ -358,8 +352,10 @@ public class SuitManager: McuManager {
                                                          timestamp: Date())
             if offset < uploadData.count {
                 self.uploadPipeline.pipelinedSend(ofSize: self.uploadData.count) { [unowned self] offset in
+                    let payloadLength = self.maxDataPacketLengthFor(data: uploadData, offset: offset)
                     // Note: 'defer install' is not needed for SUIT Cache(s).
-                    return self.upload(uploadData, at: offset)
+                    self.upload(uploadData, at: offset)
+                    return offset + payloadLength
                 }
             } else {
                 // Don't trigger writes to another Core unless all write(s) have returned for
