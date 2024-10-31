@@ -29,8 +29,8 @@ class FilesController: UITableViewController {
         baseController?.deviceStatusDelegate = self
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        tabBarController!.navigationItem.rightBarButtonItem = nil
+    override func viewWillDisappear(_ animated: Bool) {
+        tabBarController?.navigationItem.rightBarButtonItem = nil
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -53,10 +53,9 @@ class FilesController: UITableViewController {
     
     // MARK: Partition settings
     private func showPartitionControl() {
-        let navItem = tabBarController!.navigationItem
-        navItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .edit,
-                                                     target: self,
-                                                     action: #selector(presentPartitionSettings))
+        let navItem = tabBarController?.navigationItem
+        navItem?.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .edit, target: self,
+                                                      action: #selector(presentPartitionSettings))
     }
     
     @objc func presentPartitionSettings() {
