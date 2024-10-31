@@ -597,7 +597,7 @@ public class ImageManager: McuManager {
 
 // MARK: - ImageUploadAlignment
 
-public enum ImageUploadAlignment: UInt64, Codable, CaseIterable, CustomDebugStringConvertible {
+public enum ImageUploadAlignment: UInt64, Codable, CaseIterable, CustomStringConvertible, CustomDebugStringConvertible {
     
     case disabled = 0
     case twoByte = 2
@@ -605,10 +605,12 @@ public enum ImageUploadAlignment: UInt64, Codable, CaseIterable, CustomDebugStri
     case eightByte = 8
     case sixteenByte = 16
     
-    public var debugDescription: String {
-        guard self != .disabled else { return "disabled" }
+    public var description: String {
+        guard self != .disabled else { return "Disabled" }
         return "\(rawValue)-byte"
     }
+    
+    public var debugDescription: String { description }
 }
 
 // MARK: - ImageUploadError
