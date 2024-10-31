@@ -25,7 +25,7 @@ class ImageController: UITableViewController {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        tabBarController!.navigationItem.rightBarButtonItem = nil
+        tabBarController?.navigationItem.rightBarButtonItem = nil
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -56,14 +56,13 @@ class ImageController: UITableViewController {
     
     private func showModeSwitch(toggle: Bool = false) {
         if toggle {
-            advancedMode = !advancedMode
+            advancedMode.toggle()
         }
+        
         let action = advancedMode ? "Basic" : "Advanced"
-        let navItem = tabBarController!.navigationItem
-        navItem.rightBarButtonItem = UIBarButtonItem(title: action,
-                                                     style: .plain,
-                                                     target: self,
-                                                     action: #selector(modeSwitched))
+        let navItem = tabBarController?.navigationItem
+        navItem?.rightBarButtonItem = UIBarButtonItem(title: action, style: .plain,
+                                                     target: self, action: #selector(modeSwitched))
     }
     
     override func tableView(_ tableView: UITableView,
