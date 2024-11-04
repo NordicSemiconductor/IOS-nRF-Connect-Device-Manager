@@ -352,7 +352,7 @@ extension FirmwareUpgradeViewController: UIDocumentPickerDelegate {
         case .failure(let error):
             onParseError(error, for: url)
         }
-        (parent as! ImageController).innerViewReloaded()
+        (parent as? ImageController)?.innerViewReloaded()
     }
     
     // MARK: - Private

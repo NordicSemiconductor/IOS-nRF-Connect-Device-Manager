@@ -200,7 +200,7 @@ class ImagesViewController: UIViewController, McuMgrViewController {
                 message.text = "Empty Response"
             }
         }
-        (parent as! ImageController).innerViewReloaded()
+        (parent as? ImageController)?.innerViewReloaded()
     }
     
     // MARK: handle(response:error:)
@@ -229,7 +229,7 @@ class ImagesViewController: UIViewController, McuMgrViewController {
                 message.text = "Empty response"
             }
         }
-        (parent as! ImageController).innerViewReloaded()
+        (parent as? ImageController)?.innerViewReloaded()
     }
     
     // MARK: getInfo()
@@ -288,7 +288,7 @@ class ImagesViewController: UIViewController, McuMgrViewController {
         message.text = text
         message.textColor = color
         readAction.isEnabled = readEnabled
-        (parent as! ImageController).innerViewReloaded()
+        (parent as? ImageController)?.innerViewReloaded()
     }
     
     // MARK: busy()
