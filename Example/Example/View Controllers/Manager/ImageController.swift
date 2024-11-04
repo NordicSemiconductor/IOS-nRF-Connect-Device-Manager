@@ -51,7 +51,9 @@ class ImageController: UITableViewController {
     
     @objc func modeSwitched() {
         showModeSwitch(toggle: true)
-        tableView.reloadData()
+        DispatchQueue.main.async { [unowned self] in
+            self.tableView.reloadData()
+        }
     }
     
     private func showModeSwitch(toggle: Bool = false) {
