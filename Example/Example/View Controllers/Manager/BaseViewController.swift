@@ -88,6 +88,19 @@ final class BaseViewController: UITabBarController {
     
     override func viewDidLoad() {
         title = peripheral.advertisedName
+        
+        if #available(iOS 15.0, *) {
+            let appearance = UITabBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = UIColor.dynamicColor(light: .systemBackground, dark: .secondarySystemBackground)
+           
+            tabBar.tintColor = .accent
+            tabBar.standardAppearance = appearance
+            tabBar.scrollEdgeAppearance = appearance
+        } else {
+            tabBar.tintColor = .accent
+            tabBar.isTranslucent = false
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
