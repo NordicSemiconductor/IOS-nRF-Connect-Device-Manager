@@ -217,13 +217,10 @@ public class SuitManager: McuManager {
             self.logDelegate?.log("Suit Cache Image Detected for Upload. Enabling `deferInstall`.", ofCategory: .suit, atLevel: .debug)
         }
         
-        offset = 0
-        pollAttempts = 0
+        resetUploadVariables()
         uploadData = images[uploadIndex].data
         uploadDelegate = delegate
         uploadPipeline = McuMgrUploadPipeline(adopting: configuration, over: transport)
-        sessionID = nil
-        targetID = nil
         state = .uploadingEnvelope
         upload(uploadData, deferInstall: deferInstall, at: offset)
     }
@@ -236,11 +233,7 @@ public class SuitManager: McuManager {
      To trigger 'confirm' or processing of recently uploaded Envelope, we need to send an 'upload envelope' command specifying data size of zero, offset zero and no defer install (which defaults to false anyway).
      */
     public func processRecentlyUploadedEnvelope(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        offset = 0
-        pollAttempts = 0
-        uploadData = nil
-        sessionID = nil
-        targetID = nil
+        resetUploadVariables()
         state = .uploadComplete
         
         let payload: [String: CBOR] = [
@@ -347,10 +340,14 @@ public class SuitManager: McuManager {
         }
         
         if let offset = response.off {
+            self.offset = offset
             self.uploadPipeline.receivedData(with: offset)
             self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset), imageSize: uploadData.count,
                                                          timestamp: Date())
+            
             if offset < uploadData.count {
+                guard self.state.isInProgress else { return }
+                
                 self.uploadPipeline.pipelinedSend(ofSize: self.uploadData.count) { [unowned self] offset in
                     let payloadLength = self.maxDataPacketLengthFor(data: uploadData, offset: offset)
                     // Note: 'defer install' is not needed for SUIT Cache(s).
@@ -372,21 +369,105 @@ public class SuitManager: McuManager {
                     if uploadImage.content == .suitCache {
                         self.targetID = UInt64(uploadImage.image)
                     }
+                }
+                
+                guard self.state.isInProgress else { return }
+                
+                if self.uploadIndex < self.uploadImages.count {
                     // Note: 'defer install' is not needed for SUIT Cache(s).
                     self.upload(self.uploadData, at: self.offset)
                 } else {
-                    // Upload Finished.
-                    self.dataUploadComplete()
-                    
-                    let deferredInstall = self.uploadImages.contains(where: { $0.content == .suitCache })
-                    if deferredInstall {
-                        self.logDelegate?.log("Sending Envelope Processing (Confirm) Command due to Deferred Install.", ofCategory: .suit, atLevel: .info)
-                        self.processRecentlyUploadedEnvelope(callback: processUploadedEnvelopeCallback)
-                    } else {
-                        self.startPolling()
-                    }
+                    self.finishUploadAndStartPolling()
                 }
             }
+        }
+    }
+    
+    // MARK: pause()
+    
+    public func pause() {
+        guard state.isInProgress else {
+            log(msg: "Upload is not in progress and therefore cannot be paused.", atLevel: .warning)
+            return
+        }
+        
+        state = .uploadPaused
+        logDelegate?.log("Data Upload Paused.", ofCategory: .suit, atLevel: .info)
+    }
+    
+    // MARK: continueUpload()
+    
+    public func continueUpload() {
+        guard state == .uploadPaused else {
+            logDelegate?.log("Upload is not in progress and therefore cannot be resumed.", ofCategory: .suit, atLevel: .warning)
+            return
+        }
+        
+        if uploadIndex < uploadImages.count {
+            logDelegate?.log("Resuming Upload.", ofCategory: .suit, atLevel: .application)
+            
+            let uploadImage = uploadImages[uploadIndex]
+            switch uploadImage.content {
+            case .suitCache:
+                state = .uploadingCache
+            case .suitEnvelope:
+                state = .uploadingEnvelope
+            default:
+                state = .uploadingResource
+            }
+            
+            if offset == 0, uploadImage.content == .suitCache {
+                targetID = UInt64(uploadImage.image)
+            }
+            // Note: 'defer install' is not needed for SUIT Cache(s).
+            upload(uploadData, at: offset)
+        } else {
+            finishUploadAndStartPolling()
+        }
+    }
+    
+    // MARK: cancel(with:)
+    
+    public func cancel(with error: Error? = nil) {
+        guard state.isInProgress else {
+            logDelegate?.log("Data Upload not in progress.", ofCategory: .suit, atLevel: .warning)
+            return
+        }
+        
+        state = .none
+        resetUploadVariables()
+        uploadDelegate?.uploadDidCancel()
+        uploadDelegate = nil
+        
+        if let error {
+            logDelegate?.log("Upload cancelled due to error: \(error)", ofCategory: .suit, atLevel: .error)
+        } else {
+            logDelegate?.log("Upload cancelled", ofCategory: .suit, atLevel: .application)
+        }
+    }
+    
+    // MARK: resetUploadVariables()
+    
+    private func resetUploadVariables() {
+        offset = 0
+        pollAttempts = 0
+        uploadData = nil
+        sessionID = nil
+        targetID = nil
+    }
+    
+    // MARK: finishUploadAndStartPolling()
+    
+    private func finishUploadAndStartPolling() {
+        // Upload Finished.
+        dataUploadComplete()
+        
+        let deferredInstall = uploadImages.contains(where: { $0.content == .suitCache })
+        if deferredInstall {
+            logDelegate?.log("Sending Envelope Processing (Confirm) Command due to Deferred Install.", ofCategory: .suit, atLevel: .info)
+            processRecentlyUploadedEnvelope(callback: processUploadedEnvelopeCallback)
+        } else {
+            startPolling()
         }
     }
     
@@ -553,12 +634,12 @@ extension SuitManager: ConnectionObserver {
 
 enum SuitManagerState {
     case none
-    case uploadingEnvelope, uploadingCache, uploadingResource, uploadComplete
+    case uploadingEnvelope, uploadingCache, uploadingResource, uploadPaused, uploadComplete
     case success
     
     var isInProgress: Bool {
         switch self {
-        case .none, .success:
+        case .none, .uploadPaused, .success:
             return false
         case .uploadingEnvelope, .uploadingCache, .uploadingResource, .uploadComplete:
             return true
