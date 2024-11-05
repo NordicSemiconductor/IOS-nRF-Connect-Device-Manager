@@ -429,11 +429,6 @@ public class SuitManager: McuManager {
     // MARK: cancel(with:)
     
     public func cancel(with error: Error? = nil) {
-        guard state.isInProgress else {
-            logDelegate?.log("Data Upload not in progress.", ofCategory: .suit, atLevel: .warning)
-            return
-        }
-        
         state = .none
         resetUploadVariables()
         uploadDelegate?.uploadDidCancel()
