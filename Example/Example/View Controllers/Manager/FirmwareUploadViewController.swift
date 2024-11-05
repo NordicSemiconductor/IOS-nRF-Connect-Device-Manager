@@ -212,15 +212,19 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
 extension FirmwareUploadViewController: ImageUploadDelegate {
     
     func uploadWillStart() {
-        self.actionBuffers.isEnabled = false
-        self.actionAlignment.isEnabled = false
-        self.actionChunks.isEnabled = false
-        self.actionStart.isHidden = true
-        self.actionPause.isHidden = false
-        self.actionCancel.isHidden = false
-        self.actionSelect.isEnabled = false
-        self.status.textColor = .secondary
-        self.status.text = "UPLOADING..."
+        actionBuffers.isEnabled = false
+        actionAlignment.isEnabled = false
+        actionChunks.isEnabled = false
+        actionStart.isHidden = true
+        actionPause.isHidden = false
+        actionCancel.isHidden = false
+        actionSelect.isEnabled = false
+        
+        status.textColor = .secondary
+        status.text = "UPLOADING..."
+        
+        uploadImageSize = nil
+        uploadTimestamp = nil
     }
     
     func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
