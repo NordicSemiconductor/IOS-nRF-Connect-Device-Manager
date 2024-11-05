@@ -136,7 +136,11 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     public func cancel() {
         objc_sync_enter(self)
         if state == .upload {
-            imageManager.cancelUpload()
+            if bootloader == .suit {
+                suitManager.cancel()
+            } else {
+                imageManager.cancelUpload()
+            }
             paused = false
         }
         objc_sync_exit(self)
@@ -147,7 +151,11 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         if state.isInProgress() && !paused {
             paused = true
             if state == .upload {
-                imageManager.pauseUpload()
+                if bootloader == .suit {
+                    suitManager.pause()
+                } else {
+                    imageManager.pauseUpload()
+                }
             }
         }
         objc_sync_exit(self)
@@ -157,7 +165,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         objc_sync_enter(self)
         if paused {
             paused = false
-            currentState()
+            resumeFromCurrentState()
         }
         objc_sync_exit(self)
     }
@@ -342,7 +350,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
-    private func currentState() {
+    private func resumeFromCurrentState() {
         objc_sync_enter(self)
         defer {
             objc_sync_exit(self)
@@ -354,15 +362,19 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             case .validate:
                 validate()
             case .upload:
-                imageManager.continueUpload()
+                if bootloader == .suit {
+                    suitManager.continueUpload()
+                } else {
+                    imageManager.continueUpload()
+                }
             case .test:
-                guard let nextImageToTest = self.images.first(where: { $0.uploaded && !$0.tested }) else { return }
+                guard let nextImageToTest = images.first(where: { $0.uploaded && !$0.tested }) else { return }
                 test(nextImageToTest)
                 mark(nextImageToTest, as: \.testSent)
             case .reset:
                 reset()
             case .confirm:
-                guard let nextImageToConfirm = self.images.first(where: { $0.uploaded && !$0.confirmed }) else { return }
+                guard let nextImageToConfirm = images.first(where: { $0.uploaded && !$0.confirmed }) else { return }
                 confirm(nextImageToConfirm)
                 mark(nextImageToConfirm, as: \.confirmSent)
             default:
