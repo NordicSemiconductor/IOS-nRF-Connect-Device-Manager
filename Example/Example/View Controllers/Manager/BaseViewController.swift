@@ -94,11 +94,11 @@ final class BaseViewController: UITabBarController {
             appearance.configureWithOpaqueBackground()
             appearance.backgroundColor = UIColor.dynamicColor(light: .systemBackground, dark: .secondarySystemBackground)
            
-            tabBar.tintColor = .accent
+            tabBar.tintColor = .nordic
             tabBar.standardAppearance = appearance
             tabBar.scrollEdgeAppearance = appearance
         } else {
-            tabBar.tintColor = .accent
+            tabBar.tintColor = .nordic
             tabBar.isTranslucent = false
         }
     }
