@@ -173,24 +173,27 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     // MARK: restoreBasicSettings()
     
     private func restoreBasicSettings() {
-        guard UserDefaults.standard.object(forKey: "basic_SwapTime") != nil else {
-            // Nothing has been saved nor set, so don't continue.
-            return
+        if UserDefaults.standard.object(forKey: Key.swapTime.rawValue) != nil {
+            let swapTime = UserDefaults.standard.integer(forKey: Key.swapTime.rawValue)
+            updateEstimatedSwapTime(to: swapTime, updatingUserDefaults: false)
         }
         
-        let swapTime = UserDefaults.standard.integer(forKey: "basic_SwapTime")
-        updateEstimatedSwapTime(to: swapTime, updatingUserDefaults: false)
-        
-        let pipelineDepth = UserDefaults.standard.integer(forKey: "basic_PipelineDepth")
-        updatePipelineDepth(to: pipelineDepth + 1, updatingUserDefaults: false)
-        
-        let rawByte = UserDefaults.standard.integer(forKey: "basic_ByteAlignment")
-        if let byteAlignment = ImageUploadAlignment(rawValue: UInt64(rawByte)) {
-            updateByteAlignment(to: byteAlignment, updatingUserDefaults: false)
+        if UserDefaults.standard.object(forKey: Key.pipelineDepth.rawValue) != nil {
+            let pipelineDepth = UserDefaults.standard.integer(forKey: Key.pipelineDepth.rawValue)
+            updatePipelineDepth(to: pipelineDepth + 1, updatingUserDefaults: false)
         }
         
-        let eraseAppSettings = UserDefaults.standard.bool(forKey: "basic_EraseSettings")
-        updateEraseApplicationSettings(to: eraseAppSettings, updatingUserDefaults: false)
+        if UserDefaults.standard.object(forKey: Key.byteAlignment.rawValue) != nil {
+            let rawByte = UserDefaults.standard.integer(forKey: Key.byteAlignment.rawValue)
+            if let byteAlignment = ImageUploadAlignment(rawValue: UInt64(rawByte)) {
+                updateByteAlignment(to: byteAlignment, updatingUserDefaults: false)
+            }
+        }
+        
+        if UserDefaults.standard.object(forKey: Key.eraseAppSettings.rawValue) != nil {
+            let eraseAppSettings = UserDefaults.standard.bool(forKey: Key.eraseAppSettings.rawValue)
+            updateEraseApplicationSettings(to: eraseAppSettings, updatingUserDefaults: false)
+        }
     }
     
     // MARK: updateEstimatedSwapTime(to:)
@@ -199,7 +202,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         dfuManagerConfiguration.estimatedSwapTime = TimeInterval(numberOfSeconds)
         dfuSwapTime.text = "\(dfuManagerConfiguration.estimatedSwapTime)s"
         guard updatingUserDefaults else { return }
-        UserDefaults.standard.set(numberOfSeconds, forKey: "basic_SwapTime")
+        UserDefaults.standard.set(numberOfSeconds, forKey: Key.swapTime.rawValue)
     }
     
     // MARK: updatePipelineDepth(to:)
@@ -209,7 +212,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         // Pipeline Depth = Number of Buffers - 1
         dfuManagerConfiguration.pipelineDepth = value - 1
         guard updatingUserDefaults else { return }
-        UserDefaults.standard.set(dfuManagerConfiguration.pipelineDepth, forKey: "basic_PipelineDepth")
+        UserDefaults.standard.set(dfuManagerConfiguration.pipelineDepth,
+                                  forKey: Key.pipelineDepth.rawValue)
     }
     
     // MARK: updateByteAlignment(to:)
@@ -218,7 +222,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         dfuByteAlignment.text = "\(byteAlignment)"
         dfuManagerConfiguration.byteAlignment = byteAlignment
         guard updatingUserDefaults else { return }
-        UserDefaults.standard.set(byteAlignment.rawValue, forKey: "basic_ByteAlignment")
+        UserDefaults.standard.set(byteAlignment.rawValue, forKey: Key.byteAlignment.rawValue)
     }
     
     // MARK: updateEraseApplicationSettings(to:)
@@ -227,7 +231,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         eraseSwitch.isOn = eraseApplicationSettings
         dfuManagerConfiguration.eraseAppSettings = eraseApplicationSettings
         guard updatingUserDefaults else { return }
-        UserDefaults.standard.set(eraseApplicationSettings, forKey: "basic_EraseSettings")
+        UserDefaults.standard.set(eraseApplicationSettings,
+                                  forKey: Key.eraseAppSettings.rawValue)
     }
     
     private func present(_ alertViewController: UIAlertController, addingCancelAction addCancelAction: Bool = false) {
@@ -252,6 +257,18 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             status.text = error.localizedDescription
             actionStart.isEnabled = false
         }
+    }
+}
+
+// MARK: - UserDefaults Keys
+
+extension FirmwareUpgradeViewController {
+    
+    enum Key: String, RawRepresentable {
+        case swapTime = "basic_SwapTime"
+        case pipelineDepth = "basic_PipelineDepth"
+        case byteAlignment = "basic_ByteAlignment"
+        case eraseAppSettings = "basic_EraseSettings"
     }
 }
 
