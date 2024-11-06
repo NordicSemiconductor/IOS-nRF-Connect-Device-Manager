@@ -70,6 +70,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         
         var suitConfiguration = configuration
         suitConfiguration.upgradeMode = .uploadOnly
+        // Erase App Settings is not supported by SUIT Bootloader.
+        suitConfiguration.eraseAppSettings = false
         try start(images: package.images, using: suitConfiguration)
     }
     
