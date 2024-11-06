@@ -45,11 +45,9 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         let values = [2, 3, 4, 5, 6, 7, 8]
         values.forEach { value in
             let title = value == values.first ? "Disabled" : "\(value)"
-            alertController.addAction(UIAlertAction(title: title, style: .default) {
+            alertController.addAction(UIAlertAction(title: title, style: .default) { [unowned self]
                 action in
-                self.dfuNumberOfBuffers.text = value == 2 ? "Disabled" : "\(value)"
-                // Pipeline Depth = Number of Buffers - 1
-                self.uploadConfiguration.pipelineDepth = value - 1
+                self.updatePipelineDepth(to: value)
             })
         }
         present(alertController, addingCancelAction: true)
@@ -59,10 +57,9 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         let alertController = UIAlertController(title: "Byte alignment", message: nil, preferredStyle: .actionSheet)
         ImageUploadAlignment.allCases.forEach { alignmentValue in
             let text = "\(alignmentValue)"
-            alertController.addAction(UIAlertAction(title: text, style: .default) {
+            alertController.addAction(UIAlertAction(title: text, style: .default) { [unowned self]
                 action in
-                self.dfuByteAlignment.text = text
-                self.uploadConfiguration.byteAlignment = alignmentValue
+                self.updateByteAlignment(to: alignmentValue)
             })
         }
         present(alertController, addingCancelAction: true)
@@ -74,14 +71,42 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
             textField.placeholder = "\(self.uploadConfiguration.reassemblyBufferSize)"
             textField.keyboardType = .decimalPad
         }
-        alertController.addAction(UIAlertAction(title: "Submit", style: .default, handler: { [weak alertController] (_) in
-            guard let textField = alertController?.textFields?.first,
+        alertController.addAction(UIAlertAction(title: "Submit", style: .default, handler: { [unowned alertController, unowned self] (_) in
+            guard let textField = alertController.textFields?.first,
                   let stringValue = textField.text else { return }
-            self.uploadConfiguration.reassemblyBufferSize = UInt64(stringValue) ?? 0
-            self.dfuChunkSize.text = "\(self.uploadConfiguration.reassemblyBufferSize)"
+            self.updateBufferSize(to: Int(stringValue) ?? 0)
         }))
 
         present(alertController, addingCancelAction: true)
+    }
+    
+    // MARK: updatePipelineDepth(to:)
+    
+    private func updatePipelineDepth(to value: Int, updatingUserDefaults: Bool = true) {
+        dfuNumberOfBuffers.text = value == 2 ? "Disabled" : "\(value)"
+        // Pipeline Depth = Number of Buffers - 1
+        uploadConfiguration.pipelineDepth = value - 1
+        guard updatingUserDefaults else { return }
+        UserDefaults.standard.set(uploadConfiguration.pipelineDepth,
+                                  forKey: Key.pipelineDepth.rawValue)
+    }
+    
+    // MARK: updateByteAlignment(to:)
+    
+    private func updateByteAlignment(to byteAlignment: ImageUploadAlignment, updatingUserDefaults: Bool = true) {
+        dfuByteAlignment.text = "\(byteAlignment)"
+        uploadConfiguration.byteAlignment = byteAlignment
+        guard updatingUserDefaults else { return }
+        UserDefaults.standard.set(byteAlignment.rawValue, forKey: Key.byteAlignment.rawValue)
+    }
+    
+    // MARK: updateBufferSize(to:)
+    
+    private func updateBufferSize(to bufferSize: Int, updatingUserDefaults: Bool = true) {
+        self.uploadConfiguration.reassemblyBufferSize = UInt64(bufferSize)
+        self.dfuChunkSize.text = "\(self.uploadConfiguration.reassemblyBufferSize)"
+        guard updatingUserDefaults else { return }
+        UserDefaults.standard.set(bufferSize, forKey: Key.chunkSize.rawValue)
     }
     
     private func present(_ alertViewController: UIAlertController, addingCancelAction addCancelAction: Bool = false) {
@@ -149,6 +174,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.translatesAutoresizingMaskIntoConstraints = false
+        restoreAdvancedDefaults()
     }
     
     // MARK: - Logic
@@ -204,6 +230,36 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         uploadWillStart()
         let image = ImageManager.Image(image: 0, hash: sha256Hash, data: envelope.data)
         _ = imageManager.upload(images: [image], using: uploadConfiguration, delegate: self)
+    }
+}
+
+// MARK: - Defaults
+
+fileprivate extension FirmwareUploadViewController {
+    
+    enum Key: String, RawRepresentable {
+        case pipelineDepth = "advanced_PipelineDepth"
+        case byteAlignment = "advanced_ByteAlignment"
+        case chunkSize = "advanced_ChunkSize"
+    }
+    
+    func restoreAdvancedDefaults() {
+        if UserDefaults.standard.object(forKey: Key.pipelineDepth.rawValue) != nil {
+            let pipelineDepth = UserDefaults.standard.integer(forKey: Key.pipelineDepth.rawValue)
+            updatePipelineDepth(to: pipelineDepth + 1, updatingUserDefaults: false)
+        }
+        
+        if UserDefaults.standard.object(forKey: Key.byteAlignment.rawValue) != nil {
+            let rawByte = UserDefaults.standard.integer(forKey: Key.byteAlignment.rawValue)
+            if let byteAlignment = ImageUploadAlignment(rawValue: UInt64(rawByte)) {
+                updateByteAlignment(to: byteAlignment, updatingUserDefaults: false)
+            }
+        }
+        
+        if UserDefaults.standard.object(forKey: Key.chunkSize.rawValue) != nil {
+            let chunkSize = UserDefaults.standard.integer(forKey: Key.chunkSize.rawValue)
+            updateBufferSize(to: chunkSize, updatingUserDefaults: false)
+        }
     }
 }
 
