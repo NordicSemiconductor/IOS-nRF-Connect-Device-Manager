@@ -112,6 +112,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.translatesAutoresizingMaskIntoConstraints = false
+        restoreBasicSettings()
     }
     
     // MARK: - Logic
@@ -120,10 +121,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         let alertController = UIAlertController(title: "Swap time (in seconds)", message: nil, preferredStyle: .actionSheet)
         let seconds = [0, 5, 10, 20, 30, 40]
         seconds.forEach { numberOfSeconds in
-            alertController.addAction(UIAlertAction(title: "\(numberOfSeconds) seconds", style: .default) {
-                action in
-                self.dfuManagerConfiguration.estimatedSwapTime = TimeInterval(numberOfSeconds)
-                self.dfuSwapTime.text = "\(self.dfuManagerConfiguration.estimatedSwapTime)s"
+            alertController.addAction(UIAlertAction(title: "\(numberOfSeconds) seconds", style: .default) { [unowned self] action in
+                self.updateEstimatedSwapTime(to: numberOfSeconds)
             })
         }
         present(alertController, addingCancelAction: true)
@@ -134,11 +133,9 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         let values = [2, 3, 4, 5, 6, 7, 8]
         values.forEach { value in
             let title = value == values.first ? "Disabled" : "\(value)"
-            alertController.addAction(UIAlertAction(title: title, style: .default) {
+            alertController.addAction(UIAlertAction(title: title, style: .default) { [unowned self]
                 action in
-                self.dfuNumberOfBuffers.text = value == 2 ? "Disabled" : "\(value)"
-                // Pipeline Depth = Number of Buffers - 1
-                self.dfuManagerConfiguration.pipelineDepth = value - 1
+                self.updatePipelineDepth(to: value)
             })
         }
         present(alertController, addingCancelAction: true)
@@ -148,17 +145,16 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         let alertController = UIAlertController(title: "Byte Alignment", message: nil, preferredStyle: .actionSheet)
         ImageUploadAlignment.allCases.forEach { alignmentValue in
             let text = "\(alignmentValue)"
-            alertController.addAction(UIAlertAction(title: text, style: .default) {
+            alertController.addAction(UIAlertAction(title: text, style: .default) { [unowned self]
                 action in
-                self.dfuByteAlignment.text = text
-                self.dfuManagerConfiguration.byteAlignment = alignmentValue
+                self.updateByteAlignment(to: alignmentValue)
             })
         }
         present(alertController, addingCancelAction: true)
     }
     
     @IBAction func setEraseApplicationSettings(_ sender: UISwitch) {
-        dfuManagerConfiguration.eraseAppSettings = sender.isOn
+        updateEraseApplicationSettings(to: sender.isOn)
     }
     
     private func selectMode(for package: McuMgrPackage) {
@@ -172,6 +168,66 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             })
         }
         present(alertController, addingCancelAction: true)
+    }
+    
+    // MARK: restoreBasicSettings()
+    
+    private func restoreBasicSettings() {
+        guard UserDefaults.standard.object(forKey: "basic_SwapTime") != nil else {
+            // Nothing has been saved nor set, so don't continue.
+            return
+        }
+        
+        let swapTime = UserDefaults.standard.integer(forKey: "basic_SwapTime")
+        updateEstimatedSwapTime(to: swapTime, updatingUserDefaults: false)
+        
+        let pipelineDepth = UserDefaults.standard.integer(forKey: "basic_PipelineDepth")
+        updatePipelineDepth(to: pipelineDepth + 1, updatingUserDefaults: false)
+        
+        let rawByte = UserDefaults.standard.integer(forKey: "basic_ByteAlignment")
+        if let byteAlignment = ImageUploadAlignment(rawValue: UInt64(rawByte)) {
+            updateByteAlignment(to: byteAlignment, updatingUserDefaults: false)
+        }
+        
+        let eraseAppSettings = UserDefaults.standard.bool(forKey: "basic_EraseSettings")
+        updateEraseApplicationSettings(to: eraseAppSettings, updatingUserDefaults: false)
+    }
+    
+    // MARK: updateEstimatedSwapTime(to:)
+    
+    private func updateEstimatedSwapTime(to numberOfSeconds: Int, updatingUserDefaults: Bool = true) {
+        dfuManagerConfiguration.estimatedSwapTime = TimeInterval(numberOfSeconds)
+        dfuSwapTime.text = "\(dfuManagerConfiguration.estimatedSwapTime)s"
+        guard updatingUserDefaults else { return }
+        UserDefaults.standard.set(numberOfSeconds, forKey: "basic_SwapTime")
+    }
+    
+    // MARK: updatePipelineDepth(to:)
+    
+    private func updatePipelineDepth(to value: Int, updatingUserDefaults: Bool = true) {
+        dfuNumberOfBuffers.text = value == 2 ? "Disabled" : "\(value)"
+        // Pipeline Depth = Number of Buffers - 1
+        dfuManagerConfiguration.pipelineDepth = value - 1
+        guard updatingUserDefaults else { return }
+        UserDefaults.standard.set(dfuManagerConfiguration.pipelineDepth, forKey: "basic_PipelineDepth")
+    }
+    
+    // MARK: updateByteAlignment(to:)
+    
+    private func updateByteAlignment(to byteAlignment: ImageUploadAlignment, updatingUserDefaults: Bool = true) {
+        dfuByteAlignment.text = "\(byteAlignment)"
+        dfuManagerConfiguration.byteAlignment = byteAlignment
+        guard updatingUserDefaults else { return }
+        UserDefaults.standard.set(byteAlignment.rawValue, forKey: "basic_ByteAlignment")
+    }
+    
+    // MARK: updateEraseApplicationSettings(to:)
+    
+    private func updateEraseApplicationSettings(to eraseApplicationSettings: Bool, updatingUserDefaults: Bool = true) {
+        eraseSwitch.isOn = eraseApplicationSettings
+        dfuManagerConfiguration.eraseAppSettings = eraseApplicationSettings
+        guard updatingUserDefaults else { return }
+        UserDefaults.standard.set(eraseApplicationSettings, forKey: "basic_EraseSettings")
     }
     
     private func present(_ alertViewController: UIAlertController, addingCancelAction addCancelAction: Bool = false) {
