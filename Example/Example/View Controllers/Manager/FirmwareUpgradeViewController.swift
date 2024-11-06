@@ -170,32 +170,6 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         present(alertController, addingCancelAction: true)
     }
     
-    // MARK: restoreBasicSettings()
-    
-    private func restoreBasicSettings() {
-        if UserDefaults.standard.object(forKey: Key.swapTime.rawValue) != nil {
-            let swapTime = UserDefaults.standard.integer(forKey: Key.swapTime.rawValue)
-            updateEstimatedSwapTime(to: swapTime, updatingUserDefaults: false)
-        }
-        
-        if UserDefaults.standard.object(forKey: Key.pipelineDepth.rawValue) != nil {
-            let pipelineDepth = UserDefaults.standard.integer(forKey: Key.pipelineDepth.rawValue)
-            updatePipelineDepth(to: pipelineDepth + 1, updatingUserDefaults: false)
-        }
-        
-        if UserDefaults.standard.object(forKey: Key.byteAlignment.rawValue) != nil {
-            let rawByte = UserDefaults.standard.integer(forKey: Key.byteAlignment.rawValue)
-            if let byteAlignment = ImageUploadAlignment(rawValue: UInt64(rawByte)) {
-                updateByteAlignment(to: byteAlignment, updatingUserDefaults: false)
-            }
-        }
-        
-        if UserDefaults.standard.object(forKey: Key.eraseAppSettings.rawValue) != nil {
-            let eraseAppSettings = UserDefaults.standard.bool(forKey: Key.eraseAppSettings.rawValue)
-            updateEraseApplicationSettings(to: eraseAppSettings, updatingUserDefaults: false)
-        }
-    }
-    
     // MARK: updateEstimatedSwapTime(to:)
     
     private func updateEstimatedSwapTime(to numberOfSeconds: Int, updatingUserDefaults: Bool = true) {
@@ -262,13 +236,37 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
 
 // MARK: - UserDefaults Keys
 
-extension FirmwareUpgradeViewController {
+fileprivate extension FirmwareUpgradeViewController {
     
     enum Key: String, RawRepresentable {
         case swapTime = "basic_SwapTime"
         case pipelineDepth = "basic_PipelineDepth"
         case byteAlignment = "basic_ByteAlignment"
         case eraseAppSettings = "basic_EraseSettings"
+    }
+    
+    private func restoreBasicSettings() {
+        if UserDefaults.standard.object(forKey: Key.swapTime.rawValue) != nil {
+            let swapTime = UserDefaults.standard.integer(forKey: Key.swapTime.rawValue)
+            updateEstimatedSwapTime(to: swapTime, updatingUserDefaults: false)
+        }
+        
+        if UserDefaults.standard.object(forKey: Key.pipelineDepth.rawValue) != nil {
+            let pipelineDepth = UserDefaults.standard.integer(forKey: Key.pipelineDepth.rawValue)
+            updatePipelineDepth(to: pipelineDepth + 1, updatingUserDefaults: false)
+        }
+        
+        if UserDefaults.standard.object(forKey: Key.byteAlignment.rawValue) != nil {
+            let rawByte = UserDefaults.standard.integer(forKey: Key.byteAlignment.rawValue)
+            if let byteAlignment = ImageUploadAlignment(rawValue: UInt64(rawByte)) {
+                updateByteAlignment(to: byteAlignment, updatingUserDefaults: false)
+            }
+        }
+        
+        if UserDefaults.standard.object(forKey: Key.eraseAppSettings.rawValue) != nil {
+            let eraseAppSettings = UserDefaults.standard.bool(forKey: Key.eraseAppSettings.rawValue)
+            updateEraseApplicationSettings(to: eraseAppSettings, updatingUserDefaults: false)
+        }
     }
 }
 
