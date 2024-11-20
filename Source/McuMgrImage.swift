@@ -97,10 +97,17 @@ public class McuMgrImageVersion {
 
 // MARK: - McuMgrImageTlv
 
+/**
+ * See [link for more info on the image TLV types](https://github.com/mcu-tools/mcuboot/blob/9331c924ba69a32e142d1bf724443d99405c3323/boot/bootutil/include/bootutil/image.h#L95).
+ */
 public struct McuMgrImageTlv {
     
     public static let IMG_TLV_SHA256_V1: UInt8 = 0x01
     public static let IMG_TLV_SHA256: UInt8 = 0x10
+    /** SHA384 of image hdr and body. */
+    public static let IMG_TLV_SHA384 = 0x11
+    /** SHA512 of image hdr and body. */
+    public static let IMG_TLV_SHA512 = 0x12
     public static let IMG_TLV_RSA2048_PSS: UInt8 = 0x20
     public static let IMG_TLV_ECDSA224: UInt8 = 0x21
     public static let IMG_TLV_ECDSA256: UInt8 = 0x22
@@ -137,7 +144,11 @@ public struct McuMgrImageTlv {
             let tlvEntry = try McuMgrImageTlvTrailerEntry(data: data, offset: localOffset)
             trailerTlvEntries.append(tlvEntry)
             
-            // Set the hash if this entry's type matches the hash's type
+            if tlvEntry.type == McuMgrImageTlv.IMG_TLV_SHA384
+                || tlvEntry.type == McuMgrImageTlv.IMG_TLV_SHA512 {
+                hashEntry = tlvEntry
+            }
+            
             if imageHeader.isLegacy() && tlvEntry.type == McuMgrImageTlv.IMG_TLV_SHA256_V1 ||
                 !imageHeader.isLegacy() && tlvEntry.type == McuMgrImageTlv.IMG_TLV_SHA256 {
                 hashEntry = tlvEntry
