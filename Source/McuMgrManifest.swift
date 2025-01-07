@@ -178,6 +178,7 @@ public extension McuMgrManifest.File {
         case suitEnvelope = "suit-envelope"
         case bin
         case application
+        case mcuboot
         
         public var description: String {
             switch self {
@@ -191,6 +192,8 @@ public extension McuMgrManifest.File {
                 return "Binary"
             case .application:
                 return "Application"
+            case .mcuboot:
+                return "MCUboot (Bootloader)"
             }
         }
     }
