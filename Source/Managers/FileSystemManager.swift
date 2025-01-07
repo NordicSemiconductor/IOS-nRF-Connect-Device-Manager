@@ -244,7 +244,7 @@ public class FileSystemManager: McuManager {
     ///
     /// - parameter callback: The callback.
     public func closeAll(name: String, callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .read, commandId: FilesystemID.closeFile, payload: nil, callback: callback)
+        send(op: .write, commandId: FilesystemID.closeFile, payload: nil, callback: callback)
     }
     
     // MARK: State
