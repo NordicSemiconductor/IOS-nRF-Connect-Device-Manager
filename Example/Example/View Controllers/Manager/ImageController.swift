@@ -11,7 +11,8 @@ class ImageController: UITableViewController {
     @IBOutlet weak var connectionStatus: UILabel!
     @IBOutlet weak var mcuMgrParams: UILabel!
     @IBOutlet weak var bootloaderName: UILabel!
-    @IBOutlet weak var bootloaderMode: UILabel!    
+    @IBOutlet weak var bootloaderMode: UILabel!
+    @IBOutlet weak var bootloaderSlot: UILabel!
     @IBOutlet weak var kernel: UILabel!
     /// Instance if Images View Controller, required to get its
     /// height when data are obtained and height changes.
@@ -110,6 +111,10 @@ extension ImageController: DeviceStatusDelegate {
     
     func bootloaderModeReceived(_ mode: BootloaderInfoResponse.Mode) {
         bootloaderMode.text = mode.description
+    }
+    
+    func bootloaderSlotReceived(_ slot: UInt64) {
+        bootloaderSlot.text = "\(slot)"
     }
     
     func appInfoReceived(_ output: String) {

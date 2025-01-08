@@ -14,6 +14,7 @@ protocol DeviceStatusDelegate: AnyObject {
     func connectionStateDidChange(_ state: PeripheralState)
     func bootloaderNameReceived(_ name: String)
     func bootloaderModeReceived(_ mode: BootloaderInfoResponse.Mode)
+    func bootloaderSlotReceived(_ slot: UInt64)
     func appInfoReceived(_ output: String)
     func mcuMgrParamsReceived(buffers: Int, size: Int)
 }
@@ -31,6 +32,9 @@ final class BaseViewController: UITabBarController {
             }
             if let bootloaderMode {
                 deviceStatusDelegate?.bootloaderModeReceived(bootloaderMode)
+            }
+            if let bootloaderSlot {
+                deviceStatusDelegate?.bootloaderSlotReceived(bootloaderSlot)
             }
             if let appInfoOutput {
                 deviceStatusDelegate?.appInfoReceived(appInfoOutput)
@@ -68,6 +72,13 @@ final class BaseViewController: UITabBarController {
         didSet {
             if let bootloaderMode {
                 deviceStatusDelegate?.bootloaderModeReceived(bootloaderMode)
+            }
+        }
+    }
+    private var bootloaderSlot: UInt64? {
+        didSet {
+            if let bootloaderSlot {
+                deviceStatusDelegate?.bootloaderSlotReceived(bootloaderSlot)
             }
         }
     }
@@ -131,6 +142,10 @@ extension BaseViewController: PeripheralDelegate {
                         guard response?.bootloader == .mcuboot else { return }
                         defaultManager.bootloaderInfo(query: .mode) { [weak self] response, error in
                             self?.bootloaderMode = response?.mode
+                        }
+                        
+                        defaultManager.bootloaderInfo(query: .slot) { [weak self] response, error in
+                            self?.bootloaderSlot = response?.activeSlot
                         }
                     }
                 }
