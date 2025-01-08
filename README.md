@@ -10,7 +10,7 @@
 [![Swift Package Manager](https://img.shields.io/badge/SwiftPM-Compatible-brightgreen)](https://swift.org/package-manager/)
 [![CocoaPods](https://img.shields.io/badge/CocoaPods-Compatible-brightgreen)](https://cocoapods.org/)
 
-nRF Connect Device Manager library is compatible with [McuManager (or McuMgr for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview) and [SUIT (shorthand for Software Update for the Internet of Things)](). McuManager is a management subsystem supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt. McuManager relies on its own [McuBoot](https://docs.mcuboot.com/) bootloader for secure bootstrapping after a firmware update and, uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), for communication over Bluetooth LE. The SMP Transport definition for Bluetooth Low Energy, which this library implements, [can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
+nRF Connect Device Manager library is compatible with [McuManager (or McuMgr for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview) and [SUIT (shorthand for Software Update for the Internet of Things)](). McuManager is a management subsystem supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt. McuManager relies on its own [MCUboot](https://docs.mcuboot.com/) bootloader for secure bootstrapping after a firmware update and, uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), for communication over Bluetooth LE. The SMP Transport definition for Bluetooth Low Energy, which this library implements, [can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
 
 SUIT and McuManager are related, but not interchangeable. SUIT relies on its own bootloader, but communicates over the SMP Service. Additionally, SUIT supports some functionalities from McuManager, but is not guaranteed to do so. It's best to always check if a McuManager feature is supported by sending the request, rather than assuming it is.
 
@@ -143,12 +143,13 @@ do {
 
 This is our new, improved, all-conquering API. You create a `McuMgrPackage`, and you give it to the `FirmwareUpgradeManager`. [There's no Step Three](https://www.youtube.com/watch?v=A0QK0JfHzhg&pp). This API supports:
 
-- [x] .bin file(s) (Single-Core nRF52xxx) McuMgr Application Upgrade
-- [x] .suit file(s) (Canonical nRF54xx) SUIT Upgrade
+- [x] .bin file(s) (Single-Core nRF52xxx) MCUboot Application Update
+- [x] .suit file(s) (Canonical nRF54xx) SUIT Update
 - [x] .zip file(s)
-  - [x] DirectXIP (nRF52840) McuMgr Upgrade
-  - [x] Multi-Image (Application Core, Network Core nRF5340) McuMgr Upgrade
-  - [x] Multi-Image (Polling - Resources Required nRF54xx) SUIT Upgrade
+  - [x] DirectXIP (nRF52840) MCUboot Upgrade
+  - [x] Bootloader (MCUboot Only) Update
+  - [x] Multi-Image (Application Core, Network Core nRF5340) MCUboot Update
+  - [x] Multi-Image (Polling - Resources Required nRF54xx) SUIT Update
 - [ ] Custom Uploads
 
 This is the API you should be using 99% of the time, unless you want to do something specific. For example, you want to unpack your own package, and upload only certain images / resources for specific cores, which is very rare.
@@ -161,8 +162,10 @@ Have a look at `FirmwareUpgradeViewController.swift` from the Example project fo
 public class ImageManager: McuManager {
     
     public struct Image {
+        public let name: String?
         public let image: Int
         public let slot: Int
+        public let content: McuMgrManifest.File.ContentType
         public let hash: Data
         public let data: Data
 
@@ -171,9 +174,9 @@ public class ImageManager: McuManager {
 }
 ```
 
-The above is the input type for Image-based API call, where a value of `0` for the `image` parameter means **App Core**, and an input of `1` means **Net Core**. These representations were originally intended for McuMgr/McuBoot based products, and not SUIT. In SUIT, there's no concept of 'image' or 'slot', so they're ignored. But to keep the same API reusable for McuMgr/McuBoot and SUIT devices, but we keep them for backwards compatibility. 
+The above is the input type for Image-based API call, where a value of `0` for the `image` parameter means **App Core**, and an input of `1` means **Net Core**. These representations were originally intended for McuMgr/MCUboot based products, and not SUIT. In SUIT, there's no concept of 'image' or 'slot', so they're ignored. But to keep the same API reusable for McuMgr/MCUboot and SUIT devices, but we keep them for backwards compatibility. 
 
-For McuMgr/McuBoot, you will typically want to set it the `slot` parameter to `1`, which is the alternate slot that is currently not in use for that specific core. Then, after upload, the firmware device will reset to swap over its slots, making the contents previously uploaded to slot `1` (now in slot `0` after the swap) as active, and vice-versa.
+For McuMgr/MCUboot, you will typically want to set it the `slot` parameter to `1`, which is the alternate slot that is currently not in use for that specific core. Then, after upload, the firmware device will reset to swap over its slots, making the contents previously uploaded to slot `1` (now in slot `0` after the swap) as active, and vice-versa.
 
 With the Image struct at hand, it's straightforward to make a call to start DFU for either or both cores:
 
