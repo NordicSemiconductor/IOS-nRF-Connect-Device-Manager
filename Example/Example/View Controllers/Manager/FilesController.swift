@@ -18,6 +18,7 @@ class FilesController: UITableViewController {
     @IBOutlet weak var mcuMgrParams: UILabel!
     @IBOutlet weak var bootloaderName: UILabel!
     @IBOutlet weak var bootloaderMode: UILabel!
+    @IBOutlet weak var bootloaderSlot: UILabel!
     @IBOutlet weak var kernel: UILabel!
     
     var fileDownloadViewController: FileDownloadViewController!
@@ -103,6 +104,10 @@ extension FilesController: DeviceStatusDelegate {
     
     func bootloaderModeReceived(_ mode: BootloaderInfoResponse.Mode) {
         bootloaderMode.text = mode.description
+    }
+    
+    func bootloaderSlotReceived(_ slot: UInt64) {
+        bootloaderSlot.text = "\(slot)"
     }
     
     func appInfoReceived(_ output: String) {

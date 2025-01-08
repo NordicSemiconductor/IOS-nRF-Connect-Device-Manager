@@ -66,7 +66,12 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             // (We use modes in the code only, but SUIT has no concept of upload modes)
             startFirmwareUpgrade(package: package)
         } else {
-            selectMode(for: package)
+            if package.images.count > 1, package.images.contains(where: { $0.content == .mcuboot }) {
+                // Force user to select which 'image' to use for bootloader update.
+                selectBootloaderImage(for: package)
+            } else {
+                selectMode(for: package)
+            }
         }
     }
     
@@ -157,6 +162,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         updateEraseApplicationSettings(to: sender.isOn)
     }
     
+    // MARK: selectMode(for:)
+    
     private func selectMode(for package: McuMgrPackage) {
         let alertController = UIAlertController(title: "Select Mode", message: nil, preferredStyle: .actionSheet)
         FirmwareUpgradeMode.allCases.forEach { upgradeMode in
@@ -168,6 +175,21 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             })
         }
         present(alertController, addingCancelAction: true)
+    }
+    
+    // MARK: selectBootloaderImage(for:)
+    
+    private func selectBootloaderImage(for package: McuMgrPackage) {
+        let alertController = buildSelectImageController()
+        for image in package.images {
+            alertController.addAction(UIAlertAction(title: image.imageName(), style: .default) { [weak self]
+                action in
+                self?.dfuManagerConfiguration.eraseAppSettings = false
+                self?.dfuManagerConfiguration.upgradeMode = .confirmOnly
+                self?.startFirmwareUpgrade(images: [image])
+            })
+        }
+        present(alertController, animated: true)
     }
     
     // MARK: updateEstimatedSwapTime(to:)
@@ -223,9 +245,21 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         present(alertViewController, animated: true)
     }
     
+    // MARK: startFirmwareUpgrade
+    
     private func startFirmwareUpgrade(package: McuMgrPackage) {
         do {
             try dfuManager.start(package: package, using: dfuManagerConfiguration)
+        } catch {
+            status.textColor = .systemRed
+            status.text = error.localizedDescription
+            actionStart.isEnabled = false
+        }
+    }
+    
+    private func startFirmwareUpgrade(images: [ImageManager.Image]) {
+        do {
+            try dfuManager.start(images: images, using: dfuManagerConfiguration)
         } catch {
             status.textColor = .systemRed
             status.text = error.localizedDescription

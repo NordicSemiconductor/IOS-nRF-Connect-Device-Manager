@@ -12,6 +12,7 @@ class LogsStatsController: UITableViewController {
     @IBOutlet weak var mcuMgrParams: UILabel!
     @IBOutlet weak var bootloaderName: UILabel!
     @IBOutlet weak var bootloaderMode: UILabel!
+    @IBOutlet weak var bootloaderSlot: UILabel!
     @IBOutlet weak var kernel: UILabel!
     @IBOutlet weak var stats: UILabel!
     @IBOutlet weak var refreshAction: UIButton!
@@ -96,6 +97,10 @@ extension LogsStatsController: DeviceStatusDelegate {
     
     func bootloaderModeReceived(_ mode: BootloaderInfoResponse.Mode) {
         bootloaderMode.text = mode.description
+    }
+    
+    func bootloaderSlotReceived(_ slot: UInt64) {
+        bootloaderSlot.text = "\(slot)"
     }
     
     func appInfoReceived(_ output: String) {
