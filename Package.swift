@@ -13,7 +13,7 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            url: "https://github.com/unrelentingtech/SwiftCBOR.git",
+            url: "https://github.com/valpackett/SwiftCBOR.git",
             .exact("0.4.7")
         ),
         .package(url: "https://github.com/weichsel/ZIPFoundation.git",
