@@ -901,6 +901,7 @@ public final class BootloaderInfoResponse: McuMgrResponse {
     public var bootloader: Bootloader?
     public var mode: Mode?
     public var noDowngrade: Bool?
+    public var activeSlot: UInt64?
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
@@ -912,6 +913,9 @@ public final class BootloaderInfoResponse: McuMgrResponse {
         }
         if case let CBOR.boolean(noDowngrade)? = cbor?["no-downgrade"] {
             self.noDowngrade = noDowngrade
+        }
+        if case let CBOR.unsignedInt(activeSlot)? = cbor?["active"] {
+            self.activeSlot = activeSlot
         }
     }
 }
