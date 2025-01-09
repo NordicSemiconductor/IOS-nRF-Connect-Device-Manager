@@ -147,7 +147,6 @@ This is our new, improved, all-conquering API. You create a `McuMgrPackage`, and
 - [x] .suit file(s) (Canonical nRF54xx) SUIT Update
 - [x] .zip file(s)
   - [x] DirectXIP (nRF52840) MCUboot Upgrade
-  - [x] Bootloader (MCUboot Only) Update
   - [x] Multi-Image (Application Core, Network Core nRF5340) MCUboot Update
   - [x] Multi-Image (Polling - Resources Required nRF54xx) SUIT Update
 - [ ] Custom Uploads
