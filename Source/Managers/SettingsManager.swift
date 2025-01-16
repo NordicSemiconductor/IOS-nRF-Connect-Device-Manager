@@ -40,9 +40,9 @@ public class SettingsManager: McuManager {
     /// - parameter name: The name of the sys config variable to write.
     /// - parameter value: The value of the sys config variable to write.
     /// - parameter callback: The response callback.
-    public func write(name: String, value: String, callback: @escaping McuMgrCallback<McuMgrResponse>) {
+    public func write(name: String, value: [UInt8], callback: @escaping McuMgrCallback<McuMgrResponse>) {
         let payload: [String:CBOR] = ["name": CBOR.utf8String(name),
-                                      "val":  CBOR.utf8String(value)]
+                                      "val":  CBOR.byteString(value)]
         send(op: .write, commandId: ConfigID.zero, payload: payload, callback: callback)
     }
 }
