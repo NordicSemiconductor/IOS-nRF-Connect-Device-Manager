@@ -1279,19 +1279,6 @@ public enum FirmwareUpgradeMode: Codable, CustomStringConvertible, CustomDebugSt
     public var description: String {
         switch self {
         case .testOnly:
-            return ".testOnly"
-        case .confirmOnly:
-            return ".confirmOnly"
-        case .testAndConfirm:
-            return ".testAndConfirm"
-        case .uploadOnly:
-            return ".uploadOnly"
-        }
-    }
-    
-    public var debugDescription: String {
-        switch self {
-        case .testOnly:
             return "Test only"
         case .confirmOnly:
             return "Confirm only"
@@ -1299,6 +1286,19 @@ public enum FirmwareUpgradeMode: Codable, CustomStringConvertible, CustomDebugSt
             return "Test and Confirm"
         case .uploadOnly:
             return "Upload only (no revert)"
+        }
+    }
+    
+    public var debugDescription: String {
+        switch self {
+        case .testOnly:
+            return ".testOnly"
+        case .confirmOnly:
+            return ".confirmOnly"
+        case .testAndConfirm:
+            return ".testAndConfirm"
+        case .uploadOnly:
+            return ".uploadOnly"
         }
     }
 }
