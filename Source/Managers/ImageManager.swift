@@ -99,7 +99,7 @@ public class ImageManager: McuManager {
         case coreList = 3
         case coreLoad = 4
         case erase = 5
-        case eraseState = 6
+        case slotInfo = 6
     }
     
     //**************************************************************************
@@ -261,13 +261,6 @@ public class ImageManager: McuManager {
         send(op: .write, commandId: ImageID.erase, payload: nil, callback: callback)
     }
     
-    /// Erases the state of the secondary image slot on the device.
-    ///
-    /// - parameter callback: The response callback.
-    public func eraseState(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ImageID.eraseState, payload: nil, callback: callback)
-    }
-
     /// Request core dump on the device. The data will be stored in the dump
     /// area.
     ///
@@ -290,6 +283,15 @@ public class ImageManager: McuManager {
     /// - parameter callback: The response callback.
     public func coreErase(callback: @escaping McuMgrCallback<McuMgrResponse>) {
         send(op: .write, commandId: ImageID.coreLoad, payload: nil, callback: callback)
+    }
+    
+    /**
+     The command is used for fetching information on slots that are available.
+     
+     - parameter callback: The response callback.
+     */
+    public func slotInfo(callback: @escaping McuMgrCallback<McuMgrSlotInfoResponse>) {
+        send(op: .read, commandId: ImageID.slotInfo, payload: nil, callback: callback)
     }
     
     //**************************************************************************
