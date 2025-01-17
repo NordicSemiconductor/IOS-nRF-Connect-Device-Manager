@@ -1053,6 +1053,64 @@ public class McuMgrCoreLoadResponse: McuMgrResponse {
     }
 }
 
+// MARK: - McuMgrSlotInfoResponse
+
+public class McuMgrSlotInfoResponse: McuMgrResponse {
+    
+    public var images: [SlotInfoImage]?
+    
+    public required init(cbor: CBOR?) throws {
+        try super.init(cbor: cbor)
+        if case let CBOR.array(images)? = cbor?["images"] {
+            self.images = try CBOR.toObjectArray(array: images)
+        }
+    }
+    
+    // MARK: SlotInfoImage
+    
+    public class SlotInfoImage: CBORMappable {
+        
+        public var image: UInt64?
+        public var slots: [SlotInfoSlot]?
+        public var maxImageSize: UInt64?
+        
+        public required init(cbor: CBOR?) throws {
+            try super.init(cbor: cbor)
+            if case let CBOR.unsignedInt(image)? = cbor?["image"] {
+                self.image = image
+            }
+            if case let CBOR.array(slots)? = cbor?["slots"] {
+                self.slots = try CBOR.toObjectArray(array: slots)
+            }
+            if case let CBOR.unsignedInt(maxImageSize)? = cbor?["max_image_size"] {
+                self.maxImageSize = maxImageSize
+            }
+        }
+    }
+    
+    // MARK: SlotInfoSlot
+    
+    public class SlotInfoSlot: CBORMappable {
+        
+        public var slot: UInt64?
+        public var size: UInt64?
+        public var uploadImageID: UInt64?
+        
+        public required init(cbor: CBOR?) throws {
+            try super.init(cbor: cbor)
+            if case let CBOR.unsignedInt(slot)? = cbor?["slot"] {
+                self.slot = slot
+            }
+            if case let CBOR.unsignedInt(size)? = cbor?["size"] {
+                self.size = size
+            }
+            if case let CBOR.unsignedInt(uploadImageID)? = cbor?["upload_image_id"] {
+                self.uploadImageID = uploadImageID
+            }
+        }
+    }
+}
+
 //******************************************************************************
 // MARK: Fs Responses
 //******************************************************************************
