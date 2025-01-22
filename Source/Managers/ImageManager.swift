@@ -411,10 +411,7 @@ public class ImageManager: McuManager {
         [weak self] (response: McuMgrUploadResponse?, error: Error?) in
         // Ensure the manager is not released.
         guard let self else { return }
-        
-        if #available(iOS 10.0, watchOS 3.0, *) {
-            dispatchPrecondition(condition: .onQueue(.main))
-        }
+        dispatchPrecondition(condition: .onQueue(.main))
         
         // Check for an error.
         if let error {
