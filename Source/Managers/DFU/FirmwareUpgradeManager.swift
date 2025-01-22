@@ -113,11 +113,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         
         log(msg: "Upgrade started with \(images.count) image(s) using '\(configuration.upgradeMode)' mode",
             atLevel: .application)
-        if #available(iOS 10.0, watchOS 3.0, *) {
-            dispatchPrecondition(condition: .onQueue(.main))
-        } else {
-            assert(Thread.isMainThread)
-        }
+        dispatchPrecondition(condition: .onQueue(.main))
         delegate?.upgradeDidStart(controller: self)
         
         requestMcuMgrParameters()

@@ -414,7 +414,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         writeState.sharedLock {
             var writesSent = 0
             for chunk in data {
-                if writesSent > McuMgrBleTransportConstant.WRITE_VALUE_BUFFER_SIZE, #available(iOS 11.0, *) {
+                if writesSent > McuMgrBleTransportConstant.WRITE_VALUE_BUFFER_SIZE {
                     var waitAttempts = 0
                     while !peripheral.canSendWriteWithoutResponse {
                         usleep(McuMgrBleTransportConstant.CONNECTION_BUFFER_WAIT_TIME_USECONDS)
