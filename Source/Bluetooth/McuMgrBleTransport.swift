@@ -457,7 +457,7 @@ public enum McuMgrBleTransportConstant {
     /**
      How many `cbPeripheral.writeValue()` calls can be enqueued before the CoreBluetooth API's buffer fills and stops enqueuing Data to send.
      */
-    internal static let WRITE_VALUE_BUFFER_SIZE = 10
+    internal static let WRITE_VALUE_BUFFER_SIZE = 16
     /**
      The minimum amount of time we expect needs to elapse before the Write Without Response buffer is cleared in microseconds.
      
