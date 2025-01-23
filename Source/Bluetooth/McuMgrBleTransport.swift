@@ -357,8 +357,9 @@ extension McuMgrBleTransport: McuMgrTransport {
             }
             
             guard dataChunksSize == data.count else {
-                writeState[sequenceNumber]?.writeLock.open(McuMgrTransportError.badChunking)
-                return .failure(McuMgrTransportError.badChunking)
+                let error = McuMgrTransportError.badChunking
+                writeState.open(sequenceNumber: sequenceNumber, dueTo: error)
+                return .failure(error)
             }
             
             coordinatedWrite(of: dataChunks, to: targetPeripheral, characteristic: smpCharacteristic) { [weak self] chunk, error in
@@ -373,8 +374,9 @@ extension McuMgrBleTransport: McuMgrTransport {
         } else {
             // No SMP Reassembly Supported. So no 'chunking'.
             guard data.count <= mtu else {
-                writeState[sequenceNumber]?.writeLock.open(McuMgrTransportError.insufficientMtu(mtu: mtu))
-                return .failure(McuMgrTransportError.insufficientMtu(mtu: mtu))
+                let error = McuMgrTransportError.insufficientMtu(mtu: mtu)
+                writeState.open(sequenceNumber: sequenceNumber, dueTo: error)
+                return .failure(error)
             }
             
             coordinatedWrite(of: [data], to: targetPeripheral, characteristic: smpCharacteristic) { [weak self] data, error in

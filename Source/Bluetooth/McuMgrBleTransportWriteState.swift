@@ -84,6 +84,12 @@ final class McuMgrBleTransportWriteState {
         }
     }
     
+    func open(sequenceNumber: McuSequenceNumber, dueTo error: McuMgrTransportError) {
+        lockingQueue.async {
+            self.state[sequenceNumber]?.writeLock.open(error)
+        }
+    }
+    
     func completedWrite(sequenceNumber: McuSequenceNumber) {
         lockingQueue.async {
             self.state[sequenceNumber] = nil
