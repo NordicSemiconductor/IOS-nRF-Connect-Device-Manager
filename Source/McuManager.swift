@@ -55,12 +55,6 @@ open class McuManager : NSObject {
     /// Manager.
     public let group: McuMgrGroup
     
-    /// The MTU used by this manager. This value must be between 23 and 1024.
-    /// The MTU is usually only a factor when uploading files or images to the
-    /// device, where each request should attempt to maximize the amount of
-    /// data being sent to the device.
-    public var mtu: Int
-    
     /// Logger delegate will receive logs.
     public weak var logDelegate: McuMgrLogDelegate?
     
@@ -83,7 +77,6 @@ open class McuManager : NSObject {
     public init(group: McuMgrGroup, transport: McuMgrTransport) {
         self.group = group
         self.transport = transport
-        self.mtu = McuManager.getDefaultMtu(scheme: transport.getScheme())
     }
     
     // MARK: - Send
@@ -228,11 +221,11 @@ open class McuManager : NSObject {
         guard Self.ValidMTURange.contains(mtu) else {
             throw McuManagerError.mtuValueOutsideOfValidRange(mtu)
         }
-        guard self.mtu != mtu else {
+        guard self.transport.mtu != mtu else {
             throw McuManagerError.mtuValueHasNotChanged(mtu)
         }
         
-        self.mtu = mtu
+        self.transport.mtu = mtu
         log(msg: "MTU set to \(mtu)", atLevel: .info)
     }
     

@@ -67,7 +67,7 @@ public class FileSystemManager: McuManager {
         
         // Get the length of file data to send.
         let maxReassemblySize = min(uploadConfiguration.reassemblyBufferSize, UInt64(UInt16.max))
-        let maxPacketSize = max(maxReassemblySize, UInt64(mtu))
+        let maxPacketSize = max(maxReassemblySize, UInt64(transport.mtu))
         var maxDataLength = maxPacketSize - UInt64(packetOverhead)
         if uploadConfiguration.byteAlignment != .disabled {
             maxDataLength = (maxDataLength / uploadConfiguration.byteAlignment.rawValue) * uploadConfiguration.byteAlignment.rawValue
