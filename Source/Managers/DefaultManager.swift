@@ -205,6 +205,9 @@ public enum OSManagerError: UInt64, Error, LocalizedError {
     case unknown = 1
     case invalidFormat = 2
     case queryNotRecognized = 3
+    case rtcNotSet = 4
+    case rtcCommandFailed = 5
+    case queryNoValidResponse = 6
     
     public var errorDescription: String? {
         switch self {
@@ -215,7 +218,13 @@ public enum OSManagerError: UInt64, Error, LocalizedError {
         case .invalidFormat:
             return "Provided format value is not valid"
         case .queryNotRecognized:
-            return "Query was not recognized (i.e. no answer)"
+            return "Query was not recognized"
+        case .rtcNotSet:
+            return "RTC (Real-Time Clock) not set"
+        case .rtcCommandFailed:
+            return "RTC Command Failed"
+        case .queryNoValidResponse:
+            return "Query was recognized, but no valid response value is available"
         }
     }
 }
