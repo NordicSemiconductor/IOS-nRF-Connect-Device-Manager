@@ -479,14 +479,14 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     /// state on success.
     private lazy var listCallback: McuMgrCallback<McuMgrImageStateResponse> = { [weak self] response, error in
         // Ensure the manager is not released.
-        guard let self = self else { return }
+        guard let self else { return }
         
         // Check for an error.
-        if let error = error {
+        if let error {
             self.fail(error: error)
             return
         }
-        guard let response = response else {
+        guard let response else {
             self.fail(error: FirmwareUpgradeError.unknown("Image List response is nil."))
             return
         }

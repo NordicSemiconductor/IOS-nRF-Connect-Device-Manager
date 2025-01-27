@@ -97,6 +97,14 @@ extension McuMgrTransportError: LocalizedError {
 /// Mcu Mgr transport object. The transport object
 /// should automatically handle connection on first request.
 public protocol McuMgrTransport: AnyObject {
+    
+    /**
+     This value must be between 23 and 1024.
+     
+     MTU is usually only a factor when uploading files or images to the device, where each request should attempt to maximize the amount of data being sent to the device.
+     */
+    var mtu: Int! { get set }
+    
     /// Returns the transport scheme.
     ///
     /// - returns: The transport scheme.

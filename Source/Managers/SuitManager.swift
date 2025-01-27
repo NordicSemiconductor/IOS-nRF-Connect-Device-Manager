@@ -562,7 +562,7 @@ public class SuitManager: McuManager {
         
         let remainingBytes = UInt64(data.count) - offset
         let packetOverhead = calculatePacketOverhead(data: data, offset: offset)
-        let maxDataLength = UInt64(mtu) - UInt64(packetOverhead)
+        let maxDataLength = UInt64(transport.mtu) - UInt64(packetOverhead)
         return min(maxDataLength, remainingBytes)
     }
     

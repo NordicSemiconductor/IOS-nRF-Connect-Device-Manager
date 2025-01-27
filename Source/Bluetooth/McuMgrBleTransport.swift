@@ -56,6 +56,12 @@ public class McuMgrBleTransport: NSObject {
     /// notifications.
     internal var smpCharacteristic: CBCharacteristic?
     
+    public var mtu: Int! {
+        didSet {
+            log(msg: "MTU set to \(mtu)", atLevel: .info)
+        }
+    }
+    
     /// An array of observers.
     private var observers: [ConnectionObserver]
     /// BLE transport delegate.
@@ -142,6 +148,8 @@ public class McuMgrBleTransport: NSObject {
         self.centralManager.delegate = self
         if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [targetIdentifier]).first {
             self.peripheral = peripheral
+            self.mtu = min(peripheral.maximumWriteValueLength(for: .withoutResponse),
+                           McuManager.getDefaultMtu(scheme: getScheme()))
         }
     }
     
@@ -213,7 +221,7 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
     
     public func close() {
-        if let peripheral = peripheral, peripheral.state == .connected || peripheral.state == .connecting {
+        if let peripheral, peripheral.state == .connected || peripheral.state == .connecting {
             log(msg: "Cancelling connection...", atLevel: .verbose)
             state = .disconnecting
             centralManager.cancelPeripheralConnection(peripheral)
@@ -326,7 +334,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         assert(connectionLock.isOpen)
         
         // Make sure the SMP characteristic is not nil.
-        guard let smpCharacteristic = smpCharacteristic else {
+        guard let smpCharacteristic else {
             return .failure(McuMgrBleTransportError.missingCharacteristic)
         }
         
@@ -345,7 +353,9 @@ extension McuMgrBleTransport: McuMgrTransport {
             writeState.completedWrite(sequenceNumber: sequenceNumber)
         }
         
-        let mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
+        if mtu == nil {
+            mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
+        }
         if chunkSendDataToMtuSize {
             var dataChunks = [Data]()
             var dataChunksSize = 0
@@ -459,7 +469,7 @@ public enum McuMgrBleTransportConstant {
     /**
      How many `cbPeripheral.writeValue()` calls can be enqueued before the CoreBluetooth API's buffer fills and stops enqueuing Data to send.
      */
-    internal static let WRITE_VALUE_BUFFER_SIZE = 16
+    internal static let WRITE_VALUE_BUFFER_SIZE = 10
     /**
      The minimum amount of time we expect needs to elapse before the Write Without Response buffer is cleared in microseconds.
      
