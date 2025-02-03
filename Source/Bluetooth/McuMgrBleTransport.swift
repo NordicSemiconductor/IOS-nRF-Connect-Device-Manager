@@ -52,6 +52,15 @@ public class McuMgrBleTransport: NSObject {
     /// Used to track the Sequence Number the chunked responses belong to.
     internal var previousUpdateNotificationSequenceNumber: McuSequenceNumber?
     
+    internal struct PausedWriteWithoutResponse {
+        let sequenceNumber: McuSequenceNumber
+        let remaining: ArraySlice<Data>
+        let peripheral: CBPeripheral
+        let characteristic: CBCharacteristic
+        let callback: (Data?, McuMgrTransportError?) -> Void
+    }
+    internal var pausedWrites = [PausedWriteWithoutResponse]()
+    
     /// SMP Characteristic object. Used to write requests and receive
     /// notifications.
     internal var smpCharacteristic: CBCharacteristic?
@@ -372,7 +381,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 return .failure(error)
             }
             
-            coordinatedWrite(of: dataChunks, to: targetPeripheral, characteristic: smpCharacteristic) { [weak self] chunk, error in
+            coordinatedWrite(of: sequenceNumber, data: dataChunks, to: targetPeripheral, characteristic: smpCharacteristic) { [weak self] chunk, error in
                 if let error {
                     writeLock.open(error)
                     return
@@ -389,7 +398,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 return .failure(error)
             }
             
-            coordinatedWrite(of: [data], to: targetPeripheral, characteristic: smpCharacteristic) { [weak self] data, error in
+            coordinatedWrite(of: sequenceNumber, data: [data], to: targetPeripheral, characteristic: smpCharacteristic) { [weak self] data, error in
                 if let error {
                     writeLock.open(error)
                     return
@@ -419,29 +428,24 @@ extension McuMgrBleTransport: McuMgrTransport {
         }
     }
     
+    
+    
     /**
      All chunks of the same packet need to be sent together. Otherwise, they can't be merged properly on the receiving end. This lock guarantees parallel writes don't mean each write command's bytes are not sent interleaved.
      */
-    private func coordinatedWrite(of data: [Data], to peripheral: CBPeripheral, characteristic: CBCharacteristic, callback: @escaping (Data?, McuMgrTransportError?) -> Void) {
-        writeState.sharedLock {
-            var writesSent = 0
-            for chunk in data {
-                if writesSent > McuMgrBleTransportConstant.WRITE_VALUE_BUFFER_SIZE {
-                    var waitAttempts = 0
-                    while !peripheral.canSendWriteWithoutResponse {
-                        usleep(McuMgrBleTransportConstant.CONNECTION_BUFFER_WAIT_TIME_USECONDS)
-                        waitAttempts += 1
-                        if waitAttempts > 6 {
-                            callback(nil, McuMgrTransportError.sendFailed)
-                            return
-                        }
-                    }
-                    writesSent = 0
+    internal func coordinatedWrite(of sequenceNumber: McuSequenceNumber, data: [Data], to peripheral: CBPeripheral, characteristic: CBCharacteristic, callback: @escaping (Data?, McuMgrTransportError?) -> Void) {
+        writeState.sharedLock { [unowned self] in
+            for i in 0..<data.count {
+                guard peripheral.canSendWriteWithoutResponse else {
+                    log(msg: "⏸︎ [Seq: \(sequenceNumber)] Paused (Peripheral not Ready for Write Without Response)", atLevel: .debug)
+                    let remainingData = data.suffix(from: i)
+                    pausedWrites.append(PausedWriteWithoutResponse(sequenceNumber: sequenceNumber, remaining: remainingData, peripheral: peripheral, characteristic: characteristic, callback: callback))
+                    return
                 }
                 
-                callback(chunk, nil)
+                let chunk = data[i]
                 peripheral.writeValue(chunk, for: characteristic, type: .withoutResponse)
-                writesSent += 1
+                callback(chunk, nil)
             }
         }
     }
@@ -466,16 +470,6 @@ public enum McuMgrBleTransportConstant {
     internal static let WAIT_AND_RETRY_INTERVAL = 10
     /// Connection timeout in seconds.
     internal static let CONNECTION_TIMEOUT = 20
-    /**
-     How many `cbPeripheral.writeValue()` calls can be enqueued before the CoreBluetooth API's buffer fills and stops enqueuing Data to send.
-     */
-    internal static let WRITE_VALUE_BUFFER_SIZE = 10
-    /**
-     The minimum amount of time we expect needs to elapse before the Write Without Response buffer is cleared in microseconds.
-     
-     The minimum connection interval time is 15 ms, as noted in this technical document: `https://developer.apple.com/library/archive/qa/qa1931/_index.html`. Therefore, it is reasonable to assume that past this interval, the BLE Radio will be powered up by the CoreBluetooth API / Subsystem to send the write values we've enqueued onto the CBPeripheral.
-     */
-    internal static let CONNECTION_BUFFER_WAIT_TIME_USECONDS: UInt32 = 15000
 }
 
 // MARK: - McuMgrBleTransportKey

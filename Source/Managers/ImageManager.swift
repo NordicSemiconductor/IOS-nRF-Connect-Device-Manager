@@ -240,11 +240,6 @@ public class ImageManager: McuManager {
         uploadConfiguration = configuration
         // Don't exceed UInt16.max payload size.
         uploadConfiguration.reassemblyBufferSize = min(uploadConfiguration.reassemblyBufferSize, UInt64(UInt16.max))
-        if uploadConfiguration.reassemblyBufferSize / UInt64(transport.mtu ?? 1) > McuMgrBleTransportConstant.WRITE_VALUE_BUFFER_SIZE {
-            uploadConfiguration.reassemblyBufferSize = UInt64(transport.mtu ?? 1) * UInt64(McuMgrBleTransportConstant.WRITE_VALUE_BUFFER_SIZE)
-            log(msg: "Lowered Reassembly Buffer Size to \(uploadConfiguration.reassemblyBufferSize) due to low MTU (too many Bluetooth API writes per buffer).", atLevel: .warning)
-        }
-        
         uploadPipeline = McuMgrUploadPipeline(adopting: uploadConfiguration, over: transport)
         
         log(msg: "Uploading Image \(firstImage.image) with Target Slot \(firstImage.slot) (\(firstImage.data.count) bytes)...", atLevel: .verbose)
