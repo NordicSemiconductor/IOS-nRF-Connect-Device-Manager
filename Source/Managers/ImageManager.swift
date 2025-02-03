@@ -451,8 +451,7 @@ public class ImageManager: McuManager {
         }
         
         if let offset = response.off {
-            // We might get called out-of-order so, always retain highest received offset.
-            self.uploadLastOffset = max(self.uploadLastOffset, offset)
+            self.uploadLastOffset = offset
             self.uploadPipeline.receivedData(with: offset)
             
             self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(self.uploadLastOffset), imageSize: currentImageData.count, timestamp: Date())
