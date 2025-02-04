@@ -343,7 +343,7 @@ public class ImageManager: McuManager {
         if uploadState == .none {
             log(msg: "Image upload is not in progress", atLevel: .warning)
         } else {
-            if let error = error {
+            if let error {
                 resetUploadVariables()
                 uploadDelegate?.uploadDidFail(with: error)
                 uploadDelegate = nil
@@ -352,15 +352,15 @@ public class ImageManager: McuManager {
                 cyclicReferenceHolder = nil
             } else {
                 if uploadState == .paused {
+                    log(msg: "Upload paused", atLevel: .application)
+                } else {
                     resetUploadVariables()
                     uploadDelegate?.uploadDidCancel()
-                    uploadDelegate = nil
                     log(msg: "Upload cancelled", atLevel: .application)
-                    // Release cyclic reference.
-                    cyclicReferenceHolder = nil
                 }
-                // else
-                // Transfer will be cancelled after the next notification is received.
+                uploadDelegate = nil
+                // Release cyclic reference.
+                cyclicReferenceHolder = nil
             }
             uploadState = .none
         }
