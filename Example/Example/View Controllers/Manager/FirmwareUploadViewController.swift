@@ -150,7 +150,24 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         uploadImageSize = nil
         imageManager.continueUpload()
     }
+    
     @IBAction func cancel(_ sender: UIButton) {
+        actionBuffers.isEnabled = true
+        actionAlignment.isEnabled = true
+        actionChunks.isEnabled = true
+        actionStart.isHidden = false
+        actionResume.isHidden = true
+        actionPause.isHidden = true
+        actionCancel.isHidden = true
+        actionSelect.isEnabled = false
+        
+        status.textColor = .secondary
+        status.text = "Cancelled"
+        
+        uploadImageSize = nil
+        uploadTimestamp = nil
+        
+        progress.progress = .zero
         dfuSpeed.isHidden = true
         imageManager.cancelUpload()
     }
