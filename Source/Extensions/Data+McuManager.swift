@@ -56,25 +56,36 @@ public extension Data {
         if options.contains(.byteSpacing) {
             format.append(" ")
         }
+
+        var bytes = self
+        if options.contains(.reverseEndianness) {
+            bytes.reverse()
+        }
+        var body: String = options.contains(.prepend0x) ? "0x" : ""
+        switch options {
+        case .byteSpacing:
+            body.reserveCapacity(
+                options.contains(.prepend0x) ? 1 : 0 + bytes.count * 3
+            )
+        default:
+            body.reserveCapacity(
+                options.contains(.prepend0x) ? 1 : 0 + bytes.count * 2
+            )
+        }
         
-        var body: String = ""
         autoreleasepool {
-            var bytes = self
-            if options.contains(.reverseEndianness) {
-                bytes.reverse()
-            }
-            
-            body = bytes.map {
+            body.append(contentsOf: bytes.map {
                 String(format: format, $0)
-            }.joined()
-            
-            if options.contains(.twoByteSpacing) {
+            }.joined())
+        }
+        
+        if options.contains(.twoByteSpacing) {
+            autoreleasepool {
                 body = body.inserting(separator: " ", every: 4)
             }
         }
-        
-        let prefix = options.contains(.prepend0x) ? "0x" : ""
-        return prefix + body
+
+        return body
     }
     
     // MARK: - Fragmentation
