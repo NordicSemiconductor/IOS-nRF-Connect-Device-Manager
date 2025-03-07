@@ -273,7 +273,10 @@ class ImagesViewController: UIViewController, McuMgrViewController {
             if image.permanent {
                 info += "Permanent, "
             }
-            if !image.bootable && !image.pending && !image.confirmed && !image.active && !image.permanent {
+            if image.compressed {
+                info += "Compressed, "
+            }
+            if !image.bootable && !image.pending && !image.confirmed && !image.active && !image.permanent && !image.compressed {
                 info += "None, "
             } else {
                 info = String(info.dropLast(2))
