@@ -970,6 +970,8 @@ extension McuMgrImageStateResponse {
         public var active: Bool { boolean() }
         /// Permanent flag. Set if this image is permanent.
         public var permanent: Bool { boolean() }
+        // Compressed flag. Set if the image contains a compressed update.
+        public var compressed: Bool { boolean() }
         
         // MARK: CustomDebugStringConvertible
         
@@ -977,7 +979,7 @@ extension McuMgrImageStateResponse {
             return """
             Hash: \(hash)
             Image \(image), Slot \(slot), Version \(version)
-            Bootable \(bootable ? "Yes" : "No"), Pending \(pending ? "Yes" : "No"), Confirmed \(confirmed ? "Yes" : "No"), Active \(active ? "Yes" : "No"), Permanent \(permanent ? "Yes" : "No")
+            Bootable \(bootable ? "Yes" : "No"), Pending \(pending ? "Yes" : "No"), Confirmed \(confirmed ? "Yes" : "No"), Active \(active ? "Yes" : "No"), Compressed \(compressed ? "Yes" : "No"), Permanent \(permanent ? "Yes" : "No")
             """
         }
         
