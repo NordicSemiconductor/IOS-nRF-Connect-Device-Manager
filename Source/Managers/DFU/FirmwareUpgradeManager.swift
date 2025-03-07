@@ -381,6 +381,15 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
+    /**
+     Used to check potential Uploads of SUIT Images via MCUBoot Bootloader, which requires adjustments.
+     */
+    private func uploadingSUITImages() -> Bool {
+        return images.contains(where: {
+            $0.content == .suitEnvelope || $0.content == .suitCache
+        })
+    }
+    
     // MARK: McuMgr Parameters Callback
     
     /// Callback for devices running NCS firmware version 2.0 or later, which support McuMgrParameters call.
@@ -421,8 +430,10 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             self.log(msg: "Bootloader Info not supported.", atLevel: .warning)
             self.log(msg: "Assuming MCUBoot Bootloader.", atLevel: .debug)
             self.bootloader = .mcuboot
-            if self.configuration.upgradeMode == .uploadOnly {
-                self.log(msg: "Switching Upgrade Mode from \(FirmwareUpgradeMode.uploadOnly) to \(FirmwareUpgradeMode.confirmOnly).", atLevel: .debug)
+            // Detect SUIT via MCUBoot and override UpgradeMode
+            if self.uploadingSUITImages(), self.configuration.upgradeMode == .uploadOnly {
+                self.log(msg: "SUIT over MCUBoot Detected.", atLevel: .info)
+                self.log(msg: "Override Upgrade Mode from \(FirmwareUpgradeMode.uploadOnly) to \(FirmwareUpgradeMode.confirmOnly) due to SUIT over MCUBoot.", atLevel: .debug)
                 self.configuration.upgradeMode = .confirmOnly
             }
             self.validate() // Continue Upload
@@ -450,8 +461,12 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         
         guard error == nil, let response, response.rc.isSupported() else {
             self.log(msg: "Bootloader Mode not supported", atLevel: .warning)
-            if self.configuration.upgradeMode == .uploadOnly {
-                self.log(msg: "Switching Upgrade Mode from \(FirmwareUpgradeMode.uploadOnly) to \(FirmwareUpgradeMode.confirmOnly).", atLevel: .debug)
+            if self.bootloader == .mcuboot, self.uploadingSUITImages() {
+                self.log(msg: "SUIT over MCUBoot Detected.", atLevel: .info)
+            }
+            // Override UpgradeMode if 'SUIT over MCUBoot'.
+            if self.uploadingSUITImages(), self.configuration.upgradeMode == .uploadOnly {
+                self.log(msg: "Override of Upgrade Mode from \(FirmwareUpgradeMode.uploadOnly) to \(FirmwareUpgradeMode.confirmOnly) due to SUIT over MCUBoot.", atLevel: .debug)
                 self.configuration.upgradeMode = .confirmOnly
             }
             self.validate() // Continue Upload
@@ -770,9 +785,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             return
         }
         
-        let suitThroughMcuBoot = images.contains(where: {
-            $0.content == .suitEnvelope || $0.content == .suitCache
-        })
+        let suitThroughMcuBoot = uploadingSUITImages()
         guard !suitThroughMcuBoot else {
             self.log(msg: "Upgrade complete", atLevel: .application)
             self.success()
@@ -1126,9 +1139,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         // If eraseAppSettings command was sent or was not requested, we can continue.
         switch configuration.upgradeMode {
         case .confirmOnly:
-            let suitThroughMcuBoot = images.contains(where: {
-                $0.content == .suitEnvelope || $0.content == .suitCache
-            })
+            let suitThroughMcuBoot = uploadingSUITImages()
             if suitThroughMcuBoot {
                 // Mark all images as confirmed
                 images.forEach {
