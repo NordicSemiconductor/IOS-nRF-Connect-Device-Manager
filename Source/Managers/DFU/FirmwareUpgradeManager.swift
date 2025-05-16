@@ -62,9 +62,9 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     /// - parameter package: The (`McrMgrPackage`) to upload.
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
     public func start(package: McuMgrPackage,
-                      using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
+                      using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) {
         guard package.isForSUIT else {
-            try start(images: package.images, using: configuration)
+            start(images: package.images, using: configuration)
             return
         }
         
@@ -72,7 +72,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         suitConfiguration.upgradeMode = .uploadOnly
         // Erase App Settings is not supported by SUIT Bootloader.
         suitConfiguration.eraseAppSettings = false
-        try start(images: package.images, using: suitConfiguration)
+        start(images: package.images, using: suitConfiguration)
     }
     
     /// Start the firmware upgrade.
@@ -83,8 +83,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     /// - parameter data: `Data` to upload to App Core (Image 0).
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
     @available(*, deprecated, message: "start(package:using:) is now a far more convenient call. Therefore this API is henceforth marked as deprecated and will be removed in a future release.")
-    public func start(hash: Data, data: Data, using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
-        try start(images: [ImageManager.Image(image: 0, hash: hash, data: data)],
+    public func start(hash: Data, data: Data, using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) {
+        start(images: [ImageManager.Image(image: 0, hash: hash, data: data)],
                   using: configuration)
     }
     
@@ -93,7 +93,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     /// This is the full-featured API to start DFU update, including support for Multi-Image uploads.
     /// - parameter images: An Array of (`ImageManager.Image`) to upload.
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
-    public func start(images: [ImageManager.Image], using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) throws {
+    public func start(images: [ImageManager.Image], using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) {
         objc_sync_enter(self)
         defer {
             objc_sync_exit(self)
@@ -104,7 +104,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             return
         }
         
-        self.images = try images.map { try FirmwareUpgradeImage($0) }
+        self.images = images.map { FirmwareUpgradeImage($0) }
         self.configuration = configuration
         self.bootloader = nil
         
@@ -1390,7 +1390,7 @@ internal struct FirmwareUpgradeImage: CustomDebugStringConvertible {
     
     // MARK: Init
     
-    init(_ image: ImageManager.Image) throws {
+    init(_ image: ImageManager.Image) {
         self.image = image.image
         self.slot = image.slot
         self.data = image.data

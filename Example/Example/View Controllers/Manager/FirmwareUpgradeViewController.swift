@@ -248,23 +248,11 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     // MARK: startFirmwareUpgrade
     
     private func startFirmwareUpgrade(package: McuMgrPackage) {
-        do {
-            try dfuManager.start(package: package, using: dfuManagerConfiguration)
-        } catch {
-            status.textColor = .systemRed
-            status.text = error.localizedDescription
-            actionStart.isEnabled = false
-        }
+        dfuManager.start(package: package, using: dfuManagerConfiguration)
     }
     
     private func startFirmwareUpgrade(images: [ImageManager.Image]) {
-        do {
-            try dfuManager.start(images: images, using: dfuManagerConfiguration)
-        } catch {
-            status.textColor = .systemRed
-            status.text = error.localizedDescription
-            actionStart.isEnabled = false
-        }
+        dfuManager.start(images: images, using: dfuManagerConfiguration)
     }
 }
 
