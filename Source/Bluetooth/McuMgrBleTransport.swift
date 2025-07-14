@@ -256,6 +256,16 @@ extension McuMgrBleTransport: McuMgrTransport {
         }
     }
     
+    /**
+     Clean any necessary state between Peripheral Connections.
+     
+     Multiple heavy-duty operations may be performed using the same 'transport' instance. To
+     prevent issues and attempt to improve reliability, it's better to wipe any lingering state.
+     */
+    internal func softReset() {
+        writeState = McuMgrBleTransportWriteState()
+    }
+    
     /// This method sends the data to the target. Before, it ensures that
     /// CBCentralManager is ready and the peripheral is connected.
     /// The peripheral will automatically be connected when it's not.
