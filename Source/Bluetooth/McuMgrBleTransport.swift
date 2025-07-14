@@ -52,14 +52,7 @@ public class McuMgrBleTransport: NSObject {
     /// Used to track the Sequence Number the chunked responses belong to.
     internal var previousUpdateNotificationSequenceNumber: McuSequenceNumber?
     
-    internal struct PausedWriteWithoutResponse {
-        let sequenceNumber: McuSequenceNumber
-        let remaining: ArraySlice<Data>
-        let peripheral: CBPeripheral
-        let characteristic: CBCharacteristic
-        let callback: (Data?, McuMgrTransportError?) -> Void
-    }
-    internal var pausedWrites = [PausedWriteWithoutResponse]()
+    internal lazy var robWriteBuffer = McuMgrBleROBWriteBuffer(logDelegate)
     
     /// SMP Characteristic object. Used to write requests and receive
     /// notifications.
@@ -195,6 +188,11 @@ extension McuMgrBleTransport: McuMgrTransport {
                     } else {
                         self.log(msg: "Retry \(i + 1) (Unknown Header Type)", atLevel: .info)
                     }
+                case .failure(McuMgrTransportError.peripheralNotReadyForWriteWithoutResponse):
+                    if let header = try? McuMgrHeader(data: data) {
+                        self.log(msg: "(Retry \(i + 1)) Peripheral not ready for write without response. Attempting to wait or send seq: \(header.sequenceNumber)", atLevel: .debug)
+                    }
+                    continue // try to send again or wait for a response
                 case .failure(let error):
                     self.log(msg: error.localizedDescription, atLevel: .error)
                     DispatchQueue.main.async {
@@ -263,7 +261,9 @@ extension McuMgrBleTransport: McuMgrTransport {
      prevent issues and attempt to improve reliability, it's better to wipe any lingering state.
      */
     internal func softReset() {
+        previousUpdateNotificationSequenceNumber = nil
         writeState = McuMgrBleTransportWriteState()
+        robWriteBuffer = McuMgrBleROBWriteBuffer(logDelegate)
     }
     
     /// This method sends the data to the target. Before, it ensures that
@@ -391,7 +391,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 return .failure(error)
             }
             
-            coordinatedWrite(of: sequenceNumber, data: dataChunks, to: targetPeripheral, characteristic: smpCharacteristic) { [weak self] chunk, error in
+            robWriteBuffer.enqueue(sequenceNumber, data: dataChunks, to: targetPeripheral, characteristic: smpCharacteristic) { [weak self] chunk, error in
                 if let error {
                     writeLock.open(error)
                     return
@@ -408,7 +408,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 return .failure(error)
             }
             
-            coordinatedWrite(of: sequenceNumber, data: [data], to: targetPeripheral, characteristic: smpCharacteristic) { [weak self] data, error in
+            robWriteBuffer.enqueue(sequenceNumber, data: [data], to: targetPeripheral, characteristic: smpCharacteristic) { [weak self] data, error in
                 if let error {
                     writeLock.open(error)
                     return
@@ -424,6 +424,10 @@ extension McuMgrBleTransport: McuMgrTransport {
         
         switch result {
         case .failure(McuMgrTransportError.sendTimeout):
+            guard !robWriteBuffer.isInFlight(sequenceNumber) else {
+                writeLock.open(McuMgrTransportError.peripheralNotReadyForWriteWithoutResponse)
+                return .failure(McuMgrTransportError.peripheralNotReadyForWriteWithoutResponse)
+            }
             writeLock.open(McuMgrTransportError.waitAndRetry)
             return .failure(McuMgrTransportError.waitAndRetry)
         case .failure(let error):
@@ -435,28 +439,6 @@ extension McuMgrBleTransport: McuMgrTransport {
             }
             log(msg: "<- [Seq: \(sequenceNumber)] \(returnData.hexEncodedString(options: [.upperCase, .twoByteSpacing])) (\(returnData.count) bytes)", atLevel: .debug)
             return .success(returnData)
-        }
-    }
-    
-    
-    
-    /**
-     All chunks of the same packet need to be sent together. Otherwise, they can't be merged properly on the receiving end. This lock guarantees parallel writes don't mean each write command's bytes are not sent interleaved.
-     */
-    internal func coordinatedWrite(of sequenceNumber: McuSequenceNumber, data: [Data], to peripheral: CBPeripheral, characteristic: CBCharacteristic, callback: @escaping (Data?, McuMgrTransportError?) -> Void) {
-        writeState.sharedLock { [unowned self] in
-            for i in 0..<data.count {
-                guard peripheral.canSendWriteWithoutResponse else {
-                    log(msg: "⏸︎ [Seq: \(sequenceNumber)] Paused (Peripheral not Ready for Write Without Response)", atLevel: .debug)
-                    let remainingData = data.suffix(from: i)
-                    pausedWrites.append(PausedWriteWithoutResponse(sequenceNumber: sequenceNumber, remaining: remainingData, peripheral: peripheral, characteristic: characteristic, callback: callback))
-                    return
-                }
-                
-                let chunk = data[i]
-                peripheral.writeValue(chunk, for: characteristic, type: .withoutResponse)
-                callback(chunk, nil)
-            }
         }
     }
     
