@@ -66,9 +66,9 @@ open class McuManager : NSObject {
     private var nextSequenceNumber: McuSequenceNumber = .random()
     
     /**
-     Sequence Number Response ReOrder Buffer
+     Sequence Number Response OoO Buffer
      */
-    private var robBuffer = McuMgrROBBuffer<McuSequenceNumber, Any>()
+    private var oobBuffer = McuMgrCallbackOoOBuffer<McuSequenceNumber, Any>()
     
     //**************************************************************************
     // MARK: Initializers
@@ -107,8 +107,8 @@ open class McuManager : NSObject {
             }
             
             do {
-                guard try self.robBuffer.received((response, error), for: packetSequenceNumber) else { return }
-                try self.robBuffer.deliver { responseSequenceNumber, response in
+                guard try self.oobBuffer.received((response, error), for: packetSequenceNumber) else { return }
+                try self.oobBuffer.deliver { responseSequenceNumber, response in
                     let responseResult = response as? (T?, (any Error)?)
                     if let response = responseResult?.0 {
                         self.smpVersion = McuMgrVersion(rawValue: response.header.version) ?? .SMPv1
@@ -127,8 +127,8 @@ open class McuManager : NSObject {
             }
         }
         
-        robBuffer.logDelegate = logDelegate
-        robBuffer.enqueueExpectation(for: packetSequenceNumber)
+        oobBuffer.logDelegate = logDelegate
+        oobBuffer.enqueueExpectation(for: packetSequenceNumber)
         send(data: packetData, timeout: timeout, callback: _callback)
         // Use of Overflow operator
         nextSequenceNumber = nextSequenceNumber &+ 1
