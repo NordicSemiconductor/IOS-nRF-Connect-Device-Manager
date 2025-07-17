@@ -674,6 +674,7 @@ public enum ImageManagerError: UInt64, Error, LocalizedError {
     case invalidImageDataOverrun = 31
     case imageConfirmationDenied = 32
     case imageSettingTestToActiveDenied = 33
+    case activeSlotNotKnown = 34
 
     public var errorDescription: String? {
         switch self {
@@ -745,6 +746,8 @@ public enum ImageManagerError: UInt64, Error, LocalizedError {
             return "Image confirmation denied"
         case .imageSettingTestToActiveDenied:
             return "Setting active slot to test is not allowed"
+        case .activeSlotNotKnown:
+            return "Unable to determine current Image's active slot"
         }
     }
 }
