@@ -45,13 +45,29 @@ final class BaseViewController: UITabBarController {
         }
     }
     
+    /**
+     Keep an independent transport for any requests ``BaseViewController`` might do.
+     
+     This is to prevent overlap of sequence numbers used by parallel operations, such
+     as ``FirmwareUpgradeManager`` and this ``BaseViewController`` launching parallel requests
+     for Bootloader Information, and having them land on the same `McuSequenceNumber` which
+     will trigger an assertion failure, specifically in ``McuMgrBleTransport``.
+     */
+    private var privateTransport: McuMgrTransport!
+    
+    /**
+     Shared ``McuMgrTransport`` for subclasses to use.
+     */
     var transport: McuMgrTransport!
+    
     var peripheral: DiscoveredPeripheral! {
         didSet {
             let bleTransport = McuMgrBleTransport(peripheral.basePeripheral)
             bleTransport.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
             bleTransport.delegate = self
             transport = bleTransport
+            // Independent transport for BaseViewController operations.
+            privateTransport = McuMgrBleTransport(peripheral.basePeripheral)
         }
     }
     
@@ -125,9 +141,8 @@ extension BaseViewController: PeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didChangeStateTo state: PeripheralState) {
         self.state = state
-        
         if state == .connected {
-            let defaultManager = DefaultManager(transport: transport)
+            let defaultManager = DefaultManager(transport: privateTransport)
             defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
             defaultManager.params { [weak self] response, error in
                 if let count = response?.bufferCount,
