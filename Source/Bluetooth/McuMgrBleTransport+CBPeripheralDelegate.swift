@@ -96,6 +96,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         // Set the SMP characteristic.
         smpCharacteristic = characteristic
         state = .connected
+        softReset()
         notifyStateChanged(.connected)
         
         // The SMP Service and characteristic have now been discovered and set
@@ -144,13 +145,6 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
     
     public func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
         // Restart any paused writes due to Peripheral not being ready for more writes.
-        writeState.sharedLock { [unowned self] in
-            guard !pausedWrites.isEmpty else { return }
-            for pausedWrite in pausedWrites {
-                log(msg: "► [Seq: \(pausedWrite.sequenceNumber)] Resume (Peripheral Ready for Write Without Response)", atLevel: .debug)
-                coordinatedWrite(of: pausedWrite.sequenceNumber, data: Array(pausedWrite.remaining), to: pausedWrite.peripheral, characteristic: pausedWrite.characteristic, callback: pausedWrite.callback)
-            }
-            pausedWrites.removeAll()
-        }
+        robWriteBuffer.peripheralReadyToWrite(peripheral)
     }
 }

@@ -24,6 +24,11 @@ public class DefaultManager: McuManager {
         case bootloaderInformation = 8
     }
     
+    public enum ResetBootMode: UInt8 {
+        case normal = 0
+        case bootloader = 1
+    }
+    
     public enum ApplicationInfoFormat: String {
         case kernelName = "s"
         case nodeName = "n"
@@ -134,9 +139,22 @@ public class DefaultManager: McuManager {
     
     /// Trigger the device to soft reset.
     ///
+    /// - parameter bootMode: The boot mode to use for the reset, defaults to `normal`.
+    /// - parameter force: Force reset on the firmware so it's not rejected. Defaults to `false`.
     /// - parameter callback: The response callback.
-    public func reset(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ID.reset, payload: nil, callback: callback)
+    public func reset(bootMode: ResetBootMode = .normal, force: Bool = false,
+                      callback: @escaping McuMgrCallback<McuMgrResponse>) {
+        var payload: [String:CBOR]?
+        if bootMode != .normal || force {
+            payload = [:]
+            if bootMode != .normal {
+                payload?["boot_mode"] = CBOR.unsignedInt(UInt64(bootMode.rawValue))
+            }
+            if force {
+                payload?["force"] = CBOR.boolean(true)
+            }
+        }
+        send(op: .write, commandId: ID.reset, payload: payload, callback: callback)
     }
     
     // MARK: McuMgr Parameters

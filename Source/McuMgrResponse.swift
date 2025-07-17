@@ -1367,11 +1367,11 @@ public class McuMgrStatsListResponse: McuMgrResponse {
 public class McuMgrConfigResponse: McuMgrResponse {
     
     /// Config value.
-    public var val: String?
+    public var val: [UInt8]?
     
     public required init(cbor: CBOR?) throws {
         try super.init(cbor: cbor)
-        if case let CBOR.utf8String(val)? = cbor?["val"] {self.val = val}
+        if case let CBOR.byteString(val)? = cbor?["val"] {self.val = val}
     }
 }
 
