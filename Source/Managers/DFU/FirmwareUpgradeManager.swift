@@ -572,8 +572,13 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             !discardedImages.contains($0)
         })
         
-        // Validation successful, begin with image upload.
-        self.upload()
+        // If we start upload immediately the first sequence number chunks could be ignored
+        // by the firware and upload would not continue until after the first (long) timeout.
+        // So we introduce a delay. Ugh... Bluetooth.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            // Validation successful, begin with image upload.
+            self?.upload()
+        }
     }
     
     private func targetSlotMatch(for responseImage: McuMgrImageStateResponse.ImageSlot,

@@ -27,6 +27,12 @@ internal final class McuMgrBleROBWriteBuffer {
     
     private var pausedWritesWithoutResponse: Bool
     private var window: [Write]
+    private var writeNumber: Int
+    
+    #if DEBUG
+    private var peripheralNotReady: DispatchTime!
+    private var peripheralIsReady: DispatchTime!
+    #endif
     
     private weak var log: McuMgrLogDelegate?
     
@@ -36,6 +42,7 @@ internal final class McuMgrBleROBWriteBuffer {
         self.log = log
         self.pausedWritesWithoutResponse = false
         self.window = [Write]()
+        self.writeNumber = 0
     }
     
     // MARK: API
@@ -43,7 +50,7 @@ internal final class McuMgrBleROBWriteBuffer {
     internal func isInFlight(_ sequenceNumber: McuSequenceNumber) -> Bool {
         lock.sync { [unowned self] in
             return window.contains(where: {
-                $0.sequenceNumber == sequenceNumber
+                $0.mcuMgrSequenceNumber == sequenceNumber
             })
         }
     }
@@ -52,25 +59,26 @@ internal final class McuMgrBleROBWriteBuffer {
      All chunks of the same packet need to be sent together. Otherwise, they can't be merged properly on the receiving end.
      */
     internal func enqueue(_ sequenceNumber: McuSequenceNumber, data: [Data], to peripheral: CBPeripheral, characteristic: CBCharacteristic, callback: @escaping (Data?, McuMgrTransportError?) -> Void) {
+        // Do not enqueue again if said sequence number is in-flight.
         guard !isInFlight(sequenceNumber) else {
-            // Do not enqueue again if said sequence number is in-flight.
             guard pausedWritesWithoutResponse else { return }
             // Note that sometimes we will not get a "peripheralIsReadyForWriteWithoutResponse".
             // The only way to move forward, is just to ask / try again to send.
             pausedWritesWithoutResponse = false
-            let targetSequenceNumber: McuSequenceNumber! = window.first?.sequenceNumber
+            let targetSequenceNumber: McuSequenceNumber! = window.first?.mcuMgrSequenceNumber
             log(msg: "→ Continue [Seq. No: \(targetSequenceNumber)].", atLevel: .debug)
-            unsafe_fulfillEnqueuedWrites(to: peripheral, for: targetSequenceNumber)
+            unsafe_writeThroughWindow(to: peripheral)
             return
         }
         
         // This lock guarantees parallel writes are not interleaved with each other.
         lock.async { [unowned self] in
-            window.append(contentsOf: Write.split(sequenceNumber: sequenceNumber, chunks: data, peripheral: peripheral, characteristic: characteristic, callback: callback))
+            window.append(contentsOf: Write.split(writeNumber, sequenceNumber: sequenceNumber, chunks: data, peripheral: peripheral, characteristic: characteristic, callback: callback))
             window.sort(by: <)
+            log(msg: "↵ Enqueued [Seq. No: \(sequenceNumber)] {WR \(writeNumber)}.", atLevel: .debug)
+            writeNumber = writeNumber == .max ? 0 : writeNumber + 1
             
-            let targetSequenceNumber: McuSequenceNumber! = window.first?.sequenceNumber
-            unsafe_fulfillEnqueuedWrites(to: peripheral, for: targetSequenceNumber)
+            unsafe_writeThroughWindow(to: peripheral)
         }
     }
     
@@ -81,11 +89,12 @@ internal final class McuMgrBleROBWriteBuffer {
             // thus added to `pausedWrites`.
             guard pausedWritesWithoutResponse else { return }
             pausedWritesWithoutResponse = false
+            
             // Paused writes are never removed from the queue. So all we have to do is
             // restart from the front of the queue.
             let resumeWrite: Write! = window.first
-            log(msg: "► [Seq: \(resumeWrite.sequenceNumber), Chk: \(resumeWrite.chunkIndex)] Resume (Peripheral Ready for Write Without Response)", atLevel: .debug)
-            unsafe_fulfillEnqueuedWrites(to: peripheral, for: resumeWrite.sequenceNumber)
+            unsafe_logResume(resumeWrite)
+            unsafe_writeThroughWindow(to: peripheral)
         }
     }
 }
@@ -94,29 +103,57 @@ internal final class McuMgrBleROBWriteBuffer {
 
 private extension McuMgrBleROBWriteBuffer {
     
-    func unsafe_fulfillEnqueuedWrites(to peripheral: CBPeripheral, for sequenceNumber: McuSequenceNumber) {
-        for write in window where write.sequenceNumber == sequenceNumber {
+    func unsafe_writeThroughWindow(to peripheral: CBPeripheral) {
+        while let write = window.first {
             guard peripheral.canSendWriteWithoutResponse else {
-                log(msg: "⏸︎ [Seq: \(sequenceNumber), Chk: \(write.chunkIndex)] Paused (Peripheral not Ready for Write Without Response)", atLevel: .debug)
                 pausedWritesWithoutResponse = true
+                unsafe_logPause(write)
                 return
             }
             
-            if write.chunkIndex == 0 {
-                for (i, write) in window.enumerated() where write.sequenceNumber == sequenceNumber {
-                    #if DEBUG
-                    print("✈ [Seq: \(sequenceNumber), Chk: \(write.chunkIndex)]")
-                    #endif
-                    window[i].inFlight = true
-                }
+            // Clear state of pausedWritesWithoutResponse in case we end up here, and thus empty
+            // the window (queue), before peripheralReadyToWrite()'s code runs.
+            if pausedWritesWithoutResponse {
+                pausedWritesWithoutResponse = false
+                unsafe_logResume(write)
             }
             
             peripheral.writeValue(write.chunk, for: write.characteristic,
                                   type: .withoutResponse)
             write.callback(write.chunk, nil)
-            let i: Int! = window.firstIndex(of: write)
-            window.remove(at: i)
+            // ↓ Paranoia, I agree. But it makes me feel safe.
+            assert(window[0] == write)
+            window.remove(at: 0)
         }
+    }
+}
+
+// MARK: - (Private) Log
+
+private extension McuMgrBleROBWriteBuffer {
+    
+    func unsafe_logResume(_ write: Write) {
+        #if DEBUG
+        peripheralIsReady = .now()
+        if #available(iOS 15.0, *) {
+            if let peripheralNotReady, let peripheralIsReady {
+                let elapsedTime = Measurement<UnitDuration>(value: Double((peripheralIsReady.uptimeNanoseconds - peripheralNotReady.uptimeNanoseconds)), unit: .nanoseconds)
+                    .converted(to: .milliseconds)
+                log(msg: "Peripheral Ready For Write Without Response Delay: \(elapsedTime)", atLevel: .debug)
+            }
+        }
+        #endif
+        
+        // Paused writes are never removed from the queue. So all we have to do is
+        // restart from the front of the queue.
+        log(msg: "► [Seq: \(write.mcuMgrSequenceNumber), Chk: \(write.chunkIndex)] Resume (Peripheral Ready for Write Without Response)", atLevel: .debug)
+    }
+    
+    func unsafe_logPause(_ write: Write) {
+        log(msg: "⏸︎ [Seq: \(write.mcuMgrSequenceNumber), Chk: \(write.chunkIndex)] Paused (Peripheral not Ready for Write Without Response)", atLevel: .debug)
+        #if DEBUG
+        peripheralNotReady = .now()
+        #endif
     }
     
     func log(msg: @autoclosure () -> String, atLevel level: McuMgrLogLevel) {
@@ -129,28 +166,27 @@ private extension McuMgrBleROBWriteBuffer {
 internal extension McuMgrBleROBWriteBuffer {
     
     struct Write {
-        
-        let sequenceNumber: McuSequenceNumber
+        let writeNumber: Int
+        let mcuMgrSequenceNumber: McuSequenceNumber
         let chunkIndex: Int
         let chunk: Data
         let peripheral: CBPeripheral
         let characteristic: CBCharacteristic
         let callback: (Data?, McuMgrTransportError?) -> Void
-        var inFlight: Bool
         
-        init(sequenceNumber: McuSequenceNumber, chunkIndex: Int, chunk: Data, peripheral: CBPeripheral, characteristic: CBCharacteristic, callback: @escaping (Data?, McuMgrTransportError?) -> Void) {
-            self.sequenceNumber = sequenceNumber
+        init(_ writeNumber: Int, sequenceNumber: McuSequenceNumber, chunkIndex: Int, chunk: Data, peripheral: CBPeripheral, characteristic: CBCharacteristic, callback: @escaping (Data?, McuMgrTransportError?) -> Void) {
+            self.writeNumber = writeNumber
+            self.mcuMgrSequenceNumber = sequenceNumber
             self.chunkIndex = chunkIndex
             self.chunk = chunk
             self.peripheral = peripheral
             self.characteristic = characteristic
             self.callback = callback
-            self.inFlight = false
         }
         
-        static func split(sequenceNumber: McuSequenceNumber, chunks: [Data], peripheral: CBPeripheral, characteristic: CBCharacteristic, callback: @escaping (Data?, McuMgrTransportError?) -> Void) -> [Self] {
+        static func split(_ writeID: Int, sequenceNumber: McuSequenceNumber, chunks: [Data], peripheral: CBPeripheral, characteristic: CBCharacteristic, callback: @escaping (Data?, McuMgrTransportError?) -> Void) -> [Self] {
             return chunks.indices.map { i in
-                Self(sequenceNumber: sequenceNumber, chunkIndex: i, chunk: chunks[i], peripheral: peripheral, characteristic: characteristic, callback: callback)
+                Self(writeID, sequenceNumber: sequenceNumber, chunkIndex: i, chunk: chunks[i], peripheral: peripheral, characteristic: characteristic, callback: callback)
             }
         }
     }
@@ -160,22 +196,11 @@ internal extension McuMgrBleROBWriteBuffer {
 
 extension McuMgrBleROBWriteBuffer.Write: Comparable {
     
-    /**
-     "In-flight" writes are higher priority within a given sequence number, since
-     the previous sequence number might've not completed its 'write' on resume.
-     If we reorder and switch to a different 'chunk' because of a retry operation,
-     the end result is a reassembly packet the firmware cannot reassemble.
-     */
     static func < (lhs: Self, rhs: Self) -> Bool {
-        guard lhs.inFlight == rhs.inFlight else {
-            // Whoever is "in-flight" wins
-            return lhs.inFlight
-        }
-        
-        if lhs.sequenceNumber == rhs.sequenceNumber {
+        if lhs.writeNumber == rhs.writeNumber {
             return lhs.chunkIndex < rhs.chunkIndex
         } else {
-            return lhs.sequenceNumber < rhs.sequenceNumber
+            return lhs.writeNumber < rhs.writeNumber
         }
     }
 }
@@ -185,7 +210,7 @@ extension McuMgrBleROBWriteBuffer.Write: Comparable {
 extension McuMgrBleROBWriteBuffer.Write: Equatable {
     
     static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.sequenceNumber == rhs.sequenceNumber
+        return lhs.writeNumber == rhs.writeNumber
             && lhs.chunkIndex == rhs.chunkIndex
             && lhs.peripheral.identifier == rhs.peripheral.identifier
             && lhs.characteristic.uuid == rhs.characteristic.uuid
