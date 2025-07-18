@@ -21,10 +21,18 @@ import CoreBluetooth
  */
 internal final class McuMgrBleROBWriteBuffer {
     
+    /**
+     The minimum amount of time we expect needs to elapse before the Write Without Response buffer is cleared in miliseconds.
+
+     The minimum connection interval time is 15 ms, as noted in this technical document: `https://developer.apple.com/library/archive/qa/qa1931/_index.html`. Therefore, it is reasonable to assume that past this interval, the BLE Radio will be powered up by the CoreBluetooth API / Subsystem to send the write values we've enqueued onto the CBPeripheral.
+     */
+    internal static let CONNECTION_BUFFER_WAIT_TIME_MS = 15
+    
     // MARK: - Private Properties
     
     private let lock = DispatchQueue(label: "McuMgrBleROBWriteBuffer", qos: .userInitiated)
     
+    private var overridePeripheralNotReadyForWriteWithoutResponse: Bool
     private var pausedWritesWithoutResponse: Bool
     private var window: [Write]
     private var writeNumber: Int
@@ -40,6 +48,8 @@ internal final class McuMgrBleROBWriteBuffer {
     
     init(_ log: McuMgrLogDelegate?) {
         self.log = log
+        // Override for first packet we try to send.
+        self.overridePeripheralNotReadyForWriteWithoutResponse = true
         self.pausedWritesWithoutResponse = false
         self.window = [Write]()
         self.writeNumber = 0
@@ -75,7 +85,9 @@ internal final class McuMgrBleROBWriteBuffer {
         lock.async { [unowned self] in
             window.append(contentsOf: Write.split(writeNumber, sequenceNumber: sequenceNumber, chunks: data, peripheral: peripheral, characteristic: characteristic, callback: callback))
             window.sort(by: <)
+            #if DEBUG
             log(msg: "↵ Enqueued [Seq. No: \(sequenceNumber)] {WR \(writeNumber)}.", atLevel: .debug)
+            #endif
             writeNumber = writeNumber == .max ? 0 : writeNumber + 1
             
             unsafe_writeThroughWindow(to: peripheral)
@@ -105,11 +117,20 @@ private extension McuMgrBleROBWriteBuffer {
     
     func unsafe_writeThroughWindow(to peripheral: CBPeripheral) {
         while let write = window.first {
-            guard peripheral.canSendWriteWithoutResponse else {
+            guard overridePeripheralNotReadyForWriteWithoutResponse || peripheral.canSendWriteWithoutResponse else {
                 pausedWritesWithoutResponse = true
                 unsafe_logPause(write)
+                // If after 15ms we have not received peripheralIsReady(), override.
+                lock.asyncAfter(deadline: .now() + .milliseconds(Self.CONNECTION_BUFFER_WAIT_TIME_MS)) { [weak self] in
+                    guard let self, pausedWritesWithoutResponse else { return }
+                    log(msg: "! Override Peripheral Ready For Write Without Response", atLevel: .debug)
+                    overridePeripheralNotReadyForWriteWithoutResponse = true
+                    unsafe_writeThroughWindow(to: peripheral)
+                }
                 return
             }
+            
+            overridePeripheralNotReadyForWriteWithoutResponse = false
             
             // Clear state of pausedWritesWithoutResponse in case we end up here, and thus empty
             // the window (queue), before peripheralReadyToWrite()'s code runs.
