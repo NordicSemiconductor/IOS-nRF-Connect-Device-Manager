@@ -144,7 +144,7 @@ do {
 This is our new, improved, all-conquering API. You create a `McuMgrPackage`, and you give it to the `FirmwareUpgradeManager`. [There's no Step Three](https://www.youtube.com/watch?v=A0QK0JfHzhg&pp). This API supports:
 
 - [x] .bin file(s) (Single-Core nRF52xxx) MCUboot Application Update
-- [x] .suit file(s) (Canonical nRF54xx) SUIT Update
+- [x] .suit file(s) (~~Canonical nRF54xx)~~ SUIT Update
 - [x] .zip file(s)
   - [x] DirectXIP (nRF52840) MCUboot Upgrade
   - [x] Multi-Image (Application Core, Network Core nRF5340) MCUboot Update
@@ -295,8 +295,8 @@ func uploadRequestsResource(_ resource: FirmwareUpgradeResource) {
 
 McuManager firmware upgrades can be performed following slightly different procedures. These different upgrade modes determine the commands sent after the `upload` step. `FirmwareUpgradeManager` can be configured to perform these upgrade variations by setting the `upgradeMode` in `FirmwareUpgradeManager`'s `configuration` property, explained below. (NOTE: this was previously set with `mode` property of `FirmwareUpgradeManager`, now removed) The different firmware upgrade modes are as follows:
 
-* **`.testAndConfirm`**: This mode is the **default and recommended mode** for performing upgrades due to it's ability to recover from a bad firmware upgrade. The process for this mode is `upload`, `test`, `reset`, `confirm`. 
-* **`.confirmOnly`**: This mode is **not recommended, except for Multi-Image DFU where it is the only supported mode**. If the device fails to boot into the new image, it will not be able to recover and will need to be re-flashed. The process for this mode is `upload`, `confirm`, `reset`.
+* **`.confirmOnly`**: This mode is **the default mode**, due to its support for almost any type of DFU variant (Single Image, Multi-Image, Direct XIP, SUIT, etc.). It is in fact, the only supported mode for any form of Multi-Image DFU. However, there is one big caveat to keep in mind: this mode does not support any form of automatic error recovery. So, **if the device fails to boot into the new image, it will not be able to recover and will need to be re-flashed**. The process for this mode is `upload`, `confirm`, `reset`.
+* **`.testAndConfirm`**: This mode is the **recommended, but not default mode** for performing upgrades due to it's ability to recover from a bad firmware upgrade. **It is no longer set as the default, due to it only being fully supported in Single Image DFU Mode**. The process for this mode is `upload`, `test`, `reset`, `confirm`. 
 * **`.testOnly`**: This mode is useful if you want to run tests on the new image running before confirming it manually as the primary boot image. The process for this mode is `upload`, `test`, `reset`.
 * **`.uploadOnly`**: This is a very particular mode. It does not listen or acknowledge Bootloader Info, and plows through the upgrade process with just `upload` followed by `reset`. That's it. **It is up to the user, since this is not a default, to decide this is the right mode to use**.
 
