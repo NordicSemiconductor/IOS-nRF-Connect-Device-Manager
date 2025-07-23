@@ -156,7 +156,7 @@ private extension McuMgrBleROBWriteBuffer {
     func unsafe_logResume(_ write: Write) {
         #if DEBUG
         peripheralIsReady = .now()
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, macOS 10.15, *) {
             if let peripheralNotReady, let peripheralIsReady {
                 let elapsedTime = Measurement<UnitDuration>(value: Double((peripheralIsReady.uptimeNanoseconds - peripheralNotReady.uptimeNanoseconds)), unit: .nanoseconds)
                     .converted(to: .milliseconds)
