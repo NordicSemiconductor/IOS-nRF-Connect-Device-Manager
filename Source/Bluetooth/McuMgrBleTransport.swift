@@ -65,6 +65,12 @@ public class McuMgrBleTransport: NSObject {
     /// notifications.
     internal var smpCharacteristic: CBCharacteristic?
     
+    /// Discovered MDS and DIS services for Memfault functionality
+    internal var discoveredMDSService: CBService?
+    internal var discoveredDISService: CBService?
+    internal var discoveredMDSCharacteristics: [CBCharacteristic] = []
+    internal var discoveredDISCharacteristics: [CBCharacteristic] = []
+    
     public var mtu: Int! {
         didSet {
             log(msg: "MTU set to \(mtu)", atLevel: .info)
@@ -167,6 +173,59 @@ public class McuMgrBleTransport: NSObject {
     }
     
     public private(set) var identifier: UUID
+    
+    /// Access to discovered MDS service and characteristics for Memfault functionality
+    public var mdsService: CBService? {
+        return discoveredMDSService
+    }
+    
+    public var disService: CBService? {
+        return discoveredDISService
+    }
+    
+    public var mdsCharacteristics: [CBCharacteristic] {
+        return discoveredMDSCharacteristics
+    }
+    
+    public var disCharacteristics: [CBCharacteristic] {
+        return discoveredDISCharacteristics
+    }
+    
+    /// Access to the connected peripheral
+    public var connectedPeripheral: CBPeripheral? {
+        return peripheral
+    }
+    
+    /// Check if SMP service is available
+    public var hasSMPService: Bool {
+        return smpCharacteristic != nil
+    }
+    
+    /// Trigger MDS data export if needed
+    public func triggerMDSDataExport() {
+        guard let peripheral = peripheral,
+              let dataExportChar = discoveredMDSCharacteristics.first(where: { $0.uuid.uuidString == "54220005-F6A5-4007-A371-722F4EBD8436" }) else {
+            log(msg: "Cannot trigger MDS data export - characteristic not found", atLevel: .warning)
+            return
+        }
+        
+        log(msg: "Checking if MDS data export needs triggering", atLevel: .info)
+        
+        // Check if the characteristic supports write
+        if dataExportChar.properties.contains(.write) || dataExportChar.properties.contains(.writeWithoutResponse) {
+            log(msg: "MDS Data Export supports write. Sending trigger command...", atLevel: .info)
+            // Send a trigger command (often just 0x01)
+            let triggerData = Data([0x01])
+            if dataExportChar.properties.contains(.writeWithoutResponse) {
+                peripheral.writeValue(triggerData, for: dataExportChar, type: .withoutResponse)
+            } else {
+                peripheral.writeValue(triggerData, for: dataExportChar, type: .withResponse)
+            }
+            log(msg: "Sent trigger command to MDS Data Export", atLevel: .info)
+        } else {
+            log(msg: "MDS Data Export does not support write operations", atLevel: .info)
+        }
+    }
 
     private func notifyPeripheralDelegate() {
         if let peripheral = self.peripheral {
@@ -307,7 +366,9 @@ extension McuMgrBleTransport: McuMgrTransport {
                 log(msg: "Discovering services...", atLevel: .verbose)
                 state = .connecting
                 targetPeripheral.delegate = self
-                targetPeripheral.discoverServices([McuMgrBleTransportConstant.SMP_SERVICE])
+                // Discover all services first - this helps trigger pairing if MDS requires it
+                // We'll filter for the specific services we need in the delegate callback
+                targetPeripheral.discoverServices(nil)
             case .disconnected:
                 // If the peripheral is disconnected, begin the setup process by
                 // connecting to the device. Once the characteristic's

@@ -14,6 +14,12 @@ extension UIColor {
     
     static let zephyr: UIColor = #colorLiteral(red: 0.231372549, green: 0.2431372549, blue: 0.3058823529, alpha: 1)
     
+    static let nordicBlue: UIColor = #colorLiteral(red: 0, green: 0.5483048558, blue: 0.8252354264, alpha: 1)
+    
+    static let nordicGreen: UIColor = #colorLiteral(red: 0.298, green: 0.733, blue: 0.349, alpha: 1)
+    
+    static let nordicRed: UIColor = #colorLiteral(red: 0.961, green: 0.341, blue: 0.314, alpha: 1)
+    
     static var primary: UIColor {
         if #available(iOS 13.0, *) {
             return .label

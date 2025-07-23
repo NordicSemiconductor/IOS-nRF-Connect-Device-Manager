@@ -52,15 +52,22 @@ final class BaseViewController: UITabBarController {
             bleTransport.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
             bleTransport.delegate = self
             transport = bleTransport
+            
+            // Update transport for all child view controllers
+            updateChildTransports()
         }
     }
     
-    private var state: PeripheralState? {
+    private var _state: PeripheralState? {
         didSet {
-            if let state {
+            if let state = _state {
                 deviceStatusDelegate?.connectionStateDidChange(state)
             }
         }
+    }
+    
+    public var state: PeripheralState? {
+        return _state
     }
     private var bootloader: BootloaderInfoResponse.Bootloader? {
         didSet {
@@ -112,6 +119,78 @@ final class BaseViewController: UITabBarController {
             tabBar.tintColor = .nordic
             tabBar.isTranslucent = false
         }
+        
+        // Add Memfault tab
+        addNRFCloudTab()
+        
+        // Check if we have a firmware URL from Memfault OTA
+        if let firmwarePath = UserDefaults.standard.string(forKey: "pendingFirmwareURL") {
+            let firmwareURL = URL(fileURLWithPath: firmwarePath)
+            // Clear the stored path to prevent repeated launches
+            UserDefaults.standard.removeObject(forKey: "pendingFirmwareURL")
+            
+            // Switch to the Image tab and start firmware update
+            DispatchQueue.main.async { [weak self] in
+                self?.selectedIndex = 0 // Select the Image tab
+                
+                // Notify the Image controller about the firmware
+                NotificationCenter.default.post(
+                    name: Notification.Name("MemfaultFirmwareReady"),
+                    object: nil,
+                    userInfo: ["firmwareURL": firmwareURL]
+                )
+            }
+        }
+    }
+    
+    private func addNRFCloudTab() {
+        
+        // Create nRF Cloud view controller
+        let nrfVC = NRFViewController()
+        
+        // Create navigation controller for consistency with other tabs
+        let navController = UINavigationController(rootViewController: nrfVC)
+        navController.navigationBar.prefersLargeTitles = false
+        
+        // Set tab bar item
+        let tabItem = UITabBarItem(title: "nRF Cloud", image: nil, selectedImage: nil)
+        if #available(iOS 13.0, *) {
+            tabItem.image = UIImage(systemName: "icloud.and.arrow.down")
+        } else {
+            // Fallback for iOS 12
+            tabItem.title = "nRF Cloud"
+        }
+        navController.tabBarItem = tabItem
+        
+        // Add to existing view controllers
+        if var controllers = viewControllers {
+            controllers.append(navController)
+            setViewControllers(controllers, animated: false)
+            
+            // Update transports now that the new tab is added
+            if transport != nil {
+                updateChildTransports()
+            }
+        }
+    }
+    
+    private func updateChildTransports() {
+        guard let transport = transport else { 
+            return 
+        }
+        
+        
+        // Update transport for NRFViewController which is added programmatically
+        if let viewControllers = viewControllers {
+            for controller in viewControllers {
+                if let navController = controller as? UINavigationController {
+                    if let nrfVC = navController.viewControllers.first as? NRFViewController {
+                        nrfVC.transport = transport
+                    } else {
+                    }
+                }
+            }
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -124,7 +203,7 @@ final class BaseViewController: UITabBarController {
 extension BaseViewController: PeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didChangeStateTo state: PeripheralState) {
-        self.state = state
+        self._state = state
         
         if state == .connected {
             let defaultManager = DefaultManager(transport: transport)

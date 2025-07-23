@@ -34,6 +34,7 @@
 		BD5A286220CB44B00061F0EE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A286020CB44B00061F0EE /* LaunchScreen.storyboard */; };
 		E7F00904AD78FC61457F0B06 /* Pods_nRF_Connect_Device_Manager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C75D2DC863EB4235DE2F466B /* Pods_nRF_Connect_Device_Manager.framework */; };
 		F07D73AC2AE9AE3A00ED6B9A /* StringConvertibles.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07D73AB2AE9AE3A00ED6B9A /* StringConvertibles.swift */; };
+		52ABCDEF210B0EB6000E110E /* NRFViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52ABCDEE210B0EB6000E110E /* NRFViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,6 +70,7 @@
 		C75D2DC863EB4235DE2F466B /* Pods_nRF_Connect_Device_Manager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_nRF_Connect_Device_Manager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9EB68FC3504F79AE1891044 /* Pods-nRF Connect Device Manager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nRF Connect Device Manager.debug.xcconfig"; path = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager.debug.xcconfig"; sourceTree = "<group>"; };
 		F07D73AB2AE9AE3A00ED6B9A /* StringConvertibles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringConvertibles.swift; sourceTree = "<group>"; };
+		52ABCDEE210B0EB6000E110E /* NRFViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NRFViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,6 +119,7 @@
 			children = (
 				526270A2210B8E5E00FC17D4 /* Widgets */,
 				524DCFCF210B0EB6000E110D /* BaseViewController.swift */,
+				52ABCDEE210B0EB6000E110E /* NRFViewController.swift */,
 				524DCFD3210B1C17000E110D /* DeviceController.swift */,
 				526270A3210B8E8000FC17D4 /* ImageController.swift */,
 				5215762E2125B59400C21B0C /* FilesController.swift */,
@@ -336,13 +339,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -377,6 +376,7 @@
 				523C05B32423DA3C0007E563 /* RootViewController.swift in Sources */,
 				5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */,
 				524DCFD0210B0EB6000E110D /* BaseViewController.swift in Sources */,
+				52ABCDEF210B0EB6000E110E /* NRFViewController.swift in Sources */,
 				521576312126CC8F00C21B0C /* FileUploadViewController.swift in Sources */,
 				5274C2622796CEC40043D7CA /* SettingsViewController.swift in Sources */,
 			);

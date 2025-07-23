@@ -16,6 +16,8 @@ SUIT and McuManager are related, but not interchangeable. SUIT relies on its own
 
 The library provides a transport agnostic implementation of the McuManager protocol. It contains a default implementation for BLE transport.
 
+**New: nRF Cloud Integration** - The library now includes comprehensive support for [nRF Cloud](https://nrfcloud.com) services including MDS (Monitoring & Diagnostic Service) and OTA updates.
+
 > Minimum required iOS version is 12.0, originally released in Fall of 2018.
 
 > [!Warning]  
@@ -366,6 +368,82 @@ deviceManger.echo("Hello World!", callback)
 ### OSLog integration
 
 `McuMgrLogDelegate` can be easily integrated with the [Unified Logging System](https://developer.apple.com/documentation/os/logging). An example is provided in the example app in the `AppDelegate.swift`. A `McuMgrLogLevel` extension that can be found in that file translates the log level to one of `OSLogType` levels. Similarly, `McuMgrLogCategory` extension converts the category to `OSLog` type.
+
+# nRF Cloud Integration
+
+The library includes comprehensive support for nRF Cloud services:
+
+## Monitoring & Diagnostic Service (MDS)
+
+The MDS enables collection and forwarding of device diagnostics, metrics, and crash data to nRF Cloud. The library provides `MemfaultManager` to handle MDS operations:
+
+```swift
+import iOSMcuManagerLibrary
+
+// Initialize the manager
+let mdsManager = MemfaultManager()
+
+// Set up callbacks
+mdsManager.onDeviceConnected = { device in
+    print("Connected to device with MDS support")
+    print("Memfault Project Key: \(device.projectKey ?? "Not found")")
+}
+
+mdsManager.onChunkReceived = { chunk in
+    print("Received diagnostic chunk: \(chunk.sequenceNumber)")
+}
+
+// Connect to a device with existing BLE connection
+if let bleTransport = transport as? McuMgrBleTransport {
+    mdsManager.connectToDevice(peripheral: peripheral, transport: bleTransport)
+}
+
+// Start data streaming
+mdsManager.startDataStreaming()
+```
+
+## nRF Cloud OTA Updates
+
+Check for and install firmware updates from nRF Cloud:
+
+```swift
+let otaManager = MemfaultOTAManager()
+
+// Check for updates
+otaManager.checkForUpdate(currentVersion: currentVersion) { result in
+    switch result {
+    case .success(let updateInfo):
+        if let update = updateInfo {
+            print("Update available: \(update.version)")
+            // Download and install the update
+            self.startFirmwareUpgrade(from: update.downloadUrl)
+        }
+    case .failure(let error):
+        print("Failed to check for updates: \(error)")
+    }
+}
+```
+
+## Building Compatible Firmware
+
+To enable MDS and DIS services in your Nordic SDK firmware:
+
+```bash
+# Enable required services in prj.conf
+echo "CONFIG_BT_DIS=y" >> prj.conf
+echo "CONFIG_BT_MDS=y" >> prj.conf
+echo "CONFIG_MEMFAULT=y" >> prj.conf
+
+# Build the firmware
+west build -b nrf52840dk_nrf52840 samples/bluetooth/peripheral_lbs \
+  -- -DCONFIG_MEMFAULT_NCS_PROJECT_KEY=\"your-memfault-project-key\"
+```
+
+For a complete example implementation, see `BaseViewController.swift` in the Example app, which demonstrates:
+- Auto-discovery and connection to MDS-enabled devices
+- Automatic diagnostic data streaming to nRF Cloud
+- OTA update checking with UI feedback
+- Firmware installation with progress tracking
 
 # Related Projects
 
