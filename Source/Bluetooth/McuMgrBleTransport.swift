@@ -121,8 +121,12 @@ public class McuMgrBleTransport: NSObject {
     ///
     /// - parameter target: The BLE peripheral with Simple Management
     ///   Protocol (SMP) service.
-    public convenience init(_ target: CBPeripheral) {
-        self.init(target.identifier)
+    public convenience init(_ peripheral: CBPeripheral) {
+        self.init(
+            peripheral,
+            peripheral.identifier,
+            CBCentralManager(delegate: nil, queue: .global(qos: .userInitiated))
+        )
     }
 
     /// Creates a BLE transport object for the peripheral matching given
@@ -137,8 +141,19 @@ public class McuMgrBleTransport: NSObject {
     ///
     /// - parameter targetIdentifier: The UUID of the peripheral with Simple Management
     ///   Protocol (SMP) service.
-    public init(_ targetIdentifier: UUID) {
-        self.centralManager = CBCentralManager(delegate: nil, queue: .global(qos: .userInitiated))
+    public convenience init(_ targetIdentifier: UUID) {
+        let centralManager = CBCentralManager(delegate: nil, queue: .global(qos: .userInitiated))
+        let peripheral = centralManager.retrievePeripherals(withIdentifiers: [targetIdentifier]).first //can return nil oddly enough
+
+        self.init(
+            peripheral,
+            targetIdentifier,
+            centralManager
+        )
+    }
+
+    private init(_ peripheral: CBPeripheral?, _ targetIdentifier: UUID, _ centralManager: CBCentralManager) {
+        self.centralManager = centralManager
         self.identifier = targetIdentifier
         self.connectionLock = ResultLock(isOpen: false)
         self.writeState = McuMgrBleTransportWriteState()
@@ -146,13 +161,14 @@ public class McuMgrBleTransport: NSObject {
         self.operationQueue = OperationQueue()
         self.operationQueue.qualityOfService = .userInitiated
         self.operationQueue.maxConcurrentOperationCount = 1
+
         super.init()
+
         self.centralManager.delegate = self
-        if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [targetIdentifier]).first {
-            self.peripheral = peripheral
-            self.mtu = min(peripheral.maximumWriteValueLength(for: .withoutResponse),
-                           McuManager.getDefaultMtu(scheme: getScheme()))
-        }
+        self.peripheral = peripheral
+        self.mtu = peripheral == nil
+                ? McuManager.getDefaultMtu(scheme: getScheme())
+                : min(peripheral!.maximumWriteValueLength(for: .withoutResponse), McuManager.getDefaultMtu(scheme: getScheme()))
     }
     
     public var name: String? {
