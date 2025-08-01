@@ -398,7 +398,11 @@ public class FileSystemManager: McuManager {
         }
         // Check for an error return code.
         if let error = response.getError() {
-            self.cancelTransfer(error: error)
+            guard let groupError = response.groupRC?.groupError() else {
+                self.cancelTransfer(error: error)
+                return
+            }
+            self.cancelTransfer(error: groupError)
             return
         }
         // Get the offset from the response.
