@@ -45,7 +45,7 @@ public class FileSystemManager: McuManager {
         // Build request and send.
         send(op: .read, commandId: FilesystemID.file, payload: payload, callback: callback)
     }
-
+    
     // MARK: Upload
     
     /// Sends the next packet of data from given offset.
@@ -86,6 +86,8 @@ public class FileSystemManager: McuManager {
         // Build request and send.
         send(op: .write, commandId: FilesystemID.file, payload: payload, callback: callback)
     }
+    
+    // MARK: download(name:delegate:)
     
     /// Begins the file download from a peripheral.
     ///
@@ -128,6 +130,8 @@ public class FileSystemManager: McuManager {
         return true
     }
     
+    // MARK: upload(name:data:using:delegate:)
+    
     /// Begins the file upload to a peripheral.
     ///
     /// An instance of FileSystemManager can only have one upload in progress at a
@@ -148,10 +152,7 @@ public class FileSystemManager: McuManager {
         // Make sure two uploads cant start at once.
         objc_sync_enter(self)
         // If upload is already in progress or paused, do not continue.
-        if transferState == .none {
-            // Set upload flag to true.
-            transferState = .uploading
-        } else {
+        if transferState != .none {
             log(msg: "A file transfer is already in progress", atLevel: .warning)
             objc_sync_exit(self)
             return false
@@ -178,8 +179,7 @@ public class FileSystemManager: McuManager {
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
         
-        log(msg: "Uploading \(name) (\(data.count) bytes)...", atLevel: .application)
-        upload(name: name, data: fileData!, offset: 0, callback: uploadCallback)
+        requestMcuMgrParameters()
         return true
     }
     
@@ -251,11 +251,14 @@ public class FileSystemManager: McuManager {
     
     /// Image upload states
     public enum UploadState: UInt8 {
-        case none        = 0
-        case uploading   = 1
-        case downloading = 2
-        case paused      = 3
+        case none             = 0
+        case mcuMgrParameters = 1
+        case uploading        = 2
+        case downloading      = 3
+        case paused           = 4
     }
+    
+    // MARK: Private Properties
     
     /// State of the file upload.
     private var transferState: UploadState = .none
@@ -277,6 +280,10 @@ public class FileSystemManager: McuManager {
     private var uploadConfiguration: FirmwareUpgradeConfiguration!
     /// Delegate to send file download updates to.
     private weak var downloadDelegate: FileDownloadDelegate?
+    /**
+     Used internally to perform McuMgr Parameters request.
+     */
+    private var defaultManager: DefaultManager!
     
     /// Cyclic reference is used to prevent from releasing the manager
     /// in the middle of an update. The reference cycle will be set
@@ -362,6 +369,44 @@ public class FileSystemManager: McuManager {
             log(msg: "Transfer is not paused", atLevel: .warning)
         }
         objc_sync_exit(self)
+    }
+    
+    // MARK: mcuMgrParameters Callback
+    
+    private lazy var mcuManagerParametersCallback: McuMgrCallback<McuMgrParametersResponse> = { [weak self] response, error in
+        guard let self else { return }
+        
+        guard error == nil, let response, response.rc.isSupported() else {
+            self.log(msg: "Mcu Manager parameters not supported.", atLevel: .warning)
+            self.finishedMcuMgrParametersRequest() // Proceed to upload.
+            return
+        }
+        
+        guard let bufferCount = response.bufferCount, var bufferSize = response.bufferSize else {
+            return
+        }
+        
+        self.log(msg: "Mcu Manager parameters received (\(bufferCount) x \(bufferSize))", atLevel: .application)
+        if bufferSize > UInt16.max {
+            bufferSize = UInt64(UInt16.max)
+            self.log(msg: "SAR Buffer Size is larger than maximum of \(UInt16.max) bytes. Reducing Buffer Size to maximum value.", atLevel: .warning)
+        }
+        self.log(msg: "Setting SAR Buffer Size to \(bufferSize) bytes.", atLevel: .verbose)
+        self.uploadConfiguration.reassemblyBufferSize = bufferSize
+        if transport.mtu > bufferSize {
+            do {
+                self.log(msg: "SAR Buffer Size of \(bufferSize) is larger than MTU Size of \(transport.mtu). Setting MTU Size to \(bufferSize).", atLevel: .debug)
+                try setMtu(Int(bufferSize))
+                if let bleTransport = transport as? McuMgrBleTransport, bleTransport.chunkSendDataToMtuSize {
+                    self.log(msg: "Disabling Reassembly due to low Buffer Size of \(bufferSize).", atLevel: .debug)
+                    bleTransport.chunkSendDataToMtuSize = false
+                }
+            } catch let mtuResetError {
+                self.cancelTransfer(error: mtuResetError)
+            }
+        }
+        // Continue
+        self.finishedMcuMgrParametersRequest()
     }
     
     // MARK: uploadCallback
@@ -470,7 +515,11 @@ public class FileSystemManager: McuManager {
         }
         // Check for an error return code.
         if let error = response.getError() {
-            self.cancelTransfer(error: error)
+            guard let groupError = response.groupRC?.groupError() as? FileSystemManagerError else {
+                self.cancelTransfer(error: error)
+                return
+            }
+            self.cancelTransfer(error: groupError)
             return
         }
         // Get the offset from the response.
@@ -519,20 +568,47 @@ public class FileSystemManager: McuManager {
             self.cancelTransfer(error: FileTransferError.invalidPayload)
         }
     }
+}
+ 
+// MARK: - Private
+
+private extension FileSystemManager {
     
-    private func sendNext(from offset: UInt) {
+    func requestMcuMgrParameters() {
+        objc_sync_enter(self)
+        log(msg: "Requesting McuMgr Parameters...", atLevel: .application)
+        transferState = .mcuMgrParameters
+        defaultManager = DefaultManager(transport: transport)
+        defaultManager.params(callback: mcuManagerParametersCallback)
+        objc_sync_exit(self)
+    }
+    
+    func finishedMcuMgrParametersRequest() {
+        objc_sync_enter(self)
+        defaultManager = nil
+        transferState = .uploading
+        let fileName: String! = fileName
+        let fileData: Data! = fileData
+        log(msg: "Uploading \(fileName) (\(fileData.count) bytes)...", atLevel: .application)
+        upload(name: fileName, data: fileData, offset: 0, callback: uploadCallback)
+        objc_sync_exit(self)
+    }
+    
+    func sendNext(from offset: UInt) {
         if transferState != .uploading {
             return
         }
         upload(name: fileName!, data: fileData!, offset: offset, callback: uploadCallback)
     }
     
-    private func requestNext(from offset: UInt) {
+    func requestNext(from offset: UInt) {
         if transferState != .downloading {
             return
         }
         download(name: fileName!, offset: offset, callback: downloadCallback)
     }
+    
+    // MARK: resetTransfer
     
     private func resetTransfer() {
         objc_sync_enter(self)
@@ -549,6 +625,8 @@ public class FileSystemManager: McuManager {
         objc_sync_exit(self)
     }
     
+    // MARK: restartTransfer
+    
     private func restartTransfer() {
         objc_sync_enter(self)
         transferState = .none
@@ -560,6 +638,8 @@ public class FileSystemManager: McuManager {
         }
         objc_sync_exit(self)
     }
+    
+    // MARK: calculatePacketOverhead
     
     private func calculatePacketOverhead(name: String, data: Data, offset: UInt64) -> Int {
         // Get the Mcu Manager header.
