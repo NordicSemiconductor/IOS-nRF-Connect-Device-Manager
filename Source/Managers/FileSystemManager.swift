@@ -398,7 +398,7 @@ public class FileSystemManager: McuManager {
         }
         // Check for an error return code.
         if let error = response.getError() {
-            guard let groupError = response.groupRC?.groupError() else {
+            guard let groupError = response.groupRC?.groupError() as? FileSystemManagerError else {
                 self.cancelTransfer(error: error)
                 return
             }
