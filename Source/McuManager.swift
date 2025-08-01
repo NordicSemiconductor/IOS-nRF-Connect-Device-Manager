@@ -217,6 +217,13 @@ open class McuManager : NSObject {
     
     static let ValidMTURange = 73...1024
     
+    /**
+     **Warning!** Throws `McuManagerError.mtuValueHasNotChanged` if called to set
+     MTU (Maximum Transmission Unit) to the same value it's already set to.
+     
+     This is to break infinite-loops caused by firmware returning this error
+     code repeatedly, at which point something has to break the loop.
+     */
     public func setMtu(_ mtu: Int) throws  {
         guard Self.ValidMTURange.contains(mtu) else {
             throw McuManagerError.mtuValueOutsideOfValidRange(mtu)
