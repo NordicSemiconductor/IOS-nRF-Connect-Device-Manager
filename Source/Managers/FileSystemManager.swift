@@ -11,9 +11,22 @@ import SwiftCBOR
 // MARK: - FileSystemManager
 
 public class FileSystemManager: McuManager {
+    
     override class var TAG: McuMgrLogCategory { .filesystemManager }
     
-    // MARK: - IDs
+    // MARK: Packet Size
+    
+    /**
+     Do not ask me why, because I for sure don't know the answer. If the Data packet exceeds
+     495 bytes, SMP Server will not reply back to it. Without any Reassembly / Pipelining. The
+     packet needs to be 495 bytes or less. If MTU is set to 500, the packet is '496' bytes so it's
+     not replied to. We could make this constant '499' to squeeze in 4 extra bytes, because at
+     '495', we send 491 bytes pet packet. But it's better to write the code to reflect what we mean
+     to do, so that we can understand it better in the future.
+     */
+    private static let SMP_SVR_MAX_PACKET_SIZE = 495
+    
+    // MARK: IDs
     
     enum FilesystemID: UInt8 {
         case file = 0
@@ -23,7 +36,7 @@ public class FileSystemManager: McuManager {
         case closeFile = 4
     }
     
-    // MARK: Init
+    // MARK: init
     
     public init(transport: McuMgrTransport) {
         super.init(group: McuMgrGroup.filesystem, transport: transport)
@@ -172,6 +185,14 @@ public class FileSystemManager: McuManager {
         uploadConfiguration = configuration
         uploadConfiguration.reassemblyBufferSize = min(uploadConfiguration.reassemblyBufferSize, UInt64(UInt16.max))
         if let bleTransport = transport as? McuMgrBleTransport {
+            if bleTransport.mtu > Self.SMP_SVR_MAX_PACKET_SIZE {
+                do {
+                    log(msg: "Reducing MTU from \(bleTransport.mtu) down to \(Self.SMP_SVR_MAX_PACKET_SIZE) for improved SMP Server reliability.", atLevel: .debug)
+                    try setMtu(Self.SMP_SVR_MAX_PACKET_SIZE)
+                } catch let mtuFixupError {
+                    cancelTransfer(error: mtuFixupError)
+                }
+            }
             bleTransport.numberOfParallelWrites = uploadConfiguration.pipelineDepth
             bleTransport.chunkSendDataToMtuSize = uploadConfiguration.reassemblyBufferSize > bleTransport.mtu
         }
