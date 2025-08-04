@@ -284,6 +284,13 @@ public class FileSystemManager: McuManager {
      Used internally to perform McuMgr Parameters request.
      */
     private var defaultManager: DefaultManager!
+    /**
+     Used to store McuMgrParameters Response until after the first succesful
+     packet is sent. This is to delay sending multiple sequence numbers + reassembly
+     packets unless we can start uploading. So we wait until after first successful
+     packet upload.
+     */
+    private var storedMcuMgrParametersResponse: McuMgrParametersResponse?
     
     /// Cyclic reference is used to prevent from releasing the manager
     /// in the middle of an update. The reference cycle will be set
@@ -388,33 +395,7 @@ public class FileSystemManager: McuManager {
             return
         }
         self.log(msg: "Mcu Manager parameters received (\(bufferCount) x \(bufferSize))", atLevel: .application)
-        
-        guard let bleTransport = transport as? McuMgrBleTransport else {
-            self.log(msg: "Ignoring McuMgr Parameters response due to unsupported (non-BLE) Transport.", atLevel: .debug)
-            self.finishedMcuMgrParametersRequest() // Proceed to upload
-            return
-        }
-        if bufferSize > UInt16.max {
-            bufferSize = UInt64(UInt16.max)
-            self.log(msg: "SAR Buffer Size is larger than maximum of \(UInt16.max) bytes. Reducing Buffer Size to maximum value.", atLevel: .warning)
-        }
-        self.log(msg: "Setting SAR Buffer Size to \(bufferSize) bytes.", atLevel: .verbose)
-        self.uploadConfiguration.reassemblyBufferSize = bufferSize
-        if bufferSize > bleTransport.mtu, !bleTransport.chunkSendDataToMtuSize {
-            self.log(msg: "Enabling SMP Reassembly.", atLevel: .debug)
-            bleTransport.chunkSendDataToMtuSize = true
-        } else if transport.mtu > bufferSize {
-            do {
-                self.log(msg: "SAR Buffer Size of \(bufferSize) is larger than MTU Size of \(transport.mtu). Setting MTU Size to \(bufferSize).", atLevel: .debug)
-                try setMtu(Int(bufferSize))
-                if bleTransport.chunkSendDataToMtuSize {
-                    self.log(msg: "Disabling Reassembly due to low Buffer Size of \(bufferSize) bytes.", atLevel: .debug)
-                    bleTransport.chunkSendDataToMtuSize = false
-                }
-            } catch let mtuResetError {
-                self.cancelTransfer(error: mtuResetError)
-            }
-        }
+        self.storedMcuMgrParametersResponse = response
         // Continue
         self.finishedMcuMgrParametersRequest()
     }
@@ -462,6 +443,11 @@ public class FileSystemManager: McuManager {
         }
         // Get the offset from the response.
         if let offset = response.off {
+            // if 'first successful sequenceNumber upload'
+            if self.offset == 0 && offset > 0, let response = self.storedMcuMgrParametersResponse {
+                self.processMcuMgrParametersResponse(response)
+                self.storedMcuMgrParametersResponse = nil
+            }
             // Set the file upload offset.
             self.offset = offset
             self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset),
@@ -587,10 +573,41 @@ private extension FileSystemManager {
     func requestMcuMgrParameters() {
         objc_sync_enter(self)
         log(msg: "Requesting McuMgr Parameters...", atLevel: .application)
+        storedMcuMgrParametersResponse = nil
         transferState = .mcuMgrParameters
         defaultManager = DefaultManager(transport: transport)
         defaultManager.params(callback: mcuManagerParametersCallback)
         objc_sync_exit(self)
+    }
+    
+    func processMcuMgrParametersResponse(_ response: McuMgrParametersResponse) {
+        log(msg: "Processing McuMgr Parameters Response.", atLevel: .debug)
+        var bufferSize: UInt64! = response.bufferSize
+        guard let bleTransport = transport as? McuMgrBleTransport else {
+            log(msg: "Ignoring McuMgr Parameters Response due to unsupported (non-BLE) Transport.", atLevel: .debug)
+            return
+        }
+        if bufferSize > UInt16.max {
+            bufferSize = UInt64(UInt16.max)
+            log(msg: "SAR Buffer Size is larger than maximum of \(UInt16.max) bytes. Reducing Buffer Size to maximum value.", atLevel: .warning)
+        }
+        log(msg: "Setting SAR Buffer Size to \(bufferSize) bytes.", atLevel: .verbose)
+        uploadConfiguration.reassemblyBufferSize = bufferSize
+        if bufferSize > bleTransport.mtu, !bleTransport.chunkSendDataToMtuSize {
+            log(msg: "Enabling SMP Reassembly.", atLevel: .debug)
+            bleTransport.chunkSendDataToMtuSize = true
+        } else if transport.mtu > bufferSize {
+            do {
+                log(msg: "SAR Buffer Size of \(bufferSize) is larger than MTU Size of \(transport.mtu). Setting MTU Size to \(bufferSize).", atLevel: .debug)
+                try setMtu(Int(bufferSize))
+                if bleTransport.chunkSendDataToMtuSize {
+                    log(msg: "Disabling Reassembly due to low Buffer Size of \(bufferSize) bytes.", atLevel: .debug)
+                    bleTransport.chunkSendDataToMtuSize = false
+                }
+            } catch let mtuResetError {
+                cancelTransfer(error: mtuResetError)
+            }
+        }
     }
     
     func finishedMcuMgrParametersRequest() {
