@@ -405,11 +405,11 @@ public class FileSystemManager: McuManager {
     private lazy var uploadCallback: McuMgrCallback<McuMgrFsUploadResponse> = {
         [weak self] (response: McuMgrFsUploadResponse?, error: Error?) in
         // Ensure the manager is not released.
-        guard let self = self else {
+        guard let self else {
             return
         }
         // Check for an error.
-        if let error = error {
+        if let error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
                 do {
                     try self.setMtu(newMtu)
@@ -428,7 +428,7 @@ public class FileSystemManager: McuManager {
             return
         }
         // Make sure the response is not nil.
-        guard let response = response else {
+        guard let response else {
             self.cancelTransfer(error: FileTransferError.invalidPayload)
             return
         }

@@ -489,33 +489,33 @@ extension McuMgrReturnCode: CustomStringConvertible {
         case .ok:
             return "OK"
         case .unknown:
-            return "Unknown error"
+            return "Unknown error (RC: \(rawValue))"
         case .noMemory:
-            return "No memory"
+            return "No memory (RC: \(rawValue))"
         case .inValue:
-            return "Invalid value"
+            return "Invalid value (RC: \(rawValue))"
         case .timeout:
-            return "Timeout"
+            return "Timeout (RC: \(rawValue))"
         case .noEntry:
-            return "No entry" // For Filesystem Operations, Does Your Mounting Point Match Your Target Firmware / Device?
+            return "No entry (RC: \(rawValue))" // For Filesystem Operations, Does Your Mounting Point Match Your Target Firmware / Device?
         case .badState:
-            return "Bad state"
+            return "Bad state (RC: \(rawValue))"
         case .responseIsTooLong:
-            return "Response is too long"
+            return "Response is too long v"
         case .unsupported:
-            return "Not supported"
+            return "Not supported (RC: \(rawValue))"
         case .corruptPayload:
-            return "Corrupt payload"
+            return "Corrupt payload (RC: \(rawValue))"
         case .busy:
-            return "Busy, try again later" // Busy processing previous SMP Request
+            return "Busy, try again later (RC: \(rawValue))" // Busy processing previous SMP Request
         case .accessDenied:
-            return "Access denied" // Are You Trying to Downgrade to a Lower Image Version?
+            return "Access denied (RC: \(rawValue))" // Are You Trying to Downgrade to a Lower Image Version?
         case .unsupportedTooOld:
-            return "Requested SMP McuMgr protocol version is too old"
+            return "Requested SMP McuMgr protocol version is too old (RC: \(rawValue))"
         case .unsupportedTooNew:
-            return "Requested SMP McuMgr protocol version is too new"
+            return "Requested SMP McuMgr protocol version is too new (RC: \(rawValue))"
         case .userDefinedError:
-            return "User-Defined Error"
+            return "User-Defined Error (RC: \(rawValue))"
         default:
             if rawValue >= McuMgrReturnCode.userDefinedError.rawValue {
                 return "User-Defined Error (Code: \(rawValue))"
