@@ -7,7 +7,12 @@
 import UIKit
 import iOSMcuManagerLibrary
 
-class LogsStatsController: UITableViewController {
+// MARK: - LogsStatsController
+
+final class LogsStatsController: UITableViewController {
+    
+    // MARK: @IBOutlet(s)
+    
     @IBOutlet weak var connectionStatus: UILabel!
     @IBOutlet weak var mcuMgrParams: UILabel!
     @IBOutlet weak var bootloaderName: UILabel!
@@ -17,73 +22,88 @@ class LogsStatsController: UITableViewController {
     @IBOutlet weak var stats: UILabel!
     @IBOutlet weak var refreshAction: UIButton!
     
+    // MARK: @IBAction(s)
+    
     @IBAction func refreshTapped(_ sender: UIButton) {
-        statsManager.list { (response, error) in
-            if let response = response {
-                self.stats.text = ""
-                self.stats.textColor = .primary
-                
-                // Iterate all module names.
-                if let names = response.names, !names.isEmpty {
-                    names.forEach { module in
-                        // Request stats for each module.
-                        self.statsManager.read(module: module, callback: { (stats, error2) in
-                            // And append the received stats to the UILabel.
-                            self.stats.text! += "\(module)"
-                            if let stats = stats {
-                                if let group = stats.group {
-                                    self.stats.text! += " (\(group))"
-                                }
-                                self.stats.text! += ":\n"
-                                if let fields = stats.fields {
-                                    for field in fields {
-                                        self.stats.text! += "• \(field.key): \(field.value)\n"
-                                    }
-                                } else {
-                                    self.stats.text! += "• Empty\n"
-                                }
-                            } else {
-                                self.stats.text! += "\(error2!)\n"
+        statsManager.list(callback: statsCallback)
+    }
+    
+    // MARK: statsCallback
+    
+    private lazy var statsCallback: McuMgrCallback<McuMgrStatsListResponse> = { [weak self] response, error in
+        guard let self else { return }
+        tableView.beginUpdates()
+        defer {
+            tableView.setNeedsDisplay()
+            tableView.endUpdates()
+        }
+        
+        guard let response else {
+            stats.textColor = .systemRed
+            stats.text = error?.localizedDescription ?? "Unknown Error"
+            return
+        }
+        
+        stats.text = ""
+        stats.textColor = .primary
+        
+        if let names = response.names, !names.isEmpty {
+            for module in names {
+                // Request stats for each module.
+                statsManager.read(module: module, callback: { [weak self] (moduleStats, moduleError) in
+                    var resultString = "\(module)"
+                    
+                    if let moduleStats {
+                        if let group = moduleStats.group {
+                            resultString += " (\(group))"
+                        }
+                        resultString += ":\n"
+                        if let fields = moduleStats.fields {
+                            for field in fields {
+                                resultString += "• \(field.key): \(field.value)\n"
                             }
-                            if module != names.last {
-                                self.stats.text! += "\n"
-                            } else {
-                                self.stats.text!.removeLast()
-                            }
-                        })
+                        } else {
+                            resultString += "• Empty\n"
+                        }
+                    } else {
+                        resultString += "\(moduleError?.localizedDescription ?? "Unknown Error")\n"
                     }
-                } else {
-                    self.stats.text = "No stats found"
-                }
-            } else {
-                self.stats.textColor = .systemRed
-                self.stats.text = error!.localizedDescription
+                    if module != names.last {
+                        resultString += "\n"
+                    } else {
+                        resultString.removeLast()
+                    }
+                    
+                    // And append the received stats to the UILabel.
+                    self?.stats.text! += resultString
+                })
             }
-            self.tableView.beginUpdates()
-            self.tableView.setNeedsDisplay()
-            self.tableView.endUpdates()
+        } else {
+            stats.text = "No stats found"
         }
     }
     
+    // MARK: Private Properties
+    
     private var statsManager: StatsManager!
     
-    override func viewDidLoad() {
-        let baseController = parent as! BaseViewController
-        let transport = baseController.transport!
-        statsManager = StatsManager(transport: transport)
-        statsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
-    }
+    // MARK: UIViewController
     
     override func viewDidAppear(_ animated: Bool) {
-        let baseController = parent as? BaseViewController
-        baseController?.deviceStatusDelegate = self
+        guard let baseController = parent as? BaseViewController else { return }
+        baseController.deviceStatusDelegate = self
+        
+        let transport: McuMgrTransport! = baseController.transport
+        statsManager = StatsManager(transport: transport)
+        statsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
     }
-
 }
+
+// MARK: - DeviceStatusDelegate
 
 extension LogsStatsController: DeviceStatusDelegate {
     
@@ -110,5 +130,4 @@ extension LogsStatsController: DeviceStatusDelegate {
     func mcuMgrParamsReceived(buffers: Int, size: Int) {
         mcuMgrParams.text = "\(buffers) x \(size) bytes"
     }
-    
 }
