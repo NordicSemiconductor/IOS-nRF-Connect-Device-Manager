@@ -32,10 +32,8 @@ final class LogsStatsController: UITableViewController {
     
     private lazy var statsCallback: McuMgrCallback<McuMgrStatsListResponse> = { [weak self] response, error in
         guard let self else { return }
-        tableView.beginUpdates()
         defer {
-            tableView.setNeedsDisplay()
-            tableView.endUpdates()
+            onStatsChanged()
         }
         
         guard let response else {
@@ -47,39 +45,16 @@ final class LogsStatsController: UITableViewController {
         stats.text = ""
         stats.textColor = .primary
         
-        if let names = response.names, !names.isEmpty {
-            for module in names {
-                // Request stats for each module.
-                statsManager.read(module: module, callback: { [weak self] (moduleStats, moduleError) in
-                    var resultString = "\(module)"
-                    
-                    if let moduleStats {
-                        if let group = moduleStats.group {
-                            resultString += " (\(group))"
-                        }
-                        resultString += ":\n"
-                        if let fields = moduleStats.fields {
-                            for field in fields {
-                                resultString += "• \(field.key): \(field.value)\n"
-                            }
-                        } else {
-                            resultString += "• Empty\n"
-                        }
-                    } else {
-                        resultString += "\(moduleError?.localizedDescription ?? "Unknown Error")\n"
-                    }
-                    if module != names.last {
-                        resultString += "\n"
-                    } else {
-                        resultString.removeLast()
-                    }
-                    
-                    // And append the received stats to the UILabel.
-                    self?.stats.text! += resultString
-                })
-            }
-        } else {
+        guard let modules = response.names, !modules.isEmpty else {
             stats.text = "No stats found"
+            return
+        }
+        
+        for module in modules {
+            statsManager.read(module: module, callback: { [unowned self] (moduleStats, moduleError) in
+                self.stats.text! += self.moduleStatsString(module, stats: moduleStats, error: moduleError)
+                self.onStatsChanged()
+            })
         }
     }
     
@@ -100,6 +75,39 @@ final class LogsStatsController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
+    }
+}
+
+// MARK: - Private
+
+private extension LogsStatsController {
+    
+    func moduleStatsString(_ module: String, stats: McuMgrStatsResponse?, error: (any Error)?) -> String {
+        var resultString = "\(module)"
+        if let stats {
+            if let group = stats.group {
+                resultString += " (\(group))"
+            }
+            resultString += ":\n"
+            if let fields = stats.fields {
+                for field in fields {
+                    resultString += "• \(field.key): \(field.value)\n"
+                }
+            } else {
+                resultString += "• Empty\n"
+            }
+        } else {
+            resultString += "\(error?.localizedDescription ?? "Unknown Error")\n"
+        }
+        
+        resultString += "\n"
+        return resultString
+    }
+    
+    func onStatsChanged() {
+        tableView.beginUpdates()
+        tableView.setNeedsDisplay()
+        tableView.endUpdates()
     }
 }
 
