@@ -161,14 +161,14 @@ public class McuMgrBleTransport: NSObject {
         self.operationQueue = OperationQueue()
         self.operationQueue.qualityOfService = .userInitiated
         self.operationQueue.maxConcurrentOperationCount = 1
-
         super.init()
 
         self.centralManager.delegate = self
         self.peripheral = peripheral
+        let peripheralWriteValueLength = max(McuManager.ValidMTURange.lowerBound, peripheral?.maximumWriteValueLength(for: .withoutResponse) ?? 0)
         self.mtu = peripheral == nil
-                ? McuManager.getDefaultMtu(scheme: getScheme())
-                : min(peripheral!.maximumWriteValueLength(for: .withoutResponse), McuManager.getDefaultMtu(scheme: getScheme()))
+            ? McuManager.getDefaultMtu(scheme: getScheme())
+            : min(peripheralWriteValueLength, McuManager.getDefaultMtu(scheme: getScheme()))
     }
     
     public var name: String? {
@@ -177,10 +177,11 @@ public class McuMgrBleTransport: NSObject {
     
     public private(set) var identifier: UUID
 
+    // MARK: notifyPeripheralDelegate
+    
     private func notifyPeripheralDelegate() {
-        if let peripheral = self.peripheral {
-            delegate?.peripheral(peripheral, didChangeStateTo: state)
-        }
+        guard let delegate, let peripheral else { return }
+        delegate.peripheral(peripheral, didChangeStateTo: state)
     }
 }
 
