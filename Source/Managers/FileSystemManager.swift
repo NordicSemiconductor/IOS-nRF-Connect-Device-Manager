@@ -73,10 +73,9 @@ public class FileSystemManager: McuManager {
         // Calculate the number of remaining bytes.
         let remainingBytes = UInt(data.count) - offset
         
-        // Data length to end is the minimum of the max data lenght and the
+        // Data length to end is the minimum of the max data length and the
         // number of remaining bytes.
-        let packetOverhead = calculatePacketOverhead(name: name, data: data,
-                                                     offset: UInt64(offset))
+        let packetOverhead = calculatePacketOverhead(for: name, data: data, offset: UInt64(offset))
         
         // Get the length of file data to send.
         let maxReassemblySize = min(uploadConfiguration.reassemblyBufferSize, UInt64(UInt16.max))
@@ -91,7 +90,6 @@ public class FileSystemManager: McuManager {
         var payload: [String: CBOR] = ["name": CBOR.utf8String(name),
                                        "data": CBOR.byteString([UInt8](data[offset..<(offset+dataLength)])),
                                        "off": CBOR.unsignedInt(UInt64(offset))]
-        
         // If this is the initial packet, send the file data length.
         if offset == 0 {
             payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
@@ -184,6 +182,7 @@ public class FileSystemManager: McuManager {
         // can't predict how many bytes the firmware will accept in each chunk.
         uploadConfiguration = configuration
         uploadConfiguration.reassemblyBufferSize = min(uploadConfiguration.reassemblyBufferSize, UInt64(UInt16.max))
+        uploadPipeline = McuMgrUploadPipeline(adopting: uploadConfiguration, over: transport)
         if let bleTransport = transport as? McuMgrBleTransport {
             if bleTransport.mtu > Self.SMP_SVR_MAX_PACKET_SIZE {
                 do {
@@ -294,11 +293,15 @@ public class FileSystemManager: McuManager {
     private var fileSize: Int?
     /// Delegate to send file upload updates to.
     private weak var uploadDelegate: FileUploadDelegate?
-    /// Groups multiple Settings regarding Upload, such as enabling
-    /// Pipelining, Byte Alignment and/or SMP Reassembly.
-    /// This is not applied for Download, since it's up to the Sender
-    /// to package/format the Data according to SMP specification.
+    /**
+     Groups multiple Settings regarding Upload, such as enabling Pipelining, Byte Alignment and/or SMP Reassembly.
+     
+     This is not applied for Download, since it's up to the Sender to package/format the Data according to SMP specification.
+     */
     private var uploadConfiguration: FirmwareUpgradeConfiguration!
+    
+    private var uploadPipeline: McuMgrUploadPipeline!
+    
     /// Delegate to send file download updates to.
     private weak var downloadDelegate: FileDownloadDelegate?
     /**
@@ -443,16 +446,19 @@ public class FileSystemManager: McuManager {
             self.cancelTransfer(error: error)
             return
         }
+        
         // Make sure the file data is set.
-        guard let fileData = self.fileData else {
+        guard let fileName, let fileData else {
             self.cancelTransfer(error: FileTransferError.invalidData)
             return
         }
+        
         // Make sure the response is not nil.
         guard let response else {
             self.cancelTransfer(error: FileTransferError.invalidPayload)
             return
         }
+        
         // Check for an error return code.
         if let error = response.getError() {
             guard let groupError = response.groupRC?.groupError() as? FileSystemManagerError else {
@@ -462,6 +468,7 @@ public class FileSystemManager: McuManager {
             self.cancelTransfer(error: groupError)
             return
         }
+        
         // Get the offset from the response.
         if let offset = response.off {
             // if 'first successful sequenceNumber upload'
@@ -471,6 +478,7 @@ public class FileSystemManager: McuManager {
             }
             // Set the file upload offset.
             self.offset = offset
+            self.uploadPipeline?.receivedData(with: offset)
             self.uploadDelegate?.uploadProgressDidChange(bytesSent: Int(offset),
                                                          fileSize: fileData.count,
                                                          timestamp: Date())
@@ -493,11 +501,14 @@ public class FileSystemManager: McuManager {
                 self.uploadDelegate = nil
                 // Release cyclic reference.
                 self.cyclicReferenceHolder = nil
-                return
+            } else {
+                // Send the next packet of data.
+                self.uploadPipeline.pipelinedSend(ofSize: fileData.count) { [unowned self] offset in
+                    let payloadLength = self.maxDataPacketLengthFor(name: fileName, data: fileData, offset: offset)
+                    self.sendNext(from: UInt(offset))
+                    return offset + payloadLength
+                }
             }
-            
-            // Send the next packet of data.
-            self.sendNext(from: UInt(offset))
         } else {
             self.cancelTransfer(error: ImageUploadError.invalidPayload)
         }
@@ -508,11 +519,11 @@ public class FileSystemManager: McuManager {
     private lazy var downloadCallback: McuMgrCallback<McuMgrFsDownloadResponse> = {
         [weak self] (response: McuMgrFsDownloadResponse?, error: Error?) in
         // Ensure the manager is not released.
-        guard let self = self else {
+        guard let self else {
             return
         }
         // Check for an error.
-        if let error = error {
+        if let error {
             if case let McuMgrTransportError.insufficientMtu(newMtu) = error {
                 do {
                     try self.setMtu(newMtu)
@@ -612,8 +623,17 @@ private extension FileSystemManager {
             bufferSize = UInt64(UInt16.max)
             log(msg: "SAR Buffer Size is larger than maximum of \(UInt16.max) bytes. Reducing Buffer Size to maximum value.", atLevel: .warning)
         }
-        log(msg: "Setting SAR Buffer Size to \(bufferSize) bytes.", atLevel: .verbose)
+        log(msg: "Setting SAR Buffer Size to \(bufferSize) bytes.", atLevel: .debug)
         uploadConfiguration.reassemblyBufferSize = bufferSize
+        
+        if let bufferCount = response.bufferCount, uploadConfiguration.pipelineDepth >= bufferCount {
+            log(msg: "Target pipeline depth of \(bufferCount - 1) is smaller than upload configuration of \(uploadConfiguration.pipelineDepth).", atLevel: .warning)
+            log(msg: "Setting pipeline depth to \(bufferCount - 1).", atLevel: .debug)
+            uploadConfiguration.pipelineDepth = Int(bufferCount - 1)
+            uploadPipeline = McuMgrUploadPipeline(adopting: uploadConfiguration, over: transport)
+            bleTransport.numberOfParallelWrites = uploadConfiguration.pipelineDepth
+        }
+        
         if bufferSize > bleTransport.mtu, !bleTransport.chunkSendDataToMtuSize {
             log(msg: "Enabling SMP Reassembly.", atLevel: .debug)
             bleTransport.chunkSendDataToMtuSize = true
@@ -687,18 +707,27 @@ private extension FileSystemManager {
         objc_sync_exit(self)
     }
     
-    // MARK: calculatePacketOverhead
+    // MARK: Packet Calculation
     
-    private func calculatePacketOverhead(name: String, data: Data, offset: UInt64) -> Int {
-        // Get the Mcu Manager header.
-        var payload: [String: CBOR] = ["name": CBOR.utf8String(name),
-                                       "data": CBOR.byteString([UInt8]([0])),
-                                       "off":  CBOR.unsignedInt(offset)]
-        // If this is the initial packet we have to include the length of the
-        // entire file.
-        if offset == 0 {
-            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
+    private func maxDataPacketLengthFor(name: String, data: Data, offset: UInt64) -> UInt64 {
+        guard offset < data.count else {
+            return UInt64(McuMgrHeader.HEADER_LENGTH)
         }
+        
+        let remainingBytes = UInt64(data.count) - offset
+        let packetOverhead = calculatePacketOverhead(for: name, data: data, offset: offset)
+        let maxPacketSize = max(uploadConfiguration.reassemblyBufferSize, UInt64(transport.mtu))
+        var maxDataLength = maxPacketSize - UInt64(packetOverhead)
+        if uploadConfiguration.byteAlignment != .disabled {
+            maxDataLength = (maxDataLength / uploadConfiguration.byteAlignment.rawValue) * uploadConfiguration.byteAlignment.rawValue
+        }
+        return min(maxDataLength, remainingBytes)
+    }
+    
+    private func calculatePacketOverhead(for name: String, data: Data, offset: UInt64) -> Int {
+        let dataLength = UInt64(data.count)
+        let payload = buildPayload(for: name, data: data, at: offset, with: dataLength)
+        
         // Build the packet and return the size.
         let packet = McuManager.buildPacket(scheme: transport.getScheme(), version: .SMPv2,
                                             op: .write, flags: 0, group: group.rawValue,
@@ -710,6 +739,21 @@ private extension FileSystemManager {
             packetOverhead = packetOverhead + 25
         }
         return packetOverhead
+    }
+    
+    // MARK: buildPayload(for:at:)
+    
+    private func buildPayload(for name: String, data: Data, at offset: UInt64, with length: UInt64) -> [String: CBOR] {
+        // Get the Mcu Manager header.
+        var payload: [String: CBOR] = ["name": CBOR.utf8String(name),
+                                       "data": CBOR.byteString([UInt8]([0])),
+                                       "off":  CBOR.unsignedInt(offset)]
+        // If this is the initial packet we have to include the length of the
+        // entire file.
+        if offset == 0 {
+            payload.updateValue(CBOR.unsignedInt(UInt64(data.count)), forKey: "len")
+        }
+        return payload
     }
 }
 

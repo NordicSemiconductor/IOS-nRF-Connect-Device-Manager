@@ -48,7 +48,8 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
         actionSelect.isEnabled = false
         status.textColor = .primary
         status.text = "UPLOADING..."
-        _ = fsManager.upload(name: destination.text!, data: fileData!, delegate: self)
+        _ = fsManager.upload(name: destination.text!, data: fileData!,
+                             delegate: self)
     }
     
     @IBAction func pause(_ sender: UIButton) {
@@ -134,7 +135,7 @@ extension FileUploadViewController: FileUploadDelegate {
             speedInKiloBytesPerSecond = Double(fileSize - initialBytes) / msSinceUploadBegan
         }
         
-        status.text = "UPLOADING... (\(String(format: "%.2f", speedInKiloBytesPerSecond))) kB/s)"
+        status.text = "UPLOADING... (\(String(format: "%.2f", speedInKiloBytesPerSecond)) kB/s)"
         progress.setProgress(Float(bytesSent) / Float(fileSize), animated: true)
     }
     
