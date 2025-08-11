@@ -515,8 +515,8 @@ public class ImageManager: McuManager {
     }
     
     private func sendNext(from offset: UInt64) {
-        let imageData: Data! = self.uploadImages?[uploadIndex].data
-        let imageSlot: Int! = self.uploadImages?[uploadIndex].image
+        let imageData: Data! = uploadImages?[uploadIndex].data
+        let imageSlot: Int! = uploadImages?[uploadIndex].image
         upload(data: imageData, image: imageSlot, offset: offset,
                alignment: uploadConfiguration.byteAlignment,
                callback: uploadCallback)
