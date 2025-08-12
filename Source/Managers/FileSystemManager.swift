@@ -29,7 +29,7 @@ public class FileSystemManager: McuManager {
      size. But in our testing, SMP_SVR samples report an MTU of 500 bytes or more over BLE, thereby
      causing many packets to be lost on the target firmware's end.
      */
-    private static let SMP_SVR_BT_L2CAP_MTU = 495
+    public static let SMP_SVR_BT_L2CAP_MTU = 495
     
     // MARK: IDs
     
