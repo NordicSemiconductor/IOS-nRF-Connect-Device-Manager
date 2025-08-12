@@ -17,14 +17,19 @@ public class FileSystemManager: McuManager {
     // MARK: Packet Size
     
     /**
-     Do not ask me why, because I for sure don't know the answer. If the Data packet exceeds
-     495 bytes, SMP Server will not reply back to it. Without any Reassembly / Pipelining. The
-     packet needs to be 495 bytes or less. If MTU is set to 500, the packet is '496' bytes so it's
-     not replied to. We could make this constant '499' to squeeze in 4 extra bytes, because at
-     '495', we send 491 bytes pet packet. But it's better to write the code to reflect what we mean
-     to do, so that we can understand it better in the future.
+     Corrected MTU value for the purposes of `FileSystemManager`.
+     
+     SMP Server sample code in nRF Connect SDK defines in `overlay-bt.conf` file
+     `CONFIG_BT_L2CAP_TX_MTU` with a value of `498`. This translates to an effective maximum
+     "data packet" size of `495`. Meaning if we send a larger amount of Data than 495 bytes,
+     the packet won't be replied / acknowledged to (doesn't fit on internal buffer -> packet loss),
+     rendering `FileSystemManager` unuseable in practice.
+     
+     This should not be needed, in the sense that the `McuMgrTransport` should return a valid MTU
+     size. But in our testing, SMP_SVR samples report an MTU of 500 bytes or more over BLE, thereby
+     causing many packets to be lost on the target firmware's end.
      */
-    private static let SMP_SVR_MAX_PACKET_SIZE = 495
+    private static let SMP_SVR_BT_L2CAP_MTU = 495
     
     // MARK: IDs
     
@@ -133,6 +138,17 @@ public class FileSystemManager: McuManager {
         fileName = name
         fileData = nil
         
+        if let bleTransport = transport as? McuMgrBleTransport {
+            if bleTransport.mtu > Self.SMP_SVR_BT_L2CAP_MTU {
+                do {
+                    log(msg: "Reducing MTU from \(bleTransport.mtu) down to \(Self.SMP_SVR_BT_L2CAP_MTU) for improved SMP Server reliability.", atLevel: .debug)
+                    try setMtu(Self.SMP_SVR_BT_L2CAP_MTU)
+                } catch let mtuFixupError {
+                    cancelTransfer(error: mtuFixupError)
+                }
+            }
+        }
+        
         // Grab a strong reference to something holding a strong reference to self.
         cyclicReferenceHolder = { return self }
         
@@ -184,10 +200,10 @@ public class FileSystemManager: McuManager {
         uploadConfiguration.reassemblyBufferSize = min(uploadConfiguration.reassemblyBufferSize, UInt64(UInt16.max))
         uploadPipeline = McuMgrUploadPipeline(adopting: uploadConfiguration, over: transport)
         if let bleTransport = transport as? McuMgrBleTransport {
-            if bleTransport.mtu > Self.SMP_SVR_MAX_PACKET_SIZE {
+            if bleTransport.mtu > Self.SMP_SVR_BT_L2CAP_MTU {
                 do {
-                    log(msg: "Reducing MTU from \(bleTransport.mtu) down to \(Self.SMP_SVR_MAX_PACKET_SIZE) for improved SMP Server reliability.", atLevel: .debug)
-                    try setMtu(Self.SMP_SVR_MAX_PACKET_SIZE)
+                    log(msg: "Reducing MTU from \(bleTransport.mtu) down to \(Self.SMP_SVR_BT_L2CAP_MTU) for improved SMP Server reliability.", atLevel: .debug)
+                    try setMtu(Self.SMP_SVR_BT_L2CAP_MTU)
                 } catch let mtuFixupError {
                     cancelTransfer(error: mtuFixupError)
                 }
