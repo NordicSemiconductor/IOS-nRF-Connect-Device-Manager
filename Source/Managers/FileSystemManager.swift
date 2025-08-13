@@ -84,7 +84,10 @@ public class FileSystemManager: McuManager {
                        callback: @escaping McuMgrCallback<McuMgrFsUploadResponse>) {
         uploadConfiguration = uploadConfiguration ?? configuration
         guard uploadConfiguration != nil else {
-            callback(nil, FileTransferError.missingUploadConfiguration)
+            log(msg: "Missing Upload Configuration.", atLevel: .error)
+            let error = FileTransferError.missingUploadConfiguration
+            callback(nil, error)
+            cancelTransfer(error: error)
             return
         }
         
