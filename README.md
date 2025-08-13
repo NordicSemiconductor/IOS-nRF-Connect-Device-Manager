@@ -392,7 +392,7 @@ let didUploadStart = fsManager.upload(name: fileName, data: fileData, using: pip
 ### Download Example
 
 > [!NOTE]
-> Pipelining / Reassembly does not apply for download operations. 
+> Reassembly works automagically for downloads, since SMP Server supports it since its original release. As long as the sender (SMP Server Device) does the right thing in its packet header, the same logic in `McuMgrBleTransport` that handles Reassembly for DFU and File Uploads will work.
 
 ```swift
 import iOSMcuManagerLibrary
