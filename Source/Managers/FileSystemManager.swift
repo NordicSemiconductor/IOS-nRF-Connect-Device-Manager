@@ -66,15 +66,28 @@ public class FileSystemManager: McuManager {
     
     // MARK: Upload
     
-    /// Sends the next packet of data from given offset.
-    /// To send a complete file, use upload(name:data:delegate) method instead.
+    /// **NOTE**: To send a complete file, use **upload(name:data:using:delegate)** API instead.
+    ///
+    /// Sends the next packet of data from given offset. It is part of the original API surface, hence
+    /// why it has been kept. However, it is not recommended to use. Please use
+    /// **upload(name:data:using:delegate)** instead. If you must use it, the aforementioned recommended
+    /// API does use this, so it is maintained and in use. But keep in mind it might be a bit rough.
     ///
     /// - parameter name: The file name.
     /// - parameter data: The file data.
     /// - parameter offset: The offset from this data will be sent.
+    /// - parameter configuration: The `FirmwareUpgradeConfiguration` to apply if none is set. If no configuration is provided, and none was set previously, an error status will be declared.
     /// - parameter callback: The callback.
+    ///
     public func upload(name: String, data: Data, offset: UInt,
+                       using configuration: FirmwareUpgradeConfiguration? = nil,
                        callback: @escaping McuMgrCallback<McuMgrFsUploadResponse>) {
+        uploadConfiguration = uploadConfiguration ?? configuration
+        guard uploadConfiguration != nil else {
+            callback(nil, FileTransferError.missingUploadConfiguration)
+            return
+        }
+        
         // Calculate the number of remaining bytes.
         let remainingBytes = UInt(data.count) - offset
         
@@ -776,11 +789,14 @@ private extension FileSystemManager {
 // MARK: - FileTransferError
 
 public enum FileTransferError: Error, LocalizedError {
+    case missingUploadConfiguration
     case invalidPayload
     case invalidData
     
     public var errorDescription: String? {
         switch self {
+        case .missingUploadConfiguration:
+            return "No valid (FirmwareUpgrade) Configuration was set for upload."
         case .invalidPayload:
             return "Response Payload Values Do Not Exist"
         case .invalidData:
