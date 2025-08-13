@@ -76,11 +76,13 @@ public class FileSystemManager: McuManager {
     /// - parameter name: The file name.
     /// - parameter data: The file data.
     /// - parameter offset: The offset from this data will be sent.
-    /// - parameter configuration: The `FirmwareUpgradeConfiguration` to apply if none is set. If no configuration is provided, and none was set previously, an error status will be declared.
+    /// - parameter configuration: The `FirmwareUpgradeConfiguration` to set if none was set previously. If no configuration is provided, and none was set previously, an error status will be declared.
+    /// - parameter delegate: The `FileUploadDelegate` to set if none was set previously. Unlike the `configuration` parameter, no error will be retported if no delegate is set.
     /// - parameter callback: The callback.
     ///
     public func upload(name: String, data: Data, offset: UInt,
                        using configuration: FirmwareUpgradeConfiguration? = nil,
+                       delegate uploadDelegate: FileUploadDelegate? = nil,
                        callback: @escaping McuMgrCallback<McuMgrFsUploadResponse>) {
         objc_sync_enter(self)
         if transferState != .uploading {
@@ -88,6 +90,7 @@ public class FileSystemManager: McuManager {
         }
         objc_sync_exit(self)
         
+        self.uploadDelegate = self.uploadDelegate ?? uploadDelegate
         uploadConfiguration = uploadConfiguration ?? configuration
         guard uploadConfiguration != nil else {
             log(msg: "Missing Upload Configuration.", atLevel: .error)
