@@ -513,7 +513,8 @@ public class FileSystemManager: McuManager {
             } else {
                 // Send the next packet of data.
                 self.uploadPipeline.pipelinedSend(ofSize: fileData.count) { [unowned self] offset in
-                    let payloadLength = self.maxDataPacketLengthFor(name: fileName, data: fileData, offset: offset)
+                    let packetOverhead = self.calculatePacketOverhead(for: fileName, data: fileData, offset: offset)
+                    let payloadLength = self.maxDataPacketLengthFor(data: fileData, at: offset, with: packetOverhead, and: self.uploadConfiguration)
                     self.sendNext(from: UInt(offset))
                     return offset + payloadLength
                 }
@@ -714,21 +715,6 @@ private extension FileSystemManager {
     }
     
     // MARK: Packet Calculation
-    
-    private func maxDataPacketLengthFor(name: String, data: Data, offset: UInt64) -> UInt64 {
-        guard offset < data.count else {
-            return UInt64(McuMgrHeader.HEADER_LENGTH)
-        }
-        
-        let remainingBytes = UInt64(data.count) - offset
-        let packetOverhead = calculatePacketOverhead(for: name, data: data, offset: offset)
-        let maxPacketSize = max(uploadConfiguration.reassemblyBufferSize, UInt64(transport.mtu))
-        var maxDataLength = maxPacketSize - UInt64(packetOverhead)
-        if uploadConfiguration.byteAlignment != .disabled {
-            maxDataLength = (maxDataLength / uploadConfiguration.byteAlignment.rawValue) * uploadConfiguration.byteAlignment.rawValue
-        }
-        return min(maxDataLength, remainingBytes)
-    }
     
     private func calculatePacketOverhead(for name: String, data: Data, offset: UInt64) -> Int {
         let dataLength = UInt64(data.count)

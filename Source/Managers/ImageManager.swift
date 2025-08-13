@@ -131,7 +131,8 @@ public class ImageManager: McuManager {
     /// - parameter callback: The callback.
     public func upload(data: Data, image: Int, offset: UInt64, alignment: ImageUploadAlignment,
                        callback: @escaping McuMgrCallback<McuMgrUploadResponse>) {
-        let payloadLength = maxDataPacketLengthFor(data: data, image: image, offset: offset)
+        let packetOverhead = calculatePacketOverhead(data: data, image: image, offset: UInt64(offset))
+        let payloadLength = maxDataPacketLengthFor(data: data, at: offset, with: packetOverhead, and: uploadConfiguration)
         
         let chunkOffset = offset
         let chunkEnd = min(chunkOffset + payloadLength, UInt64(data.count))
@@ -505,7 +506,8 @@ public class ImageManager: McuManager {
             let imageData: Data! = self.uploadImages?[self.uploadIndex].data
             let imageSlot: Int! = self.uploadImages?[self.uploadIndex].image
             self.uploadPipeline.pipelinedSend(ofSize: imageData.count) { [unowned self] offset in
-                let payloadLength = self.maxDataPacketLengthFor(data: imageData, image: imageSlot, offset: offset)
+                let packetOverhead = self.calculatePacketOverhead(data: imageData, image: imageSlot, offset: UInt64(offset))
+                let payloadLength = self.maxDataPacketLengthFor(data: imageData, at: offset, with: packetOverhead, and: self.uploadConfiguration)
                 self.sendNext(from: offset)
                 return offset + payloadLength
             }
@@ -550,19 +552,6 @@ public class ImageManager: McuManager {
         let remainingImages = tempUploadImages.filter({ $0.image >= tempUploadIndex })
         _ = upload(images: remainingImages, using: uploadConfiguration, delegate: tempDelegate)
         objc_sync_exit(self)
-    }
-    
-    private func maxDataPacketLengthFor(data: Data, image: Int, offset: UInt64) -> UInt64 {
-        guard offset < data.count else { return UInt64(McuMgrHeader.HEADER_LENGTH) }
-        
-        let remainingBytes = UInt64(data.count) - offset
-        let packetOverhead = calculatePacketOverhead(data: data, image: image, offset: UInt64(offset))
-        let maxPacketSize = max(uploadConfiguration.reassemblyBufferSize, UInt64(transport.mtu))
-        var maxDataLength = maxPacketSize - UInt64(packetOverhead)
-        if uploadConfiguration.byteAlignment != .disabled {
-            maxDataLength = (maxDataLength / uploadConfiguration.byteAlignment.rawValue) * uploadConfiguration.byteAlignment.rawValue
-        }
-        return min(maxDataLength, remainingBytes)
     }
     
     private func calculatePacketOverhead(data: Data, image: Int, offset: UInt64) -> Int {
