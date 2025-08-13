@@ -82,6 +82,12 @@ public class FileSystemManager: McuManager {
     public func upload(name: String, data: Data, offset: UInt,
                        using configuration: FirmwareUpgradeConfiguration? = nil,
                        callback: @escaping McuMgrCallback<McuMgrFsUploadResponse>) {
+        objc_sync_enter(self)
+        if transferState != .uploading {
+            transferState = .uploading
+        }
+        objc_sync_exit(self)
+        
         uploadConfiguration = uploadConfiguration ?? configuration
         guard uploadConfiguration != nil else {
             log(msg: "Missing Upload Configuration.", atLevel: .error)
@@ -684,14 +690,11 @@ private extension FileSystemManager {
     }
     
     func finishedMcuMgrParametersRequest() {
-        objc_sync_enter(self)
         defaultManager = nil
-        transferState = .uploading
         let fileName: String! = fileName
         let fileData: Data! = fileData
         log(msg: "Uploading \(fileName) (\(fileData.count) bytes)...", atLevel: .application)
         upload(name: fileName, data: fileData, offset: 0, callback: uploadCallback)
-        objc_sync_exit(self)
     }
     
     func sendNext(from offset: UInt) {
