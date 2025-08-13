@@ -33,9 +33,9 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         }
         // Find the service matching the SMP service UUID.
         for service in services {
-            if service.uuid == McuMgrBleTransportConstant.SMP_SERVICE {
+            if service.uuid == uuidConfig.serviceUuid {
                 log(msg: "Discovering characteristics...", atLevel: .verbose)
-                peripheral.discoverCharacteristics([McuMgrBleTransportConstant.SMP_CHARACTERISTIC],
+                peripheral.discoverCharacteristics([uuidConfig.characteristicUuid],
                                                    for: service)
                 return
             }
@@ -65,7 +65,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         }
         // Find the characteristic matching the SMP characteristic UUID.
         for characteristic in characteristics {
-            if characteristic.uuid == McuMgrBleTransportConstant.SMP_CHARACTERISTIC {
+            if characteristic.uuid == uuidConfig.characteristicUuid {
                 // Set the characteristic notification if available.
                 if characteristic.properties.contains(.notify) {
                     log(msg: "Enabling notifications...", atLevel: .verbose)
@@ -82,7 +82,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral,
                            didUpdateNotificationStateFor characteristic: CBCharacteristic,
                            error: Error?) {
-        guard characteristic.uuid == McuMgrBleTransportConstant.SMP_CHARACTERISTIC else {
+        guard characteristic.uuid == uuidConfig.characteristicUuid else {
             return
         }
         // Check for error.
@@ -107,7 +107,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral,
                            didUpdateValueFor characteristic: CBCharacteristic,
                            error: Error?) {
-        guard characteristic.uuid == McuMgrBleTransportConstant.SMP_CHARACTERISTIC else {
+        guard characteristic.uuid == uuidConfig.characteristicUuid else {
             return
         }
         
