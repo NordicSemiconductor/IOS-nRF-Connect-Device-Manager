@@ -33,9 +33,9 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         }
         // Find the service matching the SMP service UUID.
         for service in services {
-            if service.uuid == uuidConfig.serviceUuid {
+            if service.uuid == configuration.serviceUUID {
                 log(msg: "Discovering characteristics...", atLevel: .verbose)
-                peripheral.discoverCharacteristics([uuidConfig.characteristicUuid],
+                peripheral.discoverCharacteristics([configuration.characteristicUUUID],
                                                    for: service)
                 return
             }
@@ -65,7 +65,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
         }
         // Find the characteristic matching the SMP characteristic UUID.
         for characteristic in characteristics {
-            if characteristic.uuid == uuidConfig.characteristicUuid {
+            if characteristic.uuid == configuration.characteristicUUUID {
                 // Set the characteristic notification if available.
                 if characteristic.properties.contains(.notify) {
                     log(msg: "Enabling notifications...", atLevel: .verbose)
@@ -82,7 +82,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral,
                            didUpdateNotificationStateFor characteristic: CBCharacteristic,
                            error: Error?) {
-        guard characteristic.uuid == uuidConfig.characteristicUuid else {
+        guard characteristic.uuid == configuration.characteristicUUUID else {
             return
         }
         // Check for error.
@@ -107,7 +107,7 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral,
                            didUpdateValueFor characteristic: CBCharacteristic,
                            error: Error?) {
-        guard characteristic.uuid == uuidConfig.characteristicUuid else {
+        guard characteristic.uuid == configuration.characteristicUUUID else {
             return
         }
         
