@@ -187,7 +187,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
     private func startScanner() {
         activityIndicator.startAnimating()
         let hidService: CBUUID! = CBUUID(string: "1812")
-        let connectedPeripherals = centralManager.retrieveConnectedPeripherals(withServices: [McuMgrBleTransportConstant.SMP_SERVICE, hidService])
+        let connectedPeripherals = centralManager.retrieveConnectedPeripherals(withServices: [DefaultMcuMgrUuidConfig().serviceUuid, hidService])
         for peripheral in connectedPeripherals {
             var advertisementData = [String: Any]()
             advertisementData[CBAdvertisementDataLocalNameKey] = peripheral.name ?? ""
@@ -231,7 +231,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
     /// - returns: True, if the peripheral matches the filter,
     ///   false otherwise.
     private func matchesFilters(_ discoveredPeripheral: DiscoveredPeripheral) -> Bool {
-        if filterByUuid && discoveredPeripheral.advertisedServices?.contains(McuMgrBleTransportConstant.SMP_SERVICE) != true {
+        if filterByUuid && discoveredPeripheral.advertisedServices?.contains(DefaultMcuMgrUuidConfig().serviceUuid) != true {
             return false
         }
         if filterByRssi && discoveredPeripheral.highestRSSI.decimalValue < -50 {

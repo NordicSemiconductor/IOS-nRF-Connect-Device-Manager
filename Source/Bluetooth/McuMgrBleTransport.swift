@@ -53,6 +53,8 @@ public class McuMgrBleTransport: NSObject {
     internal var previousUpdateNotificationSequenceNumber: McuSequenceNumber?
     
     internal lazy var robWriteBuffer = McuMgrBleROBWriteBuffer(logDelegate)
+    /// SMP UUIDs.
+    internal let uuidConfig: UuidConfig
     
     /// SMP Characteristic object. Used to write requests and receive
     /// notifications.
@@ -121,11 +123,13 @@ public class McuMgrBleTransport: NSObject {
     ///
     /// - parameter target: The BLE peripheral with Simple Management
     ///   Protocol (SMP) service.
-    public convenience init(_ peripheral: CBPeripheral) {
+    /// - parameter uuidConfig: A custom UUID configuration.
+    public convenience init(_ peripheral: CBPeripheral, _ uuidConfig: UuidConfig?) {
         self.init(
             peripheral,
             peripheral.identifier,
-            CBCentralManager(delegate: nil, queue: .global(qos: .userInitiated))
+            CBCentralManager(delegate: nil, queue: .global(qos: .userInitiated)),
+            uuidConfig ?? DefaultMcuMgrUuidConfig()
         )
     }
 
@@ -141,18 +145,20 @@ public class McuMgrBleTransport: NSObject {
     ///
     /// - parameter targetIdentifier: The UUID of the peripheral with Simple Management
     ///   Protocol (SMP) service.
-    public convenience init(_ targetIdentifier: UUID) {
+    /// - parameter uuidConfig: A custom UUID configuration
+    public convenience init(_ targetIdentifier: UUID, _ uuidConfig: UuidConfig?) {
         let centralManager = CBCentralManager(delegate: nil, queue: .global(qos: .userInitiated))
         let peripheral = centralManager.retrievePeripherals(withIdentifiers: [targetIdentifier]).first //can return nil oddly enough
 
         self.init(
             peripheral,
             targetIdentifier,
-            centralManager
+            centralManager,
+            uuidConfig ?? DefaultMcuMgrUuidConfig()
         )
     }
 
-    private init(_ peripheral: CBPeripheral?, _ targetIdentifier: UUID, _ centralManager: CBCentralManager) {
+    private init(_ peripheral: CBPeripheral?, _ targetIdentifier: UUID, _ centralManager: CBCentralManager, _ uuidConfig: UuidConfig) {
         self.centralManager = centralManager
         self.identifier = targetIdentifier
         self.connectionLock = ResultLock(isOpen: false)
@@ -161,6 +167,7 @@ public class McuMgrBleTransport: NSObject {
         self.operationQueue = OperationQueue()
         self.operationQueue.qualityOfService = .userInitiated
         self.operationQueue.maxConcurrentOperationCount = 1
+        self.uuidConfig = uuidConfig
         super.init()
 
         self.centralManager.delegate = self
@@ -334,7 +341,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                 log(msg: "Discovering services...", atLevel: .verbose)
                 state = .connecting
                 targetPeripheral.delegate = self
-                targetPeripheral.discoverServices([McuMgrBleTransportConstant.SMP_SERVICE])
+                targetPeripheral.discoverServices([uuidConfig.characteristicUuid])
             case .disconnected:
                 // If the peripheral is disconnected, begin the setup process by
                 // connecting to the device. Once the characteristic's
@@ -469,10 +476,6 @@ extension McuMgrBleTransport: McuMgrTransport {
 // MARK: - McuMgrBleTransportConstant
 
 public enum McuMgrBleTransportConstant {
-    
-    public static let SMP_SERVICE = CBUUID(string: "8D53DC1D-1DB7-4CD3-868B-8A527460AA84")
-    public static let SMP_CHARACTERISTIC = CBUUID(string: "DA2E7828-FBCE-4E01-AE9E-261174997C48")
-    
     /// Max number of retries until the transaction is failed.
     internal static let MAX_RETRIES = 3
     /// The interval to wait before attempting a transaction again in seconds.
