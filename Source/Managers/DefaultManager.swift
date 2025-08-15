@@ -7,10 +7,12 @@
 import Foundation
 import SwiftCBOR
 
+// MARK: - DefaultManager
+
 public class DefaultManager: McuManager {
     override class var TAG: McuMgrLogCategory { .default }
     
-    // MARK: - Constants
+    // MARK: Constants
 
     enum ID: UInt8 {
         case echo = 0
@@ -24,10 +26,23 @@ public class DefaultManager: McuManager {
         case bootloaderInformation = 8
     }
     
-    public enum ResetBootMode: UInt8 {
+    // MARK: ResetBootMode
+    
+    public enum ResetBootMode: UInt8, CustomStringConvertible, CaseIterable {
         case normal = 0
         case bootloader = 1
+        
+        public var description: String {
+            switch self {
+            case .normal:
+                return "Normal"
+            case .bootloader:
+                return "Bootloader / Firmware Loader"
+            }
+        }
     }
+    
+    // MARK: ApplicationInfoFormat
     
     public enum ApplicationInfoFormat: String {
         case kernelName = "s"
@@ -41,6 +56,8 @@ public class DefaultManager: McuManager {
         case operatingSystem = "o"
         case all = "a"
     }
+    
+    // MARK: BootloaderInfoQuery
     
     public enum BootloaderInfoQuery: String {
         case name = ""
