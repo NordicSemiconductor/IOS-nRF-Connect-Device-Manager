@@ -476,12 +476,29 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         self.log(msg: "Bootloader Mode received (Mode: \(response.mode?.debugDescription ?? "Unknown"))",
                  atLevel: .application)
         self.configuration.bootloaderMode = response.mode ?? self.configuration.bootloaderMode
-        if self.configuration.bootloaderMode == .directXIPNoRevert {
+        switch self.configuration.bootloaderMode {
+        case .directXIPWithRevert:
             // Mark all images as confirmed for DirectXIP No Revert, because there's no need.
             // No Revert means we just Reset and the firmware will handle it.
             for image in self.images {
                 self.mark(image, as: \.confirmed)
             }
+        case .firmwareLoader: // Bare Metal
+            if self.imageManager.transport.mtu > FileSystemManager.SMP_SVR_BT_L2CAP_MTU {
+                self.log(msg: "Patching MTU to \(FileSystemManager.SMP_SVR_BT_L2CAP_MTU).", atLevel: .warning)
+                do {
+                    try self.setUploadMtu(mtu: FileSystemManager.SMP_SVR_BT_L2CAP_MTU)
+                } catch let error {
+                    self.uploadDidFail(with: error)
+                }
+            }
+            
+            self.log(msg: "Bare Metal SDK Firmware Loader detected. Overriding target image slot to Primary (zero).", atLevel: .debug)
+            self.images = self.images.map {
+                $0.patchForBareMetal()
+            }
+        default:
+            break
         }
         self.validate() // Continue Upload
     }
@@ -531,6 +548,13 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             if let targetImage, Data(targetImage.hash) == image.hash {
                 self.targetSlotMatch(for: targetImage, to: image)
                 continue // next Image.
+            }
+            
+            guard !self.configuration.bootloaderMode.isBareMetal else {
+                // Nothing to validate for Bare Metal. If hash doesn't match
+                // (always targeting primary / slot 0) then we upload it.
+                self.log(msg: "Scheduling Upload of Image \(image.image) to Bare Metal Firmware Loader.", atLevel: .debug)
+                continue
             }
             
             let imageForAlternativeSlotAvailable = self.images.first(where: {
@@ -1145,16 +1169,23 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
         switch configuration.upgradeMode {
         case .confirmOnly:
             let suitThroughMcuBoot = uploadingSUITImages()
-            if suitThroughMcuBoot {
+            if suitThroughMcuBoot || configuration.bootloaderMode.isBareMetal {
                 // Mark all images as confirmed
                 images.forEach {
                     mark($0, as: \.confirmSent)
                     mark($0, as: \.confirmed)
                 }
                 
-                // We send a single confirm() command with no hash
-                confirmAsSUIT()
-                return
+                if suitThroughMcuBoot {
+                    // We send a single confirm() command with no hash
+                    confirmAsSUIT()
+                    return
+                } else { // Bare Metal.
+                    // Bare Metal doesn't need confirm. They're marked to make the code
+                    // consistent within the library. Firmware just needs reset command.
+                    log(msg: "Preparing to send Reset to Bare Metal Firmware Loader.", atLevel: .debug)
+                    reset()
+                }
             }
             
             if let firstUnconfirmedImage = images.first(where: {
@@ -1419,6 +1450,17 @@ internal struct FirmwareUpgradeImage: CustomDebugStringConvertible {
         Tested \(tested ? "Yes" : "No"), Test Sent \(testSent ? "Yes" : "No"),
         Confirmed \(confirmed ? "Yes" : "No"), Confirm Sent \(confirmSent ? "Yes" : "No")
         """
+    }
+}
+
+// MARK: - Bare Metal
+
+extension FirmwareUpgradeImage {
+    
+    func patchForBareMetal() -> Self {
+        return FirmwareUpgradeImage(
+            ImageManager.Image(image: image, slot: 0, content: .bin, hash: hash, data: data)
+        )
     }
 }
 

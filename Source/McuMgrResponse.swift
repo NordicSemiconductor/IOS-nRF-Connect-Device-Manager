@@ -875,6 +875,13 @@ public final class BootloaderInfoResponse: McuMgrResponse {
             return self == .directXIPNoRevert || self == .directXIPWithRevert
         }
         
+        /**
+         - Returns: `true` if the Bootloader represents Nordic Bare Metal SDK-based firmware.
+         */
+        public var isBareMetal: Bool {
+            return self == .firmwareLoader
+        }
+        
         public var description: String {
             switch self {
             case .unknown:
