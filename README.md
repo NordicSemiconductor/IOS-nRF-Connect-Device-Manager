@@ -146,12 +146,13 @@ do {
 
 This is our new, improved, all-conquering API. You create a `McuMgrPackage`, and you give it to the `FirmwareUpgradeManager`. [There's no Step Three](https://www.youtube.com/watch?v=A0QK0JfHzhg&pp). This API supports:
 
-- [x] .bin file(s) (Single-Core nRF52xxx) MCUboot Application Update
+- [x] .bin file(s)
+  - [x] (Single-Core nRF52xxx) MCUboot Application Update
+  - [x] (Bare Metal nRF54xx) MCUboot Update
 - [x] .suit file(s) (~~Canonical nRF54xx)~~ SUIT Update
 - [x] .zip file(s)
   - [x] DirectXIP (nRF52840) MCUboot Upgrade
   - [x] Multi-Image (Application Core, Network Core nRF5340) MCUboot Update
-  - [x] Multi-Image (nRF54xx) MCUboot Update
   - [x] Multi-Image (Polling - Resources Required nRF54xx) SUIT Update
 - [ ] Custom Uploads
 
