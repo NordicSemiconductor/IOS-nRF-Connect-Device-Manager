@@ -337,12 +337,19 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             objc_sync_exit(self)
         }
         
-        log(msg: error.localizedDescription, atLevel: .error)
+        var errorOverride = error
+        if let mcuMgrError = error as? McuMgrError,
+           case let McuMgrError.returnCode(returnCode) = mcuMgrError {
+            if configuration.bootloaderMode.isBareMetal, returnCode == .unsupported {
+                errorOverride = FirmwareUpgradeError.resetIntoBootloaderModeNeeded
+            }
+        }
+        log(msg: errorOverride.localizedDescription, atLevel: .error)
         let tmp = state
         state = .none
         paused = false
         DispatchQueue.main.async { [weak self] in
-            self?.delegate?.upgradeDidFail(inState: tmp, with: error)
+            self?.delegate?.upgradeDidFail(inState: tmp, with: errorOverride)
             // Release cyclic reference.
             self?.cyclicReferenceHolder = nil
         }
@@ -1252,6 +1259,7 @@ public enum FirmwareUpgradeError: Error, LocalizedError {
     case invalidResponse(McuMgrResponse)
     case connectionFailedAfterReset
     case untestedImageFound(image: Int, slot: Int)
+    case resetIntoBootloaderModeNeeded
     
     public var errorDescription: String? {
         switch self {
@@ -1263,6 +1271,8 @@ public enum FirmwareUpgradeError: Error, LocalizedError {
             return "Connection failed after reset"
         case .untestedImageFound(let image, let slot):
             return "Image \(image) (slot: \(slot)) found to be not Tested after Reset"
+        case .resetIntoBootloaderModeNeeded:
+            return "Reset into Firmware Loader (Bootloader Mode) required."
         }
     }
 }
