@@ -62,12 +62,12 @@ final class BaseViewController: UITabBarController {
     
     var peripheral: DiscoveredPeripheral! {
         didSet {
-            let bleTransport = McuMgrBleTransport(peripheral.basePeripheral, DefaultMcuMgrUuidConfig())
+            let bleTransport = McuMgrBleTransport(peripheral.basePeripheral)
             bleTransport.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
             bleTransport.delegate = self
             transport = bleTransport
             // Independent transport for BaseViewController operations.
-            privateTransport = McuMgrBleTransport(peripheral.basePeripheral, DefaultMcuMgrUuidConfig())
+            privateTransport = McuMgrBleTransport(peripheral.basePeripheral)
         }
     }
     
