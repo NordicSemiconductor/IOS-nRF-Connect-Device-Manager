@@ -99,6 +99,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             objc_sync_exit(self)
         }
         
+        self.imageManager.verifyOnMainThread()
         guard state == .none else {
             log(msg: "Firmware upgrade is already in progress", atLevel: .warning)
             return
@@ -113,7 +114,6 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         
         log(msg: "Upgrade started with \(images.count) image(s) using '\(configuration.upgradeMode)' mode",
             atLevel: .application)
-        dispatchPrecondition(condition: .onQueue(.main))
         delegate?.upgradeDidStart(controller: self)
         
         requestMcuMgrParameters()

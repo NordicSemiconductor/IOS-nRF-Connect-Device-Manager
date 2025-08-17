@@ -23,7 +23,7 @@ extension McuSequenceNumber {
     }
 }
 
-open class McuManager : NSObject {
+open class McuManager: NSObject {
     class var TAG: McuMgrLogCategory { .default }
     
     //**************************************************************************
@@ -79,7 +79,23 @@ open class McuManager : NSObject {
         self.transport = transport
     }
     
-    // MARK: - Send
+    // MARK: verifyOnMainThread
+    
+    /**
+     A big part of this library, if not 95% of it, was written before Nordic inheritance.
+     
+     And, the code assumes, in many places, it's being run from the Main Thread. So this
+     is why this (maybe annoying) function is called to crash on you. To tell you about it
+     - don't make actionable calls from background threads.
+     */
+    internal func verifyOnMainThread() {
+        guard Thread.isMainThread else {
+            fatalError("Call from @MainActor / DispatchQueue.main. Don't call from background threads.")
+        }
+        dispatchPrecondition(condition: .onQueue(.main))
+    }
+    
+    // MARK: send
     
     public func send<T: McuMgrResponse, R: RawRepresentable>(op: McuMgrOperation, commandId: R, payload: [String:CBOR]?,
                                                              timeout: Int = DEFAULT_SEND_TIMEOUT_SECONDS,
