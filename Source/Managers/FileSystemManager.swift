@@ -85,8 +85,12 @@ public class FileSystemManager: McuManager {
                        delegate uploadDelegate: FileUploadDelegate? = nil,
                        callback: @escaping McuMgrCallback<McuMgrFsUploadResponse>) {
         objc_sync_enter(self)
-        if transferState != .uploading {
+        if transferState == .none {
             transferState = .uploading
+        } else {
+            log(msg: "A file transfer is already in progress.", atLevel: .warning)
+            objc_sync_exit(self)
+            return
         }
         objc_sync_exit(self)
         
@@ -156,6 +160,8 @@ public class FileSystemManager: McuManager {
         }
         objc_sync_exit(self)
         
+        verifyOnMainThread()
+        
         // Set download delegate.
         downloadDelegate = delegate
         
@@ -210,6 +216,8 @@ public class FileSystemManager: McuManager {
             return false
         }
         objc_sync_exit(self)
+        
+        verifyOnMainThread()
         
         // Set upload delegate.
         uploadDelegate = delegate

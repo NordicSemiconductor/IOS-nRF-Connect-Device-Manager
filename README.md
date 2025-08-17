@@ -106,6 +106,11 @@ McuManager is organized by functionality into command groups. In _mcumgr-ios_, c
 * **`ShellManager`**: Send McuMgr Shell commands to the device.
 * **`SuitManager`**: Send SUIT (Software Update for Internet of Things)-specific commands to the device. This applies to devices running SUIT as their bootloader.
 
+> [!CAUTION]
+> **Always make your API calls from the Main Thread**. For DFU, FileSystem, etc. Unless calls from background threads are explicitly mentioned as allowed. This requirement has its roots in programming invariants written into the library since its *Inception*.
+> 
+> **We will crash if we catch you to alert you of the issue as soon as possible.**
+
 # Firmware Upgrade
 
 Firmware upgrade is generally a four step process performed using commands from the `image` and `default` commands groups: `upload`, `test`, `reset`, and `confirm`.
@@ -115,9 +120,6 @@ This library provides `FirmwareUpgradeManager` as a convenience for upgrading th
 ## FirmwareUpgradeManager
 
 `FirmwareUpgradeManager` provides an easy way to perform firmware upgrades on a device. A `FirmwareUpgradeManager` must be initialized with an `McuMgrTransport` which defines the transport scheme and device. Once initialized, `FirmwareUpgradeManager` can perform one firmware upgrade at a time. Firmware upgrades are started using the `start(package: McuMgrPackage)` function and can be paused, resumed, and canceled using `pause()`, `resume()`, and `cancel()` respectively.
-
-> [!CAUTION]
-> **Always** make your start/pause/cancel DFU API calls from the Main Thread.
 
 > [!TIP]
 > You may reuse a `FirmwareUpgradeManager` / `McuMgrTransport` combo for multiple operations. But it is recommended to make a new pair for each operation. For example, for each DFU attempt. Nevertheless, we will provide support (and fixes) for issues stemming from keeping the same pair for multiple operations.
