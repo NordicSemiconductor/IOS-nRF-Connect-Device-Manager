@@ -404,7 +404,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     /// Error handling here is not considered important because we don't expect many devices to support this.
     /// If this feature is not supported, the upload will take place with default parameters.
     private lazy var mcuManagerParametersCallback: McuMgrCallback<McuMgrParametersResponse> = { [weak self] response, error in
-        guard let self = self else { return }
+        guard let self else { return }
         
         guard error == nil, let response, response.rc.isSupported() else {
             self.log(msg: "Mcu Manager parameters not supported", atLevel: .warning)
@@ -491,15 +491,6 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
                 self.mark(image, as: \.confirmed)
             }
         case .firmwareLoader: // Bare Metal
-            if self.imageManager.transport.mtu > FileSystemManager.SMP_SVR_BT_L2CAP_MTU {
-                self.log(msg: "Patching MTU to \(FileSystemManager.SMP_SVR_BT_L2CAP_MTU).", atLevel: .warning)
-                do {
-                    try self.setUploadMtu(mtu: FileSystemManager.SMP_SVR_BT_L2CAP_MTU)
-                } catch let error {
-                    self.uploadDidFail(with: error)
-                }
-            }
-            
             self.log(msg: "Bare Metal SDK Firmware Loader detected. Overriding target image slot to Primary (zero).", atLevel: .debug)
             self.images = self.images.map {
                 $0.patchForBareMetal()

@@ -391,9 +391,12 @@ extension McuMgrBleTransport: McuMgrTransport {
             writeState.completedWrite(sequenceNumber: sequenceNumber)
         }
         
-        if mtu == nil {
-            mtu = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
+        let maxNegotiatedMTU = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
+        if mtu ?? .max > maxNegotiatedMTU {
+            log(msg: "peripheral.maximumWriteValueLength(for: .withoutResponse): \(maxNegotiatedMTU) > Current MTU (\(mtu ?? .max))", atLevel: .debug)
+            mtu = maxNegotiatedMTU
         }
+        
         if chunkSendDataToMtuSize {
             var dataChunks = [Data]()
             var dataChunksSize = 0
