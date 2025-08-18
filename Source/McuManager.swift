@@ -8,6 +8,8 @@ import Foundation
 import CoreBluetooth
 import SwiftCBOR
 
+// MARK: - McuSequenceNumber
+
 /**
  Valid values are within the bounds of UInt8 (0...255).
  
@@ -23,7 +25,10 @@ extension McuSequenceNumber {
     }
 }
 
+// MARK: - McuManager
+
 open class McuManager: NSObject {
+    
     class var TAG: McuMgrLogCategory { .default }
     
     //**************************************************************************
@@ -209,6 +214,29 @@ open class McuManager: NSObject {
         }
     }
     
+    // MARK: maxDataPacketLengthFor(data:at:with:and:)
+    
+    /**
+     At one point, there were 3 copy / paste copies of this very same code accross three different `McuManager` subclasses, so there comes a time when "one solution" to keep all bugs in one place is necessary.
+     
+     - parameter packetOverhead: how many bytes are taken by the wrapper/header and/or other `McuMgrTransport` related considerations that do not count towards the `data` itself.
+     - returns: for the provided `Data` at the given `offset`, how many bytes can fit in the next write command.
+     */
+    internal func maxDataPacketLengthFor(data: Data, at offset: UInt64, with packetOverhead: Int,
+                                         and configuration: FirmwareUpgradeConfiguration) -> UInt64 {
+        guard offset < data.count else {
+            return UInt64(McuMgrHeader.HEADER_LENGTH)
+        }
+        
+        let remainingBytes = UInt64(data.count) - offset
+        let maxPacketSize = max(configuration.reassemblyBufferSize, UInt64(transport.mtu))
+        var maxDataLength = maxPacketSize - UInt64(packetOverhead)
+        if configuration.byteAlignment != .disabled {
+            maxDataLength = (maxDataLength / configuration.byteAlignment.rawValue) * configuration.byteAlignment.rawValue
+        }
+        return min(maxDataLength, remainingBytes)
+    }
+    
     //**************************************************************************
     // MARK: Utilities
     //**************************************************************************
@@ -278,6 +306,8 @@ open class McuManager: NSObject {
         }
     }
 }
+
+// MARK: log(msg: atLevel:)
 
 extension McuManager {
     
