@@ -110,6 +110,8 @@ public class McuMgrBleTransport: NSObject {
             }
         }
     }
+    
+    // MARK: init
 
     /// Creates a BLE transport object for the given peripheral.
     /// The implementation will create internal instance of
@@ -167,10 +169,19 @@ public class McuMgrBleTransport: NSObject {
 
         self.centralManager.delegate = self
         self.peripheral = peripheral
-        let peripheralWriteValueLength = max(McuManager.ValidMTURange.lowerBound, peripheral?.maximumWriteValueLength(for: .withoutResponse) ?? 0)
-        self.mtu = peripheral == nil
-            ? McuManager.getDefaultMtu(scheme: getScheme())
-            : min(peripheralWriteValueLength, McuManager.getDefaultMtu(scheme: getScheme()))
+        
+        self.mtu = {
+            let defaultMtu = McuManager.getDefaultMtu(scheme: getScheme())
+            guard let peripheral else {
+                return defaultMtu
+            }
+            
+            // Note that it is 99.9% likely that this is the wrong value unless
+            // we're already connected. The correct MTU value needs to be in
+            // the _send() function just after acquiring the (Result)Lock.
+            let peripheralWriteValueLength = max(McuManager.ValidMTURange.lowerBound, peripheral.maximumWriteValueLength(for: .withoutResponse))
+            return min(peripheralWriteValueLength, defaultMtu)
+        }()
     }
     
     public var name: String? {
@@ -391,12 +402,14 @@ extension McuMgrBleTransport: McuMgrTransport {
             writeState.completedWrite(sequenceNumber: sequenceNumber)
         }
         
-        let maxNegotiatedMTU = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
-        if mtu ?? .max > maxNegotiatedMTU {
-            log(msg: "peripheral.maximumWriteValueLength(for: .withoutResponse): \(maxNegotiatedMTU) > Current MTU (\(mtu ?? .max))", atLevel: .debug)
-            mtu = maxNegotiatedMTU
+        // Don't be smart caching the MTU.
+        let negotiatedMTU = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
+        if mtu != negotiatedMTU {
+            log(msg: "peripheral.maximumWriteValueLength(for: .withoutResponse): \(negotiatedMTU) != Current MTU (\(mtu))", atLevel: .debug)
+            mtu = negotiatedMTU
         }
         
+        // if reassembly {
         if chunkSendDataToMtuSize {
             var dataChunks = [Data]()
             var dataChunksSize = 0
@@ -425,6 +438,7 @@ extension McuMgrBleTransport: McuMgrTransport {
         } else {
             // No SMP Reassembly Supported. So no 'chunking'.
             guard data.count <= mtu else {
+                log(msg: "Error: \(data.count)-byte packet is larger than MTU Size (\(mtu)) without Reassembly being enabled.", atLevel: .error)
                 let error = McuMgrTransportError.insufficientMtu(mtu: mtu)
                 writeState.open(sequenceNumber: sequenceNumber, dueTo: error)
                 return .failure(error)
