@@ -12,6 +12,10 @@ extension UIColor {
     
     static let nordic: UIColor = #colorLiteral(red: 0, green: 0.7181802392, blue: 0.8448022008, alpha: 1)
     
+    static let nordicGreen: UIColor = #colorLiteral(red: 0.2745098039, green: 0.6235294118, blue: 0.2784313725, alpha: 1)
+    
+    static let nordicRed: UIColor = #colorLiteral(red: 0.8588235294, green: 0.2, blue: 0.2117647059, alpha: 1)
+    
     static let zephyr: UIColor = #colorLiteral(red: 0.231372549, green: 0.2431372549, blue: 0.3058823529, alpha: 1)
     
     static var primary: UIColor {

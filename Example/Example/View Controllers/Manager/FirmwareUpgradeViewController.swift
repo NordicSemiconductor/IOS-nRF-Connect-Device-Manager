@@ -97,8 +97,13 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         dfuManager.cancel()
     }
     
-    private var package: McuMgrPackage?
+    var package: McuMgrPackage?
     private var dfuManager: FirmwareUpgradeManager!
+    
+    // nRF Cloud OTA properties
+    var memfaultOTAManager: MemfaultOTAManager?
+    var deviceInfoHelper: DeviceInfoHelper?
+    var currentUpdateInfo: MemfaultOTAManager.UpdateInfo?
     var transport: McuMgrTransport! {
         didSet {
             dfuManager = FirmwareUpgradeManager(transport: transport, delegate: self)
@@ -108,12 +113,11 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     // nRF52840 requires ~ 10 seconds for swapping images.
     // Adjust this parameter for your device.
-    private var dfuManagerConfiguration = FirmwareUpgradeConfiguration(
+    var dfuManagerConfiguration = FirmwareUpgradeConfiguration(
         estimatedSwapTime: 10.0, eraseAppSettings: false, pipelineDepth: 3, byteAlignment: .fourByte)
     private var initialBytes: Int = 0
     private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -247,7 +251,9 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     // MARK: startFirmwareUpgrade
     
-    private func startFirmwareUpgrade(package: McuMgrPackage) {
+    // MARK: startFirmwareUpgrade
+    
+    func startFirmwareUpgrade(package: McuMgrPackage) {
         dfuManager.start(package: package, using: dfuManagerConfiguration)
     }
     
@@ -313,27 +319,47 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
     
     func upgradeStateDidChange(from previousState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
         status.textColor = .secondary
+        
+        var stateString = ""
         switch newState {
         case .none:
             status.text = ""
         case .requestMcuMgrParameters:
             status.text = "REQUESTING MCUMGR PARAMETERS..."
+            stateString = "parameters"
         case .bootloaderInfo:
             status.text = "REQUESTING BOOTLOADER INFO..."
+            stateString = "bootloader"
         case .validate:
             status.text = "VALIDATING..."
+            stateString = "validate"
         case .upload:
             status.text = "UPLOADING..."
+            stateString = "upload"
         case .eraseAppSettings:
             status.text = "ERASING APP SETTINGS..."
+            stateString = "erase"
         case .test:
             status.text = "TESTING..."
+            stateString = "test"
         case .confirm:
             status.text = "CONFIRMING..."
+            stateString = "confirm"
         case .reset:
             status.text = "RESETTING..."
+            stateString = "reset"
         case .success:
             status.text = "UPLOAD COMPLETE"
+            stateString = "success"
+        }
+        
+        // Notify observers of state change
+        if !stateString.isEmpty {
+            NotificationCenter.default.post(
+                name: Notification.Name("FirmwareUpgradeStateChanged"),
+                object: nil,
+                userInfo: ["state": stateString]
+            )
         }
     }
     
@@ -369,6 +395,13 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         status.text = error.localizedDescription
         status.numberOfLines = 0
         dfuSpeed.isHidden = true
+        
+        // Notify observers of failure
+        NotificationCenter.default.post(
+            name: Notification.Name("FirmwareUpgradeFailed"),
+            object: nil,
+            userInfo: ["error": error.localizedDescription, "state": state]
+        )
     }
     
     func upgradeDidCancel(state: FirmwareUpgradeState) {
@@ -413,6 +446,13 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         // bytes / ms = kB/s
         let speedInKiloBytesPerSecond = Double(bytesSentSinceUploadBegan) / msSinceUploadBegan
         dfuSpeed.text = String(format: "%.2f kB/s", speedInKiloBytesPerSecond)
+        
+        // Notify observers of progress
+        NotificationCenter.default.post(
+            name: Notification.Name("FirmwareUpgradeProgressChanged"),
+            object: nil,
+            userInfo: ["bytesSent": bytesSent, "imageSize": imageSize]
+        )
     }
 }
 
