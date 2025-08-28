@@ -19,6 +19,8 @@
 		524DCFD4210B1C17000E110D /* DeviceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524DCFD3210B1C17000E110D /* DeviceController.swift */; };
 		524DCFD9210B4241000E110D /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524DCFD8210B4241000E110D /* UIColor.swift */; };
 		526270A4210B8E8000FC17D4 /* ImageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526270A3210B8E8000FC17D4 /* ImageController.swift */; };
+		AA1234567890123456789012 /* ImageController+NRFCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1234567890123456789011 /* ImageController+NRFCloud.swift */; };
+		AA1234567890123456789013 /* DeviceInfoHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1234567890123456789014 /* DeviceInfoHelper.swift */; };
 		5264C1D6210E26C20044FBBA /* FirmwareUpgradeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1D5210E26C20044FBBA /* FirmwareUpgradeViewController.swift */; };
 		5264C1D8210F32A60044FBBA /* FirmwareUploadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1D7210F32A60044FBBA /* FirmwareUploadViewController.swift */; };
 		5264C1DA210F43B40044FBBA /* ResetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5264C1D9210F43B40044FBBA /* ResetViewController.swift */; };
@@ -49,6 +51,8 @@
 		524DCFD3210B1C17000E110D /* DeviceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceController.swift; sourceTree = "<group>"; };
 		524DCFD8210B4241000E110D /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		526270A3210B8E8000FC17D4 /* ImageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageController.swift; sourceTree = "<group>"; };
+		AA1234567890123456789011 /* ImageController+NRFCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageController+NRFCloud.swift"; sourceTree = "<group>"; };
+		AA1234567890123456789014 /* DeviceInfoHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfoHelper.swift; sourceTree = "<group>"; };
 		5264C1D5210E26C20044FBBA /* FirmwareUpgradeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeViewController.swift; sourceTree = "<group>"; };
 		5264C1D7210F32A60044FBBA /* FirmwareUploadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUploadViewController.swift; sourceTree = "<group>"; };
 		5264C1D9210F43B40044FBBA /* ResetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetViewController.swift; sourceTree = "<group>"; };
@@ -119,6 +123,7 @@
 				524DCFCF210B0EB6000E110D /* BaseViewController.swift */,
 				524DCFD3210B1C17000E110D /* DeviceController.swift */,
 				526270A3210B8E8000FC17D4 /* ImageController.swift */,
+				AA1234567890123456789011 /* ImageController+NRFCloud.swift */,
 				5215762E2125B59400C21B0C /* FilesController.swift */,
 				5215762C212320F300C21B0C /* LogsStatsController.swift */,
 				5264C1D5210E26C20044FBBA /* FirmwareUpgradeViewController.swift */,
@@ -137,6 +142,7 @@
 			children = (
 				524DCFD8210B4241000E110D /* UIColor.swift */,
 				F07D73AB2AE9AE3A00ED6B9A /* StringConvertibles.swift */,
+				AA1234567890123456789014 /* DeviceInfoHelper.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -336,13 +342,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -364,8 +366,10 @@
 				5264C1D6210E26C20044FBBA /* FirmwareUpgradeViewController.swift in Sources */,
 				BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */,
 				524DCFD9210B4241000E110D /* UIColor.swift in Sources */,
+				AA1234567890123456789013 /* DeviceInfoHelper.swift in Sources */,
 				5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */,
 				526270A4210B8E8000FC17D4 /* ImageController.swift in Sources */,
+				AA1234567890123456789012 /* ImageController+NRFCloud.swift in Sources */,
 				5264C1DE210F640F0044FBBA /* McuMgrViewController.swift in Sources */,
 				524DCFD4210B1C17000E110D /* DeviceController.swift in Sources */,
 				5215762D212320F300C21B0C /* LogsStatsController.swift in Sources */,
@@ -530,7 +534,7 @@
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
+				DEVELOPMENT_TEAM = DPST585954;
 				INFOPLIST_FILE = Example/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
@@ -539,7 +543,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.10.2;
-				PRODUCT_BUNDLE_IDENTIFIER = com.nordicsemi.nrfconnect.devicemanager;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sarlandie.nordicsemi.nrfconnect.devicemanager;
 				PRODUCT_NAME = "Device Manager";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -554,7 +558,7 @@
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
+				DEVELOPMENT_TEAM = DPST585954;
 				INFOPLIST_FILE = Example/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
@@ -563,7 +567,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.10.2;
-				PRODUCT_BUNDLE_IDENTIFIER = com.nordicsemi.nrfconnect.devicemanager;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sarlandie.nordicsemi.nrfconnect.devicemanager;
 				PRODUCT_NAME = "Device Manager";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

@@ -107,6 +107,22 @@ extension McuMgrBleTransport: CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral,
                            didUpdateValueFor characteristic: CBCharacteristic,
                            error: Error?) {
+        // Check if this is an MDS Data Export notification
+        if characteristic.uuid.uuidString == "54220005-F6A5-4007-A371-722F4EBD8436" {
+            // Forward MDS data export notifications
+            if let data = characteristic.value {
+                NotificationCenter.default.post(
+                    name: Notification.Name("MDSDataExportNotification"),
+                    object: nil,
+                    userInfo: [
+                        "data": data,
+                        "peripheral": peripheral
+                    ]
+                )
+            }
+            return
+        }
+        
         guard characteristic.uuid == configuration.characteristicUUUID else {
             return
         }
