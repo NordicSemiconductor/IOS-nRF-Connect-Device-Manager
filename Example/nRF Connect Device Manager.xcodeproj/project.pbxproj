@@ -27,6 +27,9 @@
 		5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273624ACA7F4008F528C /* IntroViewController.swift */; };
 		5266273824ACA883008F528C /* NordicButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273524ACA7A1008F528C /* NordicButton.swift */; };
 		5274C2622796CEC40043D7CA /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5274C2612796CEC40043D7CA /* SettingsViewController.swift */; };
+		F0C0DE0012345678901A0001 /* ImageController+NRFCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C0DE0012345678901A0002 /* ImageController+NRFCloud.swift */; };
+		F0C0DE0012345678901A0003 /* NRFCloudMDSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C0DE0012345678901A0004 /* NRFCloudMDSManager.swift */; };
+		F0C0DE0012345678901A0005 /* NRFCloudOTAManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C0DE0012345678901A0006 /* NRFCloudOTAManager.swift */; };
 		BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285720CB44AF0061F0EE /* AppDelegate.swift */; };
 		BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */; };
 		BD5A285D20CB44AF0061F0EE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285B20CB44AF0061F0EE /* Main.storyboard */; };
@@ -58,6 +61,9 @@
 		5266273624ACA7F4008F528C /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		5274C2612796CEC40043D7CA /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		8CC828C02D6175238385D59A /* Pods-nRF Connect Device Manager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nRF Connect Device Manager.release.xcconfig"; path = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager.release.xcconfig"; sourceTree = "<group>"; };
+		F0C0DE0012345678901A0002 /* ImageController+NRFCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageController+NRFCloud.swift"; sourceTree = "<group>"; };
+		F0C0DE0012345678901A0004 /* NRFCloudMDSManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NRFCloudMDSManager.swift; sourceTree = "<group>"; };
+		F0C0DE0012345678901A0006 /* NRFCloudOTAManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NRFCloudOTAManager.swift; sourceTree = "<group>"; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A285720CB44AF0061F0EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -119,6 +125,7 @@
 				524DCFCF210B0EB6000E110D /* BaseViewController.swift */,
 				524DCFD3210B1C17000E110D /* DeviceController.swift */,
 				526270A3210B8E8000FC17D4 /* ImageController.swift */,
+				F0C0DE0012345678901A0002 /* ImageController+NRFCloud.swift */,
 				5215762E2125B59400C21B0C /* FilesController.swift */,
 				5215762C212320F300C21B0C /* LogsStatsController.swift */,
 				5264C1D5210E26C20044FBBA /* FirmwareUpgradeViewController.swift */,
@@ -137,6 +144,8 @@
 			children = (
 				524DCFD8210B4241000E110D /* UIColor.swift */,
 				F07D73AB2AE9AE3A00ED6B9A /* StringConvertibles.swift */,
+				F0C0DE0012345678901A0004 /* NRFCloudMDSManager.swift */,
+				F0C0DE0012345678901A0006 /* NRFCloudOTAManager.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -366,6 +375,9 @@
 				524DCFD9210B4241000E110D /* UIColor.swift in Sources */,
 				5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */,
 				526270A4210B8E8000FC17D4 /* ImageController.swift in Sources */,
+				F0C0DE0012345678901A0001 /* ImageController+NRFCloud.swift in Sources */,
+				F0C0DE0012345678901A0003 /* NRFCloudMDSManager.swift in Sources */,
+				F0C0DE0012345678901A0005 /* NRFCloudOTAManager.swift in Sources */,
 				5264C1DE210F640F0044FBBA /* McuMgrViewController.swift in Sources */,
 				524DCFD4210B1C17000E110D /* DeviceController.swift in Sources */,
 				5215762D212320F300C21B0C /* LogsStatsController.swift in Sources */,

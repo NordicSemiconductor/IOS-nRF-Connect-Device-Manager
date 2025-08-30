@@ -21,6 +21,7 @@ final class LogsStatsController: UITableViewController {
     @IBOutlet weak var kernel: UILabel!
     @IBOutlet weak var stats: UILabel!
     @IBOutlet weak var refreshAction: UIButton!
+    @IBOutlet weak var chunksLabel: UILabel!  // Connect this to the chunks label in storyboard
     
     // MARK: @IBAction(s)
     
@@ -62,6 +63,9 @@ final class LogsStatsController: UITableViewController {
     
     private var statsManager: StatsManager!
     
+    // MDS Manager
+    private var mdsManager: NRFCloudMDSManager?
+    
     // MARK: UIViewController
     
     override func viewDidAppear(_ animated: Bool) {
@@ -71,6 +75,10 @@ final class LogsStatsController: UITableViewController {
         let transport: McuMgrTransport! = baseController.transport
         statsManager = StatsManager(transport: transport)
         statsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
+        
+        // Only start MDS if we already have a manager instance
+        // Let connectionStateDidChange handle initial setup
+        mdsManager?.start()
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -79,6 +87,53 @@ final class LogsStatsController: UITableViewController {
 }
 
 // MARK: - Private
+
+private extension LogsStatsController {
+    
+    func setupMDSManager() {
+        guard let baseController = parent as? BaseViewController,
+              let transport = baseController.transport as? McuMgrBleTransport,
+              let peripheral = transport.peripheral else {
+            updateChunksLabel(with: "Disconnected")
+            return
+        }
+        
+        mdsManager = NRFCloudMDSManager(peripheral: peripheral)
+        mdsManager?.delegate = self
+        mdsManager?.start()
+    }
+    
+    func updateChunksLabel(with text: String) {
+        chunksLabel?.text = text
+    }
+}
+
+// MARK: - NRFCloudMDSManagerDelegate
+
+extension LogsStatsController: NRFCloudMDSManagerDelegate {
+    
+    func mdsManager(_ manager: NRFCloudMDSManager, didUpdateStatus status: String) {
+        updateChunksLabel(with: status)
+    }
+    
+    func mdsManager(_ manager: NRFCloudMDSManager, didReceiveChunk number: Int, forwarded: Int) {
+        if forwarded > 0 {
+            updateChunksLabel(with: "Chunks: \(number) received, \(forwarded) forwarded")
+        } else {
+            updateChunksLabel(with: "Chunks received: \(number), forwarding...")
+        }
+    }
+    
+    func mdsManager(_ manager: NRFCloudMDSManager, didFailWithError error: Error) {
+        updateChunksLabel(with: "MDS Error: \(error.localizedDescription)")
+    }
+    
+    func mdsManager(_ manager: NRFCloudMDSManager, didDiscoverConfiguration projectKey: String?, deviceId: String?) {
+        // Configuration discovered - no action needed in UI
+    }
+}
+
+// MARK: - Private Helpers
 
 private extension LogsStatsController {
     
@@ -117,6 +172,31 @@ extension LogsStatsController: DeviceStatusDelegate {
     
     func connectionStateDidChange(_ state: PeripheralState) {
         connectionStatus.text = state.description
+        
+        // Update MDS manager based on connection state
+        switch state {
+        case .disconnected:
+            updateChunksLabel(with: "Disconnected")
+            mdsManager?.stop()
+            mdsManager?.reset()
+            mdsManager?.resetCounters()
+            mdsManager = nil  // Clear the instance on disconnect
+        case .connecting:
+            updateChunksLabel(with: "Connecting...")
+        case .connected:
+            updateChunksLabel(with: "Connected - initializing MDS")
+            // Only setup MDS manager if it doesn't exist
+            if mdsManager == nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                    self?.setupMDSManager()
+                }
+            } else {
+                // If manager exists, just start it
+                mdsManager?.start()
+            }
+        default:
+            break
+        }
     }
     
     func bootloaderNameReceived(_ name: String) {
