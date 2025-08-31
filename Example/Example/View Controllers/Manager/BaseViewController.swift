@@ -11,6 +11,7 @@ import CoreBluetooth
 // MARK: - DeviceStatusDelegate
 
 protocol DeviceStatusDelegate: AnyObject {
+    
     func connectionStateDidChange(_ state: PeripheralState)
     func bootloaderNameReceived(_ name: String)
     func bootloaderModeReceived(_ mode: BootloaderInfoResponse.Mode)
@@ -22,10 +23,13 @@ protocol DeviceStatusDelegate: AnyObject {
 // MARK: - BaseViewController
 
 final class BaseViewController: UITabBarController {
+    
+    // MARK: Properties
+    
     weak var deviceStatusDelegate: DeviceStatusDelegate? {
         didSet {
-            if let state {
-                deviceStatusDelegate?.connectionStateDidChange(state)
+            if let peripheralState {
+                deviceStatusDelegate?.connectionStateDidChange(peripheralState)
             }
             if let bootloader {
                 deviceStatusDelegate?.bootloaderNameReceived(bootloader.description)
@@ -46,16 +50,6 @@ final class BaseViewController: UITabBarController {
     }
     
     /**
-     Keep an independent transport for any requests ``BaseViewController`` might do.
-     
-     This is to prevent overlap of sequence numbers used by parallel operations, such
-     as ``FirmwareUpgradeManager`` and this ``BaseViewController`` launching parallel requests
-     for Bootloader Information, and having them land on the same `McuSequenceNumber` which
-     will trigger an assertion failure, specifically in ``McuMgrBleTransport``.
-     */
-    private var privateTransport: McuMgrTransport!
-    
-    /**
      Shared ``McuMgrTransport`` for subclasses to use.
      */
     var transport: McuMgrTransport!
@@ -66,16 +60,18 @@ final class BaseViewController: UITabBarController {
             bleTransport.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
             bleTransport.delegate = self
             transport = bleTransport
-            // Independent transport for BaseViewController operations.
-            privateTransport = McuMgrBleTransport(peripheral.basePeripheral)
         }
     }
     
-    private var state: PeripheralState? {
+    // MARK: Private Properties
+    
+    private var deviceInfoRequested: Bool = false
+    private var statusInfoCallback: (() -> ())?
+    
+    private var peripheralState: PeripheralState? {
         didSet {
-            if let state {
-                deviceStatusDelegate?.connectionStateDidChange(state)
-            }
+            guard let peripheralState else { return }
+            deviceStatusDelegate?.connectionStateDidChange(peripheralState)
         }
     }
     private var bootloader: BootloaderInfoResponse.Bootloader? {
@@ -93,25 +89,24 @@ final class BaseViewController: UITabBarController {
     }
     private var bootloaderSlot: UInt64? {
         didSet {
-            if let bootloaderSlot {
-                deviceStatusDelegate?.bootloaderSlotReceived(bootloaderSlot)
-            }
+            guard let bootloaderSlot else { return }
+            deviceStatusDelegate?.bootloaderSlotReceived(bootloaderSlot)
         }
     }
     private var appInfoOutput: String? {
         didSet {
-            if let appInfoOutput {
-                deviceStatusDelegate?.appInfoReceived(appInfoOutput)
-            }
+            guard let appInfoOutput else { return }
+            deviceStatusDelegate?.appInfoReceived(appInfoOutput)
         }
     }
     private var mcuMgrParams: (buffers: Int, size: Int)? {
         didSet {
-            if let mcuMgrParams {
-                deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.buffers, size: mcuMgrParams.size)
-            }
+            guard let mcuMgrParams else { return }
+            deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.buffers, size: mcuMgrParams.size)
         }
     }
+    
+    // MARK: viewDidLoad()
     
     override func viewDidLoad() {
         title = peripheral.advertisedName
@@ -130,8 +125,67 @@ final class BaseViewController: UITabBarController {
         }
     }
     
+    // MARK: viewWillDisappear()
+    
     override func viewWillDisappear(_ animated: Bool) {
         transport?.close()
+    }
+}
+
+// MARK: Device Status
+
+extension BaseViewController {
+    
+    func onDeviceStatusReady(_ callback: @escaping () -> Void) {
+        statusInfoCallback = callback
+        guard !deviceInfoRequested else {
+            onDeviceStatusFinished()
+            return
+        }
+        
+        let defaultManager = DefaultManager(transport: transport)
+        defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
+        defaultManager.params { [weak self] response, error in
+            if let count = response?.bufferCount,
+               let size = response?.bufferSize {
+                self?.mcuMgrParams = (Int(count), Int(size))
+            }
+            
+            self?.requestApplicationInfo(defaultManager)
+        }
+    }
+    
+    private func requestApplicationInfo(_ defaultManager: DefaultManager) {
+        defaultManager.applicationInfo(format: [.kernelName, .kernelVersion]) { [weak self] response, error in
+            self?.appInfoOutput = response?.response
+            self?.requestBootloaderInfo(defaultManager)
+        }
+    }
+    
+    private func requestBootloaderInfo(_ defaultManager: DefaultManager) {
+        defaultManager.bootloaderInfo(query: .name) { [weak self] response, error in
+            self?.bootloader = response?.bootloader
+            guard response?.bootloader == .mcuboot else {
+                self?.onDeviceStatusFinished()
+                return
+            }
+            
+            defaultManager.bootloaderInfo(query: .mode) { [weak self] response, error in
+                self?.bootloaderMode = response?.mode
+                
+                defaultManager.bootloaderInfo(query: .slot) { [weak self] response, error in
+                    self?.bootloaderSlot = response?.activeSlot
+                    self?.onDeviceStatusFinished()
+                }
+            }
+        }
+    }
+    
+    private func onDeviceStatusFinished() {
+        guard let statusInfoCallback else { return }
+        statusInfoCallback()
+        deviceInfoRequested = true
+        self.statusInfoCallback = nil
     }
 }
 
@@ -140,32 +194,14 @@ final class BaseViewController: UITabBarController {
 extension BaseViewController: PeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didChangeStateTo state: PeripheralState) {
-        self.state = state
-        if state == .connected {
-            let defaultManager = DefaultManager(transport: privateTransport)
-            defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
-            defaultManager.params { [weak self] response, error in
-                if let count = response?.bufferCount,
-                   let size = response?.bufferSize {
-                    self?.mcuMgrParams = (Int(count), Int(size))
-                }
-                defaultManager.applicationInfo(format: [.kernelName, .kernelVersion]) { [weak self] response, error in
-                    self?.appInfoOutput = response?.response
-
-                    defaultManager.bootloaderInfo(query: .name) { [weak self] response, error in
-                        self?.bootloader = response?.bootloader
-                        guard response?.bootloader == .mcuboot else { return }
-                        defaultManager.bootloaderInfo(query: .mode) { [weak self] response, error in
-                            self?.bootloaderMode = response?.mode
-                        }
-                        
-                        defaultManager.bootloaderInfo(query: .slot) { [weak self] response, error in
-                            self?.bootloaderSlot = response?.activeSlot
-                        }
-                    }
-                }
-            }
+        peripheralState = state
+        switch state {
+        case .disconnecting, .disconnected:
+            // Set to false, because a DFU update might change things if that's what happened.
+            deviceInfoRequested = false
+        default:
+            // Nothing to do here.
+            break
         }
     }
-    
 }

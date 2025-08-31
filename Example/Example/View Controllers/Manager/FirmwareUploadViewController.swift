@@ -124,12 +124,15 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     }
     
     @IBAction func start(_ sender: UIButton) {
-        if let envelope = package?.envelope {
-            // SUIT has "no mode" to select
-            // (We use modes in the code only, but SUIT has no concept of upload modes)
-            startFirmwareUpload(envelope: envelope)
-        } else if let package {
-            startFirmwareUpload(package: package)
+        guard let baseController = parent as? BaseViewController else { return }
+        baseController.onDeviceStatusReady { [unowned self] in
+            if let envelope = package?.envelope {
+                // SUIT has "no mode" to select
+                // (We use modes in the code only, but SUIT has no concept of upload modes)
+                startFirmwareUpload(envelope: envelope)
+            } else if let package {
+                startFirmwareUpload(package: package)
+            }
         }
     }
     
