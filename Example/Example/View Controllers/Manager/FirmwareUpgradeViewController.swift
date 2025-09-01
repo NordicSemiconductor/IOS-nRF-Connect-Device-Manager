@@ -8,9 +8,11 @@ import UIKit
 import iOSMcuManagerLibrary
 import UniformTypeIdentifiers
 
+// MARK: - FirmwareUpgradeViewController
+
 final class FirmwareUpgradeViewController: UIViewController, McuMgrViewController {
     
-    // MARK: - IBOutlet(s)
+    // MARK: @IBOutlet(s)
     
     @IBOutlet weak var actionSwap: UIButton!
     @IBOutlet weak var actionBuffers: UIButton!
@@ -31,7 +33,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     @IBOutlet weak var dfuSpeed: UILabel!
     @IBOutlet weak var progress: UIProgressView!
     
-    // MARK: - IBAction(s)
+    // MARK: @IBAction(s)
     
     @IBAction func selectFirmware(_ sender: UIButton) {
         let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive", "com.apple.font-suitcase"]
@@ -60,18 +62,9 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     @IBAction func start(_ sender: UIButton) {
-        guard let package else { return }
-        if package.isForSUIT {
-            // SUIT has "no mode" to select
-            // (We use modes in the code only, but SUIT has no concept of upload modes)
-            startFirmwareUpgrade(package: package)
-        } else {
-            if package.images.count > 1, package.images.contains(where: { $0.content == .mcuboot }) {
-                // Force user to select which 'image' to use for bootloader update.
-                selectBootloaderImage(for: package)
-            } else {
-                selectMode(for: package)
-            }
+        guard let baseController = parent as? BaseViewController else { return }
+        baseController.onDeviceStatusReady { [unowned self] in
+            startPackageDFU()
         }
     }
     
@@ -97,6 +90,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         dfuManager.cancel()
     }
     
+    // MARK: Private Properties
+    
     private var package: McuMgrPackage?
     private var dfuManager: FirmwareUpgradeManager!
     var transport: McuMgrTransport! {
@@ -120,7 +115,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         restoreBasicSettings()
     }
     
-    // MARK: - Logic
+    // MARK: Logic
     
     private func setSwapTime() {
         let alertController = UIAlertController(title: "Swap time (in seconds)", message: nil, preferredStyle: .actionSheet)
@@ -156,6 +151,22 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             })
         }
         present(alertController, addingCancelAction: true)
+    }
+    
+    private func startPackageDFU() {
+        guard let package else { return }
+        if package.isForSUIT {
+            // SUIT has "no mode" to select
+            // (We use modes in the code only, but SUIT has no concept of upload modes)
+            startFirmwareUpgrade(package: package)
+        } else {
+            if package.images.count > 1, package.images.contains(where: { $0.content == .mcuboot }) {
+                // Force user to select which 'image' to use for bootloader update.
+                selectBootloaderImage(for: package)
+            } else {
+                selectMode(for: package)
+            }
+        }
     }
     
     @IBAction func setEraseApplicationSettings(_ sender: UISwitch) {

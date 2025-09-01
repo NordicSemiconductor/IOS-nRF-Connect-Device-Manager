@@ -39,8 +39,9 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
     }
     
     @IBAction func start(_ sender: UIButton) {
-        let downloadViewController = (parent as? FilesController)?.fileDownloadViewController
-        downloadViewController?.addRecent(fileName.text!)
+        guard let destination = destination.text, let fileData,
+              let filesViewController = parent as? FilesController,
+              let baseController = filesViewController.parent as? BaseViewController else { return }
         
         actionStart.isHidden = true
         actionPause.isHidden = false
@@ -48,8 +49,14 @@ class FileUploadViewController: UIViewController, McuMgrViewController {
         actionSelect.isEnabled = false
         status.textColor = .primary
         status.text = "UPLOADING..."
-        _ = fsManager.upload(name: destination.text!, data: fileData!,
-                             delegate: self)
+        
+        if let downloadViewController = filesViewController.fileDownloadViewController {
+            downloadViewController.addRecent(fileName.text!)
+        }
+        baseController.onDeviceStatusReady { [unowned self] in
+            _ = fsManager.upload(name: destination, data: fileData,
+                                 delegate: self)
+        }
     }
     
     @IBAction func pause(_ sender: UIButton) {

@@ -11,7 +11,7 @@ import iOSMcuManagerLibrary
 
 class DeviceController: UITableViewController, UITextFieldDelegate {
 
-    // MARK: IBOutlet(s)
+    // MARK: @IBOutlet(s)
     
     @IBOutlet weak var connectionStatus: UILabel!
     @IBOutlet weak var mcuMgrParams: UILabel!
@@ -26,11 +26,15 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
     @IBOutlet weak var messageReceived: UILabel!
     @IBOutlet weak var messageReceivedBackground: UIImageView!
     
+    // MARK: @IBAction(s)
+    
     @IBAction func sendTapped(_ sender: UIButton) {
         message.resignFirstResponder()
-        
-        let text = message.text!
-        send(message: text)
+        guard let baseViewController = parent as? BaseViewController else { return }
+        let text = message.text ?? ""
+        baseViewController.onDeviceStatusReady { [unowned self] in
+            send(message: text)
+        }
     }
     
     // MARK: Private Properties

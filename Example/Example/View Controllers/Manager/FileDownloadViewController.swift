@@ -7,10 +7,14 @@
 import UIKit
 import iOSMcuManagerLibrary
 
+// MARK: - FileDownloadViewController
+
 class FileDownloadViewController: UIViewController, McuMgrViewController {
     
     private let recentsKey = "recents"
 
+    // MARK: @IBOutlet(s)
+    
     @IBOutlet weak var file: UITextField!
     @IBOutlet weak var actionOpenRecents: UIButton!
     @IBOutlet weak var actionDownload: UIButton!
@@ -19,9 +23,12 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var fileName: UILabel!
     @IBOutlet weak var fileContent: UILabel!
     
+    // MARK: @IBAction(s)
+    
     @IBAction func nameChanged(_ sender: UITextField) {
         refreshSource()
     }
+    
     @IBAction func openRecents(_ sender: UIButton) {
         let recents = (UserDefaults.standard.array(forKey: recentsKey) ?? []) as! [String]
         
@@ -38,11 +45,15 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
         alert.popoverPresentationController?.sourceView = sender
         present(alert, animated: true)
     }
+    
     @IBAction func download(_ sender: Any) {
         file.resignFirstResponder()
-        if !file.text!.isEmpty {
-            addRecent(file.text!)
-            _ = fsManager.download(name: source.text!, delegate: self)
+        guard let filename = file.text, let path = source.text,
+              let filesViewController = parent as? FilesController,
+              let baseController = filesViewController.parent as? BaseViewController else { return }
+        addRecent(filename)
+        baseController.onDeviceStatusReady { [unowned self] in
+            _ = fsManager.download(name: path, delegate: self)
         }
     }
     
@@ -87,6 +98,8 @@ class FileDownloadViewController: UIViewController, McuMgrViewController {
         actionOpenRecents.isEnabled = true
     }
 }
+
+// MARK: - FileDownloadDelegate
 
 extension FileDownloadViewController: FileDownloadDelegate {
     

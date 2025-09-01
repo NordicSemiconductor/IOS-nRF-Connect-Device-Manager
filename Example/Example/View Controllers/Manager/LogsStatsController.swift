@@ -25,7 +25,10 @@ final class LogsStatsController: UITableViewController {
     // MARK: @IBAction(s)
     
     @IBAction func refreshTapped(_ sender: UIButton) {
-        statsManager.list(callback: statsCallback)
+        guard let baseViewController = parent as? BaseViewController else { return }
+        baseViewController.onDeviceStatusReady { [unowned self] in
+            statsManager.list(callback: statsCallback)
+        }
     }
     
     // MARK: statsCallback
