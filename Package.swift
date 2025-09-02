@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "iOSMcuManagerLibrary",
-    platforms: [.iOS(.v12), .macOS(.v10_13)],
+    platforms: [.iOS(.v13), .macOS(.v10_14)],
     products: [
         .library(
             name: "iOSMcuManagerLibrary",
@@ -22,6 +22,9 @@ let package = Package(
         ),
         .package(url: "https://github.com/weichsel/ZIPFoundation.git",
             .upToNextMajor(from: "0.9.0")
+        ),
+        .package(url: "https://github.com/NordicSemiconductor/IOS-BLE-Library",
+            .branchItem("main")
         )
     ],
     targets: [
@@ -33,6 +36,9 @@ let package = Package(
         ),
         .target(
             name: "iOSOtaLibrary",
+            dependencies: [
+                .product(name: "iOS-BLE-Library-Mock", package: "IOS-BLE-Library")
+            ],
             path: "iOSOtaLibrary/Source"
         )
     ]
