@@ -10,6 +10,10 @@ let package = Package(
             name: "iOSMcuManagerLibrary",
             targets: ["iOSMcuManagerLibrary"]
         ),
+        .library(
+            name: "iOSOtaLibrary",
+            targets: ["iOSOtaLibrary"]
+        ),
     ],
     dependencies: [
         .package(
@@ -25,7 +29,11 @@ let package = Package(
             name: "iOSMcuManagerLibrary",
             dependencies: ["SwiftCBOR", "ZIPFoundation"],
             path: "Source",
-            exclude:["Info.plist"]
+            exclude: ["Info.plist"]
+        ),
+        .target(
+            name: "iOSOtaLibrary",
+            path: "iOSOtaLibrary/Source"
         )
     ]
 )
