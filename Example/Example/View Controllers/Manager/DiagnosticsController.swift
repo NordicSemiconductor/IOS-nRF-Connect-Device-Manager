@@ -7,9 +7,9 @@
 import UIKit
 import iOSMcuManagerLibrary
 
-// MARK: - LogsStatsController
+// MARK: - DiagnosticsController
 
-final class LogsStatsController: UITableViewController {
+final class DiagnosticsController: UITableViewController {
     
     // MARK: @IBOutlet(s)
     
@@ -83,7 +83,7 @@ final class LogsStatsController: UITableViewController {
 
 // MARK: - Private
 
-private extension LogsStatsController {
+private extension DiagnosticsController {
     
     func moduleStatsString(_ module: String, stats: McuMgrStatsResponse?, error: (any Error)?) -> String {
         var resultString = "\(module)"
@@ -116,7 +116,7 @@ private extension LogsStatsController {
 
 // MARK: - DeviceStatusDelegate
 
-extension LogsStatsController: DeviceStatusDelegate {
+extension DiagnosticsController: DeviceStatusDelegate {
     
     func connectionStateDidChange(_ state: PeripheralState) {
         connectionStatus.text = state.description
