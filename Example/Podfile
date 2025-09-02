@@ -4,6 +4,6 @@ use_frameworks!
 project 'nRF Connect Device Manager'
 
 target 'nRF Connect Device Manager' do
-  pod 'iOSMcuManagerLibrary', :path => '../'
+  pod 'iOSMcuManagerLibrary', :path => '../iOSMcuManagerLibrary/'
   pod 'iOSOtaLibrary', :path => '../iOSOtaLibrary/'
 end

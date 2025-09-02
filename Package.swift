@@ -28,7 +28,7 @@ let package = Package(
         .target(
             name: "iOSMcuManagerLibrary",
             dependencies: ["SwiftCBOR", "ZIPFoundation"],
-            path: "Source",
+            path: "iOSMcuManagerLibrary/Source",
             exclude: ["Info.plist"]
         ),
         .target(

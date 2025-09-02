@@ -7,7 +7,7 @@ PODS:
   - ZIPFoundation (0.9.19)
 
 DEPENDENCIES:
-  - iOSMcuManagerLibrary (from `../`)
+  - iOSMcuManagerLibrary (from `../iOSMcuManagerLibrary/`)
   - iOSOtaLibrary (from `../iOSOtaLibrary/`)
 
 SPEC REPOS:
@@ -17,7 +17,7 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   iOSMcuManagerLibrary:
-    :path: "../"
+    :path: "../iOSMcuManagerLibrary/"
   iOSOtaLibrary:
     :path: "../iOSOtaLibrary/"
 
@@ -27,6 +27,6 @@ SPEC CHECKSUMS:
   SwiftCBOR: 465775bed0e8bac7bfb8160bcf7b95d7f75971e4
   ZIPFoundation: b8c29ea7ae353b309bc810586181fd073cb3312c
 
-PODFILE CHECKSUM: f38fdaa3979dd1078fbd6ebd9a42cfc7601c882e
+PODFILE CHECKSUM: 4da7d5676860ba959281f900afaa01d6211f9121
 
 COCOAPODS: 1.16.2
