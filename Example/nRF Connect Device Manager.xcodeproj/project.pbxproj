@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5215762D212320F300C21B0C /* LogsStatsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215762C212320F300C21B0C /* LogsStatsController.swift */; };
+		5215762D212320F300C21B0C /* DiagnosticsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215762C212320F300C21B0C /* DiagnosticsController.swift */; };
 		5215762F2125B59400C21B0C /* FilesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5215762E2125B59400C21B0C /* FilesController.swift */; };
 		521576312126CC8F00C21B0C /* FileUploadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521576302126CC8F00C21B0C /* FileUploadViewController.swift */; };
 		521576332126FFBE00C21B0C /* FileDownloadViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521576322126FFBE00C21B0C /* FileDownloadViewController.swift */; };
@@ -37,7 +37,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		5215762C212320F300C21B0C /* LogsStatsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsStatsController.swift; sourceTree = "<group>"; };
+		5215762C212320F300C21B0C /* DiagnosticsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsController.swift; sourceTree = "<group>"; };
 		5215762E2125B59400C21B0C /* FilesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesController.swift; sourceTree = "<group>"; };
 		521576302126CC8F00C21B0C /* FileUploadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileUploadViewController.swift; sourceTree = "<group>"; };
 		521576322126FFBE00C21B0C /* FileDownloadViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloadViewController.swift; sourceTree = "<group>"; };
@@ -120,7 +120,7 @@
 				524DCFD3210B1C17000E110D /* DeviceController.swift */,
 				526270A3210B8E8000FC17D4 /* ImageController.swift */,
 				5215762E2125B59400C21B0C /* FilesController.swift */,
-				5215762C212320F300C21B0C /* LogsStatsController.swift */,
+				5215762C212320F300C21B0C /* DiagnosticsController.swift */,
 				5264C1D5210E26C20044FBBA /* FirmwareUpgradeViewController.swift */,
 				5264C1D7210F32A60044FBBA /* FirmwareUploadViewController.swift */,
 				5264C1DB210F63850044FBBA /* ImagesViewController.swift */,
@@ -336,9 +336,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -364,7 +368,7 @@
 				526270A4210B8E8000FC17D4 /* ImageController.swift in Sources */,
 				5264C1DE210F640F0044FBBA /* McuMgrViewController.swift in Sources */,
 				524DCFD4210B1C17000E110D /* DeviceController.swift in Sources */,
-				5215762D212320F300C21B0C /* LogsStatsController.swift in Sources */,
+				5215762D212320F300C21B0C /* DiagnosticsController.swift in Sources */,
 				BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */,
 				F07D73AC2AE9AE3A00ED6B9A /* StringConvertibles.swift in Sources */,
 				5215762F2125B59400C21B0C /* FilesController.swift in Sources */,
