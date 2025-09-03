@@ -1,5 +1,5 @@
 //
-//  MDSAuthToken.swift
+//  ProjectKey.swift
 //  iOSMcuManagerLibrary
 //
 //  Created by Dinesh Harjani on 3/9/25.
@@ -8,9 +8,9 @@
 
 import Foundation
 
-// MARK: - MDSAuthToken
+// MARK: - ProjectKey
 
-public struct MDSAuthToken {
+public struct ProjectKey {
     
     // MARK: Properties
     
@@ -18,8 +18,12 @@ public struct MDSAuthToken {
     
     // MARK: init
     
-    public init?(_ authValue: String) {
+    public init?(authValue: String) {
         guard let key = authValue.split(separator: ":").last else { return nil }
+        self.init(String(key))
+    }
+    
+    public init(_ key: String) {
         self.authKey = String(key)
     }
 }
