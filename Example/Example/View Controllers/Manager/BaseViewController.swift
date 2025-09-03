@@ -200,10 +200,18 @@ extension BaseViewController: PeripheralDelegate {
         switch state {
         case .connected:
             otaManager = OTAManager(peripheral.identifier)
-            otaManager?.getDeviceInfoToken { result in
+            otaManager?.getDeviceInfoToken { [unowned self] result in
                 switch result {
                 case .success(let deviceInfoToken):
                     print("Obtained Device Info Token \(deviceInfoToken)")
+                    otaManager?.getMDSAuthToken { result in
+                        switch result {
+                        case .success(let mdsAuthToken):
+                            print("Obtained MDS Token \(mdsAuthToken)")
+                        case .failure(let error):
+                            print("Error: \(error.localizedDescription)")
+                        }
+                    }
                 case .failure(let error):
                     print("Error: \(error.localizedDescription)")
                 }
