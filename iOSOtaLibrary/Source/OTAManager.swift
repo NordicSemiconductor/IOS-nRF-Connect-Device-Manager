@@ -113,6 +113,75 @@ public extension OTAManager {
             return DeviceInfoToken(deviceSerialNumber: serial, hardwareVersion: hardwareVersion, currentVersion: firmwareVersion, softwareType: softwareType)
         }
     }
+    
+    // MARK: getMDSAuthToken
+    
+    func getMDSAuthToken(_ callback: @escaping (Result<MDSAuthToken, OTAManagerError>) -> ()) {
+        Task { @MainActor in
+            do {
+                let token = try await getMDSAuthToken()
+                callback(.success(token))
+            } catch {
+                guard let otaError = error as? OTAManagerError else {
+                    callback(.failure(.incompleteDeviceInfo))
+                    return
+                }
+                callback(.failure(otaError))
+                print("Error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    func getMDSAuthToken() async throws -> MDSAuthToken {
+        do {
+            try await awaitBleStart()
+            
+            let cbPeripheral = ble.retrievePeripherals(withIdentifiers: [peripheralUUID])
+                .first
+            
+            guard let cbPeripheral else {
+                throw OTAManagerError.peripheralNotFound
+            }
+            let _ = try await ble.connect(cbPeripheral)
+                .firstValue
+            
+            let peripheral = Peripheral(peripheral: cbPeripheral, delegate: ReactivePeripheralDelegate())
+            let discoveredServices = try await peripheral.discoverServices(serviceUUIDs: nil)
+                .timeout(5, scheduler: DispatchQueue.main)
+                .firstValue
+            
+            guard let mdservice = discoveredServices.first(where: {
+                $0.uuid.uuidString == "54220000-F6A5-4007-A371-722F4EBD8436"
+            }) else {
+                throw OTAManagerError.serviceNotFound
+            }
+            
+            let discoveredCharacteristics = try await peripheral.discoverCharacteristics([], for: mdservice)
+                .firstValue
+            
+            var authKey: String?
+            for characteristic in discoveredCharacteristics {
+                switch characteristic.uuid.uuidString {
+                case "54220004-F6A5-4007-A371-722F4EBD8436": // MDS Device Authorization
+                    if let data = try await peripheral.readValue(for: characteristic).firstValue {
+                        authKey = String(data: data, encoding: .utf8)
+                    }
+                    break
+                default:
+                    continue
+                }
+            }
+            
+            guard let authKey else {
+                throw OTAManagerError.incompleteDeviceInfo
+            }
+            
+            guard let authToken = MDSAuthToken(authKey) else {
+                throw OTAManagerError.mdsKeyDecodeError
+            }
+            return authToken
+        }
+    }
 }
 
 // MARK: - Private
@@ -149,4 +218,5 @@ public enum OTAManagerError: LocalizedError {
     case peripheralNotFound
     case serviceNotFound
     case incompleteDeviceInfo
+    case mdsKeyDecodeError
 }
