@@ -5,8 +5,9 @@
  */
 
 import UIKit
-import iOSMcuManagerLibrary
 import CoreBluetooth
+import iOSMcuManagerLibrary
+import iOSOtaLibrary
 
 // MARK: - DeviceStatusDelegate
 
@@ -65,6 +66,7 @@ final class BaseViewController: UITabBarController {
     
     // MARK: Private Properties
     
+    private var otaManager: OTAManager?
     private var deviceInfoRequested: Bool = false
     private var statusInfoCallback: (() -> ())?
     
@@ -196,9 +198,20 @@ extension BaseViewController: PeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral, didChangeStateTo state: PeripheralState) {
         peripheralState = state
         switch state {
+        case .connected:
+            otaManager = OTAManager(peripheral.identifier)
+            otaManager?.getDeviceInfoToken { result in
+                switch result {
+                case .success(let deviceInfoToken):
+                    print("Obtained Device Info Token \(deviceInfoToken)")
+                case .failure(let error):
+                    print("Error: \(error.localizedDescription)")
+                }
+            }
         case .disconnecting, .disconnected:
             // Set to false, because a DFU update might change things if that's what happened.
             deviceInfoRequested = false
+            otaManager = nil
         default:
             // Nothing to do here.
             break

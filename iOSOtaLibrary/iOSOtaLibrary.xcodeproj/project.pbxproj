@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA255AFD2E66E88600D485B0 /* iOSOtaLibrary.podspec in Resources */ = {isa = PBXBuildFile; fileRef = AA255AFC2E66E87E00D485B0 /* iOSOtaLibrary.podspec */; };
 		AA255AFF2E66E8F600D485B0 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = AA255AFE2E66E8F400D485B0 /* LICENSE */; };
+		AA3952552E670F0700B06A90 /* iOS-BLE-Library in Frameworks */ = {isa = PBXBuildFile; productRef = AA3952542E670F0700B06A90 /* iOS-BLE-Library */; };
+		AA3952572E68392900B06A90 /* iOS-BLE-Library-Mock in Frameworks */ = {isa = PBXBuildFile; productRef = AA3952562E68392900B06A90 /* iOS-BLE-Library-Mock */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		AA255AF22E66E82F00D485B0 /* iOSOtaLibrary.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = iOSOtaLibrary.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA255AFC2E66E87E00D485B0 /* iOSOtaLibrary.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = iOSOtaLibrary.podspec; sourceTree = "<group>"; };
 		AA255AFE2E66E8F400D485B0 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -30,6 +30,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA3952572E68392900B06A90 /* iOS-BLE-Library-Mock in Frameworks */,
+				AA3952552E670F0700B06A90 /* iOS-BLE-Library in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -40,7 +42,6 @@
 			isa = PBXGroup;
 			children = (
 				AA255AFE2E66E8F400D485B0 /* LICENSE */,
-				AA255AFC2E66E87E00D485B0 /* iOSOtaLibrary.podspec */,
 				AA255AF42E66E82F00D485B0 /* Source */,
 				AA255AF32E66E82F00D485B0 /* Products */,
 			);
@@ -85,6 +86,8 @@
 			);
 			name = iOSOtaLibrary;
 			packageProductDependencies = (
+				AA3952542E670F0700B06A90 /* iOS-BLE-Library */,
+				AA3952562E68392900B06A90 /* iOS-BLE-Library-Mock */,
 			);
 			productName = iOSOtaLibrary;
 			productReference = AA255AF22E66E82F00D485B0 /* iOSOtaLibrary.framework */;
@@ -114,6 +117,9 @@
 			);
 			mainGroup = AA255AE82E66E82F00D485B0;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AA3952532E670F0700B06A90 /* XCRemoteSwiftPackageReference "IOS-BLE-Library" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AA255AF32E66E82F00D485B0 /* Products */;
 			projectDirPath = "";
@@ -130,7 +136,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA255AFF2E66E8F600D485B0 /* LICENSE in Resources */,
-				AA255AFD2E66E88600D485B0 /* iOSOtaLibrary.podspec in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,7 +293,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -325,7 +330,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -370,6 +375,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AA3952532E670F0700B06A90 /* XCRemoteSwiftPackageReference "IOS-BLE-Library" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-BLE-Library.git";
+			requirement = {
+				branch = develop;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AA3952542E670F0700B06A90 /* iOS-BLE-Library */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA3952532E670F0700B06A90 /* XCRemoteSwiftPackageReference "IOS-BLE-Library" */;
+			productName = "iOS-BLE-Library";
+		};
+		AA3952562E68392900B06A90 /* iOS-BLE-Library-Mock */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA3952532E670F0700B06A90 /* XCRemoteSwiftPackageReference "IOS-BLE-Library" */;
+			productName = "iOS-BLE-Library-Mock";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AA255AE92E66E82F00D485B0 /* Project object */;
 }

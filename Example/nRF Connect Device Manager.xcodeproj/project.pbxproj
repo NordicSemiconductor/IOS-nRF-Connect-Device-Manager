@@ -27,12 +27,14 @@
 		5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273624ACA7F4008F528C /* IntroViewController.swift */; };
 		5266273824ACA883008F528C /* NordicButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273524ACA7A1008F528C /* NordicButton.swift */; };
 		5274C2622796CEC40043D7CA /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5274C2612796CEC40043D7CA /* SettingsViewController.swift */; };
+		AAC0F0312E670CD6006E0ADD /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0302E670CD6006E0ADD /* iOSMcuManagerLibrary */; };
+		AAC0F0342E670D38006E0ADD /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0332E670D38006E0ADD /* iOSMcuManagerLibrary */; };
+		AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0352E670D38006E0ADD /* iOSOtaLibrary */; };
 		BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285720CB44AF0061F0EE /* AppDelegate.swift */; };
 		BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */; };
 		BD5A285D20CB44AF0061F0EE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285B20CB44AF0061F0EE /* Main.storyboard */; };
 		BD5A285F20CB44B00061F0EE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BD5A285E20CB44B00061F0EE /* Assets.xcassets */; };
 		BD5A286220CB44B00061F0EE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BD5A286020CB44B00061F0EE /* LaunchScreen.storyboard */; };
-		E7F00904AD78FC61457F0B06 /* Pods_nRF_Connect_Device_Manager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C75D2DC863EB4235DE2F466B /* Pods_nRF_Connect_Device_Manager.framework */; };
 		F07D73AC2AE9AE3A00ED6B9A /* StringConvertibles.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07D73AB2AE9AE3A00ED6B9A /* StringConvertibles.swift */; };
 /* End PBXBuildFile section */
 
@@ -57,7 +59,6 @@
 		5266273524ACA7A1008F528C /* NordicButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NordicButton.swift; sourceTree = "<group>"; };
 		5266273624ACA7F4008F528C /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		5274C2612796CEC40043D7CA /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
-		8CC828C02D6175238385D59A /* Pods-nRF Connect Device Manager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nRF Connect Device Manager.release.xcconfig"; path = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager.release.xcconfig"; sourceTree = "<group>"; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A285720CB44AF0061F0EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -66,8 +67,6 @@
 		BD5A285E20CB44B00061F0EE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BD5A286120CB44B00061F0EE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BD5A286320CB44B00061F0EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C75D2DC863EB4235DE2F466B /* Pods_nRF_Connect_Device_Manager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_nRF_Connect_Device_Manager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		E9EB68FC3504F79AE1891044 /* Pods-nRF Connect Device Manager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nRF Connect Device Manager.debug.xcconfig"; path = "Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager.debug.xcconfig"; sourceTree = "<group>"; };
 		F07D73AB2AE9AE3A00ED6B9A /* StringConvertibles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringConvertibles.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -76,7 +75,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E7F00904AD78FC61457F0B06 /* Pods_nRF_Connect_Device_Manager.framework in Frameworks */,
+				AAC0F0342E670D38006E0ADD /* iOSMcuManagerLibrary in Frameworks */,
+				AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */,
+				AAC0F0312E670CD6006E0ADD /* iOSMcuManagerLibrary in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,21 +159,11 @@
 			path = Intro;
 			sourceTree = "<group>";
 		};
-		88D1650A81810D1E28E8B08B /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				C75D2DC863EB4235DE2F466B /* Pods_nRF_Connect_Device_Manager.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		BD5A284B20CB44AF0061F0EE = {
 			isa = PBXGroup;
 			children = (
 				BD5A285620CB44AF0061F0EE /* Example */,
 				BD5A285520CB44AF0061F0EE /* Products */,
-				C8D042FE3DAC39D53B874632 /* Pods */,
-				88D1650A81810D1E28E8B08B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -200,15 +191,6 @@
 			path = Example;
 			sourceTree = "<group>";
 		};
-		C8D042FE3DAC39D53B874632 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				E9EB68FC3504F79AE1891044 /* Pods-nRF Connect Device Manager.debug.xcconfig */,
-				8CC828C02D6175238385D59A /* Pods-nRF Connect Device Manager.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -216,12 +198,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BD5A286620CB44B00061F0EE /* Build configuration list for PBXNativeTarget "nRF Connect Device Manager" */;
 			buildPhases = (
-				65DB792ED924689A6456EECC /* [CP] Check Pods Manifest.lock */,
 				BD5A285020CB44AF0061F0EE /* Sources */,
 				BD5A285120CB44AF0061F0EE /* Frameworks */,
 				BD5A285220CB44AF0061F0EE /* Resources */,
 				AA1FA7F62816B127004D8497 /* Run Build Number Script */,
-				E0CEE0D742922CA92222028F /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -263,6 +243,9 @@
 				Base,
 			);
 			mainGroup = BD5A284B20CB44AF0061F0EE;
+			packageReferences = (
+				AAC0F0322E670D38006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */,
+			);
 			productRefGroup = BD5A285520CB44AF0061F0EE /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -286,28 +269,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		65DB792ED924689A6456EECC /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-nRF Connect Device Manager-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		AA1FA7F62816B127004D8497 /* Run Build Number Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -327,27 +288,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "#\n# Set the build number to the current git commit count.\n# If we're using the Dev scheme, then we'll suffix the build\n# number with the current branch name, to make collisions\n# far less likely across feature branches.\n# Based on: http://w3facility.info/question/how-do-i-force-xcode-to-rebuild-the-info-plist-file-in-my-project-every-time-i-build-the-project/\n#\n# Updated with dSYM handling from http://yellowfeather.co.uk/blog/auto-incrementing-build-number-in-xcode-revisited/\n#\n# Seen here: http://blog.jaredsinclair.com/post/97193356620/the-best-of-all-possible-xcode-automated-build\n\ngit=`sh /etc/profile; which git`\nreferenceGitTag=\"1.10.1\"\nappBuild=`\"$git\" rev-list \"$referenceGitTag\"..HEAD --count`\nbranchName=`\"$git\" rev-parse --abbrev-ref HEAD`\necho \"buildNo $appBuild-$branchName\"\n\ndsym_plist=\"$DWARF_DSYM_FOLDER_PATH/$DWARF_DSYM_FILE_NAME/Contents/Info.plist\"\ntarget_plist=\"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n\nfor plist in \"$target_plist\" \"$dsym_plist\"; do\n    if [ -f \"$plist\" ]; then\n        /usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $appBuild\" \"$plist\"\n        echo \"Build number set to $appBuild in ${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n    fi\n\ndone\n";
-		};
-		E0CEE0D742922CA92222028F /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-nRF Connect Device Manager/Pods-nRF Connect Device Manager-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -524,7 +464,6 @@
 		};
 		BD5A286720CB44B00061F0EE /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E9EB68FC3504F79AE1891044 /* Pods-nRF Connect Device Manager.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
@@ -533,7 +472,7 @@
 				DEVELOPMENT_TEAM = P3R8YQEV4L;
 				INFOPLIST_FILE = Example/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -548,7 +487,6 @@
 		};
 		BD5A286820CB44B00061F0EE /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8CC828C02D6175238385D59A /* Pods-nRF Connect Device Manager.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
@@ -557,7 +495,7 @@
 				DEVELOPMENT_TEAM = P3R8YQEV4L;
 				INFOPLIST_FILE = Example/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -592,6 +530,43 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AAC0F02F2E670CD6006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		AAC0F0322E670D38006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager";
+			requirement = {
+				branch = "spm-based";
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AAC0F0302E670CD6006E0ADD /* iOSMcuManagerLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAC0F02F2E670CD6006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
+			productName = iOSMcuManagerLibrary;
+		};
+		AAC0F0332E670D38006E0ADD /* iOSMcuManagerLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAC0F0322E670D38006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
+			productName = iOSMcuManagerLibrary;
+		};
+		AAC0F0352E670D38006E0ADD /* iOSOtaLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAC0F0322E670D38006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
+			productName = iOSOtaLibrary;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BD5A284C20CB44AF0061F0EE /* Project object */;
 }
