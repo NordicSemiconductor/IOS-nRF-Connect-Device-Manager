@@ -19,6 +19,7 @@ public final class OTAManager {
     internal var ble = CentralManager()
     internal let peripheralUUID: UUID
     internal var peripheral: Peripheral?
+    private let network: Network
     
     // MARK: init
     
@@ -27,6 +28,7 @@ public final class OTAManager {
         self.peripheralUUID = targetPeripheralUUID
         // Try to start inner CentralManager.
         _ = ble.centralManager.state
+        self.network = Network("api.memfault.com")
     }
 }
 
@@ -35,7 +37,16 @@ public final class OTAManager {
 public extension OTAManager {
     
     func getLatestFirmware(deviceInfo: DeviceInfoToken, projectKey: ProjectKey) {
-        
+        Task {
+            do {
+                guard let request = HTTPRequest.getLatestFirmware(token: deviceInfo, key: projectKey) else { return }
+                let result = try await network.perform(request)
+                    .firstValue
+                print(result)
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
     }
 }
 
