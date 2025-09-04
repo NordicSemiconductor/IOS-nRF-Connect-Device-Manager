@@ -204,10 +204,11 @@ extension BaseViewController: PeripheralDelegate {
                 switch result {
                 case .success(let deviceInfoToken):
                     print("Obtained Device Info Token \(deviceInfoToken)")
-                    otaManager?.getMDSAuthToken { result in
+                    otaManager?.getProjectKey() { [unowned self] result in
                         switch result {
-                        case .success(let mdsAuthToken):
-                            print("Obtained MDS Token \(mdsAuthToken)")
+                        case .success(let projectKey):
+                            print("Obtained Project Key \(projectKey)")
+                            otaManager?.getLatestFirmware(deviceInfo: deviceInfoToken, projectKey: projectKey)
                         case .failure(let error):
                             print("Error: \(error.localizedDescription)")
                         }
