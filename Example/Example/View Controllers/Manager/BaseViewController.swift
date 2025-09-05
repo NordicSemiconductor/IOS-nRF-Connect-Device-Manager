@@ -208,7 +208,9 @@ extension BaseViewController: PeripheralDelegate {
                         switch result {
                         case .success(let projectKey):
                             print("Obtained Project Key \(projectKey)")
-                            otaManager?.getLatestFirmware(deviceInfo: deviceInfoToken, projectKey: projectKey)
+                            otaManager?.getLatestReleaseInfo(deviceInfo: deviceInfoToken, projectKey: projectKey) { releaseInfo in
+                                print(releaseInfo)
+                            }
                         case .failure(let error):
                             print("Error: \(error.localizedDescription)")
                         }
