@@ -26,8 +26,8 @@ protocol DeviceStatusDelegate: AnyObject {
 
 enum nRFCloudStatus {
     case unavailable(_ error: Error?)
-    case missingProjectKey(deviceInfo: DeviceInfoToken, error: Error)
-    case available(deviceInfo: DeviceInfoToken, projectKey: ProjectKey)
+    case missingProjectKey(_ deviceInfo: DeviceInfoToken, _ error: Error)
+    case available(_ deviceInfo: DeviceInfoToken, _ projectKey: ProjectKey)
 }
 
 // MARK: - BaseViewController
@@ -218,10 +218,10 @@ extension BaseViewController {
                     switch result {
                     case .success(let projectKey):
                         print("Obtained Project Key \(projectKey)")
-                        self.nRFCloudStatus = .available(deviceInfo: deviceInfo, projectKey: projectKey)
+                        self.nRFCloudStatus = .available(deviceInfo, projectKey)
                         onDeviceStatusFinished()
                     case .failure(let error):
-                        self.nRFCloudStatus = .missingProjectKey(deviceInfo: deviceInfo, error: error)
+                        self.nRFCloudStatus = .missingProjectKey(deviceInfo, error)
                         onDeviceStatusFinished()
                     }
                 }
