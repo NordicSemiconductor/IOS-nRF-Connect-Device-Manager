@@ -21,6 +21,7 @@ final class DiagnosticsController: UITableViewController {
     @IBOutlet weak var kernel: UILabel!
     @IBOutlet weak var stats: UILabel!
     @IBOutlet weak var refreshAction: UIButton!
+    @IBOutlet weak var nRFCloudStatus: UILabel!
     
     // MARK: @IBAction(s)
     
@@ -140,5 +141,16 @@ extension DiagnosticsController: DeviceStatusDelegate {
     
     func mcuMgrParamsReceived(buffers: Int, size: Int) {
         mcuMgrParams.text = "\(buffers) x \(size) bytes"
+    }
+    
+    func nRFCloudStatusChanged(_ status: nRFCloudStatus) {
+        switch status {
+        case .unavailable:
+            nRFCloudStatus.text = "UNAVAILABLE"
+        case .missingProjectKey:
+            nRFCloudStatus.text = "MISSING PROJECT KEY"
+        case .available:
+            nRFCloudStatus.text = "READY"
+        }
     }
 }

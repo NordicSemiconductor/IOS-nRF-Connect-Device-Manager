@@ -7,12 +7,16 @@
 import UIKit
 import iOSMcuManagerLibrary
 
-class FilesController: UITableViewController {
+// MARK: - FilesController
+
+final class FilesController: UITableViewController {
     static let partitionKey = "partition"
     /**
     [LittleFS GitHub Project](https://github.com/ARMmbed/littlefs)
      */
     static let defaultPartition = "lfs1"
+    
+    // MARK: - @IBOutlet(s)
     
     @IBOutlet weak var connectionStatus: UILabel!
     @IBOutlet weak var mcuMgrParams: UILabel!
@@ -20,6 +24,7 @@ class FilesController: UITableViewController {
     @IBOutlet weak var bootloaderMode: UILabel!
     @IBOutlet weak var bootloaderSlot: UILabel!
     @IBOutlet weak var kernel: UILabel!
+    @IBOutlet weak var nRFCloudStatus: UILabel!
     
     var fileDownloadViewController: FileDownloadViewController!
     
@@ -92,6 +97,8 @@ class FilesController: UITableViewController {
     }
 }
 
+// MARK: - DeviceStatusDelegate
+
 extension FilesController: DeviceStatusDelegate {
     
     func connectionStateDidChange(_ state: PeripheralState) {
@@ -118,4 +125,14 @@ extension FilesController: DeviceStatusDelegate {
         mcuMgrParams.text = "\(buffers) x \(size) bytes"
     }
     
+    func nRFCloudStatusChanged(_ status: nRFCloudStatus) {
+        switch status {
+        case .unavailable:
+            nRFCloudStatus.text = "UNAVAILABLE"
+        case .missingProjectKey:
+            nRFCloudStatus.text = "MISSING PROJECT KEY"
+        case .available:
+            nRFCloudStatus.text = "READY"
+        }
+    }
 }

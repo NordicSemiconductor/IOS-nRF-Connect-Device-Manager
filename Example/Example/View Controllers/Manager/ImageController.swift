@@ -7,16 +7,27 @@
 import UIKit
 import iOSMcuManagerLibrary
 
-class ImageController: UITableViewController {
+// MARK: - ImageController
+
+final class ImageController: UITableViewController {
+    
+    // MARK: @IBOutlet(s)
+    
     @IBOutlet weak var connectionStatus: UILabel!
     @IBOutlet weak var mcuMgrParams: UILabel!
     @IBOutlet weak var bootloaderName: UILabel!
     @IBOutlet weak var bootloaderMode: UILabel!
     @IBOutlet weak var bootloaderSlot: UILabel!
     @IBOutlet weak var kernel: UILabel!
+    @IBOutlet weak var nRFCloudStatus: UILabel!
+    
+    // MARK: Private Properties
+    
     /// Instance if Images View Controller, required to get its
     /// height when data are obtained and height changes.
     private var imagesViewController: ImagesViewController!
+    
+    // MARK: UIViewController
     
     override func viewDidAppear(_ animated: Bool) {
         showModeSwitch()
@@ -47,7 +58,8 @@ class ImageController: UITableViewController {
         tableView.endUpdates()
     }
     
-    // MARK: - Handling Basic / Advanced mode
+    // MARK: Handling Basic / Advanced mode
+    
     private var advancedMode: Bool = false
     
     @objc func modeSwitched() {
@@ -99,6 +111,8 @@ class ImageController: UITableViewController {
     }
 }
 
+// MARK: - DeviceStatusDelegate
+
 extension ImageController: DeviceStatusDelegate {
     
     func connectionStateDidChange(_ state: PeripheralState) {
@@ -125,4 +139,14 @@ extension ImageController: DeviceStatusDelegate {
         mcuMgrParams.text = "\(buffers) x \(size) bytes"
     }
     
+    func nRFCloudStatusChanged(_ status: nRFCloudStatus) {
+        switch status {
+        case .unavailable:
+            nRFCloudStatus.text = "UNAVAILABLE"
+        case .missingProjectKey:
+            nRFCloudStatus.text = "MISSING PROJECT KEY"
+        case .available:
+            nRFCloudStatus.text = "READY"
+        }
+    }
 }
