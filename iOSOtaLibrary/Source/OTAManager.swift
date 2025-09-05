@@ -36,16 +36,53 @@ public final class OTAManager {
 
 public extension OTAManager {
     
-    func getLatestFirmware(deviceInfo: DeviceInfoToken, projectKey: ProjectKey) {
-        Task {
+    // MARK: Release Info
+    
+    func getLatestReleaseInfo(deviceInfo: DeviceInfoToken, projectKey: ProjectKey, callback: @escaping (Result<LatestReleaseInfo, OTAManagerError>) -> ()) {
+        Task { @MainActor in
             do {
-                guard let request = HTTPRequest.getLatestFirmware(token: deviceInfo, key: projectKey) else { return }
-                let result = try await network.perform(request)
-                    .firstValue
-                print(result)
+                let releaseInfo = try await getLatestReleaseInfo(deviceInfo: deviceInfo, projectKey: projectKey)
+                callback(.success(releaseInfo))
             } catch {
-                print(error.localizedDescription)
+                guard let otaError = error as? OTAManagerError else {
+                    callback(.failure(.incompleteDeviceInfo))
+                    return
+                }
+                callback(.failure(otaError))
+                print("Error: \(error.localizedDescription)")
             }
+        }
+    }
+    
+    func getLatestReleaseInfo(deviceInfo: DeviceInfoToken, projectKey: ProjectKey) async throws -> LatestReleaseInfo {
+        do {
+            guard let releaseInfoRequest = HTTPRequest.getLatestReleaseInfo(token: deviceInfo, key: projectKey) else {
+                throw OTAManagerError.incompleteDeviceInfo
+            }
+            
+            let responseData = try await network.perform(releaseInfoRequest)
+                .firstValue
+            
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            // The .iso8601 decoding strategy does not support fractional seconds.
+            // decoder.dateDecodingStrategy = .iso8601
+            
+            // Instead, use ISO8601DateFormatter.
+            decoder.dateDecodingStrategy = .custom { decoder in
+                let formatter = ISO8601DateFormatter()
+                formatter.formatOptions.insert(.withFractionalSeconds)
+                
+                let container = try decoder.singleValueContainer()
+                let value = try container.decode(String.self)
+                return formatter.date(from: value) ?? Date.distantPast
+            }
+            guard let releaseInfo = try? decoder.decode(LatestReleaseInfo.self, from: responseData) else {
+                throw OTAManagerError.unableToParseResponse
+            }
+            return releaseInfo
+        } catch {
+            throw error
         }
     }
 }
@@ -85,4 +122,5 @@ public enum OTAManagerError: LocalizedError {
     case serviceNotFound
     case incompleteDeviceInfo
     case mdsKeyDecodeError
+    case unableToParseResponse
 }

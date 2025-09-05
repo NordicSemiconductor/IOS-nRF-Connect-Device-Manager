@@ -8,9 +8,11 @@
 
 import Foundation
 
+// MARK: - getLatestFirmware
+
 extension HTTPRequest {
     
-    static func getLatestFirmware(token: DeviceInfoToken, key: ProjectKey) -> HTTPRequest? {
+    static func getLatestReleaseInfo(token: DeviceInfoToken, key: ProjectKey) -> HTTPRequest? {
         let parameters: [String: String] = [
             "device_id": token.deviceSerialNumber,
             "hardware_version": token.hardwareVersion,
@@ -27,5 +29,46 @@ extension HTTPRequest {
             "Memfault-Project-Key": key.authKey
         ])
         return request
+    }
+}
+
+// MARK: - LatestReleaseInfo
+
+public struct LatestReleaseInfo: Codable {
+    
+    // MARK: Properties
+    
+    let id: Int
+    let createdDate: Date
+    let version: String
+    let revision: String
+    let mustPassThrough: Bool
+    let notes: String
+    let artifacts: [ReleaseArtifact]
+    let reason: String
+    let isDelta: Bool
+}
+
+// MARK: - ReleaseArtifact
+
+public struct ReleaseArtifact: Codable {
+    
+    // MARK: Properties
+    
+    let id: Int
+    let createdDate: Date
+    let type: String
+    let hardwareVersion: String
+    let filename: String
+    let fileSize: Int
+    let url: String
+    let md5: String
+    let sha1: String
+    let sha256: String
+    
+    // MARK: URL
+    
+    public func releaseURL() -> URL? {
+        return URL(string: url)
     }
 }
