@@ -19,6 +19,15 @@ protocol DeviceStatusDelegate: AnyObject {
     func bootloaderSlotReceived(_ slot: UInt64)
     func appInfoReceived(_ output: String)
     func mcuMgrParamsReceived(buffers: Int, size: Int)
+    func nRFCloudStatusChanged(_ status: nRFCloudStatus)
+}
+
+// MARK: - nRFCloudStatus
+
+enum nRFCloudStatus {
+    case unavailable(_ error: Error?)
+    case missingProjectKey(deviceInfo: DeviceInfoToken, error: Error)
+    case available(deviceInfo: DeviceInfoToken, projectKey: ProjectKey)
 }
 
 // MARK: - BaseViewController
@@ -46,6 +55,9 @@ final class BaseViewController: UITabBarController {
             }
             if let mcuMgrParams {
                 deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.buffers, size: mcuMgrParams.size)
+            }
+            if let nRFCloudStatus {
+                deviceStatusDelegate?.nRFCloudStatusChanged(nRFCloudStatus)
             }
         }
     }
@@ -76,12 +88,14 @@ final class BaseViewController: UITabBarController {
             deviceStatusDelegate?.connectionStateDidChange(peripheralState)
         }
     }
+    
     private var bootloader: BootloaderInfoResponse.Bootloader? {
         didSet {
             guard let bootloader else { return }
             deviceStatusDelegate?.bootloaderNameReceived(bootloader.description)
         }
     }
+    
     private var bootloaderMode: BootloaderInfoResponse.Mode? {
         didSet {
             if let bootloaderMode {
@@ -89,22 +103,32 @@ final class BaseViewController: UITabBarController {
             }
         }
     }
+    
     private var bootloaderSlot: UInt64? {
         didSet {
             guard let bootloaderSlot else { return }
             deviceStatusDelegate?.bootloaderSlotReceived(bootloaderSlot)
         }
     }
+    
     private var appInfoOutput: String? {
         didSet {
             guard let appInfoOutput else { return }
             deviceStatusDelegate?.appInfoReceived(appInfoOutput)
         }
     }
+    
     private var mcuMgrParams: (buffers: Int, size: Int)? {
         didSet {
             guard let mcuMgrParams else { return }
             deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.buffers, size: mcuMgrParams.size)
+        }
+    }
+    
+    private var nRFCloudStatus: nRFCloudStatus? {
+        didSet {
+            guard let nRFCloudStatus else { return }
+            deviceStatusDelegate?.nRFCloudStatusChanged(nRFCloudStatus)
         }
     }
     
@@ -168,7 +192,7 @@ extension BaseViewController {
         defaultManager.bootloaderInfo(query: .name) { [weak self] response, error in
             self?.bootloader = response?.bootloader
             guard response?.bootloader == .mcuboot else {
-                self?.onDeviceStatusFinished()
+                self?.requestNrfCloudInfo()
                 return
             }
             
@@ -177,11 +201,38 @@ extension BaseViewController {
                 
                 defaultManager.bootloaderInfo(query: .slot) { [weak self] response, error in
                     self?.bootloaderSlot = response?.activeSlot
-                    self?.onDeviceStatusFinished()
+                    self?.requestNrfCloudInfo()
                 }
             }
         }
     }
+    
+    // MARK: Cloud
+    
+    private func requestNrfCloudInfo() {
+        otaManager?.getDeviceInfoToken { [unowned self] result in
+            switch result {
+            case .success(let deviceInfo):
+                print("Obtained Device Info \(deviceInfo)")
+                otaManager?.getProjectKey() { [unowned self] result in
+                    switch result {
+                    case .success(let projectKey):
+                        print("Obtained Project Key \(projectKey)")
+                        self.nRFCloudStatus = .available(deviceInfo: deviceInfo, projectKey: projectKey)
+                        onDeviceStatusFinished()
+                    case .failure(let error):
+                        self.nRFCloudStatus = .missingProjectKey(deviceInfo: deviceInfo, error: error)
+                        onDeviceStatusFinished()
+                    }
+                }
+            case .failure(let error):
+                self.nRFCloudStatus = .unavailable(error)
+                onDeviceStatusFinished()
+            }
+        }
+    }
+    
+    // MARK: onDeviceStatusFinished
     
     private func onDeviceStatusFinished() {
         guard let statusInfoCallback else { return }
@@ -200,25 +251,6 @@ extension BaseViewController: PeripheralDelegate {
         switch state {
         case .connected:
             otaManager = OTAManager(peripheral.identifier)
-            otaManager?.getDeviceInfoToken { [unowned self] result in
-                switch result {
-                case .success(let deviceInfoToken):
-                    print("Obtained Device Info Token \(deviceInfoToken)")
-                    otaManager?.getProjectKey() { [unowned self] result in
-                        switch result {
-                        case .success(let projectKey):
-                            print("Obtained Project Key \(projectKey)")
-                            otaManager?.getLatestReleaseInfo(deviceInfo: deviceInfoToken, projectKey: projectKey) { releaseInfo in
-                                print(releaseInfo)
-                            }
-                        case .failure(let error):
-                            print("Error: \(error.localizedDescription)")
-                        }
-                    }
-                case .failure(let error):
-                    print("Error: \(error.localizedDescription)")
-                }
-            }
         case .disconnecting, .disconnected:
             // Set to false, because a DFU update might change things if that's what happened.
             deviceInfoRequested = false

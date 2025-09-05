@@ -19,6 +19,7 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
     @IBOutlet weak var bootloaderMode: UILabel!
     @IBOutlet weak var bootloaderSlot: UILabel!
     @IBOutlet weak var kernel: UILabel!
+    @IBOutlet weak var nRFCloudStatus: UILabel!
     @IBOutlet weak var actionSend: UIButton!
     @IBOutlet weak var message: UITextField!
     @IBOutlet weak var messageSent: UILabel!
@@ -136,6 +137,8 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
     }
 }
 
+// MARK: - DeviceStatusdelegate
+
 extension DeviceController: DeviceStatusDelegate {
     
     func connectionStateDidChange(_ state: PeripheralState) {
@@ -162,4 +165,14 @@ extension DeviceController: DeviceStatusDelegate {
         mcuMgrParams.text = "\(buffers) x \(size) bytes"
     }
     
+    func nRFCloudStatusChanged(_ status: nRFCloudStatus) {
+        switch status {
+        case .unavailable:
+            nRFCloudStatus.text = "UNAVAILABLE"
+        case .missingProjectKey:
+            nRFCloudStatus.text = "MISSING PROJECT KEY"
+        case .available:
+            nRFCloudStatus.text = "READY"
+        }
+    }
 }
