@@ -6,6 +6,7 @@
 
 import UIKit
 import iOSMcuManagerLibrary
+import iOSOtaLibrary
 import UniformTypeIdentifiers
 
 // MARK: - FirmwareUpgradeViewController
@@ -43,6 +44,45 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         importMenu.delegate = self
         importMenu.popoverPresentationController?.sourceView = actionSelect
         present(importMenu, animated: true, completion: nil)
+    }
+    
+    @IBAction func checkForUpdates(_ sender: UIButton) {
+        guard let imageController = parent as? ImageController,
+              let baseController = imageController.parent as? BaseViewController,
+              let peripheral = baseController.peripheral else { return }
+        otaManager = OTAManager(peripheral.basePeripheral.identifier)
+        
+        let alertController = UIAlertController(title: "Update", message: nil, preferredStyle: .alert)
+        
+        baseController.onDeviceStatusReady { [unowned self] in
+            switch self.cloudStatus {
+            case .unavailable(let error):
+                alertController.title = "nRF Cloud Update Unavailable"
+                break
+            case .missingProjectKey(_, error: let error):
+                // TODO: Allow pasting Project Key.
+                break
+            case .available(deviceInfo: let deviceInfo, projectKey: let projectKey):
+                otaManager?.getLatestReleaseInfo(deviceInfo: deviceInfo, projectKey: projectKey) { [unowned self] result in
+                    switch result {
+                    case .success(let resultInfo):
+                        alertController.title = "nRF Cloud Update Available"
+                        alertController.message = """
+                        Firmware version \(resultInfo.version)-\(resultInfo.revision) (\(resultInfo.latestRelease().sizeString())) is available with the following release notes:
+                        
+                        \(resultInfo.notes)
+                        """
+                        present(alertController, addingCancelAction: true)
+                    case .failure(let error):
+                        alertController.title = "Error Requesting Update"
+                        alertController.message = error.localizedDescription
+                        present(alertController, addingCancelAction: true)
+                    }
+                }
+            case .none:
+                break
+            }
+        }
     }
     
     @IBAction func eraseApplicationSettingsChanged(_ sender: UISwitch) {
@@ -108,11 +148,23 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     private var initialBytes: Int = 0
     private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
+    private var otaManager: OTAManager?
+    var cloudStatus: nRFCloudStatus?
+    
+    // MARK: viewDidLoad()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.translatesAutoresizingMaskIntoConstraints = false
         restoreBasicSettings()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        guard let imageController = parent as? ImageController,
+              let baseController = imageController.parent as? BaseViewController else { return }
+        baseController.deviceStatusDelegate = self
     }
     
     // MARK: Logic

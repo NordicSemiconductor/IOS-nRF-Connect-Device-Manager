@@ -27,6 +27,7 @@
 		5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273624ACA7F4008F528C /* IntroViewController.swift */; };
 		5266273824ACA883008F528C /* NordicButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273524ACA7A1008F528C /* NordicButton.swift */; };
 		5274C2622796CEC40043D7CA /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5274C2612796CEC40043D7CA /* SettingsViewController.swift */; };
+		AAB417AE2E6B3051002FE446 /* FirmwareUpgradeViewController+DeviceStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB417AD2E6B3051002FE446 /* FirmwareUpgradeViewController+DeviceStatus.swift */; };
 		AAC0F0312E670CD6006E0ADD /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0302E670CD6006E0ADD /* iOSMcuManagerLibrary */; };
 		AAC0F0342E670D38006E0ADD /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0332E670D38006E0ADD /* iOSMcuManagerLibrary */; };
 		AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0352E670D38006E0ADD /* iOSOtaLibrary */; };
@@ -59,6 +60,7 @@
 		5266273524ACA7A1008F528C /* NordicButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NordicButton.swift; sourceTree = "<group>"; };
 		5266273624ACA7F4008F528C /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		5274C2612796CEC40043D7CA /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		AAB417AD2E6B3051002FE446 /* FirmwareUpgradeViewController+DeviceStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FirmwareUpgradeViewController+DeviceStatus.swift"; sourceTree = "<group>"; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A285720CB44AF0061F0EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 				5215762E2125B59400C21B0C /* FilesController.swift */,
 				5215762C212320F300C21B0C /* DiagnosticsController.swift */,
 				5264C1D5210E26C20044FBBA /* FirmwareUpgradeViewController.swift */,
+				AAB417AD2E6B3051002FE446 /* FirmwareUpgradeViewController+DeviceStatus.swift */,
 				5264C1D7210F32A60044FBBA /* FirmwareUploadViewController.swift */,
 				5264C1DB210F63850044FBBA /* ImagesViewController.swift */,
 				5274C2612796CEC40043D7CA /* SettingsViewController.swift */,
@@ -302,6 +305,7 @@
 				5264C1D8210F32A60044FBBA /* FirmwareUploadViewController.swift in Sources */,
 				5246368E2108DF23008B3D5B /* DiscoveredPeripheral.swift in Sources */,
 				5264C1D6210E26C20044FBBA /* FirmwareUpgradeViewController.swift in Sources */,
+				AAB417AE2E6B3051002FE446 /* FirmwareUpgradeViewController+DeviceStatus.swift in Sources */,
 				BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */,
 				524DCFD9210B4241000E110D /* UIColor.swift in Sources */,
 				5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */,
