@@ -47,11 +47,6 @@ public struct LatestReleaseInfo: Codable {
     public let artifacts: [ReleaseArtifact]
     public let reason: String
     public let isDelta: Bool
-    
-    public func latestRelease() -> ReleaseArtifact {
-        return artifacts
-            .first!
-    }
 }
 
 // MARK: - ReleaseArtifact
