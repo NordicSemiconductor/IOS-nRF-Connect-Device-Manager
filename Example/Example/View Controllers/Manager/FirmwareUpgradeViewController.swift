@@ -198,8 +198,9 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             switch result {
             case .success(let resultInfo):
                 let alertController = UIAlertController(title: "nRF Cloud Update Available", message: nil, preferredStyle: .alert)
+                let artifact: ReleaseArtifact! = resultInfo.artifacts.first
                 alertController.message = """
-                Firmware version \(resultInfo.version)-\(resultInfo.revision) (\(resultInfo.latestRelease().sizeString())) is available with the following release notes:
+                Firmware version \(resultInfo.version)-\(resultInfo.revision) (\(artifact.sizeString())) is available with the following release notes:
                 
                 \(resultInfo.notes)
                 """
@@ -215,7 +216,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private func download(release: LatestReleaseInfo) {
-        let artifact = release.latestRelease()
+        let artifact: ReleaseArtifact! = release.artifacts.first
         otaManager?.download(artifact: artifact) { [unowned self] result in
             switch result {
             case .success(let fileURL):
