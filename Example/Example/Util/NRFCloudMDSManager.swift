@@ -422,8 +422,20 @@ extension NRFCloudMDSManager: CBPeripheralDelegate {
             return
         }
         
+        // Validate minimum data length (at least sequence byte + 1 byte of payload)
+        guard data.count >= 2 else {
+            print("[MDS] Received chunk too small: \(data.count) bytes")
+            return
+        }
+        
+        // Extract sequence number from byte[0] (bits 0-4 contain counter 0-31)
+        let sequenceNumber = data[0] & 0x1F
+        
+        // Strip the first byte (sequence counter) before forwarding
+        let chunkPayload = data.dropFirst()
+        
         chunksReceived += 1
-        print("[MDS] Received chunk #\(chunksReceived): \(data.count) bytes")
+        print("[MDS] Received chunk #\(chunksReceived) (seq: \(sequenceNumber)): \(data.count) bytes total, \(chunkPayload.count) bytes payload")
         
         // Notify delegate immediately when chunk is received
         DispatchQueue.main.async { [weak self] in
@@ -431,8 +443,8 @@ extension NRFCloudMDSManager: CBPeripheralDelegate {
             self.delegate?.mdsManager(self, didReceiveChunk: self.chunksReceived, forwarded: self.chunksForwarded)
         }
         
-        // Forward the chunk to Memfault cloud
-        forwardChunkToMemfault(data: data)
+        // Forward the chunk payload (without sequence byte) to Memfault cloud
+        forwardChunkToMemfault(data: Data(chunkPayload))
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
