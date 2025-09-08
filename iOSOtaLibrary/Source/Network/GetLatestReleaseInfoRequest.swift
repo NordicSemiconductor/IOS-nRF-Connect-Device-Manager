@@ -1,5 +1,5 @@
 //
-//  GetFirmwareRequest.swift
+//  GetLatestReleaseInfoRequest.swift
 //  iOSOtaLibrary
 //
 //  Created by Dinesh Harjani on 3/9/25.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-// MARK: - getLatestFirmware
+// MARK: - getLatestReleaseInfo
 
 extension HTTPRequest {
     
@@ -38,15 +38,20 @@ public struct LatestReleaseInfo: Codable {
     
     // MARK: Properties
     
-    let id: Int
-    let createdDate: Date
-    let version: String
-    let revision: String
-    let mustPassThrough: Bool
-    let notes: String
-    let artifacts: [ReleaseArtifact]
-    let reason: String
-    let isDelta: Bool
+    public let id: Int
+    public let createdDate: Date
+    public let version: String
+    public let revision: String
+    public let mustPassThrough: Bool
+    public let notes: String
+    public let artifacts: [ReleaseArtifact]
+    public let reason: String
+    public let isDelta: Bool
+    
+    public func latestRelease() -> ReleaseArtifact {
+        return artifacts
+            .first!
+    }
 }
 
 // MARK: - ReleaseArtifact
@@ -55,18 +60,28 @@ public struct ReleaseArtifact: Codable {
     
     // MARK: Properties
     
-    let id: Int
-    let createdDate: Date
-    let type: String
-    let hardwareVersion: String
-    let filename: String
-    let fileSize: Int
-    let url: String
-    let md5: String
-    let sha1: String
-    let sha256: String
+    public let id: Int
+    public let createdDate: Date
+    public let type: String
+    public let hardwareVersion: String
+    public let filename: String
+    public let fileSize: Int
+    public let url: String
+    public let md5: String
+    public let sha1: String
+    public let sha256: String
     
-    // MARK: URL
+    // MARK: sizeString()
+    
+    public func sizeString() -> String {
+        guard #available(iOS 16.0, macCatalyst 16.0, macOS 13.0, *) else {
+            return "\(fileSize) bytes"
+        }
+        let fileSizeMeasurement = Measurement<UnitInformationStorage>(value: Double(fileSize), unit: .bytes)
+        return fileSizeMeasurement.formatted(.byteCount(style: .file))
+    }
+    
+    // MARK: releaseURL()
     
     public func releaseURL() -> URL? {
         return URL(string: url)

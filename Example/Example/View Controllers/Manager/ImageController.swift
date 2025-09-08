@@ -27,6 +27,8 @@ final class ImageController: UITableViewController {
     /// height when data are obtained and height changes.
     private var imagesViewController: ImagesViewController!
     
+    var cloudStatus: nRFCloudStatus?
+    
     // MARK: UIViewController
     
     override func viewDidAppear(_ animated: Bool) {
@@ -140,6 +142,7 @@ extension ImageController: DeviceStatusDelegate {
     }
     
     func nRFCloudStatusChanged(_ status: nRFCloudStatus) {
+        cloudStatus = status
         switch status {
         case .unavailable:
             nRFCloudStatus.text = "UNAVAILABLE"

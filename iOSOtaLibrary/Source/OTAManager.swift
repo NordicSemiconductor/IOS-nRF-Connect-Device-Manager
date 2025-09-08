@@ -38,6 +38,9 @@ public extension OTAManager {
     
     // MARK: Release Info
     
+    /**
+     Callback (i.e. pre-concurrency) variant of ``OTAManager/getLatestReleaseInfo(deviceInfo:projectKey:)`` API.
+     */
     func getLatestReleaseInfo(deviceInfo: DeviceInfoToken, projectKey: ProjectKey, callback: @escaping (Result<LatestReleaseInfo, OTAManagerError>) -> ()) {
         Task { @MainActor in
             do {
@@ -49,7 +52,6 @@ public extension OTAManager {
                     return
                 }
                 callback(.failure(otaError))
-                print("Error: \(error.localizedDescription)")
             }
         }
     }
@@ -81,6 +83,48 @@ public extension OTAManager {
                 throw OTAManagerError.unableToParseResponse
             }
             return releaseInfo
+        } catch {
+            throw error
+        }
+    }
+    
+    // MARK: Download Artifact
+    
+    /**
+     Callback (i.e. pre-concurrency) variant of ``OTAManager/download(artifact:)`` API.
+     */
+    func download(artifact: ReleaseArtifact, callback: @escaping (Result<URL, OTAManagerError>) -> ()) {
+        Task { @MainActor in
+            do {
+                let url = try await download(artifact: artifact)
+                callback(.success(url))
+            } catch {
+                guard let otaError = error as? OTAManagerError else {
+                    callback(.failure(.unableToParseResponse))
+                    return
+                }
+                callback(.failure(otaError))
+            }
+        }
+    }
+    
+    /**
+     - returns: A local temporary URL to the downloaded artifact on success. Keep in mind this is temporary local storage so, move the file to a more secure location if you intend to keep it.
+     */
+    func download(artifact: ReleaseArtifact) async throws -> URL {
+        guard let parsedURL = artifact.releaseURL() else {
+            throw OTAManagerError.invalidArtifactURL
+        }
+        
+        let downloadRequest = HTTPRequest(url: parsedURL)
+        let responseData = try await network.perform(downloadRequest)
+            .firstValue
+        
+        let tempDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+        let localArtifactURL = tempDirectoryURL.appendingPathComponent(artifact.filename)
+        do {
+            try responseData.write(to: localArtifactURL)
+            return localArtifactURL
         } catch {
             throw error
         }
@@ -123,4 +167,5 @@ public enum OTAManagerError: LocalizedError {
     case incompleteDeviceInfo
     case mdsKeyDecodeError
     case unableToParseResponse
+    case invalidArtifactURL
 }

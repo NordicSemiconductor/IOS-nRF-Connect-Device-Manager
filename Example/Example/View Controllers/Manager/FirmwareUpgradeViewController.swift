@@ -6,6 +6,7 @@
 
 import UIKit
 import iOSMcuManagerLibrary
+import iOSOtaLibrary
 import UniformTypeIdentifiers
 
 // MARK: - FirmwareUpgradeViewController
@@ -18,6 +19,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     @IBOutlet weak var actionBuffers: UIButton!
     @IBOutlet weak var actionAlignment: UIButton!
     @IBOutlet weak var actionSelect: UIButton!
+    @IBOutlet weak var actionCheckForUpdates: UIButton!
     @IBOutlet weak var actionStart: UIButton!
     @IBOutlet weak var actionPause: UIButton!
     @IBOutlet weak var actionResume: UIButton!
@@ -45,6 +47,27 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         present(importMenu, animated: true, completion: nil)
     }
     
+    @IBAction func checkForUpdates(_ sender: UIButton) {
+        guard let imageController = parent as? ImageController,
+              let baseController = imageController.parent as? BaseViewController,
+              let peripheral = baseController.peripheral else { return }
+        otaManager = OTAManager(peripheral.basePeripheral.identifier)
+        
+        baseController.onDeviceStatusReady { [unowned self] in
+            switch imageController.cloudStatus {
+            case .unavailable(let error):
+                let alertController = UIAlertController(title: "nRF Cloud Update Unavailable", message: error?.localizedDescription, preferredStyle: .alert)
+                present(alertController, addingCancelAction: true)
+            case .missingProjectKey(let deviceInfo, _):
+                setProjectKey(for: deviceInfo)
+            case .available(let deviceInfo, let projectKey):
+                requestLatestReleaseInfo(for: deviceInfo, using: projectKey)
+            case .none:
+                break
+            }
+        }
+    }
+    
     @IBAction func eraseApplicationSettingsChanged(_ sender: UISwitch) {
         dfuManagerConfiguration.eraseAppSettings = sender.isOn
     }
@@ -62,7 +85,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     @IBAction func start(_ sender: UIButton) {
-        guard let baseController = parent as? BaseViewController else { return }
+        guard let imageController = parent as? ImageController,
+              let baseController = imageController.parent as? BaseViewController else { return }
         baseController.onDeviceStatusReady { [unowned self] in
             startPackageDFU()
         }
@@ -108,6 +132,9 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     private var initialBytes: Int = 0
     private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
+    private var otaManager: OTAManager?
+    
+    // MARK: viewDidLoad()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -151,6 +178,65 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             })
         }
         present(alertController, addingCancelAction: true)
+    }
+    
+    private func setProjectKey(for deviceInfo: DeviceInfoToken) {
+        let alertController = UIAlertController(title: "Missing Project Key", message: "nRF Cloud Project Key is required to continue.", preferredStyle: .alert)
+        alertController.addTextField()
+        alertController.addAction(UIAlertAction(title: "Continue", style: .default) { [unowned self] action in
+            guard let textField = alertController.textFields?.first,
+                  let keyString = textField.text else { return }
+            let key = ProjectKey(keyString)
+            requestLatestReleaseInfo(for: deviceInfo, using: key)
+        })
+        present(alertController, addingCancelAction: true)
+    }
+    
+    private func requestLatestReleaseInfo(for deviceInfo: DeviceInfoToken,
+                                          using projectKey: ProjectKey) {
+        otaManager?.getLatestReleaseInfo(deviceInfo: deviceInfo, projectKey: projectKey) { [unowned self] result in
+            switch result {
+            case .success(let resultInfo):
+                let alertController = UIAlertController(title: "nRF Cloud Update Available", message: nil, preferredStyle: .alert)
+                alertController.message = """
+                Firmware version \(resultInfo.version)-\(resultInfo.revision) (\(resultInfo.latestRelease().sizeString())) is available with the following release notes:
+                
+                \(resultInfo.notes)
+                """
+                alertController.addAction(UIAlertAction(title: "Download", style: .default) { [unowned self] action in
+                    download(release: resultInfo)
+                })
+                present(alertController, addingCancelAction: true)
+            case .failure(let error):
+                let alertController = UIAlertController(title: "Error Requesting Update", message: error.localizedDescription, preferredStyle: .alert)
+                present(alertController, addingCancelAction: true)
+            }
+        }
+    }
+    
+    private func download(release: LatestReleaseInfo) {
+        let artifact = release.latestRelease()
+        otaManager?.download(artifact: artifact) { [unowned self] result in
+            switch result {
+            case .success(let fileURL):
+                select(fileURL)
+            case .failure(let error):
+                guard let url = artifact.releaseURL() else { return }
+                onParseError(error, for: url)
+            }
+        }
+    }
+    
+    private func select(_ url: URL) {
+        self.package = nil
+        
+        switch parseAsMcuMgrPackage(url) {
+        case .success(let package):
+            self.package = package
+        case .failure(let error):
+            onParseError(error, for: url)
+        }
+        (parent as? ImageController)?.innerViewReloaded()
     }
     
     private func startPackageDFU() {
@@ -316,6 +402,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionPause.isHidden = false
         actionCancel.isHidden = false
         actionSelect.isEnabled = false
+        actionCheckForUpdates.isEnabled = false
         eraseSwitch.isEnabled = false
         
         initialBytes = 0
@@ -360,6 +447,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         
         actionStart.isEnabled = false
         actionSelect.isEnabled = true
+        actionCheckForUpdates.isEnabled = true
         eraseSwitch.isEnabled = true
         package = nil
     }
@@ -375,6 +463,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionStart.isHidden = false
         
         actionSelect.isEnabled = true
+        actionCheckForUpdates.isEnabled = true
         eraseSwitch.isEnabled = true
         status.textColor = .systemRed
         status.text = error.localizedDescription
@@ -392,6 +481,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         actionAlignment.isHidden = false
         actionStart.isHidden = false
         actionSelect.isEnabled = true
+        actionCheckForUpdates.isEnabled = true
         eraseSwitch.isEnabled = true
         status.textColor = .primary
         status.text = "CANCELLED"
@@ -448,15 +538,7 @@ extension FirmwareUpgradeViewController: UIDocumentPickerDelegate {
     
     func documentPicker(_ controller: UIDocumentPickerViewController,
                         didPickDocumentAt url: URL) {
-        self.package = nil
-        
-        switch parseAsMcuMgrPackage(url) {
-        case .success(let package):
-            self.package = package
-        case .failure(let error):
-            onParseError(error, for: url)
-        }
-        (parent as? ImageController)?.innerViewReloaded()
+        select(url)
     }
     
     // MARK: - Private
@@ -478,6 +560,7 @@ extension FirmwareUpgradeViewController: UIDocumentPickerDelegate {
             status.text = "READY"
             status.numberOfLines = 0
             actionStart.isEnabled = true
+            actionCheckForUpdates.isEnabled = true
             
             dfuSwapTime.text = "\(dfuManagerConfiguration.estimatedSwapTime)s"
             dfuSwapTime.numberOfLines = 0
