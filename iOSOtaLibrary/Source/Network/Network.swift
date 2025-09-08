@@ -18,7 +18,7 @@ public final class Network {
     // MARK: - Properties
     
     private let log = OSLog(subsystem: "iOSOtaLibrary", category: "network")
-    private lazy var session = URLSession(configuration: .multiPathEnabled)
+    private lazy var session = URLSession(configuration: .default)
     
     private var reachability: SCNetworkReachability?
     
@@ -43,7 +43,6 @@ public extension Network {
                 }
                 return true
             }
-            .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
     
@@ -94,7 +93,6 @@ public extension Network {
                     }
                 }
             }
-            .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
         
         return getReachabilityPublisher()
@@ -138,7 +136,6 @@ public extension Network {
                 }
                 throw error
             }
-            .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
 }

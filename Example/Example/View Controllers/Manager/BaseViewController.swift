@@ -20,6 +20,7 @@ protocol DeviceStatusDelegate: AnyObject {
     func appInfoReceived(_ output: String)
     func mcuMgrParamsReceived(buffers: Int, size: Int)
     func nRFCloudStatusChanged(_ status: nRFCloudStatus)
+    func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int)
 }
 
 // MARK: - nRFCloudStatus
@@ -28,6 +29,15 @@ enum nRFCloudStatus {
     case unavailable(_ error: Error?)
     case missingProjectKey(_ deviceInfo: DeviceInfoToken, _ error: Error)
     case available(_ deviceInfo: DeviceInfoToken, _ projectKey: ProjectKey)
+}
+
+// MARK: - ObservabilityStatus
+
+enum ObservabilityStatus {
+    case unavailable(_ error: Error?)
+    case receivedEvent(_ event: ObservabilityDeviceEvent)
+    case connectionClosed
+    case errorEvent(_ error: Error)
 }
 
 // MARK: - BaseViewController
@@ -56,8 +66,11 @@ final class BaseViewController: UITabBarController {
             if let mcuMgrParams {
                 deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.buffers, size: mcuMgrParams.size)
             }
-            if let nRFCloudStatus {
-                deviceStatusDelegate?.nRFCloudStatusChanged(nRFCloudStatus)
+            if let otaStatus {
+                deviceStatusDelegate?.nRFCloudStatusChanged(otaStatus)
+            }
+            if let observabilityStatus {
+                deviceStatusDelegate?.observabilityStatusChanged(observabilityStatus, pendingCount: observabilityPendingChunks, pendingBytes: observabilityPendingBytes, uploadedCount: observabilityUploadedChunks, uploadedBytes: observabilityUploadedBytes)
             }
         }
     }
@@ -79,6 +92,15 @@ final class BaseViewController: UITabBarController {
     // MARK: Private Properties
     
     private var otaManager: OTAManager?
+    
+    private var observabilityTask: Task<Void, Never>?
+    private var observabilityIdentifier: UUID?
+    private var observabilityManager: ObservabilityManager?
+    private var observabilityPendingChunks: Int = 0
+    private var observabilityPendingBytes: Int = 0
+    private var observabilityUploadedBytes: Int = 0
+    private var observabilityUploadedChunks: Int = 0
+    
     private var deviceInfoRequested: Bool = false
     private var statusInfoCallback: (() -> ())?
     
@@ -125,10 +147,17 @@ final class BaseViewController: UITabBarController {
         }
     }
     
-    private var nRFCloudStatus: nRFCloudStatus? {
+    private var otaStatus: nRFCloudStatus? {
         didSet {
-            guard let nRFCloudStatus else { return }
-            deviceStatusDelegate?.nRFCloudStatusChanged(nRFCloudStatus)
+            guard let otaStatus else { return }
+            deviceStatusDelegate?.nRFCloudStatusChanged(otaStatus)
+        }
+    }
+    
+    private var observabilityStatus: ObservabilityStatus? {
+        didSet {
+            guard let observabilityStatus else { return }
+            deviceStatusDelegate?.observabilityStatusChanged(observabilityStatus, pendingCount: observabilityPendingChunks, pendingBytes: observabilityPendingBytes, uploadedCount: observabilityUploadedChunks, uploadedBytes: observabilityUploadedBytes)
         }
     }
     
@@ -154,6 +183,11 @@ final class BaseViewController: UITabBarController {
     // MARK: viewWillDisappear()
     
     override func viewWillDisappear(_ animated: Bool) {
+        if let observabilityIdentifier {
+            observabilityManager?.disconnect(from: observabilityIdentifier)
+            observabilityTask?.cancel()
+            observabilityTask = nil
+        }
         transport?.close()
     }
 }
@@ -192,7 +226,7 @@ extension BaseViewController {
         defaultManager.bootloaderInfo(query: .name) { [weak self] response, error in
             self?.bootloader = response?.bootloader
             guard response?.bootloader == .mcuboot else {
-                self?.requestNrfCloudInfo()
+                self?.requestOTAReleaseInfo()
                 return
             }
             
@@ -201,15 +235,15 @@ extension BaseViewController {
                 
                 defaultManager.bootloaderInfo(query: .slot) { [weak self] response, error in
                     self?.bootloaderSlot = response?.activeSlot
-                    self?.requestNrfCloudInfo()
+                    self?.requestOTAReleaseInfo()
                 }
             }
         }
     }
     
-    // MARK: Cloud
+    // MARK: OTA
     
-    private func requestNrfCloudInfo() {
+    private func requestOTAReleaseInfo() {
         otaManager?.getDeviceInfoToken { [unowned self] result in
             switch result {
             case .success(let deviceInfo):
@@ -218,15 +252,15 @@ extension BaseViewController {
                     switch result {
                     case .success(let projectKey):
                         print("Obtained Project Key \(projectKey)")
-                        self.nRFCloudStatus = .available(deviceInfo, projectKey)
+                        self.otaStatus = .available(deviceInfo, projectKey)
                         onDeviceStatusFinished()
                     case .failure(let error):
-                        self.nRFCloudStatus = .missingProjectKey(deviceInfo, error)
+                        self.otaStatus = .missingProjectKey(deviceInfo, error)
                         onDeviceStatusFinished()
                     }
                 }
             case .failure(let error):
-                self.nRFCloudStatus = .unavailable(error)
+                self.otaStatus = .unavailable(error)
                 onDeviceStatusFinished()
             }
         }
@@ -239,6 +273,52 @@ extension BaseViewController {
         statusInfoCallback()
         deviceInfoRequested = true
         self.statusInfoCallback = nil
+        launchObservabilityTask()
+    }
+    
+    // MARK: Observability
+    
+    private func launchObservabilityTask() {
+        observabilityTask = Task { @MainActor [unowned self] in
+            let manager: ObservabilityManager! = observabilityManager
+            let observabilityIdentifier: UUID! = observabilityIdentifier
+            let observabilityStream = manager.connectToDevice(observabilityIdentifier)
+            do {
+                for try await event in observabilityStream {
+                    processObservabilityEvent(event.event)
+                    observabilityStatus = .receivedEvent(event.event)
+                }
+                print("STOPPED Listening to \(observabilityIdentifier.uuidString) Connection Events.")
+                observabilityStatus = .connectionClosed
+            } catch let otaError as OTAManagerError {
+                print("CAUGHT OTAManagerError \(otaError.localizedDescription)")
+                observabilityStatus = .unavailable(otaError)
+            } catch let error {
+                print("CAUGHT Error \(error.localizedDescription) Listening to \(observabilityIdentifier.uuidString) Connection Events.")
+                observabilityStatus = .errorEvent(error)
+            }
+        }
+    }
+    
+    private func processObservabilityEvent(_ observabilityEvent: ObservabilityDeviceEvent) {
+        switch observabilityEvent {
+        case .updatedChunk(let chunk, let status):
+            switch status {
+            case .receivedAndPendingUpload:
+                observabilityPendingBytes += chunk.data.count
+                observabilityPendingChunks += 1
+            case .success:
+                observabilityPendingBytes -= chunk.data.count
+                observabilityPendingChunks -= 1
+                
+                observabilityUploadedBytes += chunk.data.count
+                observabilityUploadedChunks += 1
+            default:
+                break
+            }
+        default:
+            break
+        }
     }
 }
 
@@ -251,10 +331,16 @@ extension BaseViewController: PeripheralDelegate {
         switch state {
         case .connected:
             otaManager = OTAManager(peripheral.identifier)
+            observabilityManager = ObservabilityManager()
+            observabilityIdentifier = peripheral.identifier
         case .disconnecting, .disconnected:
             // Set to false, because a DFU update might change things if that's what happened.
             deviceInfoRequested = false
             otaManager = nil
+            observabilityIdentifier = nil
+            observabilityManager = nil
+            observabilityTask?.cancel()
+            observabilityTask = nil
         default:
             // Nothing to do here.
             break
