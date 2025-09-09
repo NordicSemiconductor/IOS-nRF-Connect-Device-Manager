@@ -322,7 +322,7 @@
                             <color key="textColor" systemColor="secondaryLabelColor"/>
                             <nil key="highlightedColor"/>
                         </label>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="By default, the scanner displays only devices that advertise SMP service UUID (8D53DC1D-1DB7-4CD3-868B-8A527460AA84)." lineBreakMode="tailTruncation" numberOfLines="5" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bLy-1h-z92">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="By default, the scanner displays only devices that have a name." lineBreakMode="tailTruncation" numberOfLines="5" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bLy-1h-z92">
                             <rect key="frame" x="10.333333333333343" y="329.66666666666669" width="341.66666666666663" height="26.333333333333314"/>
                             <fontDescription key="fontDescription" type="system" pointSize="11"/>
                             <color key="textColor" systemColor="secondaryLabelColor"/>
@@ -1585,7 +1585,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="106"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Only devices advertising SMP UUID" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xte-Te-n8c">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Show only devices with names" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xte-Te-n8c">
                                 <rect key="frame" x="16" y="67" width="230" height="17"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <nil key="textColor"/>
@@ -1631,7 +1631,7 @@
                     <size key="freeformSize" width="320" height="106"/>
                     <connections>
                         <outlet property="filterByRssi" destination="g3p-1R-czM" id="Pdb-eg-LjL"/>
-                        <outlet property="filterByUuid" destination="tTw-of-mRp" id="c7g-La-xp6"/>
+                        <outlet property="filterByName" destination="tTw-of-mRp" id="c7g-La-xp6"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="j1V-oG-NMP" userLabel="First Responder" sceneMemberID="firstResponder"/>
