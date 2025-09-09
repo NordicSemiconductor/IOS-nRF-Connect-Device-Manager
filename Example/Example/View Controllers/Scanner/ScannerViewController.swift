@@ -17,7 +17,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
     private var discoveredPeripherals = [DiscoveredPeripheral]()
     private var filteredPeripherals = [DiscoveredPeripheral]()
     
-    private var filterByUuid: Bool!
+    private var filterByName: Bool!
     private var filterByRssi: Bool!
     
     @IBAction func aboutTapped(_ sender: UIBarButtonItem) {
@@ -31,7 +31,8 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
         centralManager = CBCentralManager()
         centralManager.delegate = self
         
-        filterByUuid = UserDefaults.standard.bool(forKey: "filterByUuid")
+        // Default to true to filter devices by name
+        filterByName = UserDefaults.standard.object(forKey: "filterByName") != nil ? UserDefaults.standard.bool(forKey: "filterByName") : true
         filterByRssi = UserDefaults.standard.bool(forKey: "filterByRssi")
     }
     
@@ -77,7 +78,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
         case "showFilter":
             let filterController = segue.destination as! ScannerFilterViewController
             filterController.popoverPresentationController?.delegate = self
-            filterController.filterByUuidEnabled = filterByUuid
+            filterController.filterByNameEnabled = filterByName
             filterController.filterByRssiEnabled = filterByRssi
             filterController.delegate = self
         case "connect":
@@ -95,10 +96,10 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
     }
     
     // MARK: - Filter delegate
-    func filterSettingsDidChange(filterByUuid: Bool, filterByRssi: Bool) {
-        self.filterByUuid = filterByUuid
+    func filterSettingsDidChange(filterByName: Bool, filterByRssi: Bool) {
+        self.filterByName = filterByName
         self.filterByRssi = filterByRssi
-        UserDefaults.standard.set(filterByUuid, forKey: "filterByUuid")
+        UserDefaults.standard.set(filterByName, forKey: "filterByName")
         UserDefaults.standard.set(filterByRssi, forKey: "filterByRssi")
         
         filteredPeripherals.removeAll()
@@ -232,9 +233,12 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
     /// - returns: True, if the peripheral matches the filter,
     ///   false otherwise.
     private func matchesFilters(_ discoveredPeripheral: DiscoveredPeripheral) -> Bool {
-        let defaultTransportConfiguration = DefaultTransportConfiguration()
-        if filterByUuid && discoveredPeripheral.advertisedServices?.contains(defaultTransportConfiguration.serviceUUID) != true {
-            return false
+        // Filter by name if the name filter switch is on
+        if filterByName {
+            // Only show devices with a name (not "N/A" or empty)
+            if discoveredPeripheral.advertisedName.isEmpty || discoveredPeripheral.advertisedName == "N/A" {
+                return false
+            }
         }
         if filterByRssi && discoveredPeripheral.highestRSSI.decimalValue < -50 {
             return false

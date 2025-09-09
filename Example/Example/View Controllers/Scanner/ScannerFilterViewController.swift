@@ -10,31 +10,31 @@ import UIKit
 
 protocol ScannerFilterDelegate: AnyObject {
     /// Called when user modifies the filter.
-    func filterSettingsDidChange(filterByUuid: Bool, filterByRssi: Bool)
+    func filterSettingsDidChange(filterByName: Bool, filterByRssi: Bool)
 }
 
 // MARK: - ScannerFilterViewController
 
 class ScannerFilterViewController: UIViewController {
     
-    @IBOutlet weak var filterByUuid: UISwitch!
+    @IBOutlet weak var filterByName: UISwitch!
     @IBOutlet weak var filterByRssi: UISwitch!
     
-    var filterByUuidEnabled: Bool!
+    var filterByNameEnabled: Bool!
     var filterByRssiEnabled: Bool!
     weak var delegate: ScannerFilterDelegate?
     
     @IBAction func filterValueChanged(_ sender: UISwitch) {
-        filterByUuidEnabled = filterByUuid.isOn
+        filterByNameEnabled = filterByName.isOn
         filterByRssiEnabled = filterByRssi.isOn
         
         delegate?.filterSettingsDidChange(
-            filterByUuid: filterByUuidEnabled,
+            filterByName: filterByNameEnabled,
             filterByRssi: filterByRssiEnabled)
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        filterByUuid.isOn = filterByUuidEnabled
+        filterByName.isOn = filterByNameEnabled
         filterByRssi.isOn = filterByRssiEnabled
     }
 }
