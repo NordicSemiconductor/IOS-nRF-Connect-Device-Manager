@@ -1535,58 +1535,10 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
-                            <tableViewSection headerTitle="Stats" id="ywD-Cp-52V">
-                                <cells>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="103" id="KLh-gL-WXN">
-                                        <rect key="frame" x="0.0" y="443.33334350585938" width="375" height="103"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KLh-gL-WXN" id="A6z-ZO-LBY">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="103"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap Refresh button to download stats." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yek-7p-7Xm">
-                                                    <rect key="frame" x="16" y="17" width="343" height="20.333333333333329"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" systemColor="secondaryLabelColor"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VAk-gF-u9n">
-                                                    <rect key="frame" x="16" y="49.333333333333336" width="359" height="1"/>
-                                                    <color key="backgroundColor" systemColor="separatorColor"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="height" constant="1" id="psm-y1-Cf9"/>
-                                                    </constraints>
-                                                </view>
-                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WMt-WT-pR6">
-                                                    <rect key="frame" x="304" y="60.333333333333336" width="55" height="31.666666666666664"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="55" id="QYe-Ff-u40"/>
-                                                    </constraints>
-                                                    <state key="normal" title="Refresh"/>
-                                                    <connections>
-                                                        <action selector="refreshTapped:" destination="HbD-Bf-mkl" eventType="touchUpInside" id="Pet-gB-yeB"/>
-                                                    </connections>
-                                                </button>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstItem="Yek-7p-7Xm" firstAttribute="leading" secondItem="A6z-ZO-LBY" secondAttribute="leadingMargin" id="8wY-Ov-7OV"/>
-                                                <constraint firstItem="WMt-WT-pR6" firstAttribute="top" secondItem="VAk-gF-u9n" secondAttribute="bottom" constant="10" id="abT-dK-xYw"/>
-                                                <constraint firstAttribute="trailing" secondItem="VAk-gF-u9n" secondAttribute="trailing" id="dVW-E7-K6x"/>
-                                                <constraint firstItem="Yek-7p-7Xm" firstAttribute="top" secondItem="A6z-ZO-LBY" secondAttribute="topMargin" constant="6" id="eAm-13-S1S"/>
-                                                <constraint firstItem="WMt-WT-pR6" firstAttribute="trailing" secondItem="A6z-ZO-LBY" secondAttribute="trailingMargin" id="fwR-G0-CBs"/>
-                                                <constraint firstAttribute="trailingMargin" secondItem="Yek-7p-7Xm" secondAttribute="trailing" id="u6r-Yl-9i1"/>
-                                                <constraint firstItem="VAk-gF-u9n" firstAttribute="leading" secondItem="A6z-ZO-LBY" secondAttribute="leadingMargin" id="xDc-nh-lde"/>
-                                                <constraint firstItem="VAk-gF-u9n" firstAttribute="top" secondItem="Yek-7p-7Xm" secondAttribute="bottom" constant="12" id="xSq-TP-kar"/>
-                                                <constraint firstAttribute="bottomMargin" secondItem="WMt-WT-pR6" secondAttribute="bottom" id="xUe-mg-pzT"/>
-                                            </constraints>
-                                        </tableViewCellContentView>
-                                    </tableViewCell>
-                                </cells>
-                            </tableViewSection>
                             <tableViewSection headerTitle="Observability" id="t6Q-6q-HS3" userLabel="Observability">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="158" id="tVh-Ae-CNb">
-                                        <rect key="frame" x="0.0" y="602.33334350585938" width="375" height="158"/>
+                                        <rect key="frame" x="0.0" y="443.33334350585938" width="375" height="158"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="tVh-Ae-CNb" id="gHY-GU-L7l">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="158"/>
@@ -1651,6 +1603,54 @@
                                                 <constraint firstItem="jv6-cP-034" firstAttribute="leading" secondItem="S2d-Tn-tat" secondAttribute="leading" id="fZy-LT-9x3"/>
                                                 <constraint firstItem="nSJ-Zc-3to" firstAttribute="leading" secondItem="gHY-GU-L7l" secondAttribute="leadingMargin" id="hOm-Ll-jyv"/>
                                                 <constraint firstItem="jv6-cP-034" firstAttribute="trailing" secondItem="S2d-Tn-tat" secondAttribute="trailing" id="han-tf-Xhl"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                            <tableViewSection headerTitle="Stats" id="ywD-Cp-52V">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" rowHeight="103" id="KLh-gL-WXN">
+                                        <rect key="frame" x="0.0" y="657.33334350585938" width="375" height="103"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KLh-gL-WXN" id="A6z-ZO-LBY">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="103"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap Refresh button to download stats." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yek-7p-7Xm">
+                                                    <rect key="frame" x="16" y="17" width="343" height="20.333333333333329"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" systemColor="secondaryLabelColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VAk-gF-u9n">
+                                                    <rect key="frame" x="16" y="49.333333333333336" width="359" height="1"/>
+                                                    <color key="backgroundColor" systemColor="separatorColor"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="1" id="psm-y1-Cf9"/>
+                                                    </constraints>
+                                                </view>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WMt-WT-pR6">
+                                                    <rect key="frame" x="304" y="60.333333333333336" width="55" height="31.666666666666664"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="55" id="QYe-Ff-u40"/>
+                                                    </constraints>
+                                                    <state key="normal" title="Refresh"/>
+                                                    <connections>
+                                                        <action selector="refreshTapped:" destination="HbD-Bf-mkl" eventType="touchUpInside" id="Pet-gB-yeB"/>
+                                                    </connections>
+                                                </button>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="Yek-7p-7Xm" firstAttribute="leading" secondItem="A6z-ZO-LBY" secondAttribute="leadingMargin" id="8wY-Ov-7OV"/>
+                                                <constraint firstItem="WMt-WT-pR6" firstAttribute="top" secondItem="VAk-gF-u9n" secondAttribute="bottom" constant="10" id="abT-dK-xYw"/>
+                                                <constraint firstAttribute="trailing" secondItem="VAk-gF-u9n" secondAttribute="trailing" id="dVW-E7-K6x"/>
+                                                <constraint firstItem="Yek-7p-7Xm" firstAttribute="top" secondItem="A6z-ZO-LBY" secondAttribute="topMargin" constant="6" id="eAm-13-S1S"/>
+                                                <constraint firstItem="WMt-WT-pR6" firstAttribute="trailing" secondItem="A6z-ZO-LBY" secondAttribute="trailingMargin" id="fwR-G0-CBs"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="Yek-7p-7Xm" secondAttribute="trailing" id="u6r-Yl-9i1"/>
+                                                <constraint firstItem="VAk-gF-u9n" firstAttribute="leading" secondItem="A6z-ZO-LBY" secondAttribute="leadingMargin" id="xDc-nh-lde"/>
+                                                <constraint firstItem="VAk-gF-u9n" firstAttribute="top" secondItem="Yek-7p-7Xm" secondAttribute="bottom" constant="12" id="xSq-TP-kar"/>
+                                                <constraint firstAttribute="bottomMargin" secondItem="WMt-WT-pR6" secondAttribute="bottom" id="xUe-mg-pzT"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
