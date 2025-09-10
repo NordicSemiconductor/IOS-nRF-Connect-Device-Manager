@@ -25,6 +25,7 @@ final class FilesController: UITableViewController {
     @IBOutlet weak var bootloaderSlot: UILabel!
     @IBOutlet weak var kernel: UILabel!
     @IBOutlet weak var nRFCloudStatus: UILabel!
+    @IBOutlet weak var observabilityStatus: UILabel!
     
     var fileDownloadViewController: FileDownloadViewController!
     
@@ -133,6 +134,30 @@ extension FilesController: DeviceStatusDelegate {
             nRFCloudStatus.text = "MISSING PROJECT KEY"
         case .available:
             nRFCloudStatus.text = "READY"
+        }
+    }
+    
+    func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int) {
+        switch status {
+        case .receivedEvent(let event):
+            switch event {
+            case .connected:
+                observabilityStatus.text = "CONNECTED"
+            case .disconnected:
+                observabilityStatus.text = "DISCONNECTED"
+            case .notifications:
+                observabilityStatus.text = "NOTIFYING"
+            case .streaming(let isTrue):
+                observabilityStatus.text = isTrue ? "STREAMING" : "NOT STREAMING"
+            case .authenticated:
+                observabilityStatus.text = "AUTHENTICATED"
+            case .updatedChunk:
+                observabilityStatus.text = "STREAMING"
+            }
+        case .connectionClosed:
+            observabilityStatus.text = "CLOSED"
+        case .unavailable, .errorEvent:
+            observabilityStatus.text = "ERROR"
         }
     }
 }

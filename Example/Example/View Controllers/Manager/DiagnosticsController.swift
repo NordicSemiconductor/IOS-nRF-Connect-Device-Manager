@@ -22,6 +22,12 @@ final class DiagnosticsController: UITableViewController {
     @IBOutlet weak var stats: UILabel!
     @IBOutlet weak var refreshAction: UIButton!
     @IBOutlet weak var nRFCloudStatus: UILabel!
+    @IBOutlet weak var observabilityStatus: UILabel!
+    
+    @IBOutlet weak var observabilitySectionStatusLabel: UILabel!
+    @IBOutlet weak var observabilitySectionStatusActivityIndicator: UIActivityIndicatorView!
+    @IBOutlet weak var observabilitySectionStatusPendingLabel: UILabel!
+    @IBOutlet weak var observabilitySectionStatusUploadedLabel: UILabel!
     
     // MARK: @IBAction(s)
     
@@ -75,6 +81,8 @@ final class DiagnosticsController: UITableViewController {
         let transport: McuMgrTransport! = baseController.transport
         statsManager = StatsManager(transport: transport)
         statsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
+        
+        observabilitySectionStatusActivityIndicator.isHidden = true
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -151,6 +159,78 @@ extension DiagnosticsController: DeviceStatusDelegate {
             nRFCloudStatus.text = "MISSING PROJECT KEY"
         case .available:
             nRFCloudStatus.text = "READY"
+        }
+    }
+    
+    func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int) {
+        switch status {
+        case .receivedEvent(let event):
+            switch event {
+            case .connected:
+                observabilityStatus.text = "CONNECTED"
+                
+                observabilitySectionStatusLabel.text = "Status: Connected over BLE"
+                observabilitySectionStatusLabel.textColor = .systemYellow
+                observabilitySectionStatusActivityIndicator.isHidden = true
+            case .disconnected:
+                observabilityStatus.text = "DISCONNECTED"
+                
+                observabilitySectionStatusLabel.text = "Status: Offline"
+                observabilitySectionStatusLabel.textColor = .secondaryLabel
+                observabilitySectionStatusActivityIndicator.isHidden = true
+            case .notifications:
+                observabilityStatus.text = "NOTIFYING"
+                observabilitySectionStatusLabel.text = "Status: Notifications Enabled"
+                observabilitySectionStatusLabel.textColor = .systemYellow
+            case .authenticated:
+                observabilityStatus.text = "AUTHENTICATED"
+                observabilitySectionStatusLabel.text = "Status: Authenticated"
+                observabilitySectionStatusLabel.textColor = .systemYellow
+            case .streaming(let isTrue):
+                observabilityStatus.text = isTrue ? "STREAMING" : "NOT STREAMING"
+                if isTrue {
+                    observabilitySectionStatusLabel.text = "Status: Online"
+                    observabilitySectionStatusLabel.textColor = .systemGreen
+                    
+                    observabilitySectionStatusActivityIndicator.isHidden = false
+                    observabilitySectionStatusActivityIndicator.startAnimating()
+                } else {
+                    observabilitySectionStatusLabel.text = "Status: Offline"
+                    observabilitySectionStatusLabel.textColor = .secondaryLabel
+                    
+                    observabilitySectionStatusActivityIndicator.stopAnimating()
+                    observabilitySectionStatusActivityIndicator.isHidden = true
+                }
+            case .updatedChunk(let chunk, let chunkStatus):
+                observabilityStatus.text = "STREAMING"
+                
+                switch chunkStatus {
+                case .receivedAndPendingUpload:
+                    observabilitySectionStatusLabel.text = "Status: Pending Upload"
+                    observabilitySectionStatusLabel.textColor = .systemYellow
+                case .uploading:
+                    observabilitySectionStatusLabel.text = "Status: Uploading"
+                case .success:
+                    observabilitySectionStatusLabel.text = "Status: Awaiting New Chunks"
+                    observabilitySectionStatusLabel.textColor = .systemGreen
+                case .errorUploading:
+                    observabilitySectionStatusLabel.text = "Error Uploading Chunk \(chunk.sequenceNumber)"
+                    observabilitySectionStatusLabel.textColor = .systemRed
+                }
+                
+                observabilitySectionStatusActivityIndicator.isHidden = false
+                if !observabilitySectionStatusActivityIndicator.isAnimating {
+                    observabilitySectionStatusActivityIndicator.startAnimating()
+                }
+                observabilitySectionStatusPendingLabel.text = "Pending: \(pendingCount) chunk(s), \(pendingBytes) bytes"
+                observabilitySectionStatusUploadedLabel.text = "Uploaded: \(uploadedCount) chunk(s), \(uploadedBytes) bytes"
+            }
+        case .connectionClosed:
+            observabilityStatus.text = "CLOSED"
+            observabilitySectionStatusActivityIndicator.isHidden = true
+        case .unavailable, .errorEvent:
+            observabilityStatus.text = "ERROR"
+            observabilitySectionStatusActivityIndicator.isHidden = true
         }
     }
 }
