@@ -38,6 +38,19 @@ final class DiagnosticsController: UITableViewController {
         }
     }
     
+    @IBAction func observabilityLearnMoreTapped(_ sender: UIButton) {
+        guard let baseViewController = parent as? BaseViewController else { return }
+        let alertController = UIAlertController(title: "Observability Help", message: nil, preferredStyle: .alert)
+        alertController.message = """
+        
+        nRF Cloud Observability is a comprehensive suite of monitoring, diagnostics, and actionable insights for embedded devices. It allows developers and engineering teams to track, analyze, and act on device behavior and reliability in real time.
+            
+        nRF Connect Device Manager forwards Chunks payload obtained from embedded devices with Monitoring & Diagnostics Service (MDS) to nRF Cloud Services for analysis.
+        """
+        baseViewController.present(alertController, addingCancelAction: true,
+                                   cancelActionTitle: "OK")
+    }
+    
     // MARK: statsCallback
     
     private lazy var statsCallback: McuMgrCallback<McuMgrStatsListResponse> = { [weak self] response, error in

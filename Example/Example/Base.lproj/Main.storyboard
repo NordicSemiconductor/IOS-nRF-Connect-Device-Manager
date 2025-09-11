@@ -1334,8 +1334,8 @@
         <scene sceneID="5iX-Tj-0q4">
             <objects>
                 <tableViewController title="Diagnostics" id="HbD-Bf-mkl" customClass="DiagnosticsController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="Xnv-fZ-89I">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="616"/>
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="Xnv-fZ-89I">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="668"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <sections>
@@ -1582,6 +1582,14 @@
                                                     <color key="textColor" systemColor="secondaryLabelColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tQn-Ut-9xh">
+                                                    <rect key="frame" x="8" y="112.33333333333331" width="111" height="35"/>
+                                                    <state key="normal" title="Button"/>
+                                                    <buttonConfiguration key="configuration" style="plain" title="Learn More"/>
+                                                    <connections>
+                                                        <action selector="observabilityLearnMoreTapped:" destination="HbD-Bf-mkl" eventType="touchUpInside" id="wx9-6X-ZGH"/>
+                                                    </connections>
+                                                </button>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="IFZ-wP-NuO" firstAttribute="top" secondItem="kuE-sB-oaL" secondAttribute="bottom" constant="8" id="0Ar-9T-E6M"/>
@@ -1597,6 +1605,8 @@
                                                 <constraint firstItem="kuE-sB-oaL" firstAttribute="leading" secondItem="gHY-GU-L7l" secondAttribute="leadingMargin" id="P5d-yQ-R91"/>
                                                 <constraint firstAttribute="bottomMargin" secondItem="IFZ-wP-NuO" secondAttribute="bottom" id="RCj-om-ALv"/>
                                                 <constraint firstAttribute="trailing" secondItem="kuE-sB-oaL" secondAttribute="trailing" id="SUS-Hn-484"/>
+                                                <constraint firstItem="tQn-Ut-9xh" firstAttribute="leading" secondItem="gHY-GU-L7l" secondAttribute="leading" constant="8" id="Sdx-FA-wMg"/>
+                                                <constraint firstItem="tQn-Ut-9xh" firstAttribute="top" secondItem="IFZ-wP-NuO" secondAttribute="top" id="Sek-fl-tpy"/>
                                                 <constraint firstAttribute="trailing" secondItem="40H-t2-hk5" secondAttribute="trailing" constant="16" id="Wej-oB-cvh"/>
                                                 <constraint firstItem="kuE-sB-oaL" firstAttribute="top" secondItem="jv6-cP-034" secondAttribute="bottom" constant="8" id="acl-qu-vfE"/>
                                                 <constraint firstItem="jv6-cP-034" firstAttribute="top" secondItem="S2d-Tn-tat" secondAttribute="bottom" constant="8" id="elU-kg-ipG"/>
@@ -2537,7 +2547,7 @@
         <scene sceneID="OqD-0B-QPm">
             <objects>
                 <viewController title="Upload" id="ZG1-GB-bgc" customClass="FileUploadViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="yVO-JE-3UU">
+                    <view key="view" contentMode="scaleToFill" ambiguous="YES" id="yVO-JE-3UU">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="271"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
