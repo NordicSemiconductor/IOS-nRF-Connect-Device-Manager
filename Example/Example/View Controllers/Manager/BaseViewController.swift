@@ -273,7 +273,6 @@ extension BaseViewController {
         statusInfoCallback()
         deviceInfoRequested = true
         self.statusInfoCallback = nil
-        launchObservabilityTask()
     }
     
     // MARK: Observability
@@ -354,6 +353,7 @@ extension BaseViewController: PeripheralDelegate {
             otaManager = OTAManager(peripheral.identifier)
             observabilityManager = ObservabilityManager()
             observabilityIdentifier = peripheral.identifier
+            launchObservabilityTask()
         case .disconnecting, .disconnected:
             // Set to false, because a DFU update might change things if that's what happened.
             deviceInfoRequested = false
