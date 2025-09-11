@@ -203,10 +203,11 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         otaManager?.getLatestReleaseInfo(deviceInfo: deviceInfo, projectKey: projectKey) { [unowned self] result in
             switch result {
             case .success(let resultInfo):
-                let alertController = UIAlertController(title: "nRF Cloud Update Available", message: nil, preferredStyle: .alert)
+                let alertController = UIAlertController(title: "Update Available", message: nil, preferredStyle: .alert)
                 let artifact: ReleaseArtifact! = resultInfo.artifacts.first
+                let revisionString = resultInfo.revision.isEmpty ? "" : "-\(resultInfo.revision)"
                 alertController.message = """
-                Firmware version \(resultInfo.version)-\(resultInfo.revision) (\(artifact.sizeString())) is available with the following release notes:
+                Firmware version \(resultInfo.version)\(revisionString) (\(artifact.sizeString())) is available with the following release notes:
                 
                 \(resultInfo.notes)
                 """
