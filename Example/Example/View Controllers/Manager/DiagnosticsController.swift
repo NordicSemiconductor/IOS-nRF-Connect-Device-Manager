@@ -47,6 +47,11 @@ final class DiagnosticsController: UITableViewController {
             
         nRF Connect Device Manager forwards Chunks payload obtained from embedded devices with Monitoring & Diagnostics Service (MDS) to nRF Cloud Services for analysis.
         """
+        if let url = URL(string: "https://mflt.io/nrf-app-discover-cloud-services") {
+            alertController.addAction(UIAlertAction(title: "Discover nRF Cloud", style: .default, handler: { _ in
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            }))
+        }
         baseViewController.present(alertController, addingCancelAction: true,
                                    cancelActionTitle: "OK")
     }
