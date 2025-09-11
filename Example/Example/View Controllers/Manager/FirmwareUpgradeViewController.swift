@@ -203,7 +203,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         otaManager?.getLatestReleaseInfo(deviceInfo: deviceInfo, projectKey: projectKey) { [unowned self] result in
             switch result {
             case .success(let resultInfo):
-                let alertController = UIAlertController(title: "Update Available", message: nil, preferredStyle: .alert)
+                let alertController = UIAlertController(title: "OTA Update Available", message: nil, preferredStyle: .alert)
                 let artifact: ReleaseArtifact! = resultInfo.artifacts.first
                 let revisionString = resultInfo.revision.isEmpty ? "" : "-\(resultInfo.revision)"
                 alertController.message = """
@@ -215,9 +215,15 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
                     download(release: resultInfo)
                 })
                 baseController?.present(alertController, addingCancelAction: true)
-            case .failure(let error):
-                let alertController = UIAlertController(title: "Error Requesting Update", message: error.localizedDescription, preferredStyle: .alert)
-                baseController?.present(alertController, addingCancelAction: true)
+            case .failure(let otaError):
+                if otaError == .deviceIsUpToDate {
+                    let alertController = UIAlertController(title: "Your device is up to date", message: "Your device is already using the latest firmware version available through nRF Cloud OTA.", preferredStyle: .alert)
+                    baseController?.present(alertController, addingCancelAction: true,
+                                            cancelActionTitle: "OK")
+                    return
+                }
+                let alertController = UIAlertController(title: "Error Requesting Update", message: otaError.localizedDescription, preferredStyle: .alert)
+                baseController?.present(alertController, addingCancelAction: true, cancelActionTitle: "OK")
             }
         }
     }
