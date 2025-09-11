@@ -57,7 +57,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             switch imageController.cloudStatus {
             case .unavailable(let error):
                 let alertController = UIAlertController(title: "nRF Cloud Update Unavailable", message: error?.localizedDescription, preferredStyle: .alert)
-                present(alertController, addingCancelAction: true)
+                baseController.present(alertController, addingCancelAction: true)
             case .missingProjectKey(let deviceInfo, _):
                 setProjectKey(for: deviceInfo)
             case .available(let deviceInfo, let projectKey):
@@ -134,6 +134,12 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     private var uploadTimestamp: Date!
     private var otaManager: OTAManager?
     
+    private var baseController: BaseViewController? {
+        guard let imageController = parent as? ImageController,
+              let baseController = imageController.parent as? BaseViewController else { return nil }
+        return baseController
+    }
+    
     // MARK: viewDidLoad()
     
     override func viewDidLoad() {
@@ -152,7 +158,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
                 self.updateEstimatedSwapTime(to: numberOfSeconds)
             })
         }
-        present(alertController, addingCancelAction: true)
+        baseController?.present(alertController, addingCancelAction: true)
     }
     
     private func setPipelineDepth() {
@@ -165,7 +171,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
                 self.updatePipelineDepth(to: value)
             })
         }
-        present(alertController, addingCancelAction: true)
+        baseController?.present(alertController, addingCancelAction: true)
     }
     
     private func setByteAlignment() {
@@ -177,7 +183,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
                 self.updateByteAlignment(to: alignmentValue)
             })
         }
-        present(alertController, addingCancelAction: true)
+        baseController?.present(alertController, addingCancelAction: true)
     }
     
     private func setProjectKey(for deviceInfo: DeviceInfoToken) {
@@ -189,7 +195,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             let key = ProjectKey(keyString)
             requestLatestReleaseInfo(for: deviceInfo, using: key)
         })
-        present(alertController, addingCancelAction: true)
+        baseController?.present(alertController, addingCancelAction: true)
     }
     
     private func requestLatestReleaseInfo(for deviceInfo: DeviceInfoToken,
@@ -207,10 +213,10 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
                 alertController.addAction(UIAlertAction(title: "Download", style: .default) { [unowned self] action in
                     download(release: resultInfo)
                 })
-                present(alertController, addingCancelAction: true)
+                baseController?.present(alertController, addingCancelAction: true)
             case .failure(let error):
                 let alertController = UIAlertController(title: "Error Requesting Update", message: error.localizedDescription, preferredStyle: .alert)
-                present(alertController, addingCancelAction: true)
+                baseController?.present(alertController, addingCancelAction: true)
             }
         }
     }
@@ -272,7 +278,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
                 self.startFirmwareUpgrade(package: package)
             })
         }
-        present(alertController, addingCancelAction: true)
+        baseController?.present(alertController, addingCancelAction: true)
     }
     
     // MARK: selectBootloaderImage(for:)
@@ -327,20 +333,6 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         guard updatingUserDefaults else { return }
         UserDefaults.standard.set(eraseApplicationSettings,
                                   forKey: Key.eraseAppSettings.rawValue)
-    }
-    
-    private func present(_ alertViewController: UIAlertController, addingCancelAction addCancelAction: Bool = false) {
-        if addCancelAction {
-            alertViewController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        }
-        
-        // If the device is an ipad set the popover presentation controller
-        if let presenter = alertViewController.popoverPresentationController {
-            presenter.sourceView = self.view
-            presenter.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
-            presenter.permittedArrowDirections = []
-        }
-        present(alertViewController, animated: true)
     }
     
     // MARK: startFirmwareUpgrade

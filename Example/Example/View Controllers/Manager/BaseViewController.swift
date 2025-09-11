@@ -322,6 +322,27 @@ extension BaseViewController {
     }
 }
 
+// MARK: - Present Dialog
+
+extension BaseViewController {
+    
+    func present(_ alertViewController: UIAlertController,
+                 addingCancelAction addCancelAction: Bool = false,
+                 cancelActionTitle: String = "Cancel") {
+        if addCancelAction {
+            alertViewController.addAction(UIAlertAction(title: cancelActionTitle, style: .cancel))
+        }
+        
+        // If the device is an ipad set the popover presentation controller
+        if let presenter = alertViewController.popoverPresentationController {
+            presenter.sourceView = self.view
+            presenter.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+            presenter.permittedArrowDirections = []
+        }
+        present(alertViewController, animated: true)
+    }
+}
+
 // MARK: - PeripheralDelegate
 
 extension BaseViewController: PeripheralDelegate {
