@@ -196,7 +196,9 @@ extension DeviceController: DeviceStatusDelegate {
             }
         case .connectionClosed:
             observabilityStatus.text = "CLOSED"
-        case .unavailable, .errorEvent:
+        case .unsupported:
+            observabilityStatus.text = "UNSUPPORTED"
+        case .errorEvent:
             observabilityStatus.text = "ERROR"
         }
     }

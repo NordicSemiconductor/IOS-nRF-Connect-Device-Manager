@@ -34,7 +34,7 @@ enum nRFCloudStatus {
 // MARK: - ObservabilityStatus
 
 enum ObservabilityStatus {
-    case unavailable(_ error: Error?)
+    case unsupported(_ error: Error?)
     case receivedEvent(_ event: ObservabilityDeviceEvent)
     case connectionClosed
     case errorEvent(_ error: Error)
@@ -289,9 +289,14 @@ extension BaseViewController {
                 }
                 print("STOPPED Listening to \(observabilityIdentifier.uuidString) Connection Events.")
                 observabilityStatus = .connectionClosed
-            } catch let otaError as OTAManagerError {
-                print("CAUGHT OTAManagerError \(otaError.localizedDescription)")
-                observabilityStatus = .unavailable(otaError)
+            } catch let obsError as ObservabilityManagerError {
+                print("CAUGHT ObservabilityManagerError \(obsError.localizedDescription)")
+                switch obsError {
+                case .mdsServiceNotFound:
+                    observabilityStatus = .unsupported(obsError)
+                default:
+                    observabilityStatus = .errorEvent(obsError)
+                }
             } catch let error {
                 print("CAUGHT Error \(error.localizedDescription) Listening to \(observabilityIdentifier.uuidString) Connection Events.")
                 observabilityStatus = .errorEvent(error)
