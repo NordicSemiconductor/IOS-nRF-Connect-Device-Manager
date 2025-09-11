@@ -249,11 +249,11 @@ extension DiagnosticsController: DeviceStatusDelegate {
             
             observabilitySectionStatusLabel.text = "Status: Offline"
             observabilitySectionStatusLabel.textColor = .secondaryLabel
-        case .unavailable:
-            observabilityStatus.text = "UNAVAILABLE"
+        case .unsupported:
+            observabilityStatus.text = "UNSUPPORTED"
             observabilitySectionStatusActivityIndicator.isHidden = true
             
-            observabilitySectionStatusLabel.text = "Status: Unavailable"
+            observabilitySectionStatusLabel.text = "Status: Unsupported"
             observabilitySectionStatusLabel.textColor = .secondaryLabel
         case .errorEvent(let error):
             observabilityStatus.text = "ERROR"
