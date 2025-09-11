@@ -30,6 +30,12 @@ public final class OTAManager {
         _ = ble.centralManager.state
         self.network = Network("api.memfault.com")
     }
+    
+    // MARK: deinit
+    
+    deinit {
+        print(#function)
+    }
 }
 
 // MARK: - API

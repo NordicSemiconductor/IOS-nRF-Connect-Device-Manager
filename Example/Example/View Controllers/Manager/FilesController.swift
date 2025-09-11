@@ -155,9 +155,11 @@ extension FilesController: DeviceStatusDelegate {
                 observabilityStatus.text = "STREAMING"
             }
         case .connectionClosed:
-            observabilityStatus.text = "CLOSED"
+            observabilityStatus.text = "DISCONNECTED"
         case .unsupported:
             observabilityStatus.text = "UNSUPPORTED"
+        case .pairingError:
+            observabilityStatus.text = "PAIRING REQUIRED"
         case .errorEvent:
             observabilityStatus.text = "ERROR"
         }

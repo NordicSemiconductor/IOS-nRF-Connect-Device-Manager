@@ -37,6 +37,7 @@ enum ObservabilityStatus {
     case unsupported(_ error: Error?)
     case receivedEvent(_ event: ObservabilityDeviceEvent)
     case connectionClosed
+    case pairingError(_ error: CBATTError)
     case errorEvent(_ error: Error)
 }
 
@@ -297,12 +298,20 @@ extension BaseViewController {
                 default:
                     observabilityStatus = .errorEvent(obsError)
                 }
+                stopObservabilityManagerAndTask()
             } catch let error {
                 print("CAUGHT Error \(error.localizedDescription) Listening to \(observabilityIdentifier.uuidString) Connection Events.")
-                observabilityStatus = .errorEvent(error)
+                if let cbError = error as? CBATTError, cbError.code == .insufficientEncryption {
+                    observabilityStatus = .pairingError(cbError)
+                } else {
+                    observabilityStatus = .errorEvent(error)
+                }
+                stopObservabilityManagerAndTask()
             }
         }
     }
+    
+    // MARK: processObservabilityEvent
     
     private func processObservabilityEvent(_ observabilityEvent: ObservabilityDeviceEvent) {
         switch observabilityEvent {
@@ -323,6 +332,17 @@ extension BaseViewController {
         default:
             break
         }
+    }
+    
+    private func stopObservabilityManagerAndTask() {
+        guard let observabilityIdentifier else { return }
+        print(#function)
+        observabilityManager?.disconnect(from: observabilityIdentifier)
+        observabilityManager = nil
+        
+        observabilityTask?.cancel()
+        observabilityTask = nil
+        self.observabilityIdentifier = nil
     }
 }
 
@@ -347,6 +367,16 @@ extension BaseViewController {
     }
 }
 
+// MARK: - onDFUStart
+
+extension BaseViewController {
+    
+    func onDFUStart() {
+        stopObservabilityManagerAndTask()
+        otaManager = nil
+    }
+}
+
 // MARK: - PeripheralDelegate
 
 extension BaseViewController: PeripheralDelegate {
@@ -363,10 +393,7 @@ extension BaseViewController: PeripheralDelegate {
             // Set to false, because a DFU update might change things if that's what happened.
             deviceInfoRequested = false
             otaManager = nil
-            observabilityIdentifier = nil
-            observabilityManager = nil
-            observabilityTask?.cancel()
-            observabilityTask = nil
+            stopObservabilityManagerAndTask()
         default:
             // Nothing to do here.
             break
