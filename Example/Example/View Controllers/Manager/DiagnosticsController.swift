@@ -40,7 +40,7 @@ final class DiagnosticsController: UITableViewController {
     
     @IBAction func observabilityLearnMoreTapped(_ sender: UIButton) {
         guard let baseViewController = parent as? BaseViewController else { return }
-        let alertController = UIAlertController(title: "Observability Help", message: nil, preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Help", message: nil, preferredStyle: .alert)
         alertController.message = """
         
         nRF Cloud Observability is a comprehensive suite of monitoring, diagnostics, and actionable insights for embedded devices. It allows developers and engineering teams to track, analyze, and act on device behavior and reliability in real time.
@@ -241,9 +241,21 @@ extension DiagnosticsController: DeviceStatusDelegate {
         case .connectionClosed:
             observabilityStatus.text = "CLOSED"
             observabilitySectionStatusActivityIndicator.isHidden = true
-        case .unavailable, .errorEvent:
+            
+            observabilitySectionStatusLabel.text = "Status: Offline"
+            observabilitySectionStatusLabel.textColor = .secondaryLabel
+        case .unavailable:
+            observabilityStatus.text = "UNAVAILABLE"
+            observabilitySectionStatusActivityIndicator.isHidden = true
+            
+            observabilitySectionStatusLabel.text = "Status: Unavailable"
+            observabilitySectionStatusLabel.textColor = .secondaryLabel
+        case .errorEvent(let error):
             observabilityStatus.text = "ERROR"
             observabilitySectionStatusActivityIndicator.isHidden = true
+            
+            observabilitySectionStatusLabel.text = "Status: Error \(error.localizedDescription)"
+            observabilitySectionStatusLabel.textColor = .systemRed
         }
     }
 }

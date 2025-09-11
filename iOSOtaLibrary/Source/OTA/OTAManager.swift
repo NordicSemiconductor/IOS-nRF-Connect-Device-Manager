@@ -65,6 +65,12 @@ public extension OTAManager {
             let responseData = try await network.perform(releaseInfoRequest)
                 .firstValue
             
+            // If we get responseData, the request was success (code 200..299)
+            // However, "up to date" means Server returns no response, or 0 bytes.
+            guard !responseData.isEmpty else {
+                throw OTAManagerError.deviceIsUpToDate
+            }
+            
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             // The .iso8601 decoding strategy does not support fractional seconds.
@@ -167,5 +173,6 @@ public enum OTAManagerError: LocalizedError {
     case incompleteDeviceInfo
     case mdsKeyDecodeError
     case unableToParseResponse
+    case deviceIsUpToDate
     case invalidArtifactURL
 }
