@@ -244,7 +244,7 @@ extension DiagnosticsController: DeviceStatusDelegate {
                 observabilitySectionStatusUploadedLabel.text = "Uploaded: \(uploadedCount) chunk(s), \(uploadedBytes) bytes"
             }
         case .connectionClosed:
-            observabilityStatus.text = "CLOSED"
+            observabilityStatus.text = "DISCONNECTED"
             observabilitySectionStatusActivityIndicator.isHidden = true
             
             observabilitySectionStatusLabel.text = "Status: Offline"
@@ -259,7 +259,12 @@ extension DiagnosticsController: DeviceStatusDelegate {
             observabilityStatus.text = "ERROR"
             observabilitySectionStatusActivityIndicator.isHidden = true
             
-            observabilitySectionStatusLabel.text = "Status: Error \(error.localizedDescription)"
+            observabilitySectionStatusLabel.text = "Status: \(error.localizedDescription)"
+            observabilitySectionStatusLabel.textColor = .systemRed
+        case .pairingError(let error):
+            observabilityStatus.text = "PAIRING REQUIRED"
+            
+            observabilitySectionStatusLabel.text = "Status: \(error.localizedDescription)"
             observabilitySectionStatusLabel.textColor = .systemRed
         }
     }

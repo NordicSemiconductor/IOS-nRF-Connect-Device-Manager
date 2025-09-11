@@ -41,6 +41,12 @@ public final class ObservabilityManager {
         // Try to start inner CentralManager.
         _ = ble.centralManager.state
     }
+    
+    // MARK: deinit
+    
+    deinit {
+        print(#function)
+    }
 }
 
 // MARK: - Bluetooth

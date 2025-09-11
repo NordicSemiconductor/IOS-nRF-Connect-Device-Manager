@@ -12,6 +12,8 @@ import UniformTypeIdentifiers
 
 class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     
+    // MARK: @IBOutlet(s)
+    
     @IBOutlet weak var actionBuffers: UIButton!
     @IBOutlet weak var actionAlignment: UIButton!
     @IBOutlet weak var actionChunks: UIButton!
@@ -29,6 +31,8 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     @IBOutlet weak var dfuChunkSize: UILabel!
     @IBOutlet weak var dfuSpeed: UILabel!
     @IBOutlet weak var progress: UIProgressView!
+    
+    // MARK: @IBAction(s)
     
     @IBAction func selectFirmware(_ sender: UIButton) {
         let supportedDocumentTypes = ["com.apple.macbinary-archive", "public.zip-archive", "com.pkware.zip-archive", "com.apple.font-suitcase"]
@@ -50,7 +54,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
                 self.updatePipelineDepth(to: value)
             })
         }
-        present(alertController, addingCancelAction: true)
+        baseViewController?.present(alertController, addingCancelAction: true)
     }
     
     @IBAction func setDfuAlignment(_ sender: UIButton) {
@@ -62,7 +66,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
                 self.updateByteAlignment(to: alignmentValue)
             })
         }
-        present(alertController, addingCancelAction: true)
+        baseViewController?.present(alertController, addingCancelAction: true)
     }
     
     @IBAction func setChunkSize(_ sender: Any) {
@@ -77,7 +81,7 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
             self.updateBufferSize(to: Int(stringValue) ?? 0)
         }))
 
-        present(alertController, addingCancelAction: true)
+        baseViewController?.present(alertController, addingCancelAction: true)
     }
     
     // MARK: updatePipelineDepth(to:)
@@ -109,23 +113,8 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
         UserDefaults.standard.set(bufferSize, forKey: Key.chunkSize.rawValue)
     }
     
-    private func present(_ alertViewController: UIAlertController, addingCancelAction addCancelAction: Bool = false) {
-        if addCancelAction {
-            alertViewController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        }
-        
-        // If the device is an ipad set the popover presentation controller
-        if let presenter = alertViewController.popoverPresentationController {
-            presenter.sourceView = self.view
-            presenter.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
-            presenter.permittedArrowDirections = []
-        }
-        present(alertViewController, animated: true)
-    }
-    
     @IBAction func start(_ sender: UIButton) {
-        guard let baseController = parent as? BaseViewController else { return }
-        baseController.onDeviceStatusReady { [unowned self] in
+        baseViewController?.onDeviceStatusReady { [unowned self] in
             if let envelope = package?.envelope {
                 // SUIT has "no mode" to select
                 // (We use modes in the code only, but SUIT has no concept of upload modes)
@@ -190,6 +179,12 @@ class FirmwareUploadViewController: UIViewController, McuMgrViewController {
     private var uploadConfiguration = FirmwareUpgradeConfiguration(pipelineDepth: 1, byteAlignment: .disabled)
     private var uploadImageSize: Int!
     private var uploadTimestamp: Date!
+    
+    private var baseViewController: BaseViewController? {
+        guard let imageController = parent as? ImageController,
+              let baseController = imageController.parent as? BaseViewController else { return nil }
+        return baseController
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -301,6 +296,8 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
         
         uploadImageSize = nil
         uploadTimestamp = nil
+        
+        baseViewController?.onDFUStart()
     }
     
     func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
