@@ -19,26 +19,65 @@ protocol DeviceStatusDelegate: AnyObject {
     func bootloaderSlotReceived(_ slot: UInt64)
     func appInfoReceived(_ output: String)
     func mcuMgrParamsReceived(buffers: Int, size: Int)
-    func nRFCloudStatusChanged(_ status: nRFCloudStatus)
+    func otaStatusChanged(_ status: OTAStatus)
     func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int)
 }
 
-// MARK: - nRFCloudStatus
+// MARK: - OTAStatus
 
-enum nRFCloudStatus {
-    case unavailable(_ error: Error?)
+enum OTAStatus: CustomStringConvertible {
+    case unsupported(_ error: Error?)
     case missingProjectKey(_ deviceInfo: DeviceInfoToken, _ error: Error)
-    case available(_ deviceInfo: DeviceInfoToken, _ projectKey: ProjectKey)
+    case supported(_ deviceInfo: DeviceInfoToken, _ projectKey: ProjectKey)
+    
+    var description: String {
+        switch self {
+        case .unsupported:
+            return "UNSUPPORTED"
+        case .missingProjectKey:
+            return "MISSING PROJECT KEY"
+        case .supported:
+            return "SUPPORTED"
+        }
+    }
 }
 
 // MARK: - ObservabilityStatus
 
-enum ObservabilityStatus {
+enum ObservabilityStatus: CustomStringConvertible {
     case unsupported(_ error: Error?)
     case receivedEvent(_ event: ObservabilityDeviceEvent)
     case connectionClosed
     case pairingError(_ error: CBATTError)
     case errorEvent(_ error: Error)
+    
+    var description: String {
+        switch self {
+        case .unsupported:
+            return "UNSUPPORTED"
+        case .receivedEvent(let event):
+            switch event {
+            case .connected:
+                return "CONNECTED"
+            case .disconnected:
+                return "DISCONNECTED"
+            case .notifications(let enabled):
+                return enabled ? "NOTIFYING" : "NOTIFICATIONS DISABLED"
+            case .streaming(let isTrue):
+                return isTrue ? "STREAMING" : "NOT STREAMING"
+            case .authenticated:
+                return "AUTHENTICATED"
+            case .updatedChunk:
+                return "STREAMING"
+            }
+        case .connectionClosed:
+            return "DISCONNECTED"
+        case .pairingError:
+            return "PAIRING REQUIRED"
+        case .errorEvent(_):
+            return "ERROR"
+        }
+    }
 }
 
 // MARK: - BaseViewController
@@ -68,7 +107,7 @@ final class BaseViewController: UITabBarController {
                 deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.buffers, size: mcuMgrParams.size)
             }
             if let otaStatus {
-                deviceStatusDelegate?.nRFCloudStatusChanged(otaStatus)
+                deviceStatusDelegate?.otaStatusChanged(otaStatus)
             }
             if let observabilityStatus {
                 deviceStatusDelegate?.observabilityStatusChanged(observabilityStatus, pendingCount: observabilityPendingChunks, pendingBytes: observabilityPendingBytes, uploadedCount: observabilityUploadedChunks, uploadedBytes: observabilityUploadedBytes)
@@ -148,10 +187,10 @@ final class BaseViewController: UITabBarController {
         }
     }
     
-    private var otaStatus: nRFCloudStatus? {
+    private var otaStatus: OTAStatus? {
         didSet {
             guard let otaStatus else { return }
-            deviceStatusDelegate?.nRFCloudStatusChanged(otaStatus)
+            deviceStatusDelegate?.otaStatusChanged(otaStatus)
         }
     }
     
@@ -253,7 +292,7 @@ extension BaseViewController {
                     switch result {
                     case .success(let projectKey):
                         print("Obtained Project Key \(projectKey)")
-                        self.otaStatus = .available(deviceInfo, projectKey)
+                        self.otaStatus = .supported(deviceInfo, projectKey)
                         onDeviceStatusFinished()
                     case .failure(let error):
                         self.otaStatus = .missingProjectKey(deviceInfo, error)
@@ -261,7 +300,7 @@ extension BaseViewController {
                     }
                 }
             case .failure(let error):
-                self.otaStatus = .unavailable(error)
+                self.otaStatus = .unsupported(error)
                 onDeviceStatusFinished()
             }
         }

@@ -19,7 +19,7 @@ final class ImageController: UITableViewController {
     @IBOutlet weak var bootloaderMode: UILabel!
     @IBOutlet weak var bootloaderSlot: UILabel!
     @IBOutlet weak var kernel: UILabel!
-    @IBOutlet weak var nRFCloudStatus: UILabel!
+    @IBOutlet weak var otaStatusLabel: UILabel!
     @IBOutlet weak var observabilityStatus: UILabel!
     
     // MARK: Private Properties
@@ -28,7 +28,7 @@ final class ImageController: UITableViewController {
     /// height when data are obtained and height changes.
     private var imagesViewController: ImagesViewController!
     
-    var cloudStatus: nRFCloudStatus?
+    var otaStatus: OTAStatus?
     
     // MARK: UIViewController
     
@@ -142,16 +142,9 @@ extension ImageController: DeviceStatusDelegate {
         mcuMgrParams.text = "\(buffers) x \(size) bytes"
     }
     
-    func nRFCloudStatusChanged(_ status: nRFCloudStatus) {
-        cloudStatus = status
-        switch status {
-        case .unavailable:
-            nRFCloudStatus.text = "UNAVAILABLE"
-        case .missingProjectKey:
-            nRFCloudStatus.text = "MISSING PROJECT KEY"
-        case .available:
-            nRFCloudStatus.text = "READY"
-        }
+    func otaStatusChanged(_ status: OTAStatus) {
+        otaStatusLabel.text = status.description
+        otaStatus = status
     }
     
     func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int) {

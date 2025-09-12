@@ -49,18 +49,17 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     
     @IBAction func checkForUpdates(_ sender: UIButton) {
         guard let imageController = parent as? ImageController,
-              let baseController = imageController.parent as? BaseViewController,
-              let peripheral = baseController.peripheral else { return }
+              let peripheral = baseController?.peripheral else { return }
         otaManager = OTAManager(peripheral.basePeripheral.identifier)
         
-        baseController.onDeviceStatusReady { [unowned self] in
-            switch imageController.cloudStatus {
-            case .unavailable(let error):
+        baseController?.onDeviceStatusReady { [unowned self] in
+            switch imageController.otaStatus {
+            case .unsupported(let error):
                 let alertController = UIAlertController(title: "nRF Cloud Update Unavailable", message: error?.localizedDescription, preferredStyle: .alert)
-                baseController.present(alertController, addingCancelAction: true)
+                baseController?.present(alertController, addingCancelAction: true)
             case .missingProjectKey(let deviceInfo, _):
                 setProjectKey(for: deviceInfo)
-            case .available(let deviceInfo, let projectKey):
+            case .supported(let deviceInfo, let projectKey):
                 requestLatestReleaseInfo(for: deviceInfo, using: projectKey)
             case .none:
                 break
@@ -85,9 +84,7 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     @IBAction func start(_ sender: UIButton) {
-        guard let imageController = parent as? ImageController,
-              let baseController = imageController.parent as? BaseViewController else { return }
-        baseController.onDeviceStatusReady { [unowned self] in
+        baseController?.onDeviceStatusReady { [unowned self] in
             startPackageDFU()
         }
     }
