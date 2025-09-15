@@ -27,6 +27,7 @@
 		5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273624ACA7F4008F528C /* IntroViewController.swift */; };
 		5266273824ACA883008F528C /* NordicButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273524ACA7A1008F528C /* NordicButton.swift */; };
 		5274C2622796CEC40043D7CA /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5274C2612796CEC40043D7CA /* SettingsViewController.swift */; };
+		AA8404C42E7832ED00BD6B4A /* CryptoKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */; };
 		AAC0F0342E670D38006E0ADD /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0332E670D38006E0ADD /* iOSMcuManagerLibrary */; };
 		AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0352E670D38006E0ADD /* iOSOtaLibrary */; };
 		BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285720CB44AF0061F0EE /* AppDelegate.swift */; };
@@ -58,6 +59,7 @@
 		5266273524ACA7A1008F528C /* NordicButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NordicButton.swift; sourceTree = "<group>"; };
 		5266273624ACA7F4008F528C /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		5274C2612796CEC40043D7CA /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoKit.framework; path = System/Library/Frameworks/CryptoKit.framework; sourceTree = SDKROOT; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A285720CB44AF0061F0EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 			files = (
 				AAC0F0342E670D38006E0ADD /* iOSMcuManagerLibrary in Frameworks */,
 				AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */,
+				AA8404C42E7832ED00BD6B4A /* CryptoKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -157,10 +160,19 @@
 			path = Intro;
 			sourceTree = "<group>";
 		};
+		AA8404C22E7832EC00BD6B4A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		BD5A284B20CB44AF0061F0EE = {
 			isa = PBXGroup;
 			children = (
 				BD5A285620CB44AF0061F0EE /* Example */,
+				AA8404C22E7832EC00BD6B4A /* Frameworks */,
 				BD5A285520CB44AF0061F0EE /* Products */,
 			);
 			sourceTree = "<group>";
