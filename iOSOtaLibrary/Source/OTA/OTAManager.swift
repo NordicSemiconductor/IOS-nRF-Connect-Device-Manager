@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreBluetooth
+import CryptoKit
 internal import iOS_BLE_Library_Mock
 
 // MARK: - OTAManager
@@ -108,8 +109,8 @@ public extension OTAManager {
     func download(artifact: ReleaseArtifact, callback: @escaping (Result<URL, OTAManagerError>) -> ()) {
         Task { @MainActor in
             do {
-                let url = try await download(artifact: artifact)
-                callback(.success(url))
+                let temporaryDownloadedFileURL = try await download(artifact: artifact)
+                callback(.success(temporaryDownloadedFileURL))
             } catch {
                 guard let otaError = error as? OTAManagerError else {
                     callback(.failure(.unableToParseResponse))
@@ -135,7 +136,19 @@ public extension OTAManager {
         let tempDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
         let localArtifactURL = tempDirectoryURL.appendingPathComponent(artifact.filename)
         do {
+            // Write file to temporary URL
             try responseData.write(to: localArtifactURL)
+            
+            // Check SHA256 Hash matches.
+            let downloadedFileHash = try sha256Hash(of: localArtifactURL)
+            let downloadedFileHashString = downloadedFileHash.map {
+                String(format: "%02hhx", $0)
+            }
+            .joined()
+            guard downloadedFileHashString.localizedCaseInsensitiveContains(artifact.sha256) else {
+                throw OTAManagerError.sha256HashMismatch
+            }
+            
             return localArtifactURL
         } catch {
             throw error
@@ -146,6 +159,11 @@ public extension OTAManager {
 // MARK: - Private
 
 extension OTAManager {
+    
+    func sha256Hash(of fileURL: URL) throws -> SHA256.Digest {
+        let fileData = try Data(contentsOf: fileURL, options: .mappedIfSafe)
+        return SHA256.hash(data: fileData)
+    }
     
     func awaitBleStart() async throws {
         switch ble.centralManager.state {
@@ -181,4 +199,5 @@ public enum OTAManagerError: LocalizedError {
     case unableToParseResponse
     case deviceIsUpToDate
     case invalidArtifactURL
+    case sha256HashMismatch
 }
