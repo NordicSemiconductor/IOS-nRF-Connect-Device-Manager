@@ -19,7 +19,7 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
     @IBOutlet weak var bootloaderMode: UILabel!
     @IBOutlet weak var bootloaderSlot: UILabel!
     @IBOutlet weak var kernel: UILabel!
-    @IBOutlet weak var nRFCloudStatus: UILabel!
+    @IBOutlet weak var otaStatus: UILabel!
     @IBOutlet weak var observabilityStatus: UILabel!
     @IBOutlet weak var actionSend: UIButton!
     @IBOutlet weak var message: UITextField!
@@ -166,15 +166,8 @@ extension DeviceController: DeviceStatusDelegate {
         mcuMgrParams.text = "\(buffers) x \(size) bytes"
     }
     
-    func nRFCloudStatusChanged(_ status: nRFCloudStatus) {
-        switch status {
-        case .unavailable:
-            nRFCloudStatus.text = "UNAVAILABLE"
-        case .missingProjectKey:
-            nRFCloudStatus.text = "MISSING PROJECT KEY"
-        case .available:
-            nRFCloudStatus.text = "READY"
-        }
+    func otaStatusChanged(_ status: OTAStatus) {
+        otaStatus.text = status.description
     }
     
     func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int) {

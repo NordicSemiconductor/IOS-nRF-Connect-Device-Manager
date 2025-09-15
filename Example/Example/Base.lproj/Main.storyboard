@@ -665,8 +665,8 @@
                         <outlet property="messageReceivedBackground" destination="KIo-km-dCT" id="ce6-8C-1FK"/>
                         <outlet property="messageSent" destination="fGF-Hx-0JJ" id="bqv-v2-qv1"/>
                         <outlet property="messageSentBackground" destination="DI1-Lk-JIP" id="f1D-mB-kso"/>
-                        <outlet property="nRFCloudStatus" destination="x42-1B-ZnN" id="zZ3-wA-TLW"/>
                         <outlet property="observabilityStatus" destination="pvp-XB-zAE" id="sQm-Hs-oGz"/>
+                        <outlet property="otaStatus" destination="x42-1B-ZnN" id="zZ3-wA-TLW"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="CmZ-9g-PQn" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1043,8 +1043,8 @@
                         <outlet property="connectionStatus" destination="O3R-v7-4NX" id="yj7-St-r3t"/>
                         <outlet property="kernel" destination="gLO-Vy-wq7" id="l0u-T4-ia8"/>
                         <outlet property="mcuMgrParams" destination="XBY-MZ-p44" id="rmM-Jj-00v"/>
-                        <outlet property="nRFCloudStatus" destination="hpN-ya-AfX" id="QHf-Dt-yFv"/>
                         <outlet property="observabilityStatus" destination="ngs-um-OT5" id="uL0-Um-cfd"/>
+                        <outlet property="otaStatusLabel" destination="hpN-ya-AfX" id="QHf-Dt-yFv"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6wy-pp-4s9" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1322,8 +1322,8 @@
                         <outlet property="connectionStatus" destination="eI5-oz-6ID" id="dIs-RU-Oal"/>
                         <outlet property="kernel" destination="GBp-hy-vxy" id="3bd-pT-UTj"/>
                         <outlet property="mcuMgrParams" destination="IWM-lB-TSE" id="wox-mY-IM8"/>
-                        <outlet property="nRFCloudStatus" destination="KXl-E7-Jzp" id="rS0-p7-9rr"/>
                         <outlet property="observabilityStatus" destination="K7Z-MH-eY8" id="lE6-Xy-pdM"/>
+                        <outlet property="otaStatus" destination="KXl-E7-Jzp" id="rS0-p7-9rr"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="W5k-a3-CiX" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1334,8 +1334,8 @@
         <scene sceneID="5iX-Tj-0q4">
             <objects>
                 <tableViewController title="Diagnostics" id="HbD-Bf-mkl" customClass="DiagnosticsController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="Xnv-fZ-89I">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="668"/>
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="Xnv-fZ-89I">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="616"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <sections>
@@ -1680,12 +1680,12 @@
                         <outlet property="connectionStatus" destination="jzM-Ri-cNQ" id="AT3-Yu-6Ym"/>
                         <outlet property="kernel" destination="lry-aU-2Dd" id="brd-3i-0hG"/>
                         <outlet property="mcuMgrParams" destination="fZ7-lm-o1s" id="qW1-fU-2cG"/>
-                        <outlet property="nRFCloudStatus" destination="KIF-3e-UMN" id="131-u7-62O"/>
                         <outlet property="observabilitySectionStatusActivityIndicator" destination="40H-t2-hk5" id="MQc-3I-S0F"/>
                         <outlet property="observabilitySectionStatusLabel" destination="nSJ-Zc-3to" id="ZOf-yT-hKq"/>
                         <outlet property="observabilitySectionStatusPendingLabel" destination="S2d-Tn-tat" id="8mI-Rr-M2F"/>
                         <outlet property="observabilitySectionStatusUploadedLabel" destination="jv6-cP-034" id="rly-Sr-uIy"/>
                         <outlet property="observabilityStatus" destination="rj2-Mn-gPt" id="gE5-MS-w4Z"/>
+                        <outlet property="otaStatus" destination="KIF-3e-UMN" id="131-u7-62O"/>
                         <outlet property="refreshAction" destination="WMt-WT-pR6" id="8Qf-82-T41"/>
                         <outlet property="stats" destination="Yek-7p-7Xm" id="IG4-Ja-70r"/>
                     </connections>

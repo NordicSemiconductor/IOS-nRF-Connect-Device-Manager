@@ -21,7 +21,7 @@ final class DiagnosticsController: UITableViewController {
     @IBOutlet weak var kernel: UILabel!
     @IBOutlet weak var stats: UILabel!
     @IBOutlet weak var refreshAction: UIButton!
-    @IBOutlet weak var nRFCloudStatus: UILabel!
+    @IBOutlet weak var otaStatus: UILabel!
     @IBOutlet weak var observabilityStatus: UILabel!
     
     @IBOutlet weak var observabilitySectionStatusLabel: UILabel!
@@ -169,43 +169,30 @@ extension DiagnosticsController: DeviceStatusDelegate {
         mcuMgrParams.text = "\(buffers) x \(size) bytes"
     }
     
-    func nRFCloudStatusChanged(_ status: nRFCloudStatus) {
-        switch status {
-        case .unavailable:
-            nRFCloudStatus.text = "UNAVAILABLE"
-        case .missingProjectKey:
-            nRFCloudStatus.text = "MISSING PROJECT KEY"
-        case .available:
-            nRFCloudStatus.text = "READY"
-        }
+    func otaStatusChanged(_ status: OTAStatus) {
+        otaStatus.text = status.description
     }
     
     func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int) {
+        observabilityStatus.text = status.description
         switch status {
         case .receivedEvent(let event):
             switch event {
             case .connected:
-                observabilityStatus.text = "CONNECTED"
-                
                 observabilitySectionStatusLabel.text = "Status: Connected over BLE"
                 observabilitySectionStatusLabel.textColor = .systemYellow
                 observabilitySectionStatusActivityIndicator.isHidden = true
             case .disconnected:
-                observabilityStatus.text = "DISCONNECTED"
-                
                 observabilitySectionStatusLabel.text = "Status: Offline"
                 observabilitySectionStatusLabel.textColor = .secondaryLabel
                 observabilitySectionStatusActivityIndicator.isHidden = true
             case .notifications:
-                observabilityStatus.text = "NOTIFYING"
                 observabilitySectionStatusLabel.text = "Status: Notifications Enabled"
                 observabilitySectionStatusLabel.textColor = .systemYellow
             case .authenticated:
-                observabilityStatus.text = "AUTHENTICATED"
                 observabilitySectionStatusLabel.text = "Status: Authenticated"
                 observabilitySectionStatusLabel.textColor = .systemYellow
             case .streaming(let isTrue):
-                observabilityStatus.text = isTrue ? "STREAMING" : "NOT STREAMING"
                 if isTrue {
                     observabilitySectionStatusLabel.text = "Status: Online"
                     observabilitySectionStatusLabel.textColor = .systemGreen
@@ -220,8 +207,6 @@ extension DiagnosticsController: DeviceStatusDelegate {
                     observabilitySectionStatusActivityIndicator.isHidden = true
                 }
             case .updatedChunk(let chunk, let chunkStatus):
-                observabilityStatus.text = "STREAMING"
-                
                 switch chunkStatus {
                 case .receivedAndPendingUpload:
                     observabilitySectionStatusLabel.text = "Status: Pending Upload"
@@ -244,26 +229,21 @@ extension DiagnosticsController: DeviceStatusDelegate {
                 observabilitySectionStatusUploadedLabel.text = "Uploaded: \(uploadedCount) chunk(s), \(uploadedBytes) bytes"
             }
         case .connectionClosed:
-            observabilityStatus.text = "DISCONNECTED"
             observabilitySectionStatusActivityIndicator.isHidden = true
             
             observabilitySectionStatusLabel.text = "Status: Offline"
             observabilitySectionStatusLabel.textColor = .secondaryLabel
         case .unsupported:
-            observabilityStatus.text = "UNSUPPORTED"
             observabilitySectionStatusActivityIndicator.isHidden = true
             
             observabilitySectionStatusLabel.text = "Status: Unsupported"
             observabilitySectionStatusLabel.textColor = .secondaryLabel
         case .errorEvent(let error):
-            observabilityStatus.text = "ERROR"
             observabilitySectionStatusActivityIndicator.isHidden = true
             
             observabilitySectionStatusLabel.text = "Status: \(error.localizedDescription)"
             observabilitySectionStatusLabel.textColor = .systemRed
         case .pairingError(let error):
-            observabilityStatus.text = "PAIRING REQUIRED"
-            
             observabilitySectionStatusLabel.text = "Status: \(error.localizedDescription)"
             observabilitySectionStatusLabel.textColor = .systemRed
         }
