@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -27,8 +27,8 @@
 		5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273624ACA7F4008F528C /* IntroViewController.swift */; };
 		5266273824ACA883008F528C /* NordicButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273524ACA7A1008F528C /* NordicButton.swift */; };
 		5274C2622796CEC40043D7CA /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5274C2612796CEC40043D7CA /* SettingsViewController.swift */; };
+		AA7799F82E785BA800CAA1C3 /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AA7799F72E785BA800CAA1C3 /* iOSMcuManagerLibrary */; };
 		AA8404C42E7832ED00BD6B4A /* CryptoKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */; };
-		AAC0F0342E670D38006E0ADD /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0332E670D38006E0ADD /* iOSMcuManagerLibrary */; };
 		AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0352E670D38006E0ADD /* iOSOtaLibrary */; };
 		BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285720CB44AF0061F0EE /* AppDelegate.swift */; };
 		BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */; };
@@ -76,7 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AAC0F0342E670D38006E0ADD /* iOSMcuManagerLibrary in Frameworks */,
+				AA7799F82E785BA800CAA1C3 /* iOSMcuManagerLibrary in Frameworks */,
 				AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */,
 				AA8404C42E7832ED00BD6B4A /* CryptoKit.framework in Frameworks */,
 			);
@@ -254,7 +254,7 @@
 			);
 			mainGroup = BD5A284B20CB44AF0061F0EE;
 			packageReferences = (
-				AAC0F0322E670D38006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */,
+				AA7799F62E785BA800CAA1C3 /* XCLocalSwiftPackageReference "../../IOS-nRF-Connect-Device-Manager" */,
 			);
 			productRefGroup = BD5A285520CB44AF0061F0EE /* Products */;
 			projectDirPath = "";
@@ -541,6 +541,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		AA7799F62E785BA800CAA1C3 /* XCLocalSwiftPackageReference "../../IOS-nRF-Connect-Device-Manager" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../IOS-nRF-Connect-Device-Manager";
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		AAC0F0322E670D38006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -553,9 +560,8 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		AAC0F0332E670D38006E0ADD /* iOSMcuManagerLibrary */ = {
+		AA7799F72E785BA800CAA1C3 /* iOSMcuManagerLibrary */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AAC0F0322E670D38006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
 			productName = iOSMcuManagerLibrary;
 		};
 		AAC0F0352E670D38006E0ADD /* iOSOtaLibrary */ = {
