@@ -5,7 +5,7 @@
 
 ![Swift](https://img.shields.io/badge/Swift-5.10-f05237.svg)
 ![Platforms](https://img.shields.io/badge/Platforms-iOS%20|%20iPadOS%20|%20macOS-333333.svg)
-[![License](https://img.shields.io/github/license/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/blob/main/LICENSE)
 [![Swift Package Manager](https://img.shields.io/badge/SwiftPM-Compatible-brightgreen)](https://swift.org/package-manager/)
 [![Release](https://img.shields.io/github/release/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.svg)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/releases)
 [![CocoaPods](https://img.shields.io/badge/CocoaPods-Compatible-brightgreen)](https://cocoapods.org/)
