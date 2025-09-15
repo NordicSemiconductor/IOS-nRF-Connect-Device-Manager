@@ -27,7 +27,6 @@
 		5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273624ACA7F4008F528C /* IntroViewController.swift */; };
 		5266273824ACA883008F528C /* NordicButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273524ACA7A1008F528C /* NordicButton.swift */; };
 		5274C2622796CEC40043D7CA /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5274C2612796CEC40043D7CA /* SettingsViewController.swift */; };
-		AAC0F0312E670CD6006E0ADD /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0302E670CD6006E0ADD /* iOSMcuManagerLibrary */; };
 		AAC0F0342E670D38006E0ADD /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0332E670D38006E0ADD /* iOSMcuManagerLibrary */; };
 		AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0352E670D38006E0ADD /* iOSOtaLibrary */; };
 		BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285720CB44AF0061F0EE /* AppDelegate.swift */; };
@@ -77,7 +76,6 @@
 			files = (
 				AAC0F0342E670D38006E0ADD /* iOSMcuManagerLibrary in Frameworks */,
 				AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */,
-				AAC0F0312E670CD6006E0ADD /* iOSMcuManagerLibrary in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -532,14 +530,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		AAC0F02F2E670CD6006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		AAC0F0322E670D38006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager";
@@ -551,11 +541,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		AAC0F0302E670CD6006E0ADD /* iOSMcuManagerLibrary */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AAC0F02F2E670CD6006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
-			productName = iOSMcuManagerLibrary;
-		};
 		AAC0F0332E670D38006E0ADD /* iOSMcuManagerLibrary */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AAC0F0322E670D38006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
