@@ -74,7 +74,7 @@ enum ObservabilityStatus: CustomStringConvertible {
             return "DISCONNECTED"
         case .pairingError:
             return "PAIRING REQUIRED"
-        case .errorEvent(_):
+        case .errorEvent:
             return "ERROR"
         }
     }
