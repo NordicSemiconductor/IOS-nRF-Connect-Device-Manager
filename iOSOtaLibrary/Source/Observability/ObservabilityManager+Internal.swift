@@ -140,7 +140,7 @@ extension ObservabilityManager {
                     }
                     
                     guard let auth else {
-                        throw ObservabilityError.authDataNotFound
+                        throw ObservabilityManagerError.missingAuthData
                     }
                     
                     try await upload(chunk, with: auth, from: identifier)
@@ -189,7 +189,7 @@ extension ObservabilityManager {
     func awaitBleStart() async throws {
         switch ble.centralManager.state {
         case .poweredOff, .unauthorized, .unsupported:
-            throw OTAManagerError.bleUnavailable
+            throw ObservabilityManagerError.bleUnavailable
         default:
             break
         }

@@ -18,6 +18,7 @@ public enum ObservabilityManagerError: LocalizedError {
     
     case unableToReadDeviceURI
     case unableToReadAuthData
+    case missingAuthData
     
     case droppedChunkDueToFullBuffer
     case iOSVersionTooLow(_ string: String)
@@ -36,6 +37,8 @@ public enum ObservabilityManagerError: LocalizedError {
             return "Unable to parse Device URI."
         case .unableToReadAuthData:
             return "Unable to read Authentication Data."
+        case .missingAuthData:
+            return "Missing Authentication Data."
         case .droppedChunkDueToFullBuffer:
             return "A Chunk sent over BLE had to be dropped due to the internal buffer being hit."
         case .iOSVersionTooLow(let string):
