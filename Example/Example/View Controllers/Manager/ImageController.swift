@@ -148,30 +148,6 @@ extension ImageController: DeviceStatusDelegate {
     }
     
     func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int) {
-        switch status {
-        case .receivedEvent(let event):
-            switch event {
-            case .connected:
-                observabilityStatus.text = "CONNECTED"
-            case .disconnected:
-                observabilityStatus.text = "DISCONNECTED"
-            case .notifications:
-                observabilityStatus.text = "NOTIFYING"
-            case .streaming(let isTrue):
-                observabilityStatus.text = isTrue ? "STREAMING" : "NOT STREAMING"
-            case .authenticated:
-                observabilityStatus.text = "AUTHENTICATED"
-            case .updatedChunk:
-                observabilityStatus.text = "STREAMING"
-            }
-        case .connectionClosed:
-            observabilityStatus.text = "DISCONNECTED"
-        case .unsupported:
-            observabilityStatus.text = "UNSUPPORTED"
-        case .pairingError:
-            observabilityStatus.text = "PAIRING REQUIRED"
-        case .errorEvent:
-            observabilityStatus.text = "ERROR"
-        }
+        observabilityStatus.text = status.description
     }
 }
