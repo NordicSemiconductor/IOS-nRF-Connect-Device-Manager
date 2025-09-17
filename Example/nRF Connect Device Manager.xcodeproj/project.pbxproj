@@ -27,6 +27,8 @@
 		5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273624ACA7F4008F528C /* IntroViewController.swift */; };
 		5266273824ACA883008F528C /* NordicButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5266273524ACA7A1008F528C /* NordicButton.swift */; };
 		5274C2622796CEC40043D7CA /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5274C2612796CEC40043D7CA /* SettingsViewController.swift */; };
+		AA12B3A02E79885600378F1E /* DeviceInfoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA12B39F2E79885600378F1E /* DeviceInfoManager.swift */; };
+		AA12B3A62E7993F000378F1E /* iOS-BLE-Library-Mock in Frameworks */ = {isa = PBXBuildFile; productRef = AA12B3A52E7993F000378F1E /* iOS-BLE-Library-Mock */; };
 		AA7799F82E785BA800CAA1C3 /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AA7799F72E785BA800CAA1C3 /* iOSMcuManagerLibrary */; };
 		AA8404C42E7832ED00BD6B4A /* CryptoKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */; };
 		AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0352E670D38006E0ADD /* iOSOtaLibrary */; };
@@ -59,6 +61,7 @@
 		5266273524ACA7A1008F528C /* NordicButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NordicButton.swift; sourceTree = "<group>"; };
 		5266273624ACA7F4008F528C /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		5274C2612796CEC40043D7CA /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		AA12B39F2E79885600378F1E /* DeviceInfoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfoManager.swift; sourceTree = "<group>"; };
 		AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoKit.framework; path = System/Library/Frameworks/CryptoKit.framework; sourceTree = SDKROOT; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -77,6 +80,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA7799F82E785BA800CAA1C3 /* iOSMcuManagerLibrary in Frameworks */,
+				AA12B3A62E7993F000378F1E /* iOS-BLE-Library-Mock in Frameworks */,
 				AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */,
 				AA8404C42E7832ED00BD6B4A /* CryptoKit.framework in Frameworks */,
 			);
@@ -137,6 +141,7 @@
 		524DCFD7210B421E000E110D /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				AA12B39F2E79885600378F1E /* DeviceInfoManager.swift */,
 				524DCFD8210B4241000E110D /* UIColor.swift */,
 				F07D73AB2AE9AE3A00ED6B9A /* StringConvertibles.swift */,
 			);
@@ -255,6 +260,7 @@
 			mainGroup = BD5A284B20CB44AF0061F0EE;
 			packageReferences = (
 				AA7799F62E785BA800CAA1C3 /* XCLocalSwiftPackageReference "../../IOS-nRF-Connect-Device-Manager" */,
+				AA12B3A42E7993F000378F1E /* XCRemoteSwiftPackageReference "IOS-BLE-Library" */,
 			);
 			productRefGroup = BD5A285520CB44AF0061F0EE /* Products */;
 			projectDirPath = "";
@@ -307,6 +313,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5264C1DA210F43B40044FBBA /* ResetViewController.swift in Sources */,
+				AA12B3A02E79885600378F1E /* DeviceInfoManager.swift in Sources */,
 				5246368A2108DE77008B3D5B /* ScannerTableViewCell.swift in Sources */,
 				524636962109D0D7008B3D5B /* ScannerFilterViewController.swift in Sources */,
 				5264C1D8210F32A60044FBBA /* FirmwareUploadViewController.swift in Sources */,
@@ -549,6 +556,14 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		AA12B3A42E7993F000378F1E /* XCRemoteSwiftPackageReference "IOS-BLE-Library" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/NordicSemiconductor/IOS-BLE-Library.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.4.2;
+			};
+		};
 		AAC0F0322E670D38006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager";
@@ -560,6 +575,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AA12B3A52E7993F000378F1E /* iOS-BLE-Library-Mock */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA12B3A42E7993F000378F1E /* XCRemoteSwiftPackageReference "IOS-BLE-Library" */;
+			productName = "iOS-BLE-Library-Mock";
+		};
 		AA7799F72E785BA800CAA1C3 /* iOSMcuManagerLibrary */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = iOSMcuManagerLibrary;

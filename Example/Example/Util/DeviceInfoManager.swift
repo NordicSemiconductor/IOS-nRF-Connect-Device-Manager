@@ -1,25 +1,61 @@
 //
-//  OTAManager+Tokens.swift
+//  DeviceInfoManager.swift
 //  iOSOtaLibrary
+//  nRF Connect Device Manager
 //
 //  Created by Dinesh Harjani on 3/9/25.
+//  Copyright © 2025 Nordic Semiconductor ASA. All rights reserved.
 //
 
 import Foundation
-import CoreBluetooth
-internal import iOS_BLE_Library_Mock
+import iOSOtaLibrary
+import iOS_BLE_Library_Mock
+
+// MARK: - DeviceInfoManager
+
+/**
+ Migrated code, originally part of ``iOSMcuManagerLibrary`` API for Over-The-Air (OTA) update functionality.
+ 
+ It is presently unclear what the officially-supported method for obtaining ``DeviceInfoToken`` and ``ProjectKey`` values will be. So for the moment, the recommended solution [as per Memfault Documentation](https://docs.memfault.com/docs/mcu/nordic-nrf-connect-sdk-guide) is implemented here. You may copy it and adapt it to your liking. It is part of the public repository of nRF Connect Device Manager, after all.
+ */
+final class DeviceInfoManager {
+    
+    // MARK: Properties
+    
+    internal let peripheralUUID: UUID
+    internal var ble = CentralManager()
+    
+    // MARK: init
+    
+    init(_ peripheralUUID: UUID) {
+        self.peripheralUUID = peripheralUUID
+    }
+}
+
+// MARK: - DeviceInfoManagerError
+
+public enum DeviceInfoManagerError: LocalizedError {
+    case bleUnavailable
+    case peripheralNotFound
+    case serviceNotFound
+    case incompleteDeviceInfo
+    case mdsKeyDecodeError
+}
 
 // MARK: - getDeviceInfoToken
 
-public extension OTAManager {
+extension DeviceInfoManager {
     
-    func getDeviceInfoToken(_ callback: @escaping (Result<DeviceInfoToken, OTAManagerError>) -> ()) {
+    /**
+     Callback-based wrapper for async ``getDeviceInfoToken()`` API.
+     */
+    func getDeviceInfoToken(_ callback: @escaping (Result<DeviceInfoToken, DeviceInfoManagerError>) -> ()) {
         Task { @MainActor in
             do {
                 let token = try await getDeviceInfoToken()
                 callback(.success(token))
             } catch {
-                guard let otaError = error as? OTAManagerError else {
+                guard let otaError = error as? DeviceInfoManagerError else {
                     callback(.failure(.incompleteDeviceInfo))
                     return
                 }
@@ -29,15 +65,17 @@ public extension OTAManager {
         }
     }
     
+    /**
+     Reads ``DeviceInfoToken`` from the Peripheral's 180A or GATT Device Information Service.
+     */
     func getDeviceInfoToken() async throws -> DeviceInfoToken {
         do {
             try await awaitBleStart()
-            
             let cbPeripheral = ble.retrievePeripherals(withIdentifiers: [peripheralUUID])
                 .first
             
             guard let cbPeripheral else {
-                throw OTAManagerError.peripheralNotFound
+                throw DeviceInfoManagerError.peripheralNotFound
             }
             let _ = try await ble.connect(cbPeripheral)
                 .firstValue
@@ -50,7 +88,7 @@ public extension OTAManager {
             guard let deviceInfoService = discoveredServices.first(where: {
                 $0.uuid.uuidString == "180A"
             }) else {
-                throw OTAManagerError.serviceNotFound
+                throw DeviceInfoManagerError.serviceNotFound
             }
             
             let discoveredCharacteristics = try await peripheral.discoverCharacteristics([], for: deviceInfoService)
@@ -84,7 +122,7 @@ public extension OTAManager {
             }
             
             guard let serial, let firmwareVersion, let hardwareVersion, let softwareType else {
-                throw OTAManagerError.incompleteDeviceInfo
+                throw DeviceInfoManagerError.incompleteDeviceInfo
             }
             
             return DeviceInfoToken(deviceSerialNumber: serial, hardwareVersion: hardwareVersion, currentVersion: firmwareVersion, softwareType: softwareType)
@@ -94,24 +132,32 @@ public extension OTAManager {
  
 // MARK: - getProjectKey
 
-public extension OTAManager {
+extension DeviceInfoManager {
     
-    func getProjectKey(_ callback: @escaping (Result<ProjectKey, OTAManagerError>) -> ()) {
+    /**
+     Callback-based wrapper for async ``getProjectKey()`` API.
+     */
+    func getProjectKey(_ callback: @escaping (Result<ProjectKey, DeviceInfoManagerError>) -> ()) {
         Task { @MainActor in
             do {
                 let token = try await getProjectKey()
                 callback(.success(token))
             } catch {
-                guard let otaError = error as? OTAManagerError else {
+                guard let managerError = error as? DeviceInfoManagerError else {
                     callback(.failure(.incompleteDeviceInfo))
                     return
                 }
-                callback(.failure(otaError))
+                callback(.failure(managerError))
                 print("Error: \(error.localizedDescription)")
             }
         }
     }
     
+    /**
+     Reads ``ProjectKey`` from the Peripheral's Memfault Diagnostic (MDS) Service. Specifically from the Device Authorization Characteristic.
+     
+     The aforementioned ``ProjectKey`` is necessary to perform an ``OTAManager`` request for the latest Release Info for a given device.
+     */
     func getProjectKey() async throws -> ProjectKey {
         do {
             try await awaitBleStart()
@@ -120,7 +166,7 @@ public extension OTAManager {
                 .first
             
             guard let cbPeripheral else {
-                throw OTAManagerError.peripheralNotFound
+                throw DeviceInfoManagerError.peripheralNotFound
             }
             let _ = try await ble.connect(cbPeripheral)
                 .firstValue
@@ -133,7 +179,7 @@ public extension OTAManager {
             guard let mdservice = discoveredServices.first(where: {
                 $0.uuid.uuidString == "54220000-F6A5-4007-A371-722F4EBD8436"
             }) else {
-                throw OTAManagerError.serviceNotFound
+                throw DeviceInfoManagerError.serviceNotFound
             }
             
             let discoveredCharacteristics = try await peripheral.discoverCharacteristics([], for: mdservice)
@@ -153,13 +199,40 @@ public extension OTAManager {
             }
             
             guard let authKey else {
-                throw OTAManagerError.incompleteDeviceInfo
+                throw DeviceInfoManagerError.incompleteDeviceInfo
             }
             
             guard let authToken = ProjectKey(authValue: authKey) else {
-                throw OTAManagerError.mdsKeyDecodeError
+                throw DeviceInfoManagerError.mdsKeyDecodeError
             }
             return authToken
         }
+    }
+}
+
+// MARK: awaitBleStart
+
+extension DeviceInfoManager {
+    
+    func awaitBleStart() async throws {
+        switch ble.centralManager.state {
+        case .poweredOff, .unauthorized, .unsupported:
+            throw DeviceInfoManagerError.bleUnavailable
+        default:
+            break
+        }
+        
+        _ = try await ble.stateChannel
+            .filter {
+                switch $0 {
+                case .unauthorized, .unsupported, .poweredOff:
+                    return false
+                case .poweredOn:
+                    return true
+                default:
+                    return false
+                }
+            }
+            .firstValue
     }
 }

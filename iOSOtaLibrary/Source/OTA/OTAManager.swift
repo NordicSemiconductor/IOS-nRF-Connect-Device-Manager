@@ -9,7 +9,6 @@
 import Foundation
 import CoreBluetooth
 import CryptoKit
-internal import iOS_BLE_Library_Mock
 
 // MARK: - OTAManager
 
@@ -17,18 +16,11 @@ public final class OTAManager {
     
     // MARK: Private Properties
     
-    internal var ble = CentralManager()
-    internal let peripheralUUID: UUID
-    internal var peripheral: Peripheral?
     private let network: Network
     
     // MARK: init
     
-    public init(_ targetPeripheralUUID: UUID) {
-        self.ble = CentralManager()
-        self.peripheralUUID = targetPeripheralUUID
-        // Try to start inner CentralManager.
-        _ = ble.centralManager.state
+    public init() {
         self.network = Network("api.memfault.com")
     }
     
@@ -164,36 +156,11 @@ extension OTAManager {
         let fileData = try Data(contentsOf: fileURL, options: .mappedIfSafe)
         return SHA256.hash(data: fileData)
     }
-    
-    func awaitBleStart() async throws {
-        switch ble.centralManager.state {
-        case .poweredOff, .unauthorized, .unsupported:
-            throw OTAManagerError.bleUnavailable
-        default:
-            break
-        }
-        
-        _ = try await ble.stateChannel
-            .filter {
-                switch $0 {
-                case .unauthorized, .unsupported, .poweredOff:
-                    return false
-                case .poweredOn:
-                    return true
-                default:
-                    return false
-                }
-            }
-            .firstValue
-    }
 }
 
 // MARK: - OTAManagerError
 
 public enum OTAManagerError: LocalizedError {
-    case bleUnavailable
-    case peripheralNotFound
-    case serviceNotFound
     case incompleteDeviceInfo
     case mdsKeyDecodeError
     case unableToParseResponse

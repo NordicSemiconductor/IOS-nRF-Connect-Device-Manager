@@ -132,6 +132,7 @@ final class BaseViewController: UITabBarController {
     // MARK: Private Properties
     
     private var otaManager: OTAManager?
+    private var deviceInfoManager: DeviceInfoManager?
     
     private var observabilityTask: Task<Void, Never>?
     private var observabilityIdentifier: UUID?
@@ -284,22 +285,23 @@ extension BaseViewController {
     // MARK: OTA
     
     private func requestOTAReleaseInfo() {
-        otaManager?.getDeviceInfoToken { [unowned self] result in
-            switch result {
-            case .success(let deviceInfo):
-                print("Obtained Device Info \(deviceInfo)")
-                otaManager?.getProjectKey() { [unowned self] result in
-                    switch result {
-                    case .success(let projectKey):
-                        print("Obtained Project Key \(projectKey)")
-                        self.otaStatus = .supported(deviceInfo, projectKey)
-                        onDeviceStatusFinished()
-                    case .failure(let error):
-                        self.otaStatus = .missingProjectKey(deviceInfo, error)
-                        onDeviceStatusFinished()
-                    }
+        guard let deviceInfoManager else { return }
+        Task { @MainActor in
+            var deviceInfo: DeviceInfoToken!
+            do {
+                deviceInfo = try await deviceInfoManager.getDeviceInfoToken()
+                let projectKey = try await deviceInfoManager.getProjectKey()
+                
+                self.otaStatus = .supported(deviceInfo, projectKey)
+                onDeviceStatusFinished()
+            } catch let managerError as DeviceInfoManagerError {
+                if deviceInfo != nil {
+                    self.otaStatus = .missingProjectKey(deviceInfo, managerError)
+                } else {
+                    self.otaStatus = .unsupported(managerError)
                 }
-            case .failure(let error):
+                onDeviceStatusFinished()
+            } catch let error {
                 self.otaStatus = .unsupported(error)
                 onDeviceStatusFinished()
             }
@@ -424,7 +426,8 @@ extension BaseViewController: PeripheralDelegate {
         peripheralState = state
         switch state {
         case .connected:
-            otaManager = OTAManager(peripheral.identifier)
+            otaManager = OTAManager()
+            deviceInfoManager = DeviceInfoManager(peripheral.identifier)
             observabilityManager = ObservabilityManager()
             observabilityIdentifier = peripheral.identifier
             launchObservabilityTask()
@@ -432,6 +435,7 @@ extension BaseViewController: PeripheralDelegate {
             // Set to false, because a DFU update might change things if that's what happened.
             deviceInfoRequested = false
             otaManager = nil
+            deviceInfoManager = nil
             stopObservabilityManagerAndTask()
         default:
             // Nothing to do here.
