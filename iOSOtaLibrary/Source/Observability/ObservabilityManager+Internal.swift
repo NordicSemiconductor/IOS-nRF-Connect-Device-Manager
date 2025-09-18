@@ -18,12 +18,10 @@ extension ObservabilityManager {
     
     func connectAndAuthenticate(from identifier: UUID) async {
         do {
-            try await awaitBleStart()
+            try await ble.isPoweredOn()
             
-            let cbPeripheral = ble.retrievePeripherals(withIdentifiers: [identifier])
-                .first
-            
-            guard let cbPeripheral else {
+            guard let cbPeripheral = ble.retrievePeripherals(withIdentifiers: [identifier])
+                .first else {
                 throw ObservabilityManagerError.peripheralNotFound
             }
             
@@ -182,29 +180,5 @@ extension ObservabilityManager {
     func received(_ chunk: ObservabilityChunk, from identifier: UUID) {
         devices[identifier]?.chunks.append(chunk)
         deviceStreams[identifier]?.yield((identifier, .updatedChunk(chunk, status: .receivedAndPendingUpload)))
-    }
-    
-    // MARK: awaitBleStart
-    
-    func awaitBleStart() async throws {
-        switch ble.centralManager.state {
-        case .poweredOff, .unauthorized, .unsupported:
-            throw ObservabilityManagerError.bleUnavailable
-        default:
-            break
-        }
-        
-        _ = try await ble.stateChannel
-            .filter {
-                switch $0 {
-                case .unauthorized, .unsupported, .poweredOff:
-                    return false
-                case .poweredOn:
-                    return true
-                default:
-                    return false
-                }
-            }
-            .firstValue
     }
 }

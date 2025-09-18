@@ -70,13 +70,13 @@ extension DeviceInfoManager {
      */
     func getDeviceInfoToken() async throws -> DeviceInfoToken {
         do {
-            try await awaitBleStart()
-            let cbPeripheral = ble.retrievePeripherals(withIdentifiers: [peripheralUUID])
-                .first
+            try await ble.isPoweredOn()
             
-            guard let cbPeripheral else {
+            guard let cbPeripheral = ble.retrievePeripherals(withIdentifiers: [peripheralUUID])
+                .first else {
                 throw DeviceInfoManagerError.peripheralNotFound
             }
+            
             let _ = try await ble.connect(cbPeripheral)
                 .firstValue
             
@@ -160,14 +160,13 @@ extension DeviceInfoManager {
      */
     func getProjectKey() async throws -> ProjectKey {
         do {
-            try await awaitBleStart()
+            try await ble.isPoweredOn()
             
-            let cbPeripheral = ble.retrievePeripherals(withIdentifiers: [peripheralUUID])
-                .first
-            
-            guard let cbPeripheral else {
+            guard let cbPeripheral = ble.retrievePeripherals(withIdentifiers: [peripheralUUID])
+                .first else {
                 throw DeviceInfoManagerError.peripheralNotFound
             }
+            
             let _ = try await ble.connect(cbPeripheral)
                 .firstValue
             
@@ -207,32 +206,5 @@ extension DeviceInfoManager {
             }
             return authToken
         }
-    }
-}
-
-// MARK: awaitBleStart
-
-extension DeviceInfoManager {
-    
-    func awaitBleStart() async throws {
-        switch ble.centralManager.state {
-        case .poweredOff, .unauthorized, .unsupported:
-            throw DeviceInfoManagerError.bleUnavailable
-        default:
-            break
-        }
-        
-        _ = try await ble.stateChannel
-            .filter {
-                switch $0 {
-                case .unauthorized, .unsupported, .poweredOff:
-                    return false
-                case .poweredOn:
-                    return true
-                default:
-                    return false
-                }
-            }
-            .firstValue
     }
 }

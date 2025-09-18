@@ -1,13 +1,13 @@
 {
-  "originHash" : "52627b8ee6eb30d41fd4661a9bff519a3a6d86ec92b23ef6dd5520c1e63c2ced",
+  "originHash" : "26feaca78ee2e3ca1496b709feb0374b5557591eb5eaa04e5ededc76577b8558",
   "pins" : [
     {
       "identity" : "ios-ble-library",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/NordicSemiconductor/IOS-BLE-Library",
+      "location" : "https://github.com/NordicSemiconductor/IOS-BLE-Library.git",
       "state" : {
         "branch" : "main",
-        "revision" : "dbb8a255185add411a643d76b111825c27b3217d"
+        "revision" : "e9e2c07701282f1e72be0321f9df5280adbd8583"
       }
     },
     {
