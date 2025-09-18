@@ -560,8 +560,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/NordicSemiconductor/IOS-BLE-Library.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.4.2;
+				branch = main;
+				kind = branch;
 			};
 		};
 		AAC0F0322E670D38006E0ADD /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
