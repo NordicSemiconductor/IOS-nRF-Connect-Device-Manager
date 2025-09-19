@@ -126,9 +126,7 @@ extension ObservabilityManager {
             do {
                 for try await data in peripheral
                     .listenValues(for: dataExportCharacteristic)
-                    .buffer(size: 100, prefetch: .byRequest, whenFull: .customError({
-                        ObservabilityManagerError.droppedChunkDueToFullBuffer
-                    })).values {
+                    .values {
                     
                     let chunk = ObservabilityChunk(data)
                     received(chunk, from: identifier)
