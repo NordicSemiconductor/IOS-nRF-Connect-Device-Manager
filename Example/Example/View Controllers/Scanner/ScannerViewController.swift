@@ -12,8 +12,12 @@ import iOSMcuManagerLibrary
 
 final class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UIPopoverPresentationControllerDelegate, ScannerFilterDelegate {
     
+    // MARK: @IBOutlet(s)
+    
     @IBOutlet weak var emptyPeripheralsView: UIView!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
+    // MARK: Private Properties
     
     private var pullToRefreshControl: UIRefreshControl!
     private var centralManager: CBCentralManager!
@@ -84,20 +88,23 @@ final class ScannerViewController: UITableViewController, CBCentralManagerDelega
     
     // MARK: Segue control
     
+    private enum Segue: String {
+        case showFilter, connect
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let identifier = segue.identifier!
-        switch identifier {
-        case "showFilter":
+        guard let selectedSegue = Segue(rawValue: identifier) else { return }
+        switch selectedSegue {
+        case .showFilter:
             let filterController = segue.destination as! ScannerFilterViewController
             filterController.popoverPresentationController?.delegate = self
             filterController.filterByNameEnabled = filterByName
             filterController.filterByRssiEnabled = filterByRssi
             filterController.delegate = self
-        case "connect":
+        case .connect:
             let controller = segue.destination as! BaseViewController
             controller.peripheral = (sender as! DiscoveredPeripheral)
-        default:
-            break
         }
     }
     
@@ -164,7 +171,8 @@ final class ScannerViewController: UITableViewController, CBCentralManagerDelega
         centralManager.stopScan()
         activityIndicator.stopAnimating()
         
-        performSegue(withIdentifier: "connect", sender: filteredPeripherals[indexPath.row])
+        performSegue(withIdentifier: Segue.connect.rawValue,
+                     sender: filteredPeripherals[indexPath.row])
     }
     
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
