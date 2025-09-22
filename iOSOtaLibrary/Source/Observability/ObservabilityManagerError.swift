@@ -19,8 +19,6 @@ public enum ObservabilityManagerError: LocalizedError {
     case unableToReadDeviceURI
     case unableToReadAuthData
     case missingAuthData
-    
-    case iOSVersionTooLow(_ string: String)
 
     public var errorDescription: String? {
         switch self {
@@ -38,8 +36,6 @@ public enum ObservabilityManagerError: LocalizedError {
             return "Unable to read Authentication Data."
         case .missingAuthData:
             return "Missing Authentication Data."
-        case .iOSVersionTooLow(let string):
-            return string
         }
     }
 }
