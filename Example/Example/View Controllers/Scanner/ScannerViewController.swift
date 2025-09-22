@@ -167,6 +167,11 @@ final class ScannerViewController: UITableViewController, CBCentralManagerDelega
         performSegue(withIdentifier: "connect", sender: filteredPeripherals[indexPath.row])
     }
     
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        guard section == 0 else { return nil }
+        return "   ⓘ You may Pull-to-refresh this list."
+    }
+    
     // MARK: CBCentralManagerDelegate
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
