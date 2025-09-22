@@ -51,12 +51,7 @@ extension ObservabilityManager {
                 throw ObservabilityManagerError.mdsDataExportCharacteristicNotFound
             }
             
-            if #available(iOS 15.0, *) {
-                try listenForNewChunks(from: peripheral, dataExportCharacteristic: mdsData)
-            } else {
-                // TODO: Fallback on earlier versions
-                throw ObservabilityManagerError.iOSVersionTooLow("iOS 15 / macCatalyst 15 / macOS 12 onwards are required.")
-            }
+            listenForNewChunks(from: peripheral, dataExportCharacteristic: mdsData)
             
             guard let mdsDataURI = mdsCharacteristics.first(where: { $0.uuid == CBUUID.MDSDataURICharacteristic }),
                   let uriData = try await peripheral.readValue(for: mdsDataURI).firstValue,
@@ -72,7 +67,7 @@ extension ObservabilityManager {
             }
             
             let auth = ObservabilityAuth(url: uriURL, authKey: String(authString[0]),
-                                          authValue: String(authString[1]))
+                                         authValue: String(authString[1]))
             devices[identifier]?.auth = auth
             deviceStreams[identifier]?.yield((identifier, .authenticated(auth)))
             
@@ -111,41 +106,38 @@ extension ObservabilityManager {
             }
             .store(in: &cancellables)
     }
-}
 
-// MARK: - listenForNewChunks
-
-@available(iOS 15.0, macCatalyst 15.0, macOS 12.0, *)
-extension ObservabilityManager {
+    // MARK: listenForNewChunks
     
-    func listenForNewChunks(from peripheral: Peripheral, dataExportCharacteristic: iOS_BLE_Library_Mock.CBCharacteristic) throws {
+    func listenForNewChunks(from peripheral: Peripheral, dataExportCharacteristic: iOS_BLE_Library_Mock.CBCharacteristic) {
         
-        Task {
-            let identifier = peripheral.peripheral.identifier
-            var auth: ObservabilityAuth!
-            do {
-                for try await data in peripheral
-                    .listenValues(for: dataExportCharacteristic)
-                    .values {
-                    
-                    let chunk = ObservabilityChunk(data)
-                    received(chunk, from: identifier)
-                    
-                    if auth == nil {
-                        auth = devices[identifier]?.auth
-                    }
-                    
-                    guard let auth else {
-                        throw ObservabilityManagerError.missingAuthData
-                    }
-                    
-                    try await upload(chunk, with: auth, from: identifier)
-                }
-            } catch {
-                deviceStreams[identifier]?.yield(with: .failure(error))
-                disconnect(from: identifier)
+        let identifier = peripheral.peripheral.identifier
+        peripheral
+            .listenValues(for: dataExportCharacteristic)
+            .map { [weak self] data in
+                let chunk = ObservabilityChunk(data)
+                self?.received(chunk, from: identifier)
+                return chunk
             }
-        }
+            .tryMap { [weak self] chunk -> (ObservabilityAuth, ObservabilityChunk) in
+                guard let auth = self?.devices[identifier]?.auth else {
+                    throw ObservabilityManagerError.missingAuthData
+                }
+                return (auth, chunk)
+            }
+            .sink { [weak self] completion in
+                switch completion {
+                case .finished:
+                    print("finished")
+                case .failure(let error):
+                    print(error.localizedDescription)
+                    self?.deviceStreams[identifier]?.yield(with: .failure(error))
+                    self?.disconnect(from: identifier)
+                }
+            } receiveValue: { [weak self] auth, chunk in
+                self?.upload(chunk, with: auth, from: identifier)
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -155,22 +147,29 @@ extension ObservabilityManager {
     
     // MARK: upload
     
-    func upload(_ chunk: ObservabilityChunk, with auth: ObservabilityAuth, from identifier: UUID) async throws {
+    func upload(_ chunk: ObservabilityChunk, with auth: ObservabilityAuth, from identifier: UUID) {
         guard let i = devices[identifier]?.chunks.firstIndex(where: {
             $0.sequenceNumber == chunk.sequenceNumber && $0.data == chunk.data
         }) else { return }
 
-        do {
-            devices[identifier]?.chunks[i].status = .uploading
-            deviceStreams[identifier]?.yield((identifier, .updatedChunk(chunk, status: .uploading)))
-            try await upload(chunk, with: auth)
-            devices[identifier]?.chunks[i].status = .success
-            deviceStreams[identifier]?.yield((identifier, .updatedChunk(chunk, status: .success)))
-        } catch {
-            devices[identifier]?.chunks[i].status = .errorUploading
-            deviceStreams[identifier]?.yield((identifier, .updatedChunk(chunk, status: .errorUploading)))
-            disconnect(from: identifier)
-        }
+        devices[identifier]?.chunks[i].status = .uploading
+        deviceStreams[identifier]?.yield((identifier, .updatedChunk(chunk, status: .uploading)))
+        
+        network.perform(HTTPRequest.post(chunk, with: auth))
+            .sink { [weak self] completion in
+                switch completion {
+                case .finished:
+                    print("finished!")
+                case .failure(let error):
+                    self?.devices[identifier]?.chunks[i].status = .errorUploading
+                    self?.deviceStreams[identifier]?.yield((identifier, .updatedChunk(chunk, status: .errorUploading)))
+                    self?.disconnect(from: identifier)
+                }
+            } receiveValue: { [weak self] resultData in
+                self?.devices[identifier]?.chunks[i].status = .success
+                self?.deviceStreams[identifier]?.yield((identifier, .updatedChunk(chunk, status: .success)))
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: received

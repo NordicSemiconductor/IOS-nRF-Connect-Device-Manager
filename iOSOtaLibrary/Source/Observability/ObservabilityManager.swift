@@ -73,7 +73,8 @@ public extension ObservabilityManager {
     func disconnect(from identifier: UUID) {
         Task {
             guard let device = devices[identifier],
-                  let peripheral = peripherals[identifier] else { return }
+                  let peripheral = peripherals[identifier],
+                  let continuation = deviceStreams[identifier] else { return }
             do {
                 if device.isStreaming {
                     guard let mdsService = peripheral.services?.first(where: { $0.uuid == CBUUID.MDS }),
@@ -82,7 +83,7 @@ public extension ObservabilityManager {
                     }
                     _ = try await peripheral.writeValueWithResponse(Data(repeating: 0, count: 1), for: mdsDataExportCharacteristic)
                         .firstValue
-                    deviceStreams[identifier]?.yield((identifier, .streaming(false)))
+                    continuation.yield((identifier, .streaming(false)))
                 }
                 
                 if device.isNotifying {
@@ -93,26 +94,16 @@ public extension ObservabilityManager {
                     
                     _ = try await peripheral.setNotifyValue(false, for: mdsDataExportService)
                         .firstValue
-                    deviceStreams[identifier]?.yield((identifier, .notifications(false)))
+                    continuation.yield((identifier, .notifications(false)))
                 }
                 
                 _ = try await ble.cancelPeripheralConnection(peripheral.peripheral)
                     .firstValue
-                deviceStreams[identifier]?.yield((identifier, .disconnected))
-                deviceStreams[identifier]?.finish()
+                continuation.yield((identifier, .disconnected))
+                continuation.finish()
             } catch {
-                deviceStreams[identifier]?.finish(throwing: error)
+                continuation.finish(throwing: error)
             }
         }
-    }
-}
-    
-// MARK: - Network
-
-extension ObservabilityManager {
-    
-    func upload(_ chunk: ObservabilityChunk, with chunkAuth: ObservabilityAuth) async throws {
-        _ = try await network.perform(HTTPRequest.post(chunk, with: chunkAuth))
-            .firstValue
     }
 }
