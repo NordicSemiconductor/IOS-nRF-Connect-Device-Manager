@@ -8,11 +8,14 @@ import UIKit
 import CoreBluetooth
 import iOSMcuManagerLibrary
 
-class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UIPopoverPresentationControllerDelegate, ScannerFilterDelegate {
+// MARK: - ScannerViewController
+
+final class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UIPopoverPresentationControllerDelegate, ScannerFilterDelegate {
     
     @IBOutlet weak var emptyPeripheralsView: UIView!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
+    private var pullToRefreshControl: UIRefreshControl!
     private var centralManager: CBCentralManager!
     private var discoveredPeripherals = [DiscoveredPeripheral]()
     private var filteredPeripherals = [DiscoveredPeripheral]()
@@ -20,12 +23,15 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
     private var filterByName: Bool!
     private var filterByRssi: Bool!
     
+    // MARK: @IBAction
+    
     @IBAction func aboutTapped(_ sender: UIBarButtonItem) {
         let rootViewController = navigationController as? RootViewController
         rootViewController?.showIntro(animated: true)
     }
     
-    // MARK: - UIViewController
+    // MARK: UIViewController
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         centralManager = CBCentralManager()
@@ -40,6 +46,11 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
         super.viewWillAppear(animated)
         discoveredPeripherals.removeAll()
         tableView.reloadData()
+        
+        guard pullToRefreshControl == nil else { return }
+        pullToRefreshControl = UIRefreshControl()
+        pullToRefreshControl.addTarget(self, action: #selector(onPullToRefresh(_:)), for: .valueChanged)
+        tableView.refreshControl = pullToRefreshControl
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -71,7 +82,8 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
         }
     }
     
-    // MARK: - Segue control
+    // MARK: Segue control
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let identifier = segue.identifier!
         switch identifier {
@@ -95,7 +107,21 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
         return .none
     }
     
-    // MARK: - Filter delegate
+    // MARK: Pull-to-refresh
+    
+    @objc private func onPullToRefresh(_ sender: Any?) {
+        if centralManager.isScanning {
+            centralManager.stopScan()
+        }
+        discoveredPeripherals.removeAll()
+        filteredPeripherals.removeAll()
+        tableView.reloadData()
+        pullToRefreshControl.endRefreshing()
+        startScanner()
+    }
+    
+    // MARK: Filter delegate
+    
     func filterSettingsDidChange(filterByName: Bool, filterByRssi: Bool) {
         self.filterByName = filterByName
         self.filterByRssi = filterByRssi
@@ -111,7 +137,8 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
         tableView.reloadData()
     }
     
-    // MARK: - Table view data source
+    // MARK: Table view data source
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
@@ -140,7 +167,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
         performSegue(withIdentifier: "connect", sender: filteredPeripherals[indexPath.row])
     }
     
-    // MARK: - CBCentralManagerDelegate
+    // MARK: CBCentralManagerDelegate
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         // Find peripheral among already discovered ones, or create a new
@@ -183,7 +210,7 @@ class ScannerViewController: UITableViewController, CBCentralManagerDelegate, UI
         }
     }
     
-    // MARK: - Private helper methods
+    // MARK: Private helper methods
     
     private func startScanner() {
         activityIndicator.startAnimating()
