@@ -99,8 +99,6 @@ final class DiagnosticsController: UITableViewController {
         let transport: McuMgrTransport! = baseController.transport
         statsManager = StatsManager(transport: transport)
         statsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
-        
-        observabilitySectionStatusActivityIndicator.isHidden = true
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -111,6 +109,18 @@ final class DiagnosticsController: UITableViewController {
 // MARK: - Private
 
 private extension DiagnosticsController {
+    
+    func showObservabilityActivityIndicator(_ isVisible: Bool) {
+        observabilitySectionStatusActivityIndicator.hidesWhenStopped = true
+        if isVisible {
+            observabilitySectionStatusActivityIndicator.isHidden = false
+            if !observabilitySectionStatusActivityIndicator.isAnimating {
+                observabilitySectionStatusActivityIndicator.startAnimating()
+            }
+        } else {
+            observabilitySectionStatusActivityIndicator.stopAnimating()
+        }
+    }
     
     func moduleStatsString(_ module: String, stats: McuMgrStatsResponse?, error: (any Error)?) -> String {
         var resultString = "\(module)"
@@ -181,11 +191,11 @@ extension DiagnosticsController: DeviceStatusDelegate {
             case .connected:
                 observabilitySectionStatusLabel.text = "Status: Connected over BLE"
                 observabilitySectionStatusLabel.textColor = .systemYellow
-                observabilitySectionStatusActivityIndicator.isHidden = true
+                showObservabilityActivityIndicator(false)
             case .disconnected:
                 observabilitySectionStatusLabel.text = "Status: Offline"
                 observabilitySectionStatusLabel.textColor = .secondaryLabel
-                observabilitySectionStatusActivityIndicator.isHidden = true
+                showObservabilityActivityIndicator(false)
             case .notifications:
                 observabilitySectionStatusLabel.text = "Status: Notifications Enabled"
                 observabilitySectionStatusLabel.textColor = .systemYellow
@@ -196,16 +206,11 @@ extension DiagnosticsController: DeviceStatusDelegate {
                 if isTrue {
                     observabilitySectionStatusLabel.text = "Status: Online"
                     observabilitySectionStatusLabel.textColor = .systemGreen
-                    
-                    observabilitySectionStatusActivityIndicator.isHidden = false
-                    observabilitySectionStatusActivityIndicator.startAnimating()
                 } else {
                     observabilitySectionStatusLabel.text = "Status: Offline"
                     observabilitySectionStatusLabel.textColor = .secondaryLabel
-                    
-                    observabilitySectionStatusActivityIndicator.stopAnimating()
-                    observabilitySectionStatusActivityIndicator.isHidden = true
                 }
+                showObservabilityActivityIndicator(isTrue)
             case .updatedChunk(let chunk, let chunkStatus):
                 switch chunkStatus {
                 case .receivedAndPendingUpload:
@@ -221,25 +226,22 @@ extension DiagnosticsController: DeviceStatusDelegate {
                     observabilitySectionStatusLabel.textColor = .systemRed
                 }
                 
-                observabilitySectionStatusActivityIndicator.isHidden = false
-                if !observabilitySectionStatusActivityIndicator.isAnimating {
-                    observabilitySectionStatusActivityIndicator.startAnimating()
-                }
+                showObservabilityActivityIndicator(true)
                 observabilitySectionStatusPendingLabel.text = "Pending: \(pendingCount) chunk(s), \(pendingBytes) bytes"
                 observabilitySectionStatusUploadedLabel.text = "Uploaded: \(uploadedCount) chunk(s), \(uploadedBytes) bytes"
             }
         case .connectionClosed:
-            observabilitySectionStatusActivityIndicator.isHidden = true
+            showObservabilityActivityIndicator(false)
             
             observabilitySectionStatusLabel.text = "Status: Offline"
             observabilitySectionStatusLabel.textColor = .secondaryLabel
         case .unsupported:
-            observabilitySectionStatusActivityIndicator.isHidden = true
+            showObservabilityActivityIndicator(false)
             
             observabilitySectionStatusLabel.text = "Status: Unsupported"
             observabilitySectionStatusLabel.textColor = .secondaryLabel
         case .errorEvent(let error):
-            observabilitySectionStatusActivityIndicator.isHidden = true
+            showObservabilityActivityIndicator(false)
             
             observabilitySectionStatusLabel.text = "Status: \(error.localizedDescription)"
             observabilitySectionStatusLabel.textColor = .systemRed
