@@ -254,12 +254,12 @@
                                 </connections>
                             </barButtonItem>
                             <barButtonItem id="9n2-3j-DCY">
-                                <view key="customView" contentMode="scaleToFill" misplaced="YES" id="X9s-eL-VOJ">
+                                <view key="customView" contentMode="scaleToFill" id="X9s-eL-VOJ">
                                     <rect key="frame" x="188.66666666666666" y="4.0000000000000009" width="82.999999999999972" height="36"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
                                         <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="X3v-MD-Kn9">
-                                            <rect key="frame" x="47" y="12" width="20" height="20"/>
+                                            <rect key="frame" x="47" y="8" width="20" height="20"/>
                                         </activityIndicatorView>
                                     </subviews>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -873,11 +873,11 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="observability" editingAccessoryType="detailButton" textLabel="JIE-nD-4nO" detailTextLabel="ngs-um-OT5" style="IBUITableViewCellStyleValue1" id="Wyv-z6-M4k" userLabel="observabilityStatus">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" accessoryType="detailButton" indentationWidth="10" reuseIdentifier="observability" editingAccessoryType="detailButton" textLabel="JIE-nD-4nO" detailTextLabel="ngs-um-OT5" style="IBUITableViewCellStyleValue1" id="Wyv-z6-M4k" userLabel="observabilityStatus">
                                         <rect key="frame" x="0.0" y="395" width="375" height="51"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Wyv-z6-M4k" id="MLm-ZQ-iwJ">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="51"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="335" height="51"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Observability" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="JIE-nD-4nO">
@@ -888,7 +888,7 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="UNKNOWN" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ngs-um-OT5">
-                                                    <rect key="frame" x="271.33333333333331" y="15.999999999999998" width="87.666666666666671" height="20.333333333333332"/>
+                                                    <rect key="frame" x="239.33333333333329" y="15.999999999999998" width="87.666666666666671" height="20.333333333333332"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" systemColor="secondaryLabelColor"/>
@@ -2547,7 +2547,7 @@
         <scene sceneID="OqD-0B-QPm">
             <objects>
                 <viewController title="Upload" id="ZG1-GB-bgc" customClass="FileUploadViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" ambiguous="YES" id="yVO-JE-3UU">
+                    <view key="view" contentMode="scaleToFill" id="yVO-JE-3UU">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="271"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
