@@ -23,59 +23,36 @@ protocol DeviceStatusDelegate: AnyObject {
     func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int)
 }
 
-// MARK: - OTAStatus
+// MARK: - DeviceStatusRow
 
-enum OTAStatus: CustomStringConvertible {
-    case unsupported(_ error: Error?)
-    case missingProjectKey(_ deviceInfo: DeviceInfoToken, _ error: Error)
-    case supported(_ deviceInfo: DeviceInfoToken, _ projectKey: ProjectKey)
+enum DeviceStatusRow: Int, CustomStringConvertible {
+    case connection
+    case mcuMgrParameters
+    case bootloaderName
+    case bootloaderMode
+    case bootloaderSlot
+    case kernel
+    case otaStatus
+    case observabilityStatus
     
     var description: String {
         switch self {
-        case .unsupported:
-            return "UNSUPPORTED"
-        case .missingProjectKey:
-            return "MISSING PROJECT KEY"
-        case .supported:
-            return "SUPPORTED"
-        }
-    }
-}
-
-// MARK: - ObservabilityStatus
-
-enum ObservabilityStatus: CustomStringConvertible {
-    case unsupported(_ error: Error?)
-    case receivedEvent(_ event: ObservabilityDeviceEvent)
-    case connectionClosed
-    case pairingError(_ error: CBATTError)
-    case errorEvent(_ error: Error)
-    
-    var description: String {
-        switch self {
-        case .unsupported:
-            return "UNSUPPORTED"
-        case .receivedEvent(let event):
-            switch event {
-            case .connected:
-                return "CONNECTED"
-            case .disconnected:
-                return "DISCONNECTED"
-            case .notifications(let enabled):
-                return enabled ? "NOTIFYING" : "NOTIFICATIONS DISABLED"
-            case .streaming(let isTrue):
-                return isTrue ? "STREAMING" : "NOT STREAMING"
-            case .authenticated:
-                return "AUTHENTICATED"
-            case .updatedChunk:
-                return "STREAMING"
-            }
-        case .connectionClosed:
-            return "DISCONNECTED"
-        case .pairingError:
-            return "PAIRING REQUIRED"
-        case .errorEvent:
-            return "ERROR"
+        case .connection:
+            return "Connection"
+        case .mcuMgrParameters:
+            return "MCU Manager Parameters / Buffer Details"
+        case .bootloaderName:
+            return "Bootloader Name"
+        case .bootloaderMode:
+            return "Bootloader Mode"
+        case .bootloaderSlot:
+            return "Bootlaoder Slot"
+        case .kernel:
+            return "Kernel"
+        case .otaStatus:
+            return "OTA"
+        case .observabilityStatus:
+            return "Observability"
         }
     }
 }
@@ -384,6 +361,45 @@ extension BaseViewController {
         observabilityTask?.cancel()
         observabilityTask = nil
         self.observabilityIdentifier = nil
+    }
+}
+
+// MARK: - onDeviceStatusAccessoryTapped
+
+extension BaseViewController {
+    
+    func onDeviceStatusAccessoryTapped(at indexPath: IndexPath) {
+        guard let statusRow = DeviceStatusRow(rawValue: indexPath.row) else { return }
+        let helpDialogAlertController = UIAlertController(title: "\(statusRow) Help", message: nil, preferredStyle: .alert)
+        switch statusRow {
+        case .connection:
+            helpDialogAlertController.message = "\nReports the status of the Bluetooth LE connection to the device."
+        case .mcuMgrParameters:
+            helpDialogAlertController.message = "\nNumber of MCU Manager buffers and their size. Requires MCU Mgr Parameters command in OS Group."
+        case .bootloaderName:
+            helpDialogAlertController.message = "\nName of the Bootloader. Requires Bootloader Info command in OS Group."
+        case .bootloaderMode:
+            helpDialogAlertController.message = "\nMode of the MCUboot Bootloader."
+        case .bootloaderSlot:
+            helpDialogAlertController.message = "\nAlso known as \"Active B0 Slot\"; slot from which nRF Secure Immutable Bootloader (NSIB), also known as B0, booted the Application."
+        case .kernel:
+            helpDialogAlertController.message = "\nKernel name and version. Requires Application Info command in OS Group."
+        case .otaStatus:
+            helpDialogAlertController.message = "\nReports whether Firmware Over-the-Air (OTA) Updates via nRF Cloud are supported in this device."
+            if let url = URL(string: "https://docs.nordicsemi.com/bundle/nrf-cloud/page/Devices/FirmwareUpdate/FOTAOverview.html") {
+                helpDialogAlertController.addAction(UIAlertAction(title: "OTA Documentation", style: .default, handler: { _ in
+                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                }))
+            }
+        case .observabilityStatus:
+            helpDialogAlertController.message = "\nReports whether nRF Cloud Observability is supported and active for this device. nRF Cloud Observability allows collecting and analysing on-device metrics such as coredumps and logs from devices in your fleet. Useful for debugging bugs & crashes."
+            if let url = URL(string: "https://docs.nordicsemi.com/bundle/nrf-cloud/page/index.html") {
+                helpDialogAlertController.addAction(UIAlertAction(title: "Discover nRF Cloud", style: .default, handler: { _ in
+                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                }))
+            }
+        }
+        present(helpDialogAlertController, addingCancelAction: true, cancelActionTitle: "OK")
     }
 }
 

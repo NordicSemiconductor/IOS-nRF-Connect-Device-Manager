@@ -29,6 +29,8 @@
 		5274C2622796CEC40043D7CA /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5274C2612796CEC40043D7CA /* SettingsViewController.swift */; };
 		AA12B3A02E79885600378F1E /* DeviceInfoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA12B39F2E79885600378F1E /* DeviceInfoManager.swift */; };
 		AA12B3A62E7993F000378F1E /* iOS-BLE-Library-Mock in Frameworks */ = {isa = PBXBuildFile; productRef = AA12B3A52E7993F000378F1E /* iOS-BLE-Library-Mock */; };
+		AA5710112E829DD4001544D0 /* ObservabilityStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5710102E829DD4001544D0 /* ObservabilityStatus.swift */; };
+		AA5710132E829E0D001544D0 /* OTAStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5710122E829E0D001544D0 /* OTAStatus.swift */; };
 		AA7799F82E785BA800CAA1C3 /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AA7799F72E785BA800CAA1C3 /* iOSMcuManagerLibrary */; };
 		AA8404C42E7832ED00BD6B4A /* CryptoKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */; };
 		AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0352E670D38006E0ADD /* iOSOtaLibrary */; };
@@ -62,6 +64,8 @@
 		5266273624ACA7F4008F528C /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 		5274C2612796CEC40043D7CA /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		AA12B39F2E79885600378F1E /* DeviceInfoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfoManager.swift; sourceTree = "<group>"; };
+		AA5710102E829DD4001544D0 /* ObservabilityStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservabilityStatus.swift; sourceTree = "<group>"; };
+		AA5710122E829E0D001544D0 /* OTAStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTAStatus.swift; sourceTree = "<group>"; };
 		AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoKit.framework; path = System/Library/Frameworks/CryptoKit.framework; sourceTree = SDKROOT; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,6 +148,8 @@
 				AA12B39F2E79885600378F1E /* DeviceInfoManager.swift */,
 				524DCFD8210B4241000E110D /* UIColor.swift */,
 				F07D73AB2AE9AE3A00ED6B9A /* StringConvertibles.swift */,
+				AA5710102E829DD4001544D0 /* ObservabilityStatus.swift */,
+				AA5710122E829E0D001544D0 /* OTAStatus.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -314,6 +320,7 @@
 			files = (
 				5264C1DA210F43B40044FBBA /* ResetViewController.swift in Sources */,
 				AA12B3A02E79885600378F1E /* DeviceInfoManager.swift in Sources */,
+				AA5710112E829DD4001544D0 /* ObservabilityStatus.swift in Sources */,
 				5246368A2108DE77008B3D5B /* ScannerTableViewCell.swift in Sources */,
 				524636962109D0D7008B3D5B /* ScannerFilterViewController.swift in Sources */,
 				5264C1D8210F32A60044FBBA /* FirmwareUploadViewController.swift in Sources */,
@@ -321,6 +328,7 @@
 				5264C1D6210E26C20044FBBA /* FirmwareUpgradeViewController.swift in Sources */,
 				BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */,
 				524DCFD9210B4241000E110D /* UIColor.swift in Sources */,
+				AA5710132E829E0D001544D0 /* OTAStatus.swift in Sources */,
 				5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */,
 				526270A4210B8E8000FC17D4 /* ImageController.swift in Sources */,
 				5264C1DE210F640F0044FBBA /* McuMgrViewController.swift in Sources */,

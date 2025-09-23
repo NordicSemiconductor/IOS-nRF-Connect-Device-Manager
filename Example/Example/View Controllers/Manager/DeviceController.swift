@@ -80,6 +80,10 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
         return UITableView.automaticDimension
     }
     
+    override func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
+        (parent as? BaseViewController)?.onDeviceStatusAccessoryTapped(at: indexPath)
+    }
+    
     // MARK: send
     
     private func send(message: String) {
