@@ -26,9 +26,8 @@ public final class ObservabilityManager {
     
     internal var peripherals: [UUID: Peripheral]
     internal var devices: [UUID: ObservabilityDevice]
-    internal var deviceStreams: [UUID: AsyncObservabilityStream.Continuation]
-    
-    internal var cancellables: Set<AnyCancellable>
+    internal var deviceContinuations: [UUID: AsyncObservabilityStream.Continuation]
+    internal var deviceCancellables: [UUID: Set<AnyCancellable>]
     
     // MARK: init
     
@@ -36,10 +35,8 @@ public final class ObservabilityManager {
         self.network = Network("chunks.memfault.com")
         self.peripherals = [UUID: Peripheral]()
         self.devices = [UUID: ObservabilityDevice]()
-        self.deviceStreams = [UUID: AsyncObservabilityStream.Continuation]()
-        self.cancellables = Set<AnyCancellable>()
-        // Try to start inner CentralManager.
-        _ = ble.centralManager.state
+        self.deviceContinuations = [UUID: AsyncObservabilityStream.Continuation]()
+        self.deviceCancellables = [UUID: Set<AnyCancellable>]()
     }
     
     // MARK: deinit
@@ -57,11 +54,12 @@ public extension ObservabilityManager {
     func connectToDevice(_ identifier: UUID) -> AsyncObservabilityStream {
         if devices[identifier] == nil {
             devices[identifier] = ObservabilityDevice(uuidString: identifier.uuidString)
+            deviceCancellables[identifier] = Set<AnyCancellable>()
         }
         
         let asyncObservabilityDeviceStream = AsyncObservabilityStream() { continuation in
             // To-Do: Is there a previous one?
-            deviceStreams[identifier] = continuation
+            deviceContinuations[identifier] = continuation
         }
         
         Task {
@@ -74,7 +72,7 @@ public extension ObservabilityManager {
         Task {
             guard let device = devices[identifier],
                   let peripheral = peripherals[identifier],
-                  let continuation = deviceStreams[identifier] else { return }
+                  let continuation = deviceContinuations[identifier] else { return }
             do {
                 if device.isStreaming {
                     guard let mdsService = peripheral.services?.first(where: { $0.uuid == CBUUID.MDS }),

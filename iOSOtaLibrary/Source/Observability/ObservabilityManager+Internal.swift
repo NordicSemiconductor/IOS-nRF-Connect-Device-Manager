@@ -31,11 +31,11 @@ extension ObservabilityManager {
                 .firstValue
             
             devices[identifier]?.isConnected = true
-            deviceStreams[identifier]?.yield((identifier, .connected))
+            deviceContinuations[identifier]?.yield((identifier, .connected))
             let peripheral = Peripheral(peripheral: cbPeripheral, delegate: ReactivePeripheralDelegate())
             peripherals[identifier] = peripheral
             
-            listenForDisconnectionEvents(from: identifier, publisher: connectionPublisher)
+            try listenForDisconnectionEvents(from: identifier, publisher: connectionPublisher)
             
             let discoveredServices = try await peripheral.discoverServices(serviceUUIDs: nil)
                 .timeout(5, scheduler: DispatchQueue.main)
@@ -51,7 +51,7 @@ extension ObservabilityManager {
                 throw ObservabilityManagerError.mdsDataExportCharacteristicNotFound
             }
             
-            listenForNewChunks(from: peripheral, dataExportCharacteristic: mdsData)
+            try listenForNewChunks(from: peripheral, dataExportCharacteristic: mdsData)
             
             guard let mdsDataURI = mdsCharacteristics.first(where: { $0.uuid == CBUUID.MDSDataURICharacteristic }),
                   let uriData = try await peripheral.readValue(for: mdsDataURI).firstValue,
@@ -69,49 +69,59 @@ extension ObservabilityManager {
             let auth = ObservabilityAuth(url: uriURL, authKey: String(authString[0]),
                                          authValue: String(authString[1]))
             devices[identifier]?.auth = auth
-            deviceStreams[identifier]?.yield((identifier, .authenticated(auth)))
+            deviceContinuations[identifier]?.yield((identifier, .authenticated(auth)))
             
             let setNotifyResult = try await peripheral.setNotifyValue(true, for: mdsData)
                 .firstValue
             devices[identifier]?.isNotifying = setNotifyResult
-            deviceStreams[identifier]?.yield((identifier, .notifications(setNotifyResult)))
+            deviceContinuations[identifier]?.yield((identifier, .notifications(setNotifyResult)))
 
             // Write 0x1 to MDS Device to make it aware we're ready to receive chunks.
             try await peripheral.writeValueWithResponse(Data(repeating: 1, count: 1), for: mdsData)
                 .firstValue
             
             devices[identifier]?.isStreaming = true
-            deviceStreams[identifier]?.yield((identifier, .streaming(true)))
+            deviceContinuations[identifier]?.yield((identifier, .streaming(true)))
         } catch {
-            deviceStreams[identifier]?.yield(with: .failure(error))
+            deviceContinuations[identifier]?.yield(with: .failure(error))
+            deviceCancellables[identifier]?.removeAll()
             // Is disconnect here necessary? It was not in Memfault-lib.
 //            disconnect(from: identifier)
         }
     }
     
-    func listenForDisconnectionEvents(from identifier: UUID, publisher: AnyPublisher<iOS_BLE_Library_Mock.CBPeripheral, Error>) {
+    func listenForDisconnectionEvents(from identifier: UUID, publisher: AnyPublisher<iOS_BLE_Library_Mock.CBPeripheral, Error>) throws {
+        guard deviceCancellables[identifier] != nil else {
+            throw ObservabilityManagerError.peripheralNotFound
+        }
+        
         publisher
             .sink { [weak self] completion in
                 guard let self else { return }
                 switch completion {
                 case .failure(let error):
-                    deviceStreams[identifier]?.yield((identifier, .notifications(false)))
-                    deviceStreams[identifier]?.yield((identifier, .streaming(false)))
-                    deviceStreams[identifier]?.finish(throwing: error)
+                    deviceContinuations[identifier]?.yield((identifier, .notifications(false)))
+                    deviceContinuations[identifier]?.yield((identifier, .streaming(false)))
+                    deviceContinuations[identifier]?.finish(throwing: error)
+                    deviceCancellables[identifier]?.removeAll()
                 case .finished:
-                    deviceStreams[identifier]?.finish()
+                    deviceContinuations[identifier]?.finish()
+                    deviceCancellables[identifier]?.removeAll()
                 }
             } receiveValue: { _ in
-                
+                // No-op.
             }
-            .store(in: &cancellables)
+            .store(in: &deviceCancellables[identifier]!)
     }
 
     // MARK: listenForNewChunks
     
-    func listenForNewChunks(from peripheral: Peripheral, dataExportCharacteristic: iOS_BLE_Library_Mock.CBCharacteristic) {
-        
+    func listenForNewChunks(from peripheral: Peripheral, dataExportCharacteristic: iOS_BLE_Library_Mock.CBCharacteristic) throws {
         let identifier = peripheral.peripheral.identifier
+        guard deviceCancellables[identifier] != nil else {
+            throw ObservabilityManagerError.peripheralNotFound
+        }
+        
         peripheral
             .listenValues(for: dataExportCharacteristic)
             .map { [weak self] data in
@@ -131,13 +141,13 @@ extension ObservabilityManager {
                     print("finished")
                 case .failure(let error):
                     print(error.localizedDescription)
-                    self?.deviceStreams[identifier]?.yield(with: .failure(error))
+                    self?.deviceContinuations[identifier]?.yield(with: .failure(error))
                     self?.disconnect(from: identifier)
                 }
             } receiveValue: { [weak self] auth, chunk in
                 self?.upload(chunk, with: auth, from: identifier)
             }
-            .store(in: &cancellables)
+            .store(in: &deviceCancellables[identifier]!)
     }
 }
 
@@ -152,8 +162,9 @@ extension ObservabilityManager {
             $0.sequenceNumber == chunk.sequenceNumber && $0.data == chunk.data
         }) else { return }
 
+        guard deviceCancellables[identifier] != nil else { return }
         devices[identifier]?.chunks[i].status = .uploading
-        deviceStreams[identifier]?.yield((identifier, .updatedChunk(chunk, status: .uploading)))
+        deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .uploading)))
         
         network.perform(HTTPRequest.post(chunk, with: auth))
             .sink { [weak self] completion in
@@ -162,20 +173,20 @@ extension ObservabilityManager {
                     print("finished!")
                 case .failure(let error):
                     self?.devices[identifier]?.chunks[i].status = .errorUploading
-                    self?.deviceStreams[identifier]?.yield((identifier, .updatedChunk(chunk, status: .errorUploading)))
+                    self?.deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .errorUploading)))
                     self?.disconnect(from: identifier)
                 }
             } receiveValue: { [weak self] resultData in
                 self?.devices[identifier]?.chunks[i].status = .success
-                self?.deviceStreams[identifier]?.yield((identifier, .updatedChunk(chunk, status: .success)))
+                self?.deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .success)))
             }
-            .store(in: &cancellables)
+            .store(in: &deviceCancellables[identifier]!)
     }
     
     // MARK: received
     
     func received(_ chunk: ObservabilityChunk, from identifier: UUID) {
         devices[identifier]?.chunks.append(chunk)
-        deviceStreams[identifier]?.yield((identifier, .updatedChunk(chunk, status: .receivedAndPendingUpload)))
+        deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .receivedAndPendingUpload)))
     }
 }
