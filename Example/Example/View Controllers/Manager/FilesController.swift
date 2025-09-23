@@ -52,6 +52,10 @@ final class FilesController: UITableViewController {
         return UITableView.automaticDimension
     }
     
+    override func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
+        (parent as? BaseViewController)?.onDeviceStatusAccessoryTapped(at: indexPath)
+    }
+    
     func innerViewReloaded() {
         tableView.beginUpdates()
         tableView.setNeedsDisplay()
