@@ -121,12 +121,43 @@ extension DeviceInfoManager {
                 }
             }
             
+            if serial == nil {
+                serial = try await readSerialNumberFromMDS(peripheral)
+            }
+            
             guard let serial, let firmwareVersion, let hardwareVersion, let softwareType else {
                 throw DeviceInfoManagerError.incompleteDeviceInfo
             }
             
             return DeviceInfoToken(deviceSerialNumber: serial, hardwareVersion: hardwareVersion, currentVersion: firmwareVersion, softwareType: softwareType)
         }
+    }
+    
+    // MARK: readSerialNumberFromMDS
+    
+    private func readSerialNumberFromMDS(_ peripheral: Peripheral) async throws -> String? {
+        let mdsUUID = CBUUID(string: "54220000-F6A5-4007-A371-722F4EBD8436")
+        let mdsServices = try await peripheral.discoverServices(serviceUUIDs: [mdsUUID])
+            .timeout(5, scheduler: DispatchQueue.main)
+            .firstValue
+        
+        // TODO: Fix bug. Should be possible to do mdsServices.first here.
+        guard let mdsService = mdsServices.first(where: { $0.uuid == mdsUUID }) else {
+            return nil
+        }
+        let discoveredCharacteristics = try await peripheral.discoverCharacteristics([], for: mdsService)
+            .firstValue
+        for characteristic in discoveredCharacteristics {
+            switch characteristic.uuid.uuidString {
+            case "54220002-F6A5-4007-A371-722F4EBD8436": // MDS Device Identifier
+                if let data = try await peripheral.readValue(for: characteristic).firstValue {
+                    return String(data: data, encoding: .utf8)
+                }
+            default:
+                continue
+            }
+        }
+        return nil // Not found
     }
 }
  
