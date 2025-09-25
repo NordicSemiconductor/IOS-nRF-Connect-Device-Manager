@@ -177,7 +177,7 @@ final class ScannerViewController: UITableViewController, CBCentralManagerDelega
     
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         guard section == 0 else { return nil }
-        return "   ⓘ You may Pull-to-refresh this list."
+        return "   ⓘ You can Pull-to-refresh this list."
     }
     
     // MARK: CBCentralManagerDelegate
