@@ -141,10 +141,7 @@ extension DeviceInfoManager {
             .timeout(5, scheduler: DispatchQueue.main)
             .firstValue
         
-        // TODO: Fix bug. Should be possible to do mdsServices.first here.
-        guard let mdsService = mdsServices.first(where: { $0.uuid == mdsUUID }) else {
-            return nil
-        }
+        guard let mdsService = mdsServices.first else { return nil }
         let discoveredCharacteristics = try await peripheral.discoverCharacteristics([], for: mdsService)
             .firstValue
         for characteristic in discoveredCharacteristics {
