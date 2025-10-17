@@ -194,6 +194,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
         baseController?.present(alertController, addingCancelAction: true)
     }
     
+    // MARK: requestLatestReleaseInfo(for:using:)
+    
     private func requestLatestReleaseInfo(for deviceInfo: DeviceInfoToken,
                                           using projectKey: ProjectKey) {
         otaManager?.getLatestReleaseInfo(deviceInfo: deviceInfo, projectKey: projectKey) { [unowned self] result in
@@ -212,15 +214,24 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
                 })
                 baseController?.present(alertController, addingCancelAction: true)
             case .failure(let otaError):
-                if otaError == .deviceIsUpToDate {
-                    let alertController = UIAlertController(title: "Your device is up to date", message: "Your device is already using the latest firmware version available through nRF Cloud OTA.", preferredStyle: .alert)
-                    baseController?.present(alertController, addingCancelAction: true,
-                                            cancelActionTitle: "OK")
-                    return
-                }
-                let alertController = UIAlertController(title: "Error Requesting Update", message: otaError.localizedDescription, preferredStyle: .alert)
-                baseController?.present(alertController, addingCancelAction: true, cancelActionTitle: "OK")
+                handleLatestReleaseError(otaError)
             }
+        }
+    }
+    
+    private func handleLatestReleaseError(_ otaError: OTAManagerError) {
+        switch otaError {
+        case .networkError:
+            let alertController = UIAlertController(title: "Network Error", message: "Unable to reach the Network.", preferredStyle: .alert)
+            baseController?.present(alertController, addingCancelAction: true,
+                                    cancelActionTitle: "OK")
+        case .deviceIsUpToDate:
+            let alertController = UIAlertController(title: "Your device is up to date", message: "Your device is already using the latest firmware version available through nRF Cloud OTA.", preferredStyle: .alert)
+            baseController?.present(alertController, addingCancelAction: true,
+                                    cancelActionTitle: "OK")
+        default:
+            let alertController = UIAlertController(title: "Error Requesting Update", message: otaError.localizedDescription, preferredStyle: .alert)
+            baseController?.present(alertController, addingCancelAction: true, cancelActionTitle: "OK")
         }
     }
     

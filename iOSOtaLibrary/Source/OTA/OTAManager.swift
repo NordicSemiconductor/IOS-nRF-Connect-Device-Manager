@@ -88,6 +88,8 @@ public extension OTAManager {
                 throw OTAManagerError.unableToParseResponse
             }
             return releaseInfo
+        } catch let networkError as URLError {
+            throw OTAManagerError.networkError
         } catch {
             throw error
         }
@@ -164,6 +166,7 @@ public enum OTAManagerError: LocalizedError {
     case incompleteDeviceInfo
     case mdsKeyDecodeError
     case unableToParseResponse
+    case networkError
     case deviceIsUpToDate
     case invalidArtifactURL
     case sha256HashMismatch
