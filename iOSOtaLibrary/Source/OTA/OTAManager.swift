@@ -43,11 +43,12 @@ public extension OTAManager {
     func getLatestReleaseInfo(deviceInfo: DeviceInfoToken, projectKey: ProjectKey, callback: @escaping (Result<LatestReleaseInfo, OTAManagerError>) -> ()) {
         Task { @MainActor in
             do {
-                let releaseInfo = try await getLatestReleaseInfo(deviceInfo: deviceInfo, projectKey: projectKey)
+                let releaseInfo = try await getLatestReleaseInfo(deviceInfo: deviceInfo,
+                                                                 projectKey: projectKey)
                 callback(.success(releaseInfo))
             } catch {
                 guard let otaError = error as? OTAManagerError else {
-                    callback(.failure(.incompleteDeviceInfo))
+                    callback(.failure(.unknownError(error)))
                     return
                 }
                 callback(.failure(otaError))
@@ -170,4 +171,6 @@ public enum OTAManagerError: LocalizedError {
     case deviceIsUpToDate
     case invalidArtifactURL
     case sha256HashMismatch
+    
+    case unknownError(_ error: Error)
 }
