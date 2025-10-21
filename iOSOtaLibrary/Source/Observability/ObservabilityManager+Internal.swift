@@ -7,8 +7,9 @@
 //
 
 import CoreBluetooth
-internal import iOS_BLE_Library_Mock
 import Combine
+import iOS_Common_Libraries
+internal import iOS_BLE_Library_Mock
 
 // MARK: - Internal
 

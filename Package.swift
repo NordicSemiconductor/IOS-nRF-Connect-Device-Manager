@@ -25,6 +25,9 @@ let package = Package(
         ),
         .package(url: "https://github.com/NordicSemiconductor/IOS-BLE-Library",
             .branchItem("main")
+        ),
+        .package(url: "https://github.com/NordicPlayground/IOS-Common-Libraries",
+            .branchItem("main")
         )
     ],
     targets: [
@@ -37,7 +40,8 @@ let package = Package(
         .target(
             name: "iOSOtaLibrary",
             dependencies: [
-                .product(name: "iOS-BLE-Library-Mock", package: "IOS-BLE-Library")
+                .product(name: "iOS-BLE-Library-Mock", package: "IOS-BLE-Library"),
+                .product(name: "iOSCommonLibraries", package: "IOS-Common-Libraries")
             ],
             path: "iOSOtaLibrary/Source"
         )
