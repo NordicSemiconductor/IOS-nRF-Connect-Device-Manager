@@ -1288,22 +1288,18 @@ public enum FirmwareUpgradeState {
 //******************************************************************************
 
 public enum FirmwareUpgradeMode: Codable, CustomStringConvertible, CustomDebugStringConvertible, CaseIterable {
-    /// When this mode is set, the manager will send the test and reset commands
-    /// to the device after the upload is complete. The device will reboot and
-    /// will run the new image on its next boot. If the new image supports
-    /// auto-confirm feature, it will try to confirm itself and change state to
-    /// permanent. If not, test image will run just once and will be swapped
-    /// again with the original image on the next boot.
-    ///
-    /// Use this mode if you just want to test the image, when it can confirm
-    /// itself.
+    /**
+     When this mode is set, the manager will send the test and reset commands to the device after the upload is complete. The device will reboot and will run the new image on its next boot. If the new image supports auto-confirm feature, it will try to confirm itself and change state to permanent. If not, test image will run just once and will be swapped again with the original image on the next boot.
+     
+     Use this mode if you just want to test the image, when it can confirm itself.
+     */
     case testOnly
     
-    /// When this flag is set, the manager will send confirm and reset commands
-    /// immediately after upload.
-    ///
-    /// Use this mode if when the new image does not support both auto-confirm
-    /// feature and SMP service and could not be confirmed otherwise.
+    /**
+     When this flag is set, the manager will send confirm and reset commands immediately after upload.
+     
+     Use this mode if when the new image does not support both auto-confirm feature and SMP service and could not be confirmed otherwise.
+     */
     case confirmOnly
     
     /**
@@ -1325,7 +1321,7 @@ public enum FirmwareUpgradeMode: Codable, CustomStringConvertible, CustomDebugSt
         case .testOnly:
             return "Test only"
         case .confirmOnly:
-            return "Confirm only"
+            return "Confirm only (Recommended)"
         case .testAndConfirm:
             return "Test and Confirm"
         case .uploadOnly:
