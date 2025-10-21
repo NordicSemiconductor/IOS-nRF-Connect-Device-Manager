@@ -27,7 +27,7 @@ let package = Package(
             .branchItem("main")
         ),
         .package(url: "https://github.com/NordicPlayground/IOS-Common-Libraries",
-            .branchItem("main")
+            .branchItem("13")
         )
     ],
     targets: [
