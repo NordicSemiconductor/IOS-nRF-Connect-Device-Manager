@@ -23,27 +23,30 @@ public class ImageManager: McuManager {
         public let data: Data
         
         /**
-         Default Initialiser.
+         Convenience initialiser.
          
-         - parameters:
-            - slot: All of the previous code / modes target `slot` 1 (Secondary) as where they want the image uploaded, so that's the default. Only DirectXIP would target `slot` 0 (Primary) for upload.
-            - content: This is a necessary aid for complex SUIT updates involving `suitCache` resources. It defaults to `.unknown` so as to not alter the behavior of unrelated DFU operations. It can be set to other, more descriptive values, but improper use might cause erratic upload behavior.
+         Please see ``init(name:image:slot:content:hash:data:)`` for more information.
          */
-        public init(image: Int, slot: Int = 1, content: McuMgrManifest.File.ContentType = .unknown,
-                    hash: Data, data: Data) {
-            self.name = nil
-            self.image = image
-            self.slot = slot
-            self.content = content
-            self.hash = hash
-            self.data = data
+        public init(_ manifest: McuMgrManifest.File, hash: Data, data: Data) {
+            self.init(name: manifest.file, image: manifest.image, slot: manifest.slot, content: manifest.content, hash: hash, data: data)
         }
         
-        public init(_ manifest: McuMgrManifest.File, hash: Data, data: Data) {
-            self.name = manifest.file
-            self.image = manifest.image
-            self.slot = manifest.slot
-            self.content = manifest.content
+        /**
+         Default Initialiser.
+         
+         - Important:
+         McuMgr firmware commands expect slot numbers limited to 0 (Primary) and 1 (Secondary). However, newer DFU package generation backends have began to adopt an ever-increasing slot number. So for example, whereas previously Image 1, Slot 1 would represent the Secondary slot for the Secondary core, a newer DFU package might list the same combination as Image 1, Slot 3. This can lead to errors being returned when sending McuMgr commands, so we patch the slot number in the initialiser back to Image 1, Slot 1 for maximum compatibility.
+         
+         - Parameters:
+            - slot: set by default to `slot` 1 (Secondary). Other than for DirectXIP, this conforms to the user-expected behaviour of representing a slice of memory in the target Core (i.e. `image`) that is not currently running. See ``Discussion`` for important details.
+            - content: This is a necessary aid for complex SUIT updates involving `suitCache` resources. It defaults to `.unknown` so as to not alter the behavior of unrelated DFU operations. It can be set to other, more descriptive values, but improper use might cause erratic upload behavior.
+         */
+        public init(name: String? = nil, image: Int, slot: Int = 1,
+                    content: McuMgrManifest.File.ContentType = .unknown, hash: Data, data: Data) {
+            self.name = nil
+            self.image = image
+            self.slot = slot % 2
+            self.content = content
             self.hash = hash
             self.data = data
         }
@@ -51,6 +54,8 @@ public class ImageManager: McuManager {
         internal init(_ image: FirmwareUpgradeImage) {
             self.name = nil
             self.image = image.image
+            // Note that FirmwareUpgradeImage is itself derived from ImageManager.Image, so
+            // there's no need to repeat the fix for the slot.
             self.slot = image.slot
             self.content = image.content
             self.hash = image.hash
