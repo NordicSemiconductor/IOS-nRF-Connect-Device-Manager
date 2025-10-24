@@ -91,6 +91,8 @@ extension ObservabilityManager {
         }
     }
     
+    // MARK: listenForDisconnectionEvents
+    
     func listenForDisconnectionEvents(from identifier: UUID, publisher: AnyPublisher<iOS_BLE_Library_Mock.CBPeripheral, Error>) throws {
         guard deviceCancellables[identifier] != nil else {
             throw ObservabilityManagerError.peripheralNotFound
@@ -136,17 +138,27 @@ extension ObservabilityManager {
                 }
                 return (auth, chunk)
             }
+            .receive(on: RunLoop.main)
             .sink { [weak self] completion in
                 switch completion {
                 case .finished:
                     print("finished")
                 case .failure(let error):
                     print(error.localizedDescription)
-                    self?.deviceContinuations[identifier]?.yield(with: .failure(error))
+                    self?.deviceContinuations[identifier]?
+                        .yield(with: .failure(error))
                     self?.disconnect(from: identifier)
                 }
             } receiveValue: { [weak self] auth, chunk in
-                self?.upload(chunk, with: auth, from: identifier)
+                guard let self else { return }
+                if networkBusy {
+                    print("Enqueuing Chunk Seq. Number \(chunk.sequenceNumber)")
+                    pendingUploads.append((auth, chunk))
+                } else {
+                    print("Sending for Upload Chunk Seq. Number \(chunk.sequenceNumber)")
+                    networkBusy = true
+                    upload(chunk, with: auth, from: identifier)
+                }
             }
             .store(in: &deviceCancellables[identifier]!)
     }
@@ -156,18 +168,28 @@ extension ObservabilityManager {
 
 extension ObservabilityManager {
     
+    // MARK: received
+    
+    func received(_ chunk: ObservabilityChunk, from identifier: UUID) {
+        print("Received Chunk Seq. Number \(chunk.sequenceNumber)")
+        devices[identifier]?.chunks.append(chunk)
+        deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .receivedAndPendingUpload)))
+    }
+    
     // MARK: upload
     
     func upload(_ chunk: ObservabilityChunk, with auth: ObservabilityAuth, from identifier: UUID) {
         guard let i = devices[identifier]?.chunks.firstIndex(where: {
             $0.sequenceNumber == chunk.sequenceNumber && $0.data == chunk.data
         }) else { return }
-
+        
         guard deviceCancellables[identifier] != nil else { return }
         devices[identifier]?.chunks[i].status = .uploading
         deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .uploading)))
         
+        print("Uploading Chunk Seq. Number \(chunk.sequenceNumber)")
         network.perform(HTTPRequest.post(chunk, with: auth))
+            .receive(on: RunLoop.main)
             .sink { [weak self] completion in
                 switch completion {
                 case .finished:
@@ -178,16 +200,17 @@ extension ObservabilityManager {
                     self?.disconnect(from: identifier)
                 }
             } receiveValue: { [weak self] resultData in
+                print("Uploaded Chunk Seq. Number \(chunk.sequenceNumber)")
                 self?.devices[identifier]?.chunks[i].status = .success
                 self?.deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .success)))
+                
+                guard let self, let nextUpload = pendingUploads.first else {
+                    self?.networkBusy = false
+                    return
+                }
+                pendingUploads.removeFirst()
+                upload(nextUpload.1, with: nextUpload.0, from: identifier)
             }
             .store(in: &deviceCancellables[identifier]!)
-    }
-    
-    // MARK: received
-    
-    func received(_ chunk: ObservabilityChunk, from identifier: UUID) {
-        devices[identifier]?.chunks.append(chunk)
-        deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .receivedAndPendingUpload)))
     }
 }
