@@ -30,6 +30,9 @@ public final class ObservabilityManager {
     internal var deviceContinuations: [UUID: AsyncObservabilityStream.Continuation]
     internal var deviceCancellables: [UUID: Set<AnyCancellable>]
     
+    internal var pendingUploads = [(ObservabilityAuth, ObservabilityChunk)]()
+    internal var networkBusy = false
+    
     // MARK: init
     
     public init() {
