@@ -255,15 +255,26 @@ public class ImageManager: McuManager {
         return true
     }
 
-    /// Erases an unused image from the secondary image slot on the device.
-    ///
-    /// The image cannot be erased if the image is a confirmed image, is marked
-    /// for test on the next reboot, or is an active image for a split image
-    /// setup.
-    ///
-    /// - parameter callback: The response callback.
-    public func erase(callback: @escaping McuMgrCallback<McuMgrResponse>) {
-        send(op: .write, commandId: ImageID.erase, payload: nil, callback: callback)
+    // MARK: erase
+    
+    /**
+     Erases an unconfirmed image slot from the target device.
+     
+     There will be errors if the target slot is confirmed, marked for test on next reboot, or is an active image for a split image (perhaps DirectXiP?) setup.
+     
+     - parameter image: By default, if set to `nil`, McuMgr will erase the slot that is not currently active. See `Discussion` section for more.
+     - parameter slot: By default, if set to `nil`, McuMgr will erase the slot that is not currently active. See `Discussion` section for more.
+     - parameter callback: The response callback.
+     
+     - note: Both `image` and `slot` parameters are needed for a targetted (`image`, `slot`) combination to be sent with this API call. Otherwise, the target firmware will revert to its default behaviour which, is to erase the secondary slot that is not marked as active (i.e. booted / running from). This is as [per Zephyr Documentation](https://github.com/nrfconnect/sdk-zephyr/blob/f7859899ec7dbb21e0580eef25b229bda727f04a/subsys/mgmt/mcumgr/grp/img_mgmt/src/img_mgmt.c#L450).
+     */
+    public func erase(image: Int? = nil, slot: Int? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
+        var payload: [String: CBOR]?
+        if let image, let slot {
+            let convertedSlotParameter = 2 * image + slot
+            payload = ["slot": CBOR.unsignedInt(UInt64(convertedSlotParameter))]
+        }
+        send(op: .write, commandId: ImageID.erase, payload: payload, callback: callback)
     }
     
     /// Request core dump on the device. The data will be stored in the dump

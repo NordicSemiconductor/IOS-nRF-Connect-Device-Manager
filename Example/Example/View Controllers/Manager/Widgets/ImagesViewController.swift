@@ -81,10 +81,10 @@ class ImagesViewController: UIViewController, McuMgrViewController {
     // MARK: erase(sender:)
     
     @IBAction func erase(_ sender: UIButton) {
-        busy()
         requestBootloaderIfNecessary(sender: sender) { [weak self] sender, bootloader in
             switch bootloader {
             case .suit:
+                self?.busy()
                 self?.suitManager.cleanup { [weak self] response, error in
                     if let error {
                         self?.updateUI(text: error.localizedDescription, color: .systemRed, readEnabled: true)
@@ -97,11 +97,14 @@ class ImagesViewController: UIViewController, McuMgrViewController {
                     }
                 }
             case .mcuboot, .unknown:
-                self?.imageManager.erase { [weak self] response, error in
-                    if let _ = response {
-                        self?.read(sender)
-                    } else {
-                        self?.updateUI(text: error?.localizedDescription ?? "", color: .systemRed, readEnabled: true)
+                self?.selectUnconfirmedImageSlot { [weak self] (image, slot) in
+                    self?.busy()
+                    self?.imageManager.erase(image: Int(image), slot: Int(slot)) { [weak self] response, error in
+                        if let rc = response?.rc, rc != .ok {
+                            self?.updateUI(text: rc.description, color: .systemRed, readEnabled: true)
+                        } else {
+                            self?.read(sender)
+                        }
                     }
                 }
             }
@@ -170,6 +173,26 @@ class ImagesViewController: UIViewController, McuMgrViewController {
         present(alertController, animated: true)
     }
     
+    private func selectUnconfirmedImageSlot(callback: @escaping (((UInt64, UInt64)) -> Void)) {
+        guard let responseImages = lastResponse?.images, responseImages.count > 1 else {
+            if let image = lastResponse?.images?.first, !image.confirmed {
+                callback((image.image, image.slot))
+            }
+            return
+        }
+        
+        let alertController = buildSelectImageController()
+        for image in responseImages {
+            guard !image.confirmed else { continue }
+            let title = "Image \(image.image), slot \(image.slot)"
+            alertController.addAction(UIAlertAction(title: title, style: .default) { action in
+                callback((image.image, image.slot))
+            })
+        }
+    
+        present(alertController, animated: true)
+    }
+    
     // MARK: viewDidLoad()
     
     override func viewDidLoad() {
@@ -210,15 +233,13 @@ class ImagesViewController: UIViewController, McuMgrViewController {
             switch response.result {
             case .success:
                 let images = response.images ?? []
-                let nonActive = images.count > 1 ? (images[0].active ? 1 : 0) : 0
-                testAction.isEnabled = images.count > 1 && !images[nonActive].pending
-                confirmAction.isEnabled = images.count > 1 && !images[nonActive].permanent
-                eraseAction.isEnabled = images.count > 1 && !images[nonActive].confirmed
+                testAction.isEnabled = images.first(where: { !$0.active && !$0.pending }) != nil
+                confirmAction.isEnabled = images.first(where: { !$0.active && !$0.permanent }) != nil
+                eraseAction.isEnabled = images.first(where: { !$0.active && !$0.confirmed }) != nil
                 
                 updateUI(text: getInfo(from: response), color: .primary, readEnabled: true)
             case .failure(let error):
-                updateUI(text: error.localizedDescription,
-                         color: .systemRed, readEnabled: true)
+                updateUI(text: error.localizedDescription, color: .systemRed, readEnabled: true)
             }
         } else { // no response
             readAction.isEnabled = true
