@@ -175,6 +175,11 @@ final class ScannerViewController: UITableViewController, CBCentralManagerDelega
                      sender: filteredPeripherals[indexPath.row])
     }
     
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard section == 0 else { return nil }
+        return "   Scanner"
+    }
+    
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         guard section == 0 else { return nil }
         return "   ⓘ You can Pull-to-refresh this list."
