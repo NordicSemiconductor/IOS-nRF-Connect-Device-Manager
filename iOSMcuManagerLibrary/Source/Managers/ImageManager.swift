@@ -266,7 +266,8 @@ public class ImageManager: McuManager {
      - parameter slot: By default, if set to `nil`, McuMgr will erase the slot that is not currently active. See `Discussion` section for more.
      - parameter callback: The response callback.
      
-     - note: Both `image` and `slot` parameters are needed for a targetted (`image`, `slot`) combination to be sent with this API call. Otherwise, the target firmware will revert to its default behaviour which, is to erase the secondary slot that is not marked as active (i.e. booted / running from). This is as [per Zephyr Documentation](https://github.com/nrfconnect/sdk-zephyr/blob/f7859899ec7dbb21e0580eef25b229bda727f04a/subsys/mgmt/mcumgr/grp/img_mgmt/src/img_mgmt.c#L450).
+     - note: We are aware that other APIs, such as ``test(hash:callback:)`` and ``confirm(hash:callback:)`` use the slot's `hash` as a parameter. This API does not, because we're mirroring Zephyr / McuMgr's own API. So yes, we too, wish it were consistent.
+     - important: Both `image` and `slot` parameters are needed for a targetted (`image`, `slot`) combination to be sent with this API call. Otherwise, the target firmware will revert to its default behaviour which, is to erase the secondary slot that is not marked as active (i.e. booted / running from). This is as [per Zephyr Documentation](https://github.com/nrfconnect/sdk-zephyr/blob/f7859899ec7dbb21e0580eef25b229bda727f04a/subsys/mgmt/mcumgr/grp/img_mgmt/src/img_mgmt.c#L450).
      */
     public func erase(image: Int? = nil, slot: Int? = nil, callback: @escaping McuMgrCallback<McuMgrResponse>) {
         var payload: [String: CBOR]?
