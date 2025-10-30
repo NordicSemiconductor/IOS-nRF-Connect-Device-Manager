@@ -52,7 +52,7 @@ public class ImageManager: McuManager {
         }
         
         internal init(_ image: FirmwareUpgradeImage) {
-            self.name = nil
+            self.name = image.content.description
             self.image = image.image
             // Note that FirmwareUpgradeImage is itself derived from ImageManager.Image, so
             // there's no need to repeat the fix for the slot.
