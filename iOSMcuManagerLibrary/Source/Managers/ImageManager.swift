@@ -43,7 +43,7 @@ public class ImageManager: McuManager {
          */
         public init(name: String? = nil, image: Int, slot: Int = 1,
                     content: McuMgrManifest.File.ContentType = .unknown, hash: Data, data: Data) {
-            self.name = nil
+            self.name = name
             self.image = image
             self.slot = slot % 2
             self.content = content
