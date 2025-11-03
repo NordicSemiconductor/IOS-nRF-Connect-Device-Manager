@@ -13,6 +13,7 @@ import Foundation
 public enum ObservabilityManagerError: LocalizedError {
     case bleUnavailable
     case peripheralNotFound
+    case pairingError
     case mdsServiceNotFound
     case mdsDataExportCharacteristicNotFound
     
@@ -26,6 +27,8 @@ public enum ObservabilityManagerError: LocalizedError {
             return "Bluetooth LE not available."
         case .peripheralNotFound:
             return "Peripheral not found."
+        case .pairingError:
+            return "Pairing Error."
         case .mdsServiceNotFound:
             return "Memfault Diagnostic Service (MDS) not found."
         case .mdsDataExportCharacteristicNotFound:
