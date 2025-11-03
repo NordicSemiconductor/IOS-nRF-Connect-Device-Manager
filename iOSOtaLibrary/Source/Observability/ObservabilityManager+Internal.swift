@@ -33,7 +33,7 @@ internal extension ObservabilityManager {
             
             devices[identifier]?.isConnected = true
             deviceContinuations[identifier]?.yield((identifier, .connected))
-            let peripheral = Peripheral(peripheral: cbPeripheral, delegate: ReactivePeripheralDelegate())
+            let peripheral = Peripheral(peripheral: cbPeripheral)
             peripherals[identifier] = peripheral
             
             try listenForDisconnectionEvents(from: identifier, publisher: connectionPublisher)
@@ -76,13 +76,16 @@ internal extension ObservabilityManager {
                 .firstValue
             devices[identifier]?.isNotifying = setNotifyResult
             deviceContinuations[identifier]?.yield((identifier, .notifications(setNotifyResult)))
-
+            
             // Write 0x1 to MDS Device to make it aware we're ready to receive chunks.
             try await peripheral.writeValueWithResponse(Data(repeating: 1, count: 1), for: mdsData)
                 .firstValue
             
             devices[identifier]?.isStreaming = true
             deviceContinuations[identifier]?.yield((identifier, .streaming(true)))
+        } catch CBATTError.insufficientEncryption {
+            deviceContinuations[identifier]?.yield(with: .failure(ObservabilityManagerError.pairingError))
+            deviceCancellables[identifier]?.removeAll()
         } catch {
             deviceContinuations[identifier]?.yield(with: .failure(error))
             deviceCancellables[identifier]?.removeAll()
