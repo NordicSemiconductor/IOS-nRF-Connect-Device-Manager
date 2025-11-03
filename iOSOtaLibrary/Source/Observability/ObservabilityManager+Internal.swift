@@ -13,7 +13,7 @@ internal import iOS_BLE_Library_Mock
 
 // MARK: - Internal
 
-extension ObservabilityManager {
+internal extension ObservabilityManager {
     
     // MARK: connectAndAuthenticate
     
