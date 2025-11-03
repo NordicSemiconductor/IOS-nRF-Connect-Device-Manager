@@ -16,7 +16,7 @@
       "location" : "https://github.com/NordicPlayground/IOS-Common-Libraries",
       "state" : {
         "branch" : "13",
-        "revision" : "7ee70398d8ada2359404ad4b9967af98cd85f2d3"
+        "revision" : "2b9a131a685aabc59b816241c2d55187203862a2"
       }
     },
     {
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/NordicSemiconductor/IOS-CoreBluetooth-Mock.git",
       "state" : {
-        "revision" : "a6bc354a97948fddcf0fa8d1ad707b9e88b21fbd",
-        "version" : "1.0.2"
+        "revision" : "13f09628c2de7f3fd5703516c4f5650e063ddb6c",
+        "version" : "1.0.3"
       }
     },
     {

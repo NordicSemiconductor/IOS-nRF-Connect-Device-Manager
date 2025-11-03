@@ -63,12 +63,11 @@ public extension OTAManager {
                 throw OTAManagerError.incompleteDeviceInfo
             }
             
-            let responseData = try await network.perform(releaseInfoRequest)
+            let response = try await network.perform(releaseInfoRequest)
                 .firstValue
             
-            // If we get responseData, the request was success (code 200..299)
-            // However, "up to date" means Server returns no response, or 0 bytes.
-            guard !responseData.isEmpty else {
+            // Status Code 204 from the Server means "No Content", or "Up to Date"
+            guard response.code != 204 else {
                 throw OTAManagerError.deviceIsUpToDate
             }
             
@@ -86,7 +85,7 @@ public extension OTAManager {
                 let value = try container.decode(String.self)
                 return formatter.date(from: value) ?? Date.distantPast
             }
-            guard let releaseInfo = try? decoder.decode(LatestReleaseInfo.self, from: responseData) else {
+            guard let releaseInfo = try? decoder.decode(LatestReleaseInfo.self, from: response.data) else {
                 throw OTAManagerError.unableToParseResponse
             }
             return releaseInfo
@@ -126,14 +125,14 @@ public extension OTAManager {
         }
         
         let downloadRequest = HTTPRequest(url: parsedURL)
-        let responseData = try await network.perform(downloadRequest)
+        let response = try await network.perform(downloadRequest)
             .firstValue
         
         let tempDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
         let localArtifactURL = tempDirectoryURL.appendingPathComponent(artifact.filename)
         do {
             // Write file to temporary URL
-            try responseData.write(to: localArtifactURL)
+            try response.data.write(to: localArtifactURL)
             
             // Check SHA256 Hash matches.
             let downloadedFileHash = try sha256Hash(of: localArtifactURL)
