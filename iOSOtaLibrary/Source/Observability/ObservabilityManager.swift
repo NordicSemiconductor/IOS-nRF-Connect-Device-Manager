@@ -54,6 +54,8 @@ public final class ObservabilityManager {
 
 public extension ObservabilityManager {
     
+    // MARK: connect
+    
     @discardableResult
     func connectToDevice(_ identifier: UUID) -> AsyncObservabilityStream {
         if devices[identifier] == nil {
@@ -72,40 +74,56 @@ public extension ObservabilityManager {
         return asyncObservabilityDeviceStream
     }
     
+    // MARK: disconnect
+    
+    /**
+     Fire-and-forget variant of ``disconnect(from:)-x5wz`` async API.
+     
+     If you'd like to disconnect from a device, or at least get ``ObservabilityManager`` to release its connection and confirm via the ``AsyncObservabilityStream`` from your previous call to ``connectToDevice(_:)`` you may do so from this API call.
+     */
     func disconnect(from identifier: UUID) {
         Task {
-            guard let device = devices[identifier],
-                  let peripheral = peripherals[identifier],
-                  let continuation = deviceContinuations[identifier] else { return }
-            do {
-                if device.isStreaming {
-                    guard let mdsService = peripheral.services?.first(where: { $0.uuid == CBUUID.MDS }),
-                          let mdsDataExportCharacteristic = mdsService.characteristics?.first(where: { $0.uuid == CBUUID.MDSDataExportCharacteristic }) else {
-                        throw ObservabilityManagerError.mdsDataExportCharacteristicNotFound
-                    }
-                    _ = try await peripheral.writeValueWithResponse(Data(repeating: 0, count: 1), for: mdsDataExportCharacteristic)
-                        .firstValue
-                    continuation.yield((identifier, .streaming(false)))
+            await disconnect(from: identifier)
+        }
+    }
+    
+    /**
+     Disconnect from a device.
+     
+     This will close the returned ``AsyncObservabilityStream`` returned from a previous call to ``connectToDevice(_:)``. Additionally, since this is an `async` API call, you may await its return to update your UI.
+     */
+    func disconnect(from identifier: UUID) async {
+        guard let device = devices[identifier],
+              let peripheral = peripherals[identifier],
+              let continuation = deviceContinuations[identifier] else { return }
+        do {
+            if device.isStreaming {
+                guard let mdsService = peripheral.services?.first(where: { $0.uuid == CBUUID.MDS }),
+                      let mdsDataExportCharacteristic = mdsService.characteristics?.first(where: { $0.uuid == CBUUID.MDSDataExportCharacteristic }) else {
+                    throw ObservabilityManagerError.mdsDataExportCharacteristicNotFound
                 }
-                
-                if device.isNotifying {
-                    guard let mdsService = peripheral.services?.first(where: { $0.uuid == CBUUID.MDS }),
-                          let mdsDataExportService = mdsService.characteristics?.first(where: { $0.uuid == CBUUID.MDSDataExportCharacteristic }) else {
-                        throw ObservabilityManagerError.mdsDataExportCharacteristicNotFound
-                    }
-                    
-                    _ = try await peripheral.setNotifyValue(false, for: mdsDataExportService)
-                        .firstValue
-                    continuation.yield((identifier, .notifications(false)))
-                }
-                
-                _ = try await ble.cancelPeripheralConnection(peripheral.peripheral)
+                _ = try await peripheral.writeValueWithResponse(Data(repeating: 0, count: 1), for: mdsDataExportCharacteristic)
                     .firstValue
-                continuation.yield((identifier, .disconnected))
-                continuation.finish()
-            } catch {
-                continuation.finish(throwing: error)
+                continuation.yield((identifier, .streaming(false)))
             }
+            
+            if device.isNotifying {
+                guard let mdsService = peripheral.services?.first(where: { $0.uuid == CBUUID.MDS }),
+                      let mdsDataExportService = mdsService.characteristics?.first(where: { $0.uuid == CBUUID.MDSDataExportCharacteristic }) else {
+                    throw ObservabilityManagerError.mdsDataExportCharacteristicNotFound
+                }
+                
+                _ = try await peripheral.setNotifyValue(false, for: mdsDataExportService)
+                    .firstValue
+                continuation.yield((identifier, .notifications(false)))
+            }
+            
+            _ = try await ble.cancelPeripheralConnection(peripheral.peripheral)
+                .firstValue
+            continuation.yield((identifier, .disconnected))
+            continuation.finish()
+        } catch {
+            continuation.finish(throwing: error)
         }
     }
 }
