@@ -265,6 +265,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         objc_sync_setState(.confirm)
         if !paused {
             log(msg: "Sending Image Confirm command to image \(image.image) (slot \(image.slot))...", atLevel: .verbose)
+            log(msg: "confirm(hash: \(image.hash.prefix(12).hexEncodedString(options: [.prepend0x])))", atLevel: .application)
             imageManager.confirm(hash: [UInt8](image.hash), callback: confirmCallback)
         }
     }
