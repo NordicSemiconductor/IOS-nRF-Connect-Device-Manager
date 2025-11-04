@@ -1,6 +1,7 @@
 //
-//  MemfaultChunk.swift
+//  ObservabilityChunk.swift
 //  iOS-nRF-Memfault-Library
+//  iOSOtaLibrary
 //
 //  Created by Dinesh Harjani on 18/8/22.
 //  Copyright © 2025 Nordic Semiconductor ASA. All rights reserved.
@@ -8,13 +9,13 @@
 
 import Foundation
 
-// MARK: - MemfaultChunk
+// MARK: - ObservabilityChunk
 
-public struct ObservabilityChunk: Identifiable, Hashable {
+public struct ObservabilityChunk: Identifiable, Hashable, Codable {
     
     // MARK: Status
     
-    public enum Status: Equatable, Hashable {
+    public enum Status: Equatable, Hashable, Codable {
         case receivedAndPendingUpload
         case uploading
         case success

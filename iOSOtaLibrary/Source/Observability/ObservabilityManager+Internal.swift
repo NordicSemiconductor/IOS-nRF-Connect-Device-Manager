@@ -156,7 +156,7 @@ internal extension ObservabilityManager {
                 guard let self else { return }
                 if networkBusy {
                     print("Enqueuing Chunk Seq. Number \(chunk.sequenceNumber)")
-                    pendingUploads.append((auth, chunk))
+                    state.add([chunk], for: identifier)
                 } else {
                     print("Sending for Upload Chunk Seq. Number \(chunk.sequenceNumber)")
                     networkBusy = true
@@ -206,13 +206,12 @@ extension ObservabilityManager {
                 print("Uploaded Chunk Seq. Number \(chunk.sequenceNumber)")
                 self?.devices[identifier]?.chunks[i].status = .success
                 self?.deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .success)))
-                
-                guard let self, let nextUpload = pendingUploads.first else {
+                self?.state.finishedUploading(chunk, from: identifier)
+                guard let self, let nextUpload = state.nextChunk(for: identifier) else {
                     self?.networkBusy = false
                     return
                 }
-                pendingUploads.removeFirst()
-                upload(nextUpload.1, with: nextUpload.0, from: identifier)
+                upload(nextUpload, with: auth, from: identifier)
             }
             .store(in: &deviceCancellables[identifier]!)
     }
