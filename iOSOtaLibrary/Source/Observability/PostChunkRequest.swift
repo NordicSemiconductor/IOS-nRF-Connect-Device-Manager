@@ -25,7 +25,7 @@ extension HTTPRequest {
     }
 }
 
-// MARK: - MemfaultDeviceAuth
+// MARK: - ObservabilityAuth
 
 public struct ObservabilityAuth {
     
