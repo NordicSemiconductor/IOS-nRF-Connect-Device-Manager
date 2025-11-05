@@ -145,9 +145,9 @@ internal extension ObservabilityManager {
             .sink { [weak self] completion in
                 switch completion {
                 case .finished:
-                    print("finished")
+                    self?.log("finished")
                 case .failure(let error):
-                    print(error.localizedDescription)
+                    self?.logError(error.localizedDescription)
                     self?.deviceContinuations[identifier]?
                         .yield(with: .failure(error))
                     self?.disconnect(from: identifier)
@@ -155,10 +155,10 @@ internal extension ObservabilityManager {
             } receiveValue: { [weak self] auth, chunk in
                 guard let self else { return }
                 if networkBusy {
-                    print("Enqueuing Chunk Seq. Number \(chunk.sequenceNumber)")
+                    log("Enqueuing Chunk Seq. Number \(chunk.sequenceNumber)")
                     state.add([chunk], for: identifier)
                 } else {
-                    print("Sending for Upload Chunk Seq. Number \(chunk.sequenceNumber)")
+                    log("Sending for Upload Chunk Seq. Number \(chunk.sequenceNumber)")
                     networkBusy = true
                     upload(chunk, with: auth, from: identifier)
                 }
@@ -174,7 +174,7 @@ extension ObservabilityManager {
     // MARK: received
     
     func received(_ chunk: ObservabilityChunk, from identifier: UUID) {
-        print("Received Chunk Seq. Number \(chunk.sequenceNumber)")
+        log("Received Chunk Seq. Number \(chunk.sequenceNumber)")
         devices[identifier]?.chunks.append(chunk)
         deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .receivedAndPendingUpload)))
     }
@@ -190,20 +190,20 @@ extension ObservabilityManager {
         devices[identifier]?.chunks[i].status = .uploading
         deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .uploading)))
         
-        print("Uploading Chunk Seq. Number \(chunk.sequenceNumber)")
+        log("Uploading Chunk Seq. Number \(chunk.sequenceNumber)")
         network.perform(HTTPRequest.post(chunk, with: auth))
             .receive(on: RunLoop.main)
             .sink { [weak self] completion in
                 switch completion {
                 case .finished:
-                    print("finished!")
+                    self?.log("finished!")
                 case .failure(let error):
                     self?.devices[identifier]?.chunks[i].status = .errorUploading
                     self?.deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .errorUploading)))
                     self?.disconnect(from: identifier)
                 }
             } receiveValue: { [weak self] resultData in
-                print("Uploaded Chunk Seq. Number \(chunk.sequenceNumber)")
+                self?.log("Uploaded Chunk Seq. Number \(chunk.sequenceNumber)")
                 self?.devices[identifier]?.chunks[i].status = .success
                 self?.deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .success)))
                 self?.state.finishedUploading(chunk, from: identifier)

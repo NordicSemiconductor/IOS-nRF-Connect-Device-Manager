@@ -42,12 +42,13 @@ public final class ObservabilityManager {
         self.deviceContinuations = [UUID: AsyncObservabilityStream.Continuation]()
         self.deviceCancellables = [UUID: Set<AnyCancellable>]()
         self.state.restoreFromDisk()
+        log(#function)
     }
     
     // MARK: deinit
     
     deinit {
-        print(#function)
+        log(#function)
     }
 }
 
@@ -126,5 +127,28 @@ public extension ObservabilityManager {
         } catch {
             continuation.finish(throwing: error)
         }
+    }
+}
+
+// MARK: - Logs
+
+extension ObservabilityManager {
+    
+    func log(_ string: String) {
+        guard #available(iOS 14.0, *) else {
+            print(string)
+            return
+        }
+        let log = NordicLog(Self.self, subsystem: "com.nordicsemi.ios_ota_library")
+        log.debug(string)
+    }
+    
+    func logError(_ string: String) {
+        guard #available(iOS 14.0, *) else {
+            print("Error: \(string)")
+            return
+        }
+        let log = NordicLog(Self.self, subsystem: "com.nordicsemi.ios_ota_library")
+        log.error(string)
     }
 }
