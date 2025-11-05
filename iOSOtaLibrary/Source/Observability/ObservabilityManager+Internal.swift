@@ -52,6 +52,7 @@ internal extension ObservabilityManager {
                 throw ObservabilityManagerError.mdsDataExportCharacteristicNotFound
             }
             
+            reportPendingChunks(from: peripheral)
             try listenForNewChunks(from: peripheral, dataExportCharacteristic: mdsData)
             
             guard let mdsDataURI = mdsCharacteristics.first(where: { $0.uuid == CBUUID.MDSDataURICharacteristic }),
@@ -120,6 +121,16 @@ internal extension ObservabilityManager {
             .store(in: &deviceCancellables[identifier]!)
     }
 
+    // MARK: reportPendingChunks
+    
+    func reportPendingChunks(from peripheral: Peripheral) {
+        let identifier = peripheral.peripheral.identifier
+        for chunk in state.pendingUploads[identifier] ?? [] {
+            let pendingChunk = state.update(chunk, from: identifier, to: .pendingUpload)
+            deviceContinuations[identifier]?.yield((identifier, .updatedChunk(pendingChunk)))
+        }
+    }
+    
     // MARK: listenForNewChunks
     
     func listenForNewChunks(from peripheral: Peripheral, dataExportCharacteristic: iOS_BLE_Library_Mock.CBCharacteristic) throws {

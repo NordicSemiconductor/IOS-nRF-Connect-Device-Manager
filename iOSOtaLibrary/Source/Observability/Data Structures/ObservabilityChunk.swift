@@ -11,7 +11,7 @@ import Foundation
 
 // MARK: - ObservabilityChunk
 
-public struct ObservabilityChunk: Identifiable, Hashable, Codable {
+public struct ObservabilityChunk: Identifiable, Hashable, Comparable, Codable {
     
     // MARK: Status
     
@@ -51,5 +51,14 @@ public struct ObservabilityChunk: Identifiable, Hashable, Codable {
         hasher.combine(data)
         hasher.combine(status)
         hasher.combine(timestamp)
+    }
+    
+    // MARK: Comparable
+    
+    public static func < (lhs: ObservabilityChunk, rhs: ObservabilityChunk) -> Bool {
+        guard lhs.timestamp < rhs.timestamp else {
+            return lhs.sequenceNumber < rhs.sequenceNumber
+        }
+        return lhs.timestamp < rhs.timestamp
     }
 }
