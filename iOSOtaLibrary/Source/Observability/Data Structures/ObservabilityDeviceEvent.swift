@@ -1,6 +1,7 @@
 //
-//  MemfaultDeviceEvent.swift
+//  ObservabilityDeviceEvent.swift
 //  iOS-nRF-Memfault-Library
+//  iOSOtaLibrary
 //
 //  Created by Dinesh Harjani on 26/8/22.
 //  Copyright © 2025 Nordic Semiconductor ASA. All rights reserved.
@@ -8,7 +9,7 @@
 
 import Foundation
 
-// MARK: - MemfaultDeviceEvent
+// MARK: - ObservabilityDeviceEvent
 
 public enum ObservabilityDeviceEvent: CustomStringConvertible {
     

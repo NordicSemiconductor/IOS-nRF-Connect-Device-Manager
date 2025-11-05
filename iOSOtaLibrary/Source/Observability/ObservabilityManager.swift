@@ -102,7 +102,7 @@ public extension ObservabilityManager {
             if device.isStreaming {
                 guard let mdsService = peripheral.services?.first(where: { $0.uuid == CBUUID.MDS }),
                       let mdsDataExportCharacteristic = mdsService.characteristics?.first(where: { $0.uuid == CBUUID.MDSDataExportCharacteristic }) else {
-                    throw ObservabilityManagerError.mdsDataExportCharacteristicNotFound
+                    throw ObservabilityError.mdsDataExportCharacteristicNotFound
                 }
                 _ = try await peripheral.writeValueWithResponse(Data(repeating: 0, count: 1), for: mdsDataExportCharacteristic)
                     .firstValue
@@ -112,7 +112,7 @@ public extension ObservabilityManager {
             if device.isNotifying {
                 guard let mdsService = peripheral.services?.first(where: { $0.uuid == CBUUID.MDS }),
                       let mdsDataExportService = mdsService.characteristics?.first(where: { $0.uuid == CBUUID.MDSDataExportCharacteristic }) else {
-                    throw ObservabilityManagerError.mdsDataExportCharacteristicNotFound
+                    throw ObservabilityError.mdsDataExportCharacteristicNotFound
                 }
                 
                 _ = try await peripheral.setNotifyValue(false, for: mdsDataExportService)
@@ -128,27 +128,13 @@ public extension ObservabilityManager {
             continuation.finish(throwing: error)
         }
     }
-}
-
-// MARK: - Logs
-
-extension ObservabilityManager {
     
-    func log(_ string: String) {
-        guard #available(iOS 14.0, *) else {
-            print(string)
-            return
-        }
-        let log = NordicLog(Self.self, subsystem: "com.nordicsemi.ios_ota_library")
-        log.debug(string)
-    }
+    // MARK: continue / retry
     
-    func logError(_ string: String) {
-        guard #available(iOS 14.0, *) else {
-            print("Error: \(string)")
-            return
+    func continuePendingUploads(for identifier: UUID) throws {
+        guard let auth = devices[identifier]?.auth else {
+            throw ObservabilityError.missingAuthData
         }
-        let log = NordicLog(Self.self, subsystem: "com.nordicsemi.ios_ota_library")
-        log.error(string)
+        resumeUploadsIfNotBusy(for: identifier, with: auth)
     }
 }

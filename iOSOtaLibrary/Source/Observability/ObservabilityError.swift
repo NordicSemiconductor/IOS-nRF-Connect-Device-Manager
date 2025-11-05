@@ -1,5 +1,5 @@
 //
-//  ObservabilityManagerError.swift
+//  ObservabilityError.swift
 //  iOSOtaLibrary
 //
 //  Created by Dinesh Harjani on 8/9/25.
@@ -8,18 +8,24 @@
 
 import Foundation
 
-// MARK: - ObservabilityManagerError
+// MARK: - ObservabilityError
 
-public enum ObservabilityManagerError: LocalizedError {
+public enum ObservabilityError: LocalizedError {
+    
+    // BLE Connection
     case bleUnavailable
     case peripheralNotFound
     case pairingError
     case mdsServiceNotFound
     case mdsDataExportCharacteristicNotFound
     
+    // Authentication
     case unableToReadDeviceURI
     case unableToReadAuthData
     case missingAuthData
+    
+    // Networking
+    case unableToUploadChunk
 
     public var errorDescription: String? {
         switch self {
@@ -39,6 +45,8 @@ public enum ObservabilityManagerError: LocalizedError {
             return "Unable to read Authentication Data."
         case .missingAuthData:
             return "Missing Authentication Data."
+        case .unableToUploadChunk:
+            return "Unable to upload chunk due to network issue."
         }
     }
 }
