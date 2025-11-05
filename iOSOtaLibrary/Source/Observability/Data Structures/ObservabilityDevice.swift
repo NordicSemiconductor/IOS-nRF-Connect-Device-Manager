@@ -19,7 +19,6 @@ struct ObservabilityDevice {
     var isNotifying: Bool
     var isStreaming: Bool
     var auth: ObservabilityAuth?
-    var chunks: [ObservabilityChunk]
     
     // MARK: init
     
@@ -29,6 +28,5 @@ struct ObservabilityDevice {
         self.isNotifying = false
         self.isStreaming = false
         self.auth = nil
-        self.chunks = [ObservabilityChunk]()
     }
 }

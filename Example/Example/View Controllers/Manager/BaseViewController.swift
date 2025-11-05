@@ -333,9 +333,9 @@ extension BaseViewController {
     
     private func processObservabilityEvent(_ observabilityEvent: ObservabilityDeviceEvent) {
         switch observabilityEvent {
-        case .updatedChunk(let chunk, let status):
-            switch status {
-            case .receivedAndPendingUpload:
+        case .updatedChunk(let chunk):
+            switch chunk.status {
+            case .pendingUpload:
                 observabilityPendingBytes += chunk.data.count
                 observabilityPendingChunks += 1
             case .success:

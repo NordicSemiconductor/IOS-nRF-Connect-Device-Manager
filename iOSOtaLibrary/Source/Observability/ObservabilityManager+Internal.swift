@@ -153,15 +153,10 @@ internal extension ObservabilityManager {
                     self?.disconnect(from: identifier)
                 }
             } receiveValue: { [weak self] auth, chunk in
-                guard let self else { return }
-                if networkBusy {
-                    log("Enqueuing Chunk Seq. Number \(chunk.sequenceNumber)")
-                    state.add([chunk], for: identifier)
-                } else {
-                    log("Sending for Upload Chunk Seq. Number \(chunk.sequenceNumber)")
-                    networkBusy = true
-                    upload(chunk, with: auth, from: identifier)
-                }
+                guard let self, !networkBusy else { return }
+                log("Sending for Upload Chunk Seq. Number \(chunk.sequenceNumber)")
+                networkBusy = true
+                upload(chunk, with: auth, from: identifier)
             }
             .store(in: &deviceCancellables[identifier]!)
     }
@@ -175,40 +170,38 @@ extension ObservabilityManager {
     
     func received(_ chunk: ObservabilityChunk, from identifier: UUID) {
         log("Received Chunk Seq. Number \(chunk.sequenceNumber)")
-        devices[identifier]?.chunks.append(chunk)
-        deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .receivedAndPendingUpload)))
+        state.add([chunk], for: identifier)
+        deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk)))
     }
     
     // MARK: upload
     
     func upload(_ chunk: ObservabilityChunk, with auth: ObservabilityAuth, from identifier: UUID) {
-        guard let i = devices[identifier]?.chunks.firstIndex(where: {
-            $0.sequenceNumber == chunk.sequenceNumber && $0.data == chunk.data
-        }) else { return }
-        
         guard deviceCancellables[identifier] != nil else { return }
-        devices[identifier]?.chunks[i].status = .uploading
-        deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .uploading)))
-        
         log("Uploading Chunk Seq. Number \(chunk.sequenceNumber)")
-        network.perform(HTTPRequest.post(chunk, with: auth))
+        
+        let uploadingChunk = state.update(chunk, from: identifier, to: .uploading)
+        deviceContinuations[identifier]?.yield((identifier, .updatedChunk(uploadingChunk)))
+        network.perform(HTTPRequest.post(uploadingChunk, with: auth))
             .receive(on: RunLoop.main)
             .sink { [weak self] completion in
                 switch completion {
                 case .finished:
                     self?.log("finished!")
                 case .failure(let error):
-                    self?.devices[identifier]?.chunks[i].status = .errorUploading
-                    self?.deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .errorUploading)))
-                    self?.disconnect(from: identifier)
+                    guard let self else { return }
+                    let updatedChunk = state.update(uploadingChunk, from: identifier, to: .errorUploading)
+                    deviceContinuations[identifier]?.yield((identifier, .updatedChunk(updatedChunk)))
+                    disconnect(from: identifier)
                 }
             } receiveValue: { [weak self] resultData in
-                self?.log("Uploaded Chunk Seq. Number \(chunk.sequenceNumber)")
-                self?.devices[identifier]?.chunks[i].status = .success
-                self?.deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk, status: .success)))
-                self?.state.finishedUploading(chunk, from: identifier)
-                guard let self, let nextUpload = state.nextChunk(for: identifier) else {
-                    self?.networkBusy = false
+                guard let self else { return }
+                log("Uploaded Chunk Seq. Number \(uploadingChunk.sequenceNumber)")
+                let successfulChunk = state.update(uploadingChunk, from: identifier, to: .success)
+                deviceContinuations[identifier]?.yield((identifier, .updatedChunk(successfulChunk)))
+                state.clear(successfulChunk, from: identifier)
+                guard let nextUpload = state.nextChunk(for: identifier) else {
+                    networkBusy = false
                     return
                 }
                 upload(nextUpload, with: auth, from: identifier)
