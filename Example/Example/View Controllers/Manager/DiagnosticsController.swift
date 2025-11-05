@@ -242,9 +242,9 @@ extension DiagnosticsController: DeviceStatusDelegate {
                 case .success:
                     observabilitySectionStatusLabel.text = "Status: Awaiting New Chunks"
                     observabilitySectionStatusLabel.textColor = .systemGreen
-                case .errorUploading:
-                    observabilitySectionStatusLabel.text = "Error Uploading Chunk \(chunk.sequenceNumber)"
-                    observabilitySectionStatusLabel.textColor = .systemRed
+                case .uploadError:
+                    // Should be handled by .errorEvent
+                    break
                 }
                 
                 showObservabilityActivityIndicator(true)

@@ -308,7 +308,7 @@ extension BaseViewController {
                 }
                 print("STOPPED Listening to \(observabilityIdentifier.uuidString) Connection Events.")
                 observabilityStatus = .connectionClosed
-            } catch let obsError as ObservabilityManagerError {
+            } catch let obsError as ObservabilityError {
                 print("CAUGHT ObservabilityManagerError \(obsError.localizedDescription)")
                 switch obsError {
                 case .mdsServiceNotFound:

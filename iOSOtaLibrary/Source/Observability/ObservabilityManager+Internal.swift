@@ -23,7 +23,7 @@ internal extension ObservabilityManager {
             
             guard let cbPeripheral = ble.retrievePeripherals(withIdentifiers: [identifier])
                 .first else {
-                throw ObservabilityManagerError.peripheralNotFound
+                throw ObservabilityError.peripheralNotFound
             }
             
             let connectionPublisher = ble.connect(cbPeripheral)
@@ -43,13 +43,13 @@ internal extension ObservabilityManager {
                 .firstValue
             
             guard let mdsService = discoveredServices.first(where: { $0.uuid == CBUUID.MDS }) else {
-                throw ObservabilityManagerError.mdsServiceNotFound
+                throw ObservabilityError.mdsServiceNotFound
             }
             
             let mdsCharacteristics = try await peripheral.discoverCharacteristics([], for: mdsService)
                 .firstValue
             guard let mdsData = mdsCharacteristics.first(where: { $0.uuid == CBUUID.MDSDataExportCharacteristic }) else {
-                throw ObservabilityManagerError.mdsDataExportCharacteristicNotFound
+                throw ObservabilityError.mdsDataExportCharacteristicNotFound
             }
             
             reportPendingChunks(from: peripheral)
@@ -59,13 +59,13 @@ internal extension ObservabilityManager {
                   let uriData = try await peripheral.readValue(for: mdsDataURI).firstValue,
                   let uriString = String(data: uriData, encoding: .utf8),
                   let uriURL = URL(string: uriString) else {
-                throw ObservabilityManagerError.unableToReadDeviceURI
+                throw ObservabilityError.unableToReadDeviceURI
             }
             
             guard let mdsAuth = mdsCharacteristics.first(where: { $0.uuid == CBUUID.MDSAuthCharacteristic }),
                   let authData = try await peripheral.readValue(for: mdsAuth).firstValue,
                   let authString = String(data: authData, encoding: .utf8)?.split(separator: ":") else {
-                throw ObservabilityManagerError.unableToReadAuthData
+                throw ObservabilityError.unableToReadAuthData
             }
             
             let auth = ObservabilityAuth(url: uriURL, authKey: String(authString[0]),
@@ -84,8 +84,11 @@ internal extension ObservabilityManager {
             
             devices[identifier]?.isStreaming = true
             deviceContinuations[identifier]?.yield((identifier, .streaming(true)))
+            
+            guard state.pendingChunks(for: identifier).hasItems else { return }
+            resumeUploadsIfNotBusy(for: identifier, with: auth)
         } catch CBATTError.insufficientEncryption {
-            deviceContinuations[identifier]?.yield(with: .failure(ObservabilityManagerError.pairingError))
+            deviceContinuations[identifier]?.yield(with: .failure(ObservabilityError.pairingError))
             deviceCancellables[identifier]?.removeAll()
         } catch {
             deviceContinuations[identifier]?.yield(with: .failure(error))
@@ -99,7 +102,7 @@ internal extension ObservabilityManager {
     
     func listenForDisconnectionEvents(from identifier: UUID, publisher: AnyPublisher<iOS_BLE_Library_Mock.CBPeripheral, Error>) throws {
         guard deviceCancellables[identifier] != nil else {
-            throw ObservabilityManagerError.peripheralNotFound
+            throw ObservabilityError.peripheralNotFound
         }
         
         publisher
@@ -125,7 +128,8 @@ internal extension ObservabilityManager {
     
     func reportPendingChunks(from peripheral: Peripheral) {
         let identifier = peripheral.peripheral.identifier
-        for chunk in state.pendingUploads[identifier] ?? [] {
+        let pendingChunks = state.pendingChunks(for: identifier)
+        for chunk in pendingChunks {
             let pendingChunk = state.update(chunk, from: identifier, to: .pendingUpload)
             deviceContinuations[identifier]?.yield((identifier, .updatedChunk(pendingChunk)))
         }
@@ -136,19 +140,17 @@ internal extension ObservabilityManager {
     func listenForNewChunks(from peripheral: Peripheral, dataExportCharacteristic: iOS_BLE_Library_Mock.CBCharacteristic) throws {
         let identifier = peripheral.peripheral.identifier
         guard deviceCancellables[identifier] != nil else {
-            throw ObservabilityManagerError.peripheralNotFound
+            throw ObservabilityError.peripheralNotFound
         }
         
         peripheral
             .listenValues(for: dataExportCharacteristic)
             .map { [weak self] data in
-                let chunk = ObservabilityChunk(data)
-                self?.received(chunk, from: identifier)
-                return chunk
+                ObservabilityChunk(data)
             }
             .tryMap { [weak self] chunk -> (ObservabilityAuth, ObservabilityChunk) in
                 guard let auth = self?.devices[identifier]?.auth else {
-                    throw ObservabilityManagerError.missingAuthData
+                    throw ObservabilityError.missingAuthData
                 }
                 return (auth, chunk)
             }
@@ -163,13 +165,21 @@ internal extension ObservabilityManager {
                         .yield(with: .failure(error))
                     self?.disconnect(from: identifier)
                 }
-            } receiveValue: { [weak self] auth, chunk in
-                guard let self, !networkBusy else { return }
-                log("Sending for Upload Chunk Seq. Number \(chunk.sequenceNumber)")
-                networkBusy = true
-                upload(chunk, with: auth, from: identifier)
+            } receiveValue: { [weak self] auth, incomingChunk in
+                guard let self else { return }
+                received(incomingChunk, from: identifier)
+                resumeUploadsIfNotBusy(for: identifier, with: auth)
             }
             .store(in: &deviceCancellables[identifier]!)
+    }
+    
+    // MARK: resumeUploadsIfNotBusy
+    
+    func resumeUploadsIfNotBusy(for identifier: UUID, with auth: ObservabilityAuth) {
+        guard !networkBusy, let nextChunk = state.nextChunk(for: identifier) else { return }
+        log("Sending for Upload Chunk Seq. Number \(nextChunk.sequenceNumber)")
+        networkBusy = true
+        upload(nextChunk, with: auth, from: identifier)
     }
 }
 
@@ -199,10 +209,13 @@ extension ObservabilityManager {
                 switch completion {
                 case .finished:
                     self?.log("finished!")
+                    self?.networkBusy = false
                 case .failure(let error):
                     guard let self else { return }
-                    let updatedChunk = state.update(uploadingChunk, from: identifier, to: .errorUploading)
+                    let updatedChunk = state.update(uploadingChunk, from: identifier, to: .uploadError)
                     deviceContinuations[identifier]?.yield((identifier, .updatedChunk(updatedChunk)))
+                    networkBusy = false
+                    deviceContinuations[identifier]?.yield(with: .failure(ObservabilityError.unableToUploadChunk))
                     disconnect(from: identifier)
                 }
             } receiveValue: { [weak self] resultData in

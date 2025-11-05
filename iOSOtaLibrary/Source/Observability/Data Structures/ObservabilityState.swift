@@ -15,7 +15,7 @@ struct ObservabilityState: Codable {
     
     // MARK: Properties
     
-    internal var pendingUploads = [UUID: [ObservabilityChunk]]()
+    private var pendingUploads = [UUID: [ObservabilityChunk]]()
     
     // MARK: API
     
@@ -27,10 +27,6 @@ struct ObservabilityState: Codable {
         pendingUploads[identifier]?.append(contentsOf: chunks)
         pendingUploads[identifier]?.sorted(by: <)
         saveToDisk()
-    }
-    
-    func nextChunk(for identifier: UUID) -> ObservabilityChunk? {
-        return pendingUploads[identifier]?.first
     }
     
     @discardableResult
@@ -48,6 +44,14 @@ struct ObservabilityState: Codable {
         }
         pendingUploads[identifier]?.remove(at: index)
         saveToDisk()
+    }
+    
+    func pendingChunks(for identifier: UUID) -> [ObservabilityChunk] {
+        return pendingUploads[identifier] ?? []
+    }
+    
+    func nextChunk(for identifier: UUID) -> ObservabilityChunk? {
+        return pendingChunks(for: identifier).first
     }
 }
 

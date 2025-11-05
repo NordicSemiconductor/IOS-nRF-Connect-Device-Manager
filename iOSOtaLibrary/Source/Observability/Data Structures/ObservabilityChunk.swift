@@ -19,7 +19,7 @@ public struct ObservabilityChunk: Identifiable, Hashable, Comparable, Codable {
         case pendingUpload
         case uploading
         case success
-        case errorUploading
+        case uploadError
     }
     
     // MARK: Properties
