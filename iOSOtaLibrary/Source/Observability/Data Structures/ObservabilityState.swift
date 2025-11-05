@@ -25,9 +25,7 @@ struct ObservabilityState: Codable {
         }
         
         pendingUploads[identifier]?.append(contentsOf: chunks)
-        pendingUploads[identifier]?.sorted {
-            return $0.sequenceNumber < $1.sequenceNumber && $0.timestamp < $1.timestamp
-        }
+        pendingUploads[identifier]?.sorted(by: <)
         saveToDisk()
     }
     
