@@ -50,9 +50,15 @@ extension ObservabilityState {
     
     mutating func restoreFromDisk() {
         guard let url = Self.stateURL(),
-              let data = try? Data(contentsOf: url),
-              let restored = try? JSONDecoder().decode(Self.self, from: data) else { return }
-        self = restored
+              let data = try? Data(contentsOf: url) else { return }
+        
+        if #available(iOS 14.0, *) {
+            guard let restored = try? data.decompress(as: Self.self) else { return }
+            self = restored
+        } else {
+            guard let restored = try? JSONDecoder().decode(Self.self, from: data) else { return }
+            self = restored
+        }
     }
     
     func saveToDisk() {
@@ -64,7 +70,11 @@ extension ObservabilityState {
             do {
                 let urlDirectory = url.deletingLastPathComponent()
                 try Self.createDirectoryIfNecessary(at: urlDirectory)
-                try data.write(to: url, options: [.atomic, .completeFileProtection])
+                if #available(iOS 14.0, *) {
+                    try data.compressed().write(to: url, options: [.atomic, .completeFileProtection])
+                } else {
+                    try data.write(to: url, options: [.atomic, .completeFileProtection])
+                }
             } catch {
                 print("ERROR: \(error.localizedDescription)")
             }
