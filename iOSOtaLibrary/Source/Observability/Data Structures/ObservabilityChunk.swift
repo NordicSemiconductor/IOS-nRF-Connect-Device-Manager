@@ -16,7 +16,7 @@ public struct ObservabilityChunk: Identifiable, Hashable, Codable {
     // MARK: Status
     
     public enum Status: Equatable, Hashable, Codable {
-        case receivedAndPendingUpload
+        case pendingUpload
         case uploading
         case success
         case errorUploading
@@ -41,7 +41,7 @@ public struct ObservabilityChunk: Identifiable, Hashable, Codable {
         self.sequenceNumber = data.first ?? .max
         self.data = data.dropFirst()
         self.timestamp = Date()
-        self.status = .receivedAndPendingUpload
+        self.status = .pendingUpload
     }
     
     // MARK: Hashable

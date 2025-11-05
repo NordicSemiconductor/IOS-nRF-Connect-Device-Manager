@@ -35,7 +35,16 @@ struct ObservabilityState: Codable {
         return pendingUploads[identifier]?.first
     }
     
-    mutating func finishedUploading(_ chunk: ObservabilityChunk, from identifier: UUID) {
+    @discardableResult
+    mutating func update(_ chunk: ObservabilityChunk, from identifier: UUID, to status: ObservabilityChunk.Status) -> ObservabilityChunk {
+        guard let index = pendingUploads[identifier]?.firstIndex(of: chunk) else {
+            return chunk
+        }
+        pendingUploads[identifier]?[index].status = status
+        return pendingUploads[identifier]?[index] ?? chunk
+    }
+    
+    mutating func clear(_ chunk: ObservabilityChunk, from identifier: UUID) {
         guard let index = pendingUploads[identifier]?.firstIndex(of: chunk) else {
             return
         }

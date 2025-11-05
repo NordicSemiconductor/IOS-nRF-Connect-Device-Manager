@@ -232,9 +232,9 @@ extension DiagnosticsController: DeviceStatusDelegate {
                     observabilitySectionStatusLabel.textColor = .secondaryLabel
                 }
                 showObservabilityActivityIndicator(isTrue)
-            case .updatedChunk(let chunk, let chunkStatus):
-                switch chunkStatus {
-                case .receivedAndPendingUpload:
+            case .updatedChunk(let chunk):
+                switch chunk.status {
+                case .pendingUpload:
                     observabilitySectionStatusLabel.text = "Status: Pending Upload"
                     observabilitySectionStatusLabel.textColor = .systemYellow
                 case .uploading:

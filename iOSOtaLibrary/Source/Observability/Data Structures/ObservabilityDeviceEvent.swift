@@ -18,7 +18,7 @@ public enum ObservabilityDeviceEvent: CustomStringConvertible {
     
     case notifications(_ enabled: Bool), streaming(_ enabled: Bool)
     case authenticated(_ auth: ObservabilityAuth)
-    case updatedChunk(_ chunk: ObservabilityChunk, status: ObservabilityChunk.Status)
+    case updatedChunk(_ chunk: ObservabilityChunk)
     
     // MARK: CustomStringConvertible
     
@@ -34,8 +34,8 @@ public enum ObservabilityDeviceEvent: CustomStringConvertible {
             return ".streaming(\(enabled ? "enabled" : "disabled"))"
         case .authenticated(_):
             return ".authenticated(_)"
-        case .updatedChunk(let chunk, status: let status):
-            return ".updatedChunk(\(chunk.sequenceNumber), \(String(describing: status))"
+        case .updatedChunk(let chunk):
+            return ".updatedChunk(\(chunk.sequenceNumber), \(String(describing: chunk.status))"
         }
     }
 }
