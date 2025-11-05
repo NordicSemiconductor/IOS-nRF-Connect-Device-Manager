@@ -28,6 +28,7 @@ struct ObservabilityState: Codable {
         pendingUploads[identifier]?.sorted {
             return $0.sequenceNumber < $1.sequenceNumber && $0.timestamp < $1.timestamp
         }
+        saveToDisk()
     }
     
     func nextChunk(for identifier: UUID) -> ObservabilityChunk? {
@@ -39,6 +40,7 @@ struct ObservabilityState: Codable {
             return
         }
         pendingUploads[identifier]?.remove(at: index)
+        saveToDisk()
     }
 }
 
@@ -46,11 +48,60 @@ struct ObservabilityState: Codable {
 
 extension ObservabilityState {
     
-    func restoreFromDisk() {
-        // TODO
+    mutating func restoreFromDisk() {
+        guard let url = Self.stateURL(),
+              let data = try? Data(contentsOf: url),
+              let restored = try? JSONDecoder().decode(Self.self, from: data) else { return }
+        self = restored
     }
     
     func saveToDisk() {
-        // TODO
+        let selfCopy = self
+        guard let url = Self.stateURL() else { return }
+        
+        Task.detached(name: #function, priority: .utility) {
+            guard let data = try? JSONEncoder().encode(self) else { return }
+            do {
+                let urlDirectory = url.deletingLastPathComponent()
+                try Self.createDirectoryIfNecessary(at: urlDirectory)
+                try data.write(to: url, options: [.atomic, .completeFileProtection])
+            } catch {
+                print("ERROR: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    // MARK: Static Helpers
+    
+    static func stateURL() -> URL? {
+        guard let storageURL = applicationStorageDirectory() else { return nil }
+        if #available(iOS 14.0, macCatalyst 14.0, macOS 11.0,  *) {
+            return storageURL.appendingPathComponent("ObservabilityState.json", conformingTo: .json)
+        } else {
+            return storageURL.appendingPathComponent("ObservabilityState.json", isDirectory: false)
+        }
+    }
+    
+    static func createDirectoryIfNecessary(at directoryURL: URL) throws {
+        var isDirectory: ObjCBool = false
+        let directoryPath = directoryURL.path
+        let exists = FileManager.default.fileExists(atPath: directoryPath, isDirectory: &isDirectory)
+        if exists && isDirectory.boolValue {
+            return
+        }
+        
+        print("\(directoryPath) does not exist. Creating it.")
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+    }
+    
+    static func applicationStorageDirectory() -> URL? {
+        var storageDirectory: URL?
+        if #available(iOS 16.0, macCatalyst 16.0, macOS 13.0, *) {
+            storageDirectory = .libraryDirectory
+        } else {
+            storageDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+        }
+        storageDirectory = storageDirectory?.appendingPathComponent("iOSOtaLibrary", isDirectory: true)
+        return storageDirectory
     }
 }

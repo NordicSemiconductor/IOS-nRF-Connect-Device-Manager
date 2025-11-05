@@ -41,6 +41,7 @@ public final class ObservabilityManager {
         self.devices = [UUID: ObservabilityDevice]()
         self.deviceContinuations = [UUID: AsyncObservabilityStream.Continuation]()
         self.deviceCancellables = [UUID: Set<AnyCancellable>]()
+        self.state.restoreFromDisk()
     }
     
     // MARK: deinit
