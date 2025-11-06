@@ -103,6 +103,11 @@ public extension ObservabilityManager {
               let continuation = deviceContinuations[identifier] else { return }
         
         log(#function)
+        defer {
+            deviceContinuations[identifier] = nil
+            log("nil-ed out Device Continuation.")
+        }
+        
         do {
             if device.isStreaming {
                 guard let mdsService = peripheral.services?.first(where: { $0.uuid == CBUUID.MDS }),
@@ -138,6 +143,14 @@ public extension ObservabilityManager {
     // MARK: continue / retry
     
     func continuePendingUploads(for identifier: UUID) throws {
+        guard peripherals[identifier] != nil else {
+            throw ObservabilityError.peripheralNotFound
+        }
+        
+        guard deviceContinuations[identifier] != nil else {
+            throw ObservabilityError.peripheralNotConnected
+        }
+        
         guard let auth = devices[identifier]?.auth else {
             throw ObservabilityError.missingAuthData
         }

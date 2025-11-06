@@ -119,6 +119,8 @@ internal extension ObservabilityManager {
                     deviceContinuations[identifier]?.finish()
                     deviceCancellables[identifier]?.removeAll()
                 }
+                //                log("Device disconnected.")
+                //                deviceContinuations[identifier] = nil
             } receiveValue: { _ in
                 // No-op.
             }

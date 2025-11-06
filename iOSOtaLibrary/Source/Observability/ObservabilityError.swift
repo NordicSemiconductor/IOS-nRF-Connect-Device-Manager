@@ -15,6 +15,7 @@ public enum ObservabilityError: LocalizedError {
     // BLE Connection
     case bleUnavailable
     case peripheralNotFound
+    case peripheralNotConnected
     case pairingError
     case mdsServiceNotFound
     case mdsDataExportCharacteristicNotFound
@@ -30,6 +31,8 @@ public enum ObservabilityError: LocalizedError {
             return "Bluetooth LE not available."
         case .peripheralNotFound:
             return "Peripheral not found."
+        case .peripheralNotConnected:
+            return "Peripheral not connected."
         case .pairingError:
             return "Pairing Error."
         case .mdsServiceNotFound:
