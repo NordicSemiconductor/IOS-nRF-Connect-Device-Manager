@@ -28,6 +28,7 @@ final class DiagnosticsController: UITableViewController {
     @IBOutlet weak var observabilitySectionStatusActivityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var observabilitySectionStatusPendingLabel: UILabel!
     @IBOutlet weak var observabilitySectionStatusUploadedLabel: UILabel!
+    @IBOutlet weak var observabilityButton: UIButton!
     
     // MARK: @IBAction(s)
     
@@ -36,6 +37,11 @@ final class DiagnosticsController: UITableViewController {
         baseViewController.onDeviceStatusReady { [unowned self] in
             statsManager.list(callback: statsCallback)
         }
+    }
+    
+    @IBAction func observabilityTapped(_ sender: UIButton) {
+        guard let baseViewController = parent as? BaseViewController else { return }
+        baseViewController.observabilityButtonTapped()
     }
     
     @IBAction func observabilityLearnMoreTapped(_ sender: UIButton) {
@@ -212,10 +218,12 @@ extension DiagnosticsController: DeviceStatusDelegate {
             case .connected:
                 observabilitySectionStatusLabel.text = "Status: Connected over BLE"
                 observabilitySectionStatusLabel.textColor = .systemYellow
+                observabilityButton.setTitle("Disconnect", for: .normal)
                 showObservabilityActivityIndicator(false)
             case .disconnected:
                 observabilitySectionStatusLabel.text = "Status: Offline"
                 observabilitySectionStatusLabel.textColor = .secondaryLabel
+                observabilityButton.setTitle("Connect", for: .normal)
                 showObservabilityActivityIndicator(false)
             case .notifications:
                 observabilitySectionStatusLabel.text = "Status: Notifications Enabled"
@@ -239,9 +247,11 @@ extension DiagnosticsController: DeviceStatusDelegate {
                     observabilitySectionStatusLabel.textColor = .systemYellow
                 case .uploading:
                     observabilitySectionStatusLabel.text = "Status: Uploading"
+                    observabilityButton.setTitle("Disconnect", for: .normal)
                 case .success:
                     observabilitySectionStatusLabel.text = "Status: Awaiting New Chunks"
                     observabilitySectionStatusLabel.textColor = .systemGreen
+                    observabilityButton.setTitle("Disconnect", for: .normal)
                 case .uploadError:
                     // Should be handled by .errorEvent
                     break
@@ -253,25 +263,30 @@ extension DiagnosticsController: DeviceStatusDelegate {
                 showObservabilityActivityIndicator(true)
                 observabilitySectionStatusLabel.text = "Status: Network Unavailable"
                 observabilitySectionStatusLabel.textColor = .systemYellow
+                observabilityButton.setTitle("Retry Network", for: .normal)
             }
         case .connectionClosed:
             showObservabilityActivityIndicator(false)
             
             observabilitySectionStatusLabel.text = "Status: Offline"
             observabilitySectionStatusLabel.textColor = .secondaryLabel
+            observabilityButton.setTitle("Connect", for: .normal)
         case .unsupported:
             showObservabilityActivityIndicator(false)
             
             observabilitySectionStatusLabel.text = "Status: Unsupported"
             observabilitySectionStatusLabel.textColor = .secondaryLabel
+            observabilityButton.setTitle("Connect", for: .normal)
         case .errorEvent(let error):
             showObservabilityActivityIndicator(false)
             
             observabilitySectionStatusLabel.text = "Status: \(error.localizedDescription)"
             observabilitySectionStatusLabel.textColor = .systemRed
+            observabilityButton.setTitle("Reconnect", for: .normal)
         case .pairingError(let error):
             observabilitySectionStatusLabel.text = "Status: \(error.localizedDescription)"
             observabilitySectionStatusLabel.textColor = .systemRed
+            observabilityButton.setTitle("Reconnect", for: .normal)
         }
     }
 }

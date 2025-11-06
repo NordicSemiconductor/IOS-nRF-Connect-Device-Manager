@@ -201,6 +201,10 @@ final class BaseViewController: UITabBarController {
     // MARK: viewWillDisappear()
     
     override func viewWillDisappear(_ animated: Bool) {
+        disconnect()
+    }
+    
+    func disconnect() {
         if let observabilityIdentifier {
             observabilityManager?.disconnect(from: observabilityIdentifier)
             observabilityTask?.cancel()
@@ -259,9 +263,21 @@ extension BaseViewController {
         }
     }
     
-    // MARK: OTA
+    // MARK: onDeviceStatusFinished
     
-    private func requestOTAReleaseInfo() {
+    private func onDeviceStatusFinished() {
+        guard let statusInfoCallback else { return }
+        statusInfoCallback()
+        deviceInfoRequested = true
+        self.statusInfoCallback = nil
+    }
+}
+ 
+// MARK: - OTA
+
+private extension BaseViewController {
+    
+    func requestOTAReleaseInfo() {
         guard let deviceInfoManager else { return }
         Task { @MainActor in
             var deviceInfo: DeviceInfoToken!
@@ -284,17 +300,34 @@ extension BaseViewController {
             }
         }
     }
-    
-    // MARK: onDeviceStatusFinished
-    
-    private func onDeviceStatusFinished() {
-        guard let statusInfoCallback else { return }
-        statusInfoCallback()
-        deviceInfoRequested = true
-        self.statusInfoCallback = nil
+}
+ 
+// MARK: - Observability
+
+extension BaseViewController {
+        
+    func observabilityButtonTapped() {
+        guard let observabilityIdentifier else {
+            onDeviceStatusReady {} // Full Reconnection
+            return
+        }
+        
+        switch observabilityStatus {
+        case .receivedEvent(let event):
+            switch event {
+            case .unableToUpload:
+                do {
+                    try observabilityManager?.continuePendingUploads(for: observabilityIdentifier)
+                } catch {
+                    print("RETRY Error: \(error.localizedDescription)")
+                }
+            default:
+                disconnect()
+            }
+        default:
+            disconnect()
+        }
     }
-    
-    // MARK: Observability
     
     private func launchObservabilityTask() {
         observabilityTask = Task { @MainActor [unowned self] in
