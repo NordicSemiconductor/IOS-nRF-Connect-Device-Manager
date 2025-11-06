@@ -249,6 +249,10 @@ extension DiagnosticsController: DeviceStatusDelegate {
                 
                 showObservabilityActivityIndicator(true)
                 updatePendingAndUploadedLabels(pendingBytes: pendingBytes, pendingCount: pendingCount, uploadedBytes: uploadedBytes, uploadedCount: uploadedCount)
+            case .unableToUpload:
+                showObservabilityActivityIndicator(true)
+                observabilitySectionStatusLabel.text = "Status: Network Unavailable"
+                observabilitySectionStatusLabel.textColor = .systemYellow
             }
         case .connectionClosed:
             showObservabilityActivityIndicator(false)

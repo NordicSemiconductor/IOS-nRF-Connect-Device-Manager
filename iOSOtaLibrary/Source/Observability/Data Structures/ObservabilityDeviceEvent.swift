@@ -21,6 +21,8 @@ public enum ObservabilityDeviceEvent: CustomStringConvertible {
     case authenticated(_ auth: ObservabilityAuth)
     case updatedChunk(_ chunk: ObservabilityChunk)
     
+    case unableToUpload
+    
     // MARK: CustomStringConvertible
     
     public var description: String {
@@ -37,6 +39,8 @@ public enum ObservabilityDeviceEvent: CustomStringConvertible {
             return ".authenticated(_)"
         case .updatedChunk(let chunk):
             return ".updatedChunk(\(chunk.sequenceNumber), \(String(describing: chunk.status))"
+        case .unableToUpload:
+            return ".unableToUpload"
         }
     }
 }
