@@ -283,8 +283,8 @@ extension DiagnosticsController: DeviceStatusDelegate {
             observabilitySectionStatusLabel.text = "Status: \(error.localizedDescription)"
             observabilitySectionStatusLabel.textColor = .systemRed
             observabilityButton.setTitle("Reconnect", for: .normal)
-        case .pairingError(let error):
-            observabilitySectionStatusLabel.text = "Status: \(error.localizedDescription)"
+        case .pairingError:
+            observabilitySectionStatusLabel.text = "Status: Pairing Error"
             observabilitySectionStatusLabel.textColor = .systemRed
             observabilityButton.setTitle("Reconnect", for: .normal)
         }
