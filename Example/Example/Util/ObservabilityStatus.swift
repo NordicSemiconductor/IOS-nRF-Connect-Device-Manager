@@ -16,7 +16,7 @@ enum ObservabilityStatus: CustomStringConvertible {
     case unsupported(_ error: Error?)
     case receivedEvent(_ event: ObservabilityDeviceEvent)
     case connectionClosed
-    case pairingError(_ error: CBATTError)
+    case pairingError
     case errorEvent(_ error: Error)
     
     var description: String {

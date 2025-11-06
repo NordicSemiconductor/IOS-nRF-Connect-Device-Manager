@@ -346,17 +346,15 @@ extension BaseViewController {
                 switch obsError {
                 case .mdsServiceNotFound:
                     observabilityStatus = .unsupported(obsError)
+                case .pairingError:
+                    observabilityStatus = .pairingError
                 default:
                     observabilityStatus = .errorEvent(obsError)
                 }
                 stopObservabilityManagerAndTask()
             } catch let error {
                 print("CAUGHT Error \(error.localizedDescription) Listening to \(observabilityIdentifier.uuidString) Connection Events.")
-                if let cbError = error as? CBATTError, cbError.code == .insufficientEncryption {
-                    observabilityStatus = .pairingError(cbError)
-                } else {
-                    observabilityStatus = .errorEvent(error)
-                }
+                observabilityStatus = .errorEvent(error)
                 stopObservabilityManagerAndTask()
             }
         }
