@@ -191,7 +191,7 @@ extension ObservabilityManager {
     // MARK: received
     
     func received(_ chunk: ObservabilityChunk, from identifier: UUID) {
-        log("Received Chunk Seq. Number \(chunk.sequenceNumber)")
+        log("Received Chunk Seq. Number \(chunk.sequenceNumber) with Timestamp: \(chunk.timestamp)")
         state.add([chunk], for: identifier)
         deviceContinuations[identifier]?.yield((identifier, .updatedChunk(chunk)))
     }
@@ -200,7 +200,7 @@ extension ObservabilityManager {
     
     func upload(_ chunk: ObservabilityChunk, with auth: ObservabilityAuth, from identifier: UUID) {
         guard deviceCancellables[identifier] != nil else { return }
-        log("Uploading Chunk Seq. Number \(chunk.sequenceNumber)")
+        log("Uploading Chunk Seq. Number \(chunk.sequenceNumber) with Timestamp: \(chunk.timestamp)")
         
         let uploadingChunk = state.update(chunk, from: identifier, to: .uploading)
         deviceContinuations[identifier]?.yield((identifier, .updatedChunk(uploadingChunk)))
@@ -220,7 +220,7 @@ extension ObservabilityManager {
                 }
             } receiveValue: { [weak self] resultData in
                 guard let self else { return }
-                log("Uploaded Chunk Seq. Number \(uploadingChunk.sequenceNumber)")
+                log("Uploaded Chunk Seq. Number \(uploadingChunk.sequenceNumber) with Timestamp: \(chunk.timestamp)")
                 let successfulChunk = state.update(uploadingChunk, from: identifier, to: .success)
                 deviceContinuations[identifier]?.yield((identifier, .updatedChunk(successfulChunk)))
                 state.clear(successfulChunk, from: identifier)
