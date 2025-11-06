@@ -364,6 +364,10 @@ extension BaseViewController {
     
     private func processObservabilityEvent(_ observabilityEvent: ObservabilityDeviceEvent) {
         switch observabilityEvent {
+        case .connected:
+            // Reset since on Observability Connection we'll get a report of pending chunks.
+            observabilityPendingBytes = 0
+            observabilityPendingChunks = 0
         case .updatedChunk(let chunk):
             switch chunk.status {
             case .pendingUpload:
