@@ -68,6 +68,9 @@ public extension ObservabilityManager {
         let asyncObservabilityDeviceStream = AsyncObservabilityStream() { continuation in
             // To-Do: Is there a previous one?
             deviceContinuations[identifier] = continuation
+            continuation.onTermination = { @Sendable [weak self] termination in
+                self?.log("Detected AsyncObservabilityStream termination.")
+            }
         }
         
         Task {
@@ -98,6 +101,8 @@ public extension ObservabilityManager {
         guard let device = devices[identifier],
               let peripheral = peripherals[identifier],
               let continuation = deviceContinuations[identifier] else { return }
+        
+        log(#function)
         do {
             if device.isStreaming {
                 guard let mdsService = peripheral.services?.first(where: { $0.uuid == CBUUID.MDS }),
@@ -126,6 +131,7 @@ public extension ObservabilityManager {
             continuation.finish()
         } catch {
             continuation.finish(throwing: error)
+            logError("Error when attempting to disconnect: \(error.localizedDescription)")
         }
     }
     

@@ -20,6 +20,7 @@ internal extension ObservabilityManager {
     func connectAndAuthenticate(from identifier: UUID) async {
         do {
             try await ble.isPoweredOn()
+            log(#function)
             
             guard let cbPeripheral = ble.retrievePeripherals(withIdentifiers: [identifier])
                 .first else {
@@ -215,8 +216,7 @@ extension ObservabilityManager {
                     let updatedChunk = state.update(uploadingChunk, from: identifier, to: .uploadError)
                     deviceContinuations[identifier]?.yield((identifier, .updatedChunk(updatedChunk)))
                     networkBusy = false
-                    deviceContinuations[identifier]?.yield(with: .failure(ObservabilityError.unableToUploadChunk))
-                    disconnect(from: identifier)
+                    deviceContinuations[identifier]?.yield((identifier, .unableToUpload))
                 }
             } receiveValue: { [weak self] resultData in
                 guard let self else { return }

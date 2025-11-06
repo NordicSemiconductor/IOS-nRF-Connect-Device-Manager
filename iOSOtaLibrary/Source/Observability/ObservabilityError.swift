@@ -23,9 +23,6 @@ public enum ObservabilityError: LocalizedError {
     case unableToReadDeviceURI
     case unableToReadAuthData
     case missingAuthData
-    
-    // Networking
-    case unableToUploadChunk
 
     public var errorDescription: String? {
         switch self {
@@ -45,8 +42,6 @@ public enum ObservabilityError: LocalizedError {
             return "Unable to read Authentication Data."
         case .missingAuthData:
             return "Missing Authentication Data."
-        case .unableToUploadChunk:
-            return "Unable to upload chunk due to network issue."
         }
     }
 }
