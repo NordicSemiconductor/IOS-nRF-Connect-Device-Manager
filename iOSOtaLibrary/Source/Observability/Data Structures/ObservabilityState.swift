@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Combine
 
 // MARK: - ObservabilityState
 
@@ -17,6 +18,14 @@ struct ObservabilityState: Codable {
     
     private var pendingUploads = [UUID: [ObservabilityChunk]]()
     
+    private var writeCommand = PassthroughSubject<(URL, ObservabilityState), Never>()
+    private var writeCancellable: Cancellable?
+    
+    // This is required because we need to ignore writeCommand & writeCancellable from JSON.
+    private enum CodingKeys: String, CodingKey {
+        case pendingUploads
+    }
+    
     // MARK: API
     
     mutating func add(_ chunks: [ObservabilityChunk], for identifier: UUID) {
@@ -26,7 +35,7 @@ struct ObservabilityState: Codable {
         
         pendingUploads[identifier]?.append(contentsOf: chunks)
         pendingUploads[identifier]?.sorted(by: <)
-        saveToDisk()
+        enqueueWriteToDisk()
     }
     
     @discardableResult
@@ -43,7 +52,7 @@ struct ObservabilityState: Codable {
             return
         }
         pendingUploads[identifier]?.remove(at: index)
-        saveToDisk()
+        enqueueWriteToDisk()
     }
     
     func pendingChunks(for identifier: UUID) -> [ObservabilityChunk] {
@@ -72,12 +81,27 @@ extension ObservabilityState {
         }
     }
     
-    func saveToDisk() {
+    mutating func enqueueWriteToDisk() {
+        if writeCancellable == nil {
+            setupEfficientWrites()
+        }
+        
         let selfCopy = self
         guard let url = Self.stateURL() else { return }
-        
-        Task.detached(name: #function, priority: .utility) {
-            guard let data = try? JSONEncoder().encode(self) else { return }
+        writeCommand.send((url, selfCopy))
+    }
+    
+    mutating func setupEfficientWrites() {
+        writeCancellable = writeCommand
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
+            .sink { url, copy in
+                Self.writeToDisk(url: url, copy: copy)
+            }
+    }
+    
+    static func writeToDisk(url: URL, copy: Self) {
+        Task.detached(name: "writeToDisk", priority: .utility) {
+            guard let data = try? JSONEncoder().encode(copy) else { return }
             do {
                 let urlDirectory = url.deletingLastPathComponent()
                 try Self.createDirectoryIfNecessary(at: urlDirectory)
