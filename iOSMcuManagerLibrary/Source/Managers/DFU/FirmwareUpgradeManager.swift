@@ -556,7 +556,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
                  atLevel: .application)
         self.configuration.bootloaderMode = response.mode ?? self.configuration.bootloaderMode
         switch self.configuration.bootloaderMode {
-        case .directXIPWithRevert:
+        case .directXIPNoRevert:
             // Mark all images as confirmed for DirectXIP No Revert, because there's no need.
             // No Revert means we just Reset and the firmware will handle it.
             for image in self.images {
