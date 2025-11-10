@@ -220,6 +220,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
+    // MARK: validate
+    
     private func validate() {
         objc_sync_setState(.validate)
         if !paused {
@@ -227,6 +229,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             imageManager.list(callback: listCallback)
         }
     }
+    
+    // MARK: upload
     
     private func upload() {
         objc_sync_setState(.upload)
@@ -253,6 +257,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
+    // MARK: test
+    
     private func test(_ image: FirmwareUpgradeImage) {
         objc_sync_setState(.test)
         if !paused {
@@ -260,6 +266,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             imageManager.test(hash: [UInt8](image.hash), callback: testCallback)
         }
     }
+    
+    // MARK: confirm
     
     private func confirm(_ image: FirmwareUpgradeImage) {
         objc_sync_setState(.confirm)
@@ -270,6 +278,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
+    // MARK: confirmAsSUIT
+    
     private func confirmAsSUIT() {
         objc_sync_setState(.confirm)
         if !paused {
@@ -278,11 +288,15 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
+    // MARK: eraseAppSettings
+    
     private func eraseAppSettings() {
         objc_sync_setState(.eraseAppSettings)
         log(msg: "Erasing app settings...", atLevel: .verbose)
         basicManager.eraseAppSettings(callback: eraseAppSettingsCallback)
     }
+    
+    // MARK: reset
     
     private func reset() {
         objc_sync_setState(.reset)
@@ -293,9 +307,64 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
+    // MARK: listAfterUploadReset
+    
     /**
-     Called in .test&Confirm mode after uploaded images have been sent 'Test' command, they
-     are tested, then Reset, and now we need to Confirm all Images.
+     Test and Confirm uploads desired images, and then marks them all as 'Tested' (which looks like 'pending' from McuMgr perspective) before Reset. Upon Reset, the previously tested Image will have switched image (core) due to image swap, so there's our mismatch between our tracking of (image, slot) and the status on the target device. Here, we match them, before proceeding to ``testAndConfirmAfterReset()``.
+     */
+    private func listAfterUploadReset() {
+        log(msg: "Sending Image List command...", atLevel: .verbose)
+        imageManager.list { [weak self] response, error in
+            guard let self else { return }
+            
+            if let error {
+                self.fail(error: error)
+                return
+            }
+            
+            guard let response else {
+                self.fail(error: FirmwareUpgradeError.unknown("Image List response is nil."))
+                return
+            }
+            self.log(msg: "Image List response: \(response)", atLevel: .application)
+            
+            // Check for an error return code.
+            if let error = response.getError() {
+                self.fail(error: error)
+                return
+            }
+            
+            guard let responseImages = response.images, responseImages.count > 0 else {
+                self.fail(error: FirmwareUpgradeError.invalidResponse(response))
+                return
+            }
+            
+            // After Reset, Images can be swapped. So an Image uploaded to 0, 1 in nRF52 for example,
+            // might've been swapped to Active and Image 0, Slot 0.
+            let imagesBeforeReset = images ?? []
+            images = [FirmwareUpgradeImage]()
+            for responseImage in responseImages {
+                guard let match = imagesBeforeReset.first(where: { $0.hash == Data(responseImage.hash) }) else { continue }
+                let image = ImageManager.Image(image: Int(responseImage.image), slot: Int(responseImage.slot), content: match.content, hash: match.hash, data: match.data)
+                var fwImage = FirmwareUpgradeImage(image)
+                fwImage.uploaded = match.uploaded
+                fwImage.testSent = match.testSent
+                fwImage.tested = match.tested
+                fwImage.confirmSent = match.confirmSent
+                fwImage.confirmed = match.confirmed
+                images.append(fwImage)
+            }
+            
+            testAndConfirmAfterReset()
+        }
+    }
+    
+    // MARK: testAndConfirmAfterReset
+    
+    /**
+     Called in .test&Confirm mode after uploaded images have been sent 'Test' command, they are tested (pending in McuMgr parlance), then Reset, and now we need to Confirm all Images.
+     
+     If the previously marked as tested Image became Active after Reset (image got swapped and is running), it is by definition internally marked as Confirmed/Permanent, but it is not returned to us as Confirmed via List command. But we do send them the Confirm command to mark them as such from our perspective.
      */
     private func testAndConfirmAfterReset() {
         if let untestedImage = images.first(where: { $0.uploaded && !$0.tested }) {
@@ -388,6 +457,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             }
         }
     }
+    
+    // MARK: uploadingSUITImages()
     
     /**
      Used to check potential Uploads of SUIT Images via MCUBoot Bootloader, which requires adjustments.
@@ -502,7 +573,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         self.validate() // Continue Upload
     }
     
-    // MARK: List Callback
+    // MARK: listCallback
     
     /// Callback for the List (VALIDATE) state.
     ///
@@ -604,6 +675,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
+    // MARK: targetSlotMatch(for:to:)
+    
     private func targetSlotMatch(for responseImage: McuMgrImageStateResponse.ImageSlot,
                                  to uploadImage: FirmwareUpgradeImage) {
         // The image is already active in the desired slot.
@@ -691,6 +764,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
+    // MARK: listConfirm
+    
     private func listConfirm(image: McuMgrImageStateResponse.ImageSlot) {
         imageManager.confirm(hash: image.hash) { [weak self] response, error in
             guard let self = self else {
@@ -714,7 +789,6 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
                 self.fail(error: FirmwareUpgradeError.invalidResponse(response))
                 return
             }
-            // TODO: Perhaps adding a check to verify if the image was indeed confirmed?
             self.log(msg: "Image \(image.image) confirmed", atLevel: .debug)
             self.listCallback(response, nil)
         }
@@ -1030,7 +1104,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             case .reset:
                 switch self.configuration.upgradeMode {
                 case .testAndConfirm:
-                    self.testAndConfirmAfterReset()
+                    self.listAfterUploadReset()
                 default:
                     self.log(msg: "Upgrade complete", atLevel: .application)
                     self.success()
@@ -1250,6 +1324,7 @@ public enum FirmwareUpgradeError: Error, LocalizedError {
     case unknown(String)
     case invalidResponse(McuMgrResponse)
     case connectionFailedAfterReset
+    case uploadedImageNotFound(image: Int, slot: Int)
     case untestedImageFound(image: Int, slot: Int)
     case resetIntoBootloaderModeNeeded
     
@@ -1261,6 +1336,8 @@ public enum FirmwareUpgradeError: Error, LocalizedError {
             return "Invalid response: \(response)"
         case .connectionFailedAfterReset:
             return "Connection failed after reset"
+        case .uploadedImageNotFound(let image, let slot):
+            return "Uploaded Image \(image) to slot: \(slot) not found after Reset."
         case .untestedImageFound(let image, let slot):
             return "Image \(image) (slot: \(slot)) found to be not Tested after Reset"
         case .resetIntoBootloaderModeNeeded:
