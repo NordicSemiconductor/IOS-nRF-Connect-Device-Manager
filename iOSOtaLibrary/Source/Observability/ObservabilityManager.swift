@@ -15,6 +15,13 @@ internal import iOS_BLE_Library_Mock
 
 public final class ObservabilityManager {
     
+    // MARK: Private Constants
+    
+    /**
+     How long (in seconds) should we wait before we trigger an automatic retry of sending pending chunks we've received from a device up to nRF Cloud / Memfault.
+     */
+    internal static let AutoUploadRetryDelay: TimeInterval = 30.0
+    
     // MARK: Public Properties
     
     public typealias AsyncObservabilityDeviceStreamValue = (deviceUUID: UUID, event: ObservabilityDeviceEvent)
@@ -32,6 +39,7 @@ public final class ObservabilityManager {
     
     internal var state = ObservabilityState()
     internal var networkBusy = false
+    internal var retryTimer: Timer?
     
     // MARK: init
     
@@ -104,6 +112,9 @@ public extension ObservabilityManager {
         
         log(#function)
         defer {
+            networkBusy = false
+            retryTimer?.invalidate()
+            retryTimer = nil
             deviceContinuations[identifier] = nil
             log("nil-ed out Device Continuation.")
         }

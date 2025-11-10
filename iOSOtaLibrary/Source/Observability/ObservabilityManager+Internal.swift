@@ -182,6 +182,18 @@ internal extension ObservabilityManager {
         networkBusy = true
         upload(nextChunk, with: auth, from: identifier)
     }
+    
+    // MARK: enqueueRetryPendingUploads
+    
+    func enqueueRetryPendingUploads(for identifier: UUID, with auth: ObservabilityAuth) {
+        guard retryTimer == nil else { return }
+        log(#function)
+        retryTimer = Timer.scheduledTimer(withTimeInterval: Self.AutoUploadRetryDelay, repeats: false) { [weak self] timer in
+            timer.invalidate()
+            self?.retryTimer = nil
+            self?.resumeUploadsIfNotBusy(for: identifier, with: auth)
+        }
+    }
 }
 
 // MARK: - Private
@@ -217,6 +229,7 @@ extension ObservabilityManager {
                     deviceContinuations[identifier]?.yield((identifier, .updatedChunk(updatedChunk)))
                     networkBusy = false
                     deviceContinuations[identifier]?.yield((identifier, .unableToUpload))
+                    enqueueRetryPendingUploads(for: identifier, with: auth)
                 }
             } receiveValue: { [weak self] resultData in
                 guard let self else { return }
