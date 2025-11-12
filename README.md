@@ -102,7 +102,7 @@ This library provides `FirmwareUpgradeManager` as a convenience for upgrading th
 > [!TIP]
 > You may reuse a `FirmwareUpgradeManager` / `McuMgrTransport` combo for multiple operations. But it is recommended to make a new pair for each operation. For example, for each DFU attempt. Nevertheless, we will provide support (and fixes) for issues stemming from keeping the same pair for multiple operations.
 
-### McuMgrPackage API
+### McuMgrPackage API Example
 
 ```swift
 import iOSMcuManagerLibrary
@@ -290,6 +290,8 @@ McuManager firmware upgrades can be performed following slightly different proce
 * **`.testOnly`**: This mode is useful if you want to run tests on the new image running before confirming it manually as the primary boot image. The process for this mode is `upload`, `test`, `reset`.
 
 * **`.uploadOnly`**: This is a very particular mode. It does not listen or acknowledge Bootloader Info, and plows through the upgrade process with just `upload` followed by `reset`. That's it. **It is up to the user, since this is not a default, to decide this is the right mode to use**.
+
+nRF Connect Device Manager allows allows direct control of the entire DFU process via the Advanced Tab on the upper-right corner. You can also see the implementation of sending specific commands such as List (Read), Test, Confirm, Erase and so on from [ImagesViewController.swift](Example/Example/View%20Controllers/Manager/Widgets/ImagesViewController.swift) and [SettingsViewController.swift](Example/Example/View%20Controllers/Manager/SettingsViewController.swift).
 
 ### Firmware Upgrade State
 
@@ -483,6 +485,26 @@ do {
     }
 } catch {
     // Process errors.
+}
+```
+
+### [I've got the file!](https://www.youtube.com/watch?v=nm6DO_7px1I)
+
+Once you've downloaded the file, if it's compatible with McuManager, you may use iOSMcuManagerLibrary to perform the update, [as seen further above](#mcumgrpackage-api-example).
+
+```swift
+import iOSOtaLibrary
+import iOSMcuManagerLibrary
+
+do {
+    let bleTransport = McuMgrBleTransport(cbPeripheral)
+    let dfuManager = FirmwareUpgradeManager(bleTransport, delegate)
+
+    let fileURL: = // locally-downloaded update
+    let package = try McuMgrPackage(from: packageURL)
+    dfuManager.start(package: package)
+} catch {
+    // Package initialisation errors here.
 }
 ```
 
