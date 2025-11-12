@@ -832,7 +832,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             return
         }
         
-        for image in self.images where !image.tested {
+        for image in self.images where (image.uploaded && !image.tested) {
             guard let targetSlot = responseImages.first(where: {
                 $0.image == image.image && Data($0.hash) == image.hash
             }) else {
@@ -842,15 +842,18 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             
             // Check the target image is pending (i.e. test succeeded).
             guard targetSlot.pending else {
-                // For every image we upload, we need to send it the TEST Command.
-                if image.tested && !image.testSent {
-                    self.test(image)
-                    self.mark(image, as: \.testSent)
+                guard !image.testSent else {
+                    // If we've sent it the TEST Command, the slot must be in pending state to pass test.
+                    self.fail(error: FirmwareUpgradeError.unknown("Image \(image.image) (slot: \(image.slot)) was tested but it did not switch to a pending state."))
                     return
                 }
                 
-                // If we've sent it the TEST Command, the slot must be in pending state to pass test.
-                self.fail(error: FirmwareUpgradeError.unknown("Image \(image.image) (slot: \(image.slot)) was tested but it did not switch to a pending state."))
+                // For every image we've uploaded, we need to send it
+                // TEST command in test&Confirm mode.
+                self.test(image)
+                self.mark(image, as: \.testSent)
+                // test will trigger another call to testCallback
+                // so no need to continue here.
                 return
             }
             self.mark(image, as: \.tested)
@@ -1279,7 +1282,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
             if let firstUntestedImage = images.first(where: { $0.uploaded && !$0.tested }) {
                 test(firstUntestedImage)
                 mark(firstUntestedImage, as: \.testSent)
-                return
+                return // testCallback will continue execution
             }
             if configuration.upgradeMode == FirmwareUpgradeMode.testAndConfirm {
                 if let firstUnconfirmedImage = images.first(where: {
