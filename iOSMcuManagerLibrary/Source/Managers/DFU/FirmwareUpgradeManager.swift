@@ -557,11 +557,13 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         self.configuration.bootloaderMode = response.mode ?? self.configuration.bootloaderMode
         switch self.configuration.bootloaderMode {
         case .directXIPNoRevert:
-            // Mark all images as confirmed for DirectXIP No Revert, because there's no need.
-            // No Revert means we just Reset and the firmware will handle it.
-            for image in self.images {
-                self.mark(image, as: \.confirmed)
-            }
+            // No Revert means Upload followed by Reset, and the firmware will handle setting up
+            // the correct images to start.
+            
+            // Sending test or confirm will trigger firmware errors. So in practice, it translates
+            // to the same procedure as "uploadOnly". Even if user selects confirm, test or test&Confirm.
+            self.log(msg: "DirectXIP without Revert detected. Overriding upgrade mode to Upload Only.", atLevel: .debug)
+            self.configuration.upgradeMode = .uploadOnly
         case .firmwareLoader: // Bare Metal
             self.log(msg: "Bare Metal SDK Firmware Loader detected. Overriding target image slot to Primary (zero).", atLevel: .debug)
             self.images = self.images.map {
@@ -1284,6 +1286,7 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
                 mark(firstUntestedImage, as: \.testSent)
                 return // testCallback will continue execution
             }
+            
             if configuration.upgradeMode == FirmwareUpgradeMode.testAndConfirm {
                 if let firstUnconfirmedImage = images.first(where: {
                     $0.uploaded && $0.tested && !$0.confirmed && !$0.confirmSent }
