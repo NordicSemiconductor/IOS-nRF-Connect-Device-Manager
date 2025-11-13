@@ -17,7 +17,7 @@ public enum ObservabilityDeviceEvent: CustomStringConvertible {
     
     case connected, disconnected
     
-    case notifications(_ enabled: Bool), streaming(_ enabled: Bool)
+    case notifications(_ enabled: Bool), online(_ isTrue: Bool)
     case authenticated(_ auth: ObservabilityAuth)
     case updatedChunk(_ chunk: ObservabilityChunk)
     
@@ -31,8 +31,8 @@ public enum ObservabilityDeviceEvent: CustomStringConvertible {
             return ".disconnected"
         case .notifications(let enabled):
             return ".notifications(\(enabled ? "enabled" : "disabled"))"
-        case .streaming(let enabled):
-            return ".streaming(\(enabled ? "enabled" : "disabled"))"
+        case .online(let isTrue):
+            return ".online(\(isTrue ? "true" : "false"))"
         case .authenticated(_):
             return ".authenticated(_)"
         case .updatedChunk(let chunk):

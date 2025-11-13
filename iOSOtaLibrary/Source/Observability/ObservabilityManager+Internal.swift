@@ -83,8 +83,8 @@ internal extension ObservabilityManager {
             try await peripheral.writeValueWithResponse(Data(repeating: 1, count: 1), for: mdsData)
                 .firstValue
             
-            devices[identifier]?.isStreaming = true
-            deviceContinuations[identifier]?.yield((identifier, .streaming(true)))
+            devices[identifier]?.isOnline = true
+            deviceContinuations[identifier]?.yield((identifier, .online(true)))
             
             guard state.pendingChunks(for: identifier).hasItems else { return }
             resumeUploadsIfNotBusy(for: identifier, with: auth)
@@ -112,7 +112,7 @@ internal extension ObservabilityManager {
                 switch completion {
                 case .failure(let error):
                     deviceContinuations[identifier]?.yield((identifier, .notifications(false)))
-                    deviceContinuations[identifier]?.yield((identifier, .streaming(false)))
+                    deviceContinuations[identifier]?.yield((identifier, .online(false)))
                     deviceContinuations[identifier]?.finish(throwing: error)
                     deviceCancellables[identifier]?.removeAll()
                 case .finished:
@@ -228,7 +228,7 @@ extension ObservabilityManager {
                     let updatedChunk = state.update(uploadingChunk, from: identifier, to: .uploadError)
                     deviceContinuations[identifier]?.yield((identifier, .updatedChunk(updatedChunk)))
                     networkBusy = false
-                    deviceContinuations[identifier]?.yield((identifier, .streaming(false)))
+                    deviceContinuations[identifier]?.yield((identifier, .online(false)))
                     enqueueRetryPendingUploads(for: identifier, with: auth)
                 }
             } receiveValue: { [weak self] resultData in
