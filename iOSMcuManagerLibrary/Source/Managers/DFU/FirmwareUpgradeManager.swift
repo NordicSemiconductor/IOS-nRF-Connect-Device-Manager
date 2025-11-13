@@ -313,7 +313,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
      Test and Confirm uploads desired images, and then marks them all as 'Tested' (which looks like 'pending' from McuMgr perspective) before Reset. Upon Reset, the previously tested Image will have switched image (core) due to image swap, so there's our mismatch between our tracking of (image, slot) and the status on the target device. Here, we match them, before proceeding to ``testAndConfirmAfterReset()``.
      */
     private func listAfterUploadReset() {
-        log(msg: "Sending Image List command...", atLevel: .verbose)
+        log(msg: "Updating Image List after Upload phase Reset...", atLevel: .verbose)
         imageManager.list { [weak self] response, error in
             guard let self else { return }
             
@@ -352,6 +352,9 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
                 fwImage.tested = match.tested
                 fwImage.confirmSent = match.confirmSent
                 fwImage.confirmed = match.confirmed
+                if match.slot != fwImage.slot {
+                    self.log(msg: "Detected swap of Image \(match.image), slot \(match.slot) to Image \(fwImage.image), slot \(fwImage.slot)", atLevel: .debug)
+                }
                 images.append(fwImage)
             }
             
@@ -930,7 +933,6 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
                         continue
                     }
                     
-                    
                     if !image.confirmed {
                         if image.confirmSent {
                             self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) (slot: \(targetSlot.slot)) was confirmed, but did not switch to permanent state."))
@@ -944,22 +946,30 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
                 
                 self.mark(image, as: \.confirmed)
             case .testAndConfirm:
-                if let targetSlot = responseImages.first(where: {
-                    $0.image == image.image && Data($0.hash) == image.hash
-                }) {
-                    if targetSlot.active || targetSlot.permanent {
-                        // Image booted. All okay.
-                        self.mark(image, as: \.confirmed)
-                        continue
-                    }
-                    
-                    if image.confirmSent && !targetSlot.confirmed {
-                        self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) (slot: \(targetSlot.slot)) was confirmed, but did not switch to permanent state."))
-                        return
-                    }
-                    
-                    self.mark(image, as: \.confirmed)
+                guard let targetSlot = responseImages.first(where: {
+                    Data($0.hash) == image.hash
+                }) else { continue }
+                
+                // An image might boot and be internally confirmed, but not be marked as "confirmed"
+                // as such in LIST response. But in test&Confirm we send CONFIRM after Reset.
+                guard image.confirmSent else {
+                    self.mark(image, as: \.confirmSent)
+                    self.confirm(image) // confirmCallback 'callback' will continue execution
+                    return
                 }
+                
+                if targetSlot.active || targetSlot.permanent {
+                    // Image booted. All okay.
+                    self.mark(image, as: \.confirmed)
+                    continue
+                }
+                
+                guard targetSlot.confirmed else {
+                    self.fail(error: FirmwareUpgradeError.unknown("Image \(targetSlot.image) (slot: \(targetSlot.slot)) was confirmed, but did not switch to permanent state."))
+                    return
+                }
+                
+                self.mark(image, as: \.confirmed)
             case .testOnly, .uploadOnly:
                 // Impossible state. Ignore.
                 return
