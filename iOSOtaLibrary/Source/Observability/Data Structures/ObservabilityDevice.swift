@@ -1,6 +1,7 @@
 //
-//  MemfaultDevice.swift
+//  ObservabilityDevice.swift
 //  iOS-nRF-Memfault-Library
+//  iOSOtaLibrary
 //
 //  Created by Dinesh Harjani on 26/8/22.
 //  Copyright © 2025 Nordic Semiconductor ASA. All rights reserved.
@@ -8,7 +9,7 @@
 
 import Foundation
 
-// MARK: - MemfaultDevice
+// MARK: - ObservabilityDevice
 
 struct ObservabilityDevice {
     
@@ -17,7 +18,7 @@ struct ObservabilityDevice {
     let uuidString: String
     var isConnected: Bool
     var isNotifying: Bool
-    var isStreaming: Bool
+    var isOnline: Bool
     var auth: ObservabilityAuth?
     
     // MARK: init
@@ -26,7 +27,7 @@ struct ObservabilityDevice {
         self.uuidString = uuidString
         self.isConnected = false
         self.isNotifying = false
-        self.isStreaming = false
+        self.isOnline = false
         self.auth = nil
     }
 }

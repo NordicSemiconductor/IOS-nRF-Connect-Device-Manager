@@ -120,14 +120,14 @@ public extension ObservabilityManager {
         }
         
         do {
-            if device.isStreaming {
+            if device.isOnline {
                 guard let mdsService = peripheral.services?.first(where: { $0.uuid == CBUUID.MDS }),
                       let mdsDataExportCharacteristic = mdsService.characteristics?.first(where: { $0.uuid == CBUUID.MDSDataExportCharacteristic }) else {
                     throw ObservabilityError.mdsDataExportCharacteristicNotFound
                 }
                 _ = try await peripheral.writeValueWithResponse(Data(repeating: 0, count: 1), for: mdsDataExportCharacteristic)
                     .firstValue
-                continuation.yield((identifier, .streaming(false)))
+                continuation.yield((identifier, .online(false)))
             }
             
             if device.isNotifying {

@@ -231,7 +231,7 @@ extension DiagnosticsController: DeviceStatusDelegate {
             case .authenticated:
                 observabilitySectionStatusLabel.text = "Status: Authenticated"
                 observabilitySectionStatusLabel.textColor = .systemYellow
-            case .streaming(let isTrue):
+            case .online(let isTrue):
                 if isTrue {
                     observabilitySectionStatusLabel.text = "Status: Online"
                     observabilitySectionStatusLabel.textColor = .systemGreen
