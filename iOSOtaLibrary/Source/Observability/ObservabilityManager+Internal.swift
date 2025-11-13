@@ -228,7 +228,7 @@ extension ObservabilityManager {
                     let updatedChunk = state.update(uploadingChunk, from: identifier, to: .uploadError)
                     deviceContinuations[identifier]?.yield((identifier, .updatedChunk(updatedChunk)))
                     networkBusy = false
-                    deviceContinuations[identifier]?.yield((identifier, .unableToUpload))
+                    deviceContinuations[identifier]?.yield((identifier, .streaming(false)))
                     enqueueRetryPendingUploads(for: identifier, with: auth)
                 }
             } receiveValue: { [weak self] resultData in

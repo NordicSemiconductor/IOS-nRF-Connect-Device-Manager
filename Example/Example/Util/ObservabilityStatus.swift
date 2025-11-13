@@ -32,13 +32,11 @@ enum ObservabilityStatus: CustomStringConvertible {
             case .notifications(let enabled):
                 return enabled ? "NOTIFYING" : "NOTIFICATIONS DISABLED"
             case .streaming(let isTrue):
-                return isTrue ? "STREAMING" : "NOT STREAMING"
+                return isTrue ? "ONLINE" : "NETWORK UNAVAILABLE"
             case .authenticated:
                 return "AUTHENTICATED"
             case .updatedChunk:
                 return "STREAMING"
-            case .unableToUpload:
-                return "NETWORK UNAVAILABLE"
             }
         case .connectionClosed:
             return "DISCONNECTED"

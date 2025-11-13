@@ -315,7 +315,7 @@ extension BaseViewController {
         switch observabilityStatus {
         case .receivedEvent(let event):
             switch event {
-            case .unableToUpload:
+            case .streaming(false):
                 do {
                     try observabilityManager?.continuePendingUploads(for: observabilityIdentifier)
                 } catch {
