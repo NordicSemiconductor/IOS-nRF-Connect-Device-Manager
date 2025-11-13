@@ -236,10 +236,11 @@ extension DiagnosticsController: DeviceStatusDelegate {
                     observabilitySectionStatusLabel.text = "Status: Online"
                     observabilitySectionStatusLabel.textColor = .systemGreen
                 } else {
-                    observabilitySectionStatusLabel.text = "Status: Offline"
-                    observabilitySectionStatusLabel.textColor = .secondaryLabel
+                    observabilitySectionStatusLabel.text = "Status: Network Unavailable"
+                    observabilitySectionStatusLabel.textColor = .systemYellow
+                    observabilityButton.setTitle("Retry Network", for: .normal)
                 }
-                showObservabilityActivityIndicator(isTrue)
+                showObservabilityActivityIndicator(true)
             case .updatedChunk(let chunk):
                 switch chunk.status {
                 case .pendingUpload:
@@ -259,11 +260,6 @@ extension DiagnosticsController: DeviceStatusDelegate {
                 
                 showObservabilityActivityIndicator(true)
                 updatePendingAndUploadedLabels(pendingBytes: pendingBytes, pendingCount: pendingCount, uploadedBytes: uploadedBytes, uploadedCount: uploadedCount)
-            case .unableToUpload:
-                showObservabilityActivityIndicator(true)
-                observabilitySectionStatusLabel.text = "Status: Network Unavailable"
-                observabilitySectionStatusLabel.textColor = .systemYellow
-                observabilityButton.setTitle("Retry Network", for: .normal)
             }
         case .connectionClosed:
             showObservabilityActivityIndicator(false)
