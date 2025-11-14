@@ -56,9 +56,7 @@ public struct ObservabilityChunk: Identifiable, Hashable, Comparable, Codable {
     // MARK: Comparable
     
     public static func < (lhs: ObservabilityChunk, rhs: ObservabilityChunk) -> Bool {
-        guard lhs.timestamp < rhs.timestamp else {
-            return lhs.sequenceNumber < rhs.sequenceNumber
-        }
-        return lhs.timestamp < rhs.timestamp
+        return lhs.timestamp < rhs.timestamp &&
+            lhs.sequenceNumber < rhs.sequenceNumber
     }
 }
