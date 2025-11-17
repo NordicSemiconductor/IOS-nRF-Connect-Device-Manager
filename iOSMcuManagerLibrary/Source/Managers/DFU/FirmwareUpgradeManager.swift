@@ -500,6 +500,11 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
         self.log(msg: "Setting SAR Buffer Size to \(bufferSize) bytes.", atLevel: .verbose)
         self.configuration.reassemblyBufferSize = bufferSize
+        let mtu: Int = self.imageManager.transport.mtu
+        if bufferSize < mtu {
+            self.log(msg: "Parameters SAR Buffer Size (\(bufferSize)) is smaller than negotiated MTU (\(mtu)). Lowering MTU to match.", atLevel: .warning)
+            try? self.setUploadMtu(mtu: Int(bufferSize))
+        }
         self.bootloaderInfo() // Continue to Bootloader Mode.
     }
     

@@ -177,7 +177,7 @@ public class McuMgrBleTransport: NSObject {
             }
             
             // Note that it is 99.9% likely that this is the wrong value unless
-            // we're already connected. The correct MTU value needs to be in
+            // we're already connected. A valid MTU value needs to be set in
             // the _send() function just after acquiring the (Result)Lock.
             let peripheralWriteValueLength = max(McuManager.ValidMTURange.lowerBound, peripheral.maximumWriteValueLength(for: .withoutResponse))
             return min(peripheralWriteValueLength, defaultMtu)
@@ -404,8 +404,10 @@ extension McuMgrBleTransport: McuMgrTransport {
         
         // Don't be smart caching the MTU.
         let negotiatedMTU = targetPeripheral.maximumWriteValueLength(for: .withoutResponse)
-        if mtu != negotiatedMTU {
-            log(msg: "peripheral.maximumWriteValueLength(for: .withoutResponse): \(negotiatedMTU) != Current MTU (\(mtu))", atLevel: .debug)
+        // It's possible an upper-layer has set a non-max MTU. Either by mistake, or by design.
+        // We only want to force the MTU value to change if the current value causes issues.
+        if mtu > negotiatedMTU {
+            log(msg: "peripheral.maximumWriteValueLength(for: .withoutResponse): \(negotiatedMTU) > Current MTU (\(mtu))", atLevel: .debug)
             mtu = negotiatedMTU
         }
         
