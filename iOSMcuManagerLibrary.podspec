@@ -11,8 +11,8 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = "13.0"
   s.osx.deployment_target = "10.14"
 
-  s.source_files = "Source/**/*.{swift, h}"
-  s.exclude_files = "Source/*.plist"
+  s.source_files = "iOSMcuManagerLibrary/Source/**/*.{swift, h}"
+  s.exclude_files = "iOSMcuManagerLibrary/Source/*.plist"
 
   s.requires_arc = true
 
