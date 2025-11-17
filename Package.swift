@@ -24,10 +24,10 @@ let package = Package(
             .upToNextMajor(from: "0.9.0")
         ),
         .package(url: "https://github.com/NordicSemiconductor/IOS-BLE-Library",
-            .branchItem("main")
+            .upToNextMajor(from: "0.4.3")
         ),
         .package(url: "https://github.com/NordicPlayground/IOS-Common-Libraries",
-            .branchItem("13")
+            .exact("0.1.13")
         )
     ],
     targets: [
