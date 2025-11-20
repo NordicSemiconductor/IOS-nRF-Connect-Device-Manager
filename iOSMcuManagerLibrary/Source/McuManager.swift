@@ -230,7 +230,12 @@ open class McuManager: NSObject {
         
         let remainingBytes = UInt64(data.count) - offset
         let maxPacketSize = max(configuration.reassemblyBufferSize, UInt64(transport.mtu))
-        var maxDataLength = maxPacketSize - UInt64(packetOverhead)
+        let overhead = UInt64(packetOverhead)
+        guard maxPacketSize > overhead else {
+            // We can't send anything if the overhead is larger than max packet size.
+            return UInt64(McuMgrHeader.HEADER_LENGTH)
+        }
+        var maxDataLength = maxPacketSize - overhead
         if configuration.byteAlignment != .disabled {
             maxDataLength = (maxDataLength / configuration.byteAlignment.rawValue) * configuration.byteAlignment.rawValue
         }
