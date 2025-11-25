@@ -27,7 +27,7 @@ let package = Package(
             .upToNextMajor(from: "0.4.3")
         ),
         .package(url: "https://github.com/NordicPlayground/IOS-Common-Libraries",
-            .exact("0.1.13")
+            .branchItem("main")
         )
     ],
     targets: [

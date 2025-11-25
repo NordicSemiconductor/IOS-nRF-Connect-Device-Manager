@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/NordicPlayground/IOS-Common-Libraries",
       "state" : {
-        "revision" : "2b9a131a685aabc59b816241c2d55187203862a2",
-        "version" : "0.1.13"
+        "branch" : "main",
+        "revision" : "c0908647e332ab2a1ae125888b8b94c41076b741"
       }
     },
     {
