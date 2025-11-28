@@ -100,6 +100,23 @@ public class SettingsManager: McuManager {
     }
 }
 
+// MARK: - API
+
+public extension SettingsManager {
+    
+    func generateNewAdvertisingName() -> String {
+        let now: Date
+        if #available(iOS 15, *) {
+            now = .now
+        } else {
+            now = Date()
+        }
+        
+        let components = Calendar.current.dateComponents([.hour, .minute, .second], from: now)
+        return "FL_\(components.hour!)\(components.minute!)\(components.second!)"
+    }
+}
+
 // MARK: - SettingsManagerError
 
 public enum SettingsManagerError: UInt64, Error, LocalizedError {
