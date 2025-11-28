@@ -13,45 +13,91 @@ final class ResetViewController: UIViewController, McuMgrViewController {
 
     // MARK: @IBOutlet
     
+    @IBOutlet weak var switchToFirmwareLoaderToggle: UISwitch!
+    @IBOutlet weak var infoButton: UIButton!
+    @IBOutlet weak var advertisingNameTextField: UITextField!
     @IBOutlet weak var resetAction: UIButton!
     
     // MARK: @IBAction
     
-    @IBAction func reset(_ sender: UIButton) {
-        let alertController = UIAlertController(title: "Reset Mode", message: nil, preferredStyle: .actionSheet)
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+    @IBAction func firmwareLoaderToggleChanged(_ sender: UISwitch) {
+        advertisingNameTextField.isEnabled = sender.isOn
+    }
     
-        // If the device is an iPad set the popover presentation controller
-        if let presenter = alertController.popoverPresentationController {
-            presenter.sourceView = self.view
-            presenter.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
-            presenter.permittedArrowDirections = []
-        }
-        
-        for bootMode in DefaultManager.ResetBootMode.allCases {
-            alertController.addAction(UIAlertAction(title: "\(bootMode.description) Mode", style: .default) { [unowned self] action in
-                self.callReset(mode: bootMode)
-            })
-        }
-        present(alertController, animated: true)
+    @IBAction func firmwareLoaderNameEditingDone(_ sender: UITextField) {
+        sender.resignFirstResponder()
+        callReset(mode: .bootloader)
+    }
+    
+    @IBAction func firmwareLoaderNameEditingEnded(_ sender: UITextField) {
+        sender.resignFirstResponder()
+    }
+    
+    @IBAction func reset(_ sender: UIButton) {
+        let mode: DefaultManager.ResetBootMode = switchToFirmwareLoaderToggle.isOn
+            ? .bootloader : .normal
+        callReset(mode: mode)
     }
     
     // MARK: Properties
     
     private var defaultManager: DefaultManager!
+    private var settingsManager: SettingsManager!
+    
     var transport: McuMgrTransport! {
         didSet {
             defaultManager = DefaultManager(transport: transport)
             defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
+            
+            settingsManager = SettingsManager(transport: transport)
+            settingsManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         }
+    }
+    
+    // MARK: viewDidLoad
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        firmwareLoaderToggleChanged(switchToFirmwareLoaderToggle)
+        
+        advertisingNameTextField.placeholder = "Defaults to 'Unnamed-[HH]-[mm]'"
     }
     
     // MARK: callReset(mode:)
     
     private func callReset(mode: DefaultManager.ResetBootMode) {
         resetAction.isEnabled = false
-        defaultManager.reset(bootMode: mode) { (response, error) in
-            self.resetAction.isEnabled = true
+        guard mode == .bootloader else {
+            defaultManager.reset(bootMode: mode) { [unowned self] (response, error) in
+                resetAction.isEnabled = true
+            }
+            return
         }
+        
+        let name: String! = (advertisingNameTextField.text?.hasItems ?? false) ?
+            advertisingNameTextField.text : fallbackAdvertisingName()
+        settingsManager.setFirmwareLoaderAdvertisingName(name) { [unowned self] response, error in
+            guard error == nil else {
+                resetAction.isEnabled = true
+                return
+            }
+            
+            defaultManager.reset(bootMode: mode) { [unowned self] (response, error) in
+                resetAction.isEnabled = true
+            }
+        }
+    }
+    
+    private func fallbackAdvertisingName() -> String {
+        let now: Date
+        if #available(iOS 15, *) {
+            now = .now
+        } else {
+            now = Date()
+        }
+        
+        let components = Calendar.current.dateComponents([.hour, .minute], from: now)
+        return "Unnamed-\(components.hour!)-\(components.minute!)"
     }
 }
