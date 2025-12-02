@@ -423,6 +423,8 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         switch newState {
         case .none:
             status.text = ""
+        case .resetIntoFirmwareLoader:
+            status.text = "RESETTING INTO FW LOADER MODE..."
         case .requestMcuMgrParameters:
             status.text = "REQUESTING MCUMGR PARAMETERS..."
         case .bootloaderInfo:

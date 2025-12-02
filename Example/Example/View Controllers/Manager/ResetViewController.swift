@@ -61,7 +61,7 @@ final class ResetViewController: UIViewController, McuMgrViewController {
         view.translatesAutoresizingMaskIntoConstraints = false
         firmwareLoaderToggleChanged(switchToFirmwareLoaderToggle)
         
-        advertisingNameTextField.placeholder = "Defaults to 'Unnamed-[HH]-[mm]'"
+        advertisingNameTextField.placeholder = "Defaults to 'fl_[HH]_[mm]'"
     }
     
     // MARK: callReset(mode:)
@@ -76,7 +76,7 @@ final class ResetViewController: UIViewController, McuMgrViewController {
         }
         
         let name: String! = (advertisingNameTextField.text?.hasItems ?? false) ?
-            advertisingNameTextField.text : fallbackAdvertisingName()
+            advertisingNameTextField.text : settingsManager.generateNewAdvertisingName()
         settingsManager.setFirmwareLoaderAdvertisingName(name) { [unowned self] response, error in
             guard error == nil else {
                 resetAction.isEnabled = true
@@ -87,17 +87,5 @@ final class ResetViewController: UIViewController, McuMgrViewController {
                 resetAction.isEnabled = true
             }
         }
-    }
-    
-    private func fallbackAdvertisingName() -> String {
-        let now: Date
-        if #available(iOS 15, *) {
-            now = .now
-        } else {
-            now = Date()
-        }
-        
-        let components = Calendar.current.dateComponents([.hour, .minute], from: now)
-        return "Unnamed-\(components.hour!)-\(components.minute!)"
     }
 }

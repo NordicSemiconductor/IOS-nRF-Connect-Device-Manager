@@ -16,7 +16,9 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     internal let imageManager: ImageManager
     private let defaultManager: DefaultManager
     private let basicManager: BasicManager
+    private let settingsManager: SettingsManager
     internal let suitManager: SuitManager
+    
     internal weak var delegate: FirmwareUpgradeDelegate?
     
     /// Cyclic reference is used to prevent from releasing the manager
@@ -27,6 +29,12 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
     internal var images: [FirmwareUpgradeImage]!
     internal var configuration: FirmwareUpgradeConfiguration!
     internal var bootloader: BootloaderInfoResponse.Bootloader!
+    
+    /// Mostly applies for Bare Metal (mode=7) wherein we need to reset
+    /// the device into Firwmare Loader Mode so that DFU may continue.
+    private var connectionPeripheral: CBPeripheral!
+    private var resetBootloaderName: String!
+    private var firmwareLoaderFinder: FirmwareUpgradePeripheralFinder?
     
     internal var state: FirmwareUpgradeState
     internal var paused: Bool
@@ -49,6 +57,7 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         self.defaultManager = DefaultManager(transport: transport)
         self.basicManager = BasicManager(transport: transport)
         self.suitManager = SuitManager(transport: transport)
+        self.settingsManager = SettingsManager(transport: transport)
         self.delegate = delegate
         self.state = .none
         self.paused = false
@@ -261,6 +270,8 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
+    // MARK: success
+    
     private func success() {
         objc_sync_setState(.success)
         
@@ -278,29 +289,41 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         }
     }
     
+    // MARK: fail(error:)
+    
     private func fail(error: Error) {
         objc_sync_enter(self)
         defer {
             objc_sync_exit(self)
         }
         
-        var errorOverride = error
         if let mcuMgrError = error as? McuMgrError,
            case let McuMgrError.returnCode(returnCode) = mcuMgrError {
             if configuration.bootloaderMode.isBareMetal, returnCode == .unsupported {
-                errorOverride = FirmwareUpgradeError.resetIntoBootloaderModeNeeded
+                if imageManager.transport.mode == .default {
+                    log(msg: "Bare Metal Command Error Detected. Attempting Reset into Firmware Loader Mode...", atLevel: .debug)
+                    buttonlessBareMetalResetIntoFirmwareLoader()
+                    return // swallow error for Firmware Loader Mode switch.
+                }
+                // 'default' mode means Application Mode. 'alternate' is Firmware
+                // Loader. So if there's an unsopported Bare Metal error and we're
+                // already speaking to the Firmware Loader, there's nothing more
+                // we can do.
+                log(msg: "Bare Metal Command Error Detected in Firmware Loader Mode. Operation cannot continue.", atLevel: .error)
             }
         }
-        log(msg: errorOverride.localizedDescription, atLevel: .error)
+        log(msg: error.localizedDescription, atLevel: .error)
         let tmp = state
         state = .none
         paused = false
         DispatchQueue.main.async { [weak self] in
-            self?.delegate?.upgradeDidFail(inState: tmp, with: errorOverride)
+            self?.delegate?.upgradeDidFail(inState: tmp, with: error)
             // Release cyclic reference.
             self?.cyclicReferenceHolder = nil
         }
     }
+    
+    // MARK: resumeFromCurrentState
     
     internal func resumeFromCurrentState() {
         objc_sync_enter(self)
@@ -333,6 +356,19 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
                 break
             }
         }
+    }
+    
+    // MARK: buttonlessBareMetalResetIntoFirmwareLoader()
+    
+    private func buttonlessBareMetalResetIntoFirmwareLoader() {
+        objc_sync_enter(self)
+        defer {
+            objc_sync_exit(self)
+        }
+        
+        state = .resetIntoFirmwareLoader
+        resetBootloaderName = settingsManager.generateNewAdvertisingName()
+        settingsManager.setFirmwareLoaderAdvertisingName(resetBootloaderName, callback: setFirmwareLoaderNameCallback)
     }
     
     // MARK: uploadingSUITImages()
@@ -380,6 +416,42 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             try? self.setUploadMtu(mtu: Int(bufferSize))
         }
         self.bootloaderInfo() // Continue to Bootloader Mode.
+    }
+    
+    // MARK: setFirmwareLoaderNameCallback
+    
+    private lazy var setFirmwareLoaderNameCallback: McuMgrCallback<McuMgrResponse> = { [weak self] response, error in
+        guard let self else { return }
+        
+        guard error == nil, let response, response.rc.isSupported() else {
+            log(msg: "Attempted Reset into Firmware Loader Mode failed due to rename error: \(error?.localizedDescription)", atLevel: .error)
+            fail(error: FirmwareUpgradeError.resetIntoBootloaderModeNeeded)
+            return
+        }
+        
+        defaultManager.reset(bootMode: .bootloader, callback: resetIntoFirmwareLoaderCallback)
+    }
+    
+    private lazy var resetIntoFirmwareLoaderCallback: McuMgrCallback<McuMgrResponse> = { [weak self] response, error in
+        guard let self else { return }
+        
+        guard error == nil, let response, response.rc.isSupported() else {
+            log(msg: "Reset into Firmware Loader Mode Command failed: \(error?.localizedDescription)", atLevel: .error)
+            fail(error: FirmwareUpgradeError.resetIntoBootloaderModeNeeded)
+            return
+        }
+        
+        log(msg: "Reset into Firmware Loader Mode Command successful.", atLevel: .info)
+        
+        guard let bleTransport = imageManager.transport as? McuMgrBleTransport else {
+            log(msg: "Reset into Firmware Loader Mode is only supported for Bluetooth LE Transport.", atLevel: .error)
+            fail(error: FirmwareUpgradeError.unknown("Reset into Firmware Loader Mode is only supported for Bluetooth LE."))
+            return
+        }
+        
+        firmwareLoaderFinder = FirmwareUpgradePeripheralFinder(bleTransport.centralManager, searchName: resetBootloaderName)
+        log(msg: "Looking for device named \(resetBootloaderName) after reset...", atLevel: .debug)
+        firmwareLoaderFinder?.find(with: firmwareLoaderFinderCallback)
     }
     
     // MARK: Bootloader Info Callback
@@ -938,14 +1010,25 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
         self.log(msg: "Waiting for disconnection...", atLevel: .verbose)
     }
     
+    // MARK: transport(:didChangeStateTo:)
+    
     public func transport(_ transport: McuMgrTransport, didChangeStateTo state: McuMgrTransportState) {
         transport.removeObserver(self)
+        
         // Disregard connected state.
-        guard state == .disconnected else {
-            return
+        guard state == .disconnected else { return }
+        
+        if resetBootloaderName != nil, imageManager.transport.mode == .alternate {
+            do {
+                log(msg: "Switching transport back to Default Mode...", atLevel: .debug)
+                try imageManager.transport.switchMode(to: .default, with: nil)
+            } catch {
+                fail(error: error)
+                return
+            }
         }
         
-        self.log(msg: "Device has disconnected", atLevel: .info)
+        log(msg: "Device disconnected.", atLevel: .info)
         let timeSinceReset: TimeInterval
         if let resetResponseTime = resetResponseTime {
             let now = Date()
@@ -965,19 +1048,44 @@ public class FirmwareUpgradeManager: FirmwareUpgradeController, ConnectionObserv
             return
         }
         
-        self.log(msg: "Waiting \(Int(configuration.estimatedSwapTime)) seconds reconnecting...", atLevel: .info)
+        log(msg: "Waiting \(Int(configuration.estimatedSwapTime)) seconds before reconnect attempt...", atLevel: .info)
         DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) { [weak self] in
             self?.log(msg: "Reconnecting...", atLevel: .info)
             self?.reconnect()
         }
     }
     
+    private lazy var firmwareLoaderFinderCallback: FirmwareUpgradePeripheralFinder.FindCallback = { [weak self] result in
+        
+        self?.firmwareLoaderFinder = nil
+        
+        switch result {
+        case .success(let peripheral):
+            do {
+                self?.log(msg: "Switching Bluetooth LE Transport into alternate mode with Firmware Loader peripheral...", atLevel: .debug)
+                try self?.imageManager.transport.switchMode(to: .alternate, with: peripheral)
+            } catch {
+                self?.log(msg: error.localizedDescription, atLevel: .error)
+                self?.fail(error: FirmwareUpgradeError.connectionFailedAfterReset)
+                return
+            }
+            
+            self?.log(msg: "Successfully reset device into Firmware Loader Mode", atLevel: .info)
+            // Retry / Continue
+            self?.state = .validate
+            self?.log(msg: "Retrying LIST Command from Firwmare Loader Mode...", atLevel: .debug)
+            self?.resumeFromCurrentState()
+        case .failure(let error):
+            self?.log(msg: error.localizedDescription, atLevel: .error)
+            self?.fail(error: error)
+        }
+    }
+    
     /// Reconnect to the device and continue the
     private func reconnect() {
         imageManager.transport.connect { [weak self] result in
-            guard let self = self else {
-                return
-            }
+            guard let self else { return }
+            
             switch result {
             case .connected:
                 self.log(msg: "Reconnect successful", atLevel: .info)
@@ -1060,8 +1168,8 @@ extension FirmwareUpgradeManager: ImageUploadDelegate {
     }
     
     public func uploadDidFinish() {
-        // Before we can move on, we must check whether the user requested for App Core Settings
-        // to be erased.
+        // Before we can move on, we must check whether the user requested for App Core
+        // Settings to be erased.
         if configuration.eraseAppSettings {
             eraseAppSettings()
             return
@@ -1155,6 +1263,7 @@ public enum FirmwareUpgradeState {
     case requestMcuMgrParameters, bootloaderInfo, eraseAppSettings
     case upload, success
     case validate, test, confirm, reset
+    case resetIntoFirmwareLoader
     
     func isInProgress() -> Bool {
         return self != .none
