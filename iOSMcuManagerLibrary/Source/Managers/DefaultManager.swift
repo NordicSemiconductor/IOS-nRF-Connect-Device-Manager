@@ -10,7 +10,8 @@ import SwiftCBOR
 // MARK: - DefaultManager
 
 public class DefaultManager: McuManager {
-    override class var TAG: McuMgrLogCategory { .default }
+    
+    public override class var TAG: McuMgrLogCategory { .default }
     
     // MARK: Constants
 

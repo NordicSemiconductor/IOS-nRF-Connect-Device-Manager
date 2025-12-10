@@ -13,7 +13,8 @@ import SwiftCBOR
 /// Sends commands belonging to the Basic Group.
 ///
 public class BasicManager: McuManager {
-    override class var TAG: McuMgrLogCategory { .basic }
+    
+    public override class var TAG: McuMgrLogCategory { .basic }
     
     // MARK: - Constants
 

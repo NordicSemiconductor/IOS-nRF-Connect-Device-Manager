@@ -40,6 +40,7 @@ let package = Package(
         .target(
             name: "iOSOtaLibrary",
             dependencies: [
+                .byNameItem(name: "iOSMcuManagerLibrary", condition: nil),
                 .product(name: "iOS-BLE-Library-Mock", package: "IOS-BLE-Library"),
                 .product(name: "iOSCommonLibraries", package: "IOS-Common-Libraries")
             ],

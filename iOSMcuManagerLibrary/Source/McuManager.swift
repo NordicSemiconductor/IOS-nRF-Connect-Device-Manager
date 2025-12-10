@@ -29,7 +29,7 @@ extension McuSequenceNumber {
 
 open class McuManager: NSObject {
     
-    class var TAG: McuMgrLogCategory { .default }
+    open class var TAG: McuMgrLogCategory { .default }
     
     //**************************************************************************
     // MARK: Mcu Manager Constants
@@ -381,6 +381,8 @@ public enum McuMgrGroup: UInt16 {
     case perUser = 64
     /// SUIT Command Group (SuitManager).
     case suit = 66
+    /// Memfault Command Group (MemfaultManager).
+    case memfault = 128
     
     /** 
      * Basic command group (BasicManager).

@@ -8,7 +8,8 @@ import Foundation
 import SwiftCBOR
 
 public class RunTestManager: McuManager {
-    override class var TAG: McuMgrLogCategory { .runTest }
+    
+    public override class var TAG: McuMgrLogCategory { .runTest }
     
     // MARK: - IDs
 

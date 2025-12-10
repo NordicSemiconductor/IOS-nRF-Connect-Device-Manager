@@ -9,7 +9,7 @@ import SwiftCBOR
 
 public class LogManager: McuManager {
     
-    override class var TAG: McuMgrLogCategory { .log }
+    public override class var TAG: McuMgrLogCategory { .log }
     
     // MARK: - IDs
     
