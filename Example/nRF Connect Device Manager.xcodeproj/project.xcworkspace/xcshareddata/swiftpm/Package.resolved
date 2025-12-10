@@ -7,7 +7,7 @@
       "location" : "https://github.com/NordicSemiconductor/IOS-BLE-Library.git",
       "state" : {
         "branch" : "main",
-        "revision" : "8da96d54b1323f0d6bd2b83b0cda51d5a2629029"
+        "revision" : "f610daf7cdb1b0e1a5eaac19917db906221b8102"
       }
     },
     {
@@ -16,7 +16,7 @@
       "location" : "https://github.com/NordicPlayground/IOS-Common-Libraries",
       "state" : {
         "branch" : "main",
-        "revision" : "c0908647e332ab2a1ae125888b8b94c41076b741"
+        "revision" : "5c554c47e51dab07914d0320897f3db19daa38d7"
       }
     },
     {

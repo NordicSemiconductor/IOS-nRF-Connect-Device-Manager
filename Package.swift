@@ -21,10 +21,10 @@ let package = Package(
             .exact("0.5.0")
         ),
         .package(url: "https://github.com/weichsel/ZIPFoundation.git",
-            .upToNextMajor(from: "0.9.0")
+            .upToNextMajor(from: "0.9.19")
         ),
         .package(url: "https://github.com/NordicSemiconductor/IOS-BLE-Library",
-            .upToNextMajor(from: "0.4.3")
+            .upToNextMajor(from: "0.4.4")
         ),
         .package(url: "https://github.com/NordicPlayground/IOS-Common-Libraries",
             .branchItem("main")
