@@ -654,7 +654,7 @@ private extension FileSystemManager {
             return
         }
         
-        var bufferSize: UInt64! = min(response.bufferSize, UInt64(UInt16.max))
+        let bufferSize: UInt64! = min(response.bufferSize, UInt64(UInt16.max))
         log(msg: "Setting SAR Buffer Size to \(bufferSize) bytes.", atLevel: .debug)
         uploadConfiguration.reassemblyBufferSize = bufferSize
         

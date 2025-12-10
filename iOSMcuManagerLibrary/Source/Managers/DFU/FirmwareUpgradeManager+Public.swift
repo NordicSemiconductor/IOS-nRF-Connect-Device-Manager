@@ -18,8 +18,7 @@ public extension FirmwareUpgradeManager {
     /// This is the full-featured API to start DFU update, including support for Multi-Image uploads, DirectXIP, and SUIT. It is a seamless API.
     /// - parameter package: The (`McrMgrPackage`) to upload.
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
-    public func start(package: McuMgrPackage,
-                      using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) {
+    func start(package: McuMgrPackage, using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) {
         guard package.isForSUIT else {
             start(images: package.images, using: configuration)
             return
@@ -40,7 +39,7 @@ public extension FirmwareUpgradeManager {
     /// - parameter data: `Data` to upload to App Core (Image 0).
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
     @available(*, deprecated, message: "start(package:using:) is now a far more convenient call. Therefore this API is henceforth marked as deprecated and will be removed in a future release.")
-    public func start(hash: Data, data: Data, using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) {
+    func start(hash: Data, data: Data, using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) {
         start(images: [ImageManager.Image(image: 0, hash: hash, data: data)],
                   using: configuration)
     }
@@ -50,7 +49,7 @@ public extension FirmwareUpgradeManager {
     /// This is the full-featured API to start DFU update, including support for Multi-Image uploads.
     /// - parameter images: An Array of (`ImageManager.Image`) to upload.
     /// - parameter configuration: Fine-tuning of details regarding the upgrade process.
-    public func start(images: [ImageManager.Image], using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) {
+    func start(images: [ImageManager.Image], using configuration: FirmwareUpgradeConfiguration = FirmwareUpgradeConfiguration()) {
         objc_sync_enter(self)
         defer {
             objc_sync_exit(self)
@@ -84,7 +83,7 @@ public extension FirmwareUpgradeManager {
      - parameter resource: The resource being provided ``FirmwareUpgradeResource``.
      - parameter data: The bytes of the resource itself.
      */
-    public func uploadResource(_ resource: FirmwareUpgradeResource, data: Data) {
+    func uploadResource(_ resource: FirmwareUpgradeResource, data: Data) {
         objc_sync_enter(self)
         suitManager.uploadResource(data)
         objc_sync_exit(self)
@@ -92,7 +91,7 @@ public extension FirmwareUpgradeManager {
     
     // MARK: cancel()
     
-    public func cancel() {
+    func cancel() {
         objc_sync_enter(self)
         if state == .upload {
             if bootloader == .suit {
@@ -107,7 +106,7 @@ public extension FirmwareUpgradeManager {
     
     // MARK: pause()
     
-    public func pause() {
+    func pause() {
         objc_sync_enter(self)
         if state.isInProgress() && !paused {
             paused = true
@@ -124,7 +123,7 @@ public extension FirmwareUpgradeManager {
     
     // MARK: resume()
     
-    public func resume() {
+    func resume() {
         objc_sync_enter(self)
         if paused {
             paused = false
@@ -135,19 +134,19 @@ public extension FirmwareUpgradeManager {
     
     // MARK: isPaused()
     
-    public func isPaused() -> Bool {
+    func isPaused() -> Bool {
         return paused
     }
     
     // MARK: isInProgress()
     
-    public func isInProgress() -> Bool {
+    func isInProgress() -> Bool {
         return state.isInProgress() && !paused
     }
     
     // MARK: setUploadMtu(mtu:)
     
-    public func setUploadMtu(mtu: Int) throws {
+    func setUploadMtu(mtu: Int) throws {
         try imageManager.setMtu(mtu)
     }
 }
