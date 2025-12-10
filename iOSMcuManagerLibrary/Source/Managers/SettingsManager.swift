@@ -106,7 +106,7 @@ public extension SettingsManager {
     
     func generateNewAdvertisingName() -> String {
         let now: Date
-        if #available(iOS 15, *) {
+        if #available(iOS 15, macCatalyst 15.0, macOS 12.0, *) {
             now = .now
         } else {
             now = Date()
