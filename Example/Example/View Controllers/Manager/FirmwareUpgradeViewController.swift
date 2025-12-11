@@ -225,6 +225,8 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
             let alertController = UIAlertController(title: "Network Error", message: "Unable to reach the Network.", preferredStyle: .alert)
             baseController?.present(alertController, addingCancelAction: true,
                                     cancelActionTitle: "OK")
+        case .invalidProjectKey(let deviceInfo):
+            setProjectKey(for: deviceInfo)
         case .deviceIsUpToDate:
             let alertController = UIAlertController(title: "Your device is up to date", message: "Your device is already using the latest firmware version available through nRF Cloud OTA.", preferredStyle: .alert)
             baseController?.present(alertController, addingCancelAction: true,
