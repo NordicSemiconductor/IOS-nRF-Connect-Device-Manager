@@ -10,6 +10,7 @@ import Foundation
 import CoreBluetooth
 import CryptoKit
 import iOS_Common_Libraries
+import iOSMcuManagerLibrary
 
 // MARK: - OTAManager
 
@@ -18,6 +19,7 @@ public final class OTAManager {
     // MARK: Private Properties
     
     private let network: Network
+    private var memfaultManager: MemfaultManager?
     
     // MARK: init
     
@@ -35,6 +37,54 @@ public final class OTAManager {
 // MARK: - API
 
 public extension OTAManager {
+    
+    // MARK: getDeviceInfoToken
+    
+    func getDeviceInfoToken(via transport: any McuMgrTransport) async throws -> DeviceInfoToken {
+        if memfaultManager != nil {
+            memfaultManager = nil
+        }
+        memfaultManager = MemfaultManager(transport: transport)
+        
+        let token = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<DeviceInfoToken, Error>) in
+            memfaultManager?.readDeviceInfo { [unowned self] response, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let response, let token = response.deviceToken() else {
+                    continuation.resume(throwing: OTAManagerError.unableToParseResponse)
+                    return
+                }
+                continuation.resume(returning: token)
+            }
+        }
+        return token
+    }
+    
+    // MARK: getProjectKey
+    
+    func getProjectKey(via transport: any McuMgrTransport) async throws -> ProjectKey {
+        if memfaultManager != nil {
+            memfaultManager = nil
+        }
+        memfaultManager = MemfaultManager(transport: transport)
+        
+        let key = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<ProjectKey, Error>) in
+            memfaultManager?.readProjectKey { [unowned self] response, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let response, let token = response.projectKey() else {
+                    continuation.resume(throwing: OTAManagerError.unableToParseResponse)
+                    return
+                }
+                continuation.resume(returning: token)
+            }
+        }
+        return key
+    }
     
     // MARK: Release Info
     

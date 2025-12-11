@@ -280,25 +280,52 @@ private extension BaseViewController {
     func requestOTAReleaseInfo() {
         guard let deviceInfoManager else { return }
         Task { @MainActor in
-            var deviceInfo: DeviceInfoToken!
             do {
-                deviceInfo = try await deviceInfoManager.getDeviceInfoToken()
-                let projectKey = try await deviceInfoManager.getProjectKey()
-                
-                self.otaStatus = .supported(deviceInfo, projectKey)
+                let tokens = try await requestTokensViaMemfaultManager()
+                self.otaStatus = .supported(tokens.0, tokens.1)
                 onDeviceStatusFinished()
-            } catch let managerError as DeviceInfoManagerError {
-                if deviceInfo != nil {
-                    self.otaStatus = .missingProjectKey(deviceInfo, managerError)
-                } else {
-                    self.otaStatus = .unsupported(managerError)
+            } catch {
+                // Disregard error. Try again through Device Information.
+                var deviceInfo: DeviceInfoToken!
+                do {
+                    deviceInfo = try await deviceInfoManager.getDeviceInfoToken()
+                    let projectKey = try await deviceInfoManager.getProjectKey()
+                    self.otaStatus = .supported(deviceInfo, projectKey)
+                } catch let managerError as DeviceInfoManagerError {
+                    if deviceInfo != nil {
+                        self.otaStatus = .missingProjectKey(deviceInfo, managerError)
+                    } else {
+                        self.otaStatus = .unsupported(managerError)
+                    }
+                    onDeviceStatusFinished()
+                } catch let error {
+                    self.otaStatus = .unsupported(error)
+                    onDeviceStatusFinished()
                 }
-                onDeviceStatusFinished()
-            } catch let error {
-                self.otaStatus = .unsupported(error)
-                onDeviceStatusFinished()
             }
         }
+    }
+    
+    // MARK: requestTokensViaMemfaultManager
+    
+    func requestTokensViaMemfaultManager() async throws -> (DeviceInfoToken, ProjectKey) {
+        guard let otaManager else {
+            throw ObservabilityError.mdsServiceNotFound
+        }
+        let deviceInfo = try await otaManager.getDeviceInfoToken(via: transport)
+        let projectKey = try await otaManager.getProjectKey(via: transport)
+        return (deviceInfo, projectKey)
+    }
+    
+    // MARK: requestTokensViaDeviceInformation
+    
+    func requestTokensViaDeviceInformation() async throws -> (DeviceInfoToken, ProjectKey) {
+        guard let deviceInfoManager else {
+            throw DeviceInfoManagerError.peripheralNotFound
+        }
+        let deviceInfo = try await deviceInfoManager.getDeviceInfoToken()
+        let projectKey = try await deviceInfoManager.getProjectKey()
+        return (deviceInfo, projectKey)
     }
 }
  

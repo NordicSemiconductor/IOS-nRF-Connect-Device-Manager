@@ -13,7 +13,7 @@ public class SettingsManager: McuManager {
     
     // MARK: TAG
     
-    override class var TAG: McuMgrLogCategory { .settings }
+    public override class var TAG: McuMgrLogCategory { .settings }
     
     // MARK: IDs
     

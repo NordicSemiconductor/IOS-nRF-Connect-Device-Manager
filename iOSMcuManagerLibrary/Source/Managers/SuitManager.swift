@@ -20,7 +20,7 @@ public class SuitManager: McuManager {
     
     // MARK: TAG
     
-    override class var TAG: McuMgrLogCategory { .suit }
+    public override class var TAG: McuMgrLogCategory { .suit }
     
     // MARK: IDs
     

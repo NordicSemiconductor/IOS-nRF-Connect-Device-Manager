@@ -64,6 +64,7 @@ public enum McuMgrLogCategory: String {
     case basic             = "BasicManager"
     case shell             = "ShellManager"
     case suit              = "SuitManager"
+    case memfault          = "MemfaultManager"
 }
 
 // MARK: - McuMgrLogDelegate

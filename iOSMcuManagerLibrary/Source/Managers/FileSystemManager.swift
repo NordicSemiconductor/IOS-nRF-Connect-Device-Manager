@@ -12,7 +12,7 @@ import SwiftCBOR
 
 public class FileSystemManager: McuManager {
     
-    override class var TAG: McuMgrLogCategory { .filesystemManager }
+    public override class var TAG: McuMgrLogCategory { .filesystemManager }
     
     // MARK: IDs
     

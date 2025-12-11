@@ -91,7 +91,7 @@ public class ImageManager: McuManager {
         }
     }
     
-    override class var TAG: McuMgrLogCategory { .image }
+    public override class var TAG: McuMgrLogCategory { .image }
     
     private static let PIPELINED_WRITES_TIMEOUT_SECONDS = 10
     

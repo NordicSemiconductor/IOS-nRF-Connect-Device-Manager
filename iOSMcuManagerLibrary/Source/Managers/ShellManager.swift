@@ -17,7 +17,7 @@ public class ShellManager: McuManager {
     
     // MARK: TAG
     
-    override class var TAG: McuMgrLogCategory { .shell }
+    public override class var TAG: McuMgrLogCategory { .shell }
     
     // MARK: IDs
     
