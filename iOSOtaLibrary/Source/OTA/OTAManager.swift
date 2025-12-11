@@ -140,7 +140,11 @@ public extension OTAManager {
             }
             return releaseInfo
         } catch let networkError as URLError {
-            throw OTAManagerError.networkError
+            if networkError.code == .userAuthenticationRequired {
+                throw OTAManagerError.invalidProjectKey(deviceInfo)
+            } else {
+                throw OTAManagerError.networkError
+            }
         } catch {
             throw error
         }
@@ -218,6 +222,7 @@ public enum OTAManagerError: LocalizedError {
     case mdsKeyDecodeError
     case unableToParseResponse
     case networkError
+    case invalidProjectKey(_ deviceInfo: DeviceInfoToken)
     case deviceIsUpToDate
     case invalidArtifactURL
     case sha256HashMismatch
