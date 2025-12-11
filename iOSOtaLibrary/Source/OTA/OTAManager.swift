@@ -46,20 +46,15 @@ public extension OTAManager {
         }
         memfaultManager = MemfaultManager(transport: transport)
         
-        let token = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<DeviceInfoToken, Error>) in
-            memfaultManager?.readDeviceInfo { [unowned self] response, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let response, let token = response.deviceToken() else {
-                    continuation.resume(throwing: OTAManagerError.unableToParseResponse)
-                    return
-                }
-                continuation.resume(returning: token)
+        do {
+            guard let deviceInfo = try await memfaultManager?.readDeviceInfo(),
+                  let token = deviceInfo.deviceToken() else {
+                throw OTAManagerError.unableToParseResponse
             }
+            return token
+        } catch {
+            throw error
         }
-        return token
     }
     
     // MARK: getProjectKey
@@ -70,20 +65,15 @@ public extension OTAManager {
         }
         memfaultManager = MemfaultManager(transport: transport)
         
-        let key = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<ProjectKey, Error>) in
-            memfaultManager?.readProjectKey { [unowned self] response, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let response, let token = response.projectKey() else {
-                    continuation.resume(throwing: OTAManagerError.unableToParseResponse)
-                    return
-                }
-                continuation.resume(returning: token)
+        do {
+            guard let deviceInfo = try await memfaultManager?.readProjectKey(),
+                  let projectKey = deviceInfo.projectKey() else {
+                throw OTAManagerError.unableToParseResponse
             }
+            return projectKey
+        } catch {
+            throw error
         }
-        return key
     }
     
     // MARK: Release Info
