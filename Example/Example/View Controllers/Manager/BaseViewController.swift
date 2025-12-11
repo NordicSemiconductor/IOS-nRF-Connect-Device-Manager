@@ -282,7 +282,7 @@ private extension BaseViewController {
         Task { @MainActor in
             do {
                 let tokens = try await requestTokensViaMemfaultManager()
-                self.otaStatus = .supported(tokens.0, tokens.1)
+                otaStatus = .supported(tokens.0, tokens.1)
                 onDeviceStatusFinished()
             } catch {
                 // Disregard error. Try again through Device Information.
@@ -290,16 +290,17 @@ private extension BaseViewController {
                 do {
                     deviceInfo = try await deviceInfoManager.getDeviceInfoToken()
                     let projectKey = try await deviceInfoManager.getProjectKey()
-                    self.otaStatus = .supported(deviceInfo, projectKey)
+                    otaStatus = .supported(deviceInfo, projectKey)
+                    onDeviceStatusFinished()
                 } catch let managerError as DeviceInfoManagerError {
                     if deviceInfo != nil {
-                        self.otaStatus = .missingProjectKey(deviceInfo, managerError)
+                        otaStatus = .missingProjectKey(deviceInfo, managerError)
                     } else {
-                        self.otaStatus = .unsupported(managerError)
+                        otaStatus = .unsupported(managerError)
                     }
                     onDeviceStatusFinished()
                 } catch let error {
-                    self.otaStatus = .unsupported(error)
+                    otaStatus = .unsupported(error)
                     onDeviceStatusFinished()
                 }
             }
