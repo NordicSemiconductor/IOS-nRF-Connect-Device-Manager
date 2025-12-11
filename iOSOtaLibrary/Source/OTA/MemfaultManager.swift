@@ -45,7 +45,7 @@ public class MemfaultManager: McuManager {
     // MARK: Private
     
     private func asyncRead<R: McuMgrResponse>(_ command: CommandID) async throws -> R? {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<R?, Error>) in
+        try await withCheckedThrowingContinuation { [unowned self] (continuation: CheckedContinuation<R?, Error>) in
             let callback: McuMgrCallback<R> = { response, error in
                 if let error {
                     continuation.resume(throwing: error)
