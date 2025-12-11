@@ -32,20 +32,28 @@ public class MemfaultManager: McuManager {
     
     // MARK: readDeviceInfo
     
-    public func readDeviceInfo(callback: @escaping McuMgrCallback<MemfaultDeviceInfoResponse>) {
-        read(.deviceInfo, callback: callback)
+    public func readDeviceInfo() async throws -> MemfaultDeviceInfoResponse? {
+        try await asyncRead(.deviceInfo)
     }
     
     // MARK: readProjectKey
     
-    public func readProjectKey(callback: @escaping McuMgrCallback<MemfaultProjectKeyResponse>) {
-        read(.projectKey, callback: callback)
+    public func readProjectKey() async throws -> MemfaultProjectKeyResponse? {
+        try await asyncRead(.projectKey)
     }
     
     // MARK: Private
     
-    private func read<R: McuMgrResponse>(_ command: CommandID, callback: @escaping McuMgrCallback<R>) {
-        send(op: .read, commandId: command, payload: nil, callback: callback)
+    private func asyncRead<R: McuMgrResponse>(_ command: CommandID) async throws -> R? {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<R?, Error>) in
+            let callback: McuMgrCallback<R> = { response, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                }
+                continuation.resume(returning: response)
+            }
+            send(op: .read, commandId: command, payload: nil, callback: callback)
+        }
     }
 }
 
