@@ -33,15 +33,19 @@ public class MemfaultManager: McuManager {
     // MARK: readDeviceInfo
     
     public func readDeviceInfo(callback: @escaping McuMgrCallback<MemfaultDeviceInfoResponse>) {
-        send(op: .read, commandId: CommandID.deviceInfo, payload: nil,
-             callback: callback)
+        read(.deviceInfo, callback: callback)
     }
     
     // MARK: readProjectKey
     
     public func readProjectKey(callback: @escaping McuMgrCallback<MemfaultProjectKeyResponse>) {
-        send(op: .read, commandId: CommandID.projectKey, payload: nil,
-             callback: callback)
+        read(.projectKey, callback: callback)
+    }
+    
+    // MARK: Private
+    
+    private func read<R: McuMgrResponse>(_ command: CommandID, callback: @escaping McuMgrCallback<R>) {
+        send(op: .read, commandId: command, payload: nil, callback: callback)
     }
 }
 
