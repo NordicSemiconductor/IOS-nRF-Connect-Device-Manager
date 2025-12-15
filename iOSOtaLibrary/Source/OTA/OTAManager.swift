@@ -49,14 +49,12 @@ public extension OTAManager {
         if memfaultManager != nil {
             memfaultManager = nil
         }
-        memfaultManager = MemfaultManager(transport: transport)
-        memfaultManager?.logDelegate = logDelegate
+        
         do {
-            guard let deviceInfo = try await memfaultManager?.readDeviceInfo(),
-                  let token = deviceInfo.deviceToken() else {
-                throw OTAManagerError.unableToParseResponse
-            }
-            return token
+            let manager = MemfaultManager(transport: transport)
+            memfaultManager = manager
+            memfaultManager?.logDelegate = logDelegate
+            return try await manager.readDeviceInfo()
         } catch {
             throw error
         }
@@ -68,14 +66,12 @@ public extension OTAManager {
         if memfaultManager != nil {
             memfaultManager = nil
         }
-        memfaultManager = MemfaultManager(transport: transport)
-        memfaultManager?.logDelegate = logDelegate
+        
         do {
-            guard let deviceInfo = try await memfaultManager?.readProjectKey(),
-                  let projectKey = deviceInfo.projectKey() else {
-                throw OTAManagerError.unableToParseResponse
-            }
-            return projectKey
+            let manager = MemfaultManager(transport: transport)
+            memfaultManager = manager
+            memfaultManager?.logDelegate = logDelegate
+            return try await manager.readProjectKey()
         } catch {
             throw error
         }
