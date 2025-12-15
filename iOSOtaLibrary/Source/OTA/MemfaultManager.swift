@@ -32,10 +32,17 @@ public class MemfaultManager: McuManager {
     
     // MARK: readDeviceInfo
     
-    public func readDeviceInfo() async throws -> MemfaultDeviceInfoResponse? {
+    public func readDeviceInfo() async throws -> DeviceInfoToken {
         do {
             log(msg: "Attempting to read Device Information from Memfault Group...", atLevel: .debug)
-            return try await asyncRead(.deviceInfo)
+            let response: MemfaultDeviceInfoResponse? = try await asyncRead(.deviceInfo)
+            if let error = response?.getError() {
+                throw error
+            }
+            guard let token = response?.deviceToken() else {
+                throw OTAManagerError.unableToParseResponse
+            }
+            return token
         } catch {
             log(msg: "Error reading Device Information: \(error.localizedDescription)", atLevel: .error)
             throw error
@@ -44,10 +51,17 @@ public class MemfaultManager: McuManager {
     
     // MARK: readProjectKey
     
-    public func readProjectKey() async throws -> MemfaultProjectKeyResponse? {
+    public func readProjectKey() async throws -> ProjectKey {
         do {
             log(msg: "Attempting to read Project Key from Memfault Group...", atLevel: .debug)
-            return try await asyncRead(.projectKey)
+            let response: MemfaultProjectKeyResponse? = try await asyncRead(.projectKey)
+            if let error = response?.getError() {
+                throw error
+            }
+            guard let projectKey = response?.projectKey() else {
+                throw OTAManagerError.unableToParseResponse
+            }
+            return projectKey
         } catch {
             log(msg: "Error reading Project Key: \(error.localizedDescription)", atLevel: .error)
             throw error
