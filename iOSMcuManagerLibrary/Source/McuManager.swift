@@ -314,7 +314,7 @@ open class McuManager: NSObject {
 
 // MARK: log(msg: atLevel:)
 
-extension McuManager {
+public extension McuManager {
     
     func log(msg: @autoclosure () -> String, atLevel level: McuMgrLogLevel) {
         if let logDelegate, level >= logDelegate.minLogLevel() {

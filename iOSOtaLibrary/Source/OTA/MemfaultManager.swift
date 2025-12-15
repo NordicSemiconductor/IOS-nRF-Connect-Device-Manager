@@ -33,13 +33,25 @@ public class MemfaultManager: McuManager {
     // MARK: readDeviceInfo
     
     public func readDeviceInfo() async throws -> MemfaultDeviceInfoResponse? {
-        try await asyncRead(.deviceInfo)
+        do {
+            log(msg: "Attempting to read Device Information from Memfault Group...", atLevel: .debug)
+            return try await asyncRead(.deviceInfo)
+        } catch {
+            log(msg: "Error reading Device Information: \(error.localizedDescription)", atLevel: .error)
+            throw error
+        }
     }
     
     // MARK: readProjectKey
     
     public func readProjectKey() async throws -> MemfaultProjectKeyResponse? {
-        try await asyncRead(.projectKey)
+        do {
+            log(msg: "Attempting to read Project Key from Memfault Group...", atLevel: .debug)
+            return try await asyncRead(.projectKey)
+        } catch {
+            log(msg: "Error reading Project Key: \(error.localizedDescription)", atLevel: .error)
+            throw error
+        }
     }
     
     // MARK: Private

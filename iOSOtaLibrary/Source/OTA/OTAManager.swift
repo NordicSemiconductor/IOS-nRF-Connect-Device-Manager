@@ -21,16 +21,21 @@ public final class OTAManager {
     private let network: Network
     private var memfaultManager: MemfaultManager?
     
+    // MARK: Properties
+    
+    public weak var logDelegate: (any McuMgrLogDelegate)?
+    
     // MARK: init
     
     public init() {
-        self.network = Network("api.memfault.com")
+        network = Network("api.memfault.com")
     }
     
     // MARK: deinit
     
     deinit {
         print(#function)
+        logDelegate = nil
     }
 }
 
@@ -45,7 +50,7 @@ public extension OTAManager {
             memfaultManager = nil
         }
         memfaultManager = MemfaultManager(transport: transport)
-        
+        memfaultManager?.logDelegate = logDelegate
         do {
             guard let deviceInfo = try await memfaultManager?.readDeviceInfo(),
                   let token = deviceInfo.deviceToken() else {
@@ -64,7 +69,7 @@ public extension OTAManager {
             memfaultManager = nil
         }
         memfaultManager = MemfaultManager(transport: transport)
-        
+        memfaultManager?.logDelegate = logDelegate
         do {
             guard let deviceInfo = try await memfaultManager?.readProjectKey(),
                   let projectKey = deviceInfo.projectKey() else {
