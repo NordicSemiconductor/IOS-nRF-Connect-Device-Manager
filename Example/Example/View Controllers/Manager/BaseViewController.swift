@@ -313,6 +313,7 @@ private extension BaseViewController {
         guard let otaManager else {
             throw ObservabilityError.mdsServiceNotFound
         }
+        otaManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
         let deviceInfo = try await otaManager.getDeviceInfoToken(via: transport)
         let projectKey = try await otaManager.getProjectKey(via: transport)
         return (deviceInfo, projectKey)
