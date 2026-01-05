@@ -13,12 +13,15 @@ import iOS_Common_Libraries
 
 extension HTTPRequest {
     
+    /**
+     Source: https://api-docs.memfault.com/#89d8dfa4-10d7-41d3-9c20-7cc356030c4b
+     */
     static func getLatestReleaseInfo(token: DeviceInfoToken, key: ProjectKey) -> HTTPRequest? {
         let parameters: [String: String] = [
-            "device_id": token.deviceSerialNumber,
             "hardware_version": token.hardwareVersion,
             "software_type": token.softwareType,
-            "current_version": token.currentVersion
+            "current_version": token.currentVersion,
+            "device_serial": token.deviceSerialNumber
         ]
         // https://api.memfault.com/api/v0/releases/latest
         guard var request = HTTPRequest(scheme: .https, host: "api.memfault.com", path: "/api/v0/releases/latest", parameters: parameters) else {
