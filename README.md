@@ -10,6 +10,9 @@
 [![Release](https://img.shields.io/github/release/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.svg)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/releases)
 [![CocoaPods](https://img.shields.io/badge/CocoaPods-Compatible-brightgreen)](https://cocoapods.org/)
 [![Cocoapods](https://img.shields.io/cocoapods/v/iOSMcuManagerLibrary.svg)](https://cocoapods.org/pods/iOSMcuManagerLibrary)
+[![GitHub stars](https://img.shields.io/github/stars/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/members)
+[![GitHub contributors](https://img.shields.io/github/contributors/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/graphs/contributors)
 
 nRF Connect Device Manager library is compatible with [McuManager (or McuMgr for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview) and [SUIT (shorthand for Software Update for the Internet of Things)](). McuManager is a management subsystem supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt. McuManager relies on its own [MCUboot](https://docs.mcuboot.com/) bootloader for secure bootstrapping after a firmware update and, uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), for communication over Bluetooth LE. The SMP Transport definition for Bluetooth Low Energy, which this library implements, [can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
 
