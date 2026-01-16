@@ -5,9 +5,18 @@
         "package": "iOS-BLE-Library",
         "repositoryURL": "https://github.com/NordicSemiconductor/IOS-BLE-Library",
         "state": {
-          "branch": "main",
-          "revision": "dbb8a255185add411a643d76b111825c27b3217d",
-          "version": null
+          "branch": null,
+          "revision": "f610daf7cdb1b0e1a5eaac19917db906221b8102",
+          "version": "0.4.4"
+        }
+      },
+      {
+        "package": "iOSCommonLibraries",
+        "repositoryURL": "https://github.com/NordicPlayground/IOS-Common-Libraries",
+        "state": {
+          "branch": null,
+          "revision": "5c554c47e51dab07914d0320897f3db19daa38d7",
+          "version": "0.2.0"
         }
       },
       {
@@ -15,8 +24,8 @@
         "repositoryURL": "https://github.com/NordicSemiconductor/IOS-CoreBluetooth-Mock.git",
         "state": {
           "branch": null,
-          "revision": "d1e0321027728da6edf5b974cf113524bad2034a",
-          "version": "1.0.1"
+          "revision": "13f09628c2de7f3fd5703516c4f5650e063ddb6c",
+          "version": "1.0.3"
         }
       },
       {
@@ -24,8 +33,8 @@
         "repositoryURL": "https://github.com/valpackett/SwiftCBOR.git",
         "state": {
           "branch": null,
-          "revision": "418dab41b09a5da0d45d7b788c59085979ff4dae",
-          "version": "0.4.7"
+          "revision": "04ccff117f6549121d5721ec84fdf0162122b90e",
+          "version": "0.5.0"
         }
       },
       {

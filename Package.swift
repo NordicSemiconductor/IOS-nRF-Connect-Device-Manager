@@ -20,14 +20,17 @@ let package = Package(
             url: "https://github.com/valpackett/SwiftCBOR.git",
             .exact("0.5.0")
         ),
-        .package(url: "https://github.com/weichsel/ZIPFoundation.git",
-            .upToNextMajor(from: "0.9.19")
+        .package(
+            url: "https://github.com/weichsel/ZIPFoundation.git",
+            .exact("0.9.19")
         ),
-        .package(url: "https://github.com/NordicSemiconductor/IOS-BLE-Library",
-            .upToNextMajor(from: "0.4.4")
+        .package(
+            url: "https://github.com/NordicSemiconductor/IOS-BLE-Library",
+            .exact("0.4.4")
         ),
-        .package(url: "https://github.com/NordicPlayground/IOS-Common-Libraries",
-            .branchItem("main")
+        .package(
+            url: "https://github.com/NordicPlayground/IOS-Common-Libraries",
+            .exact("0.2.0")
         )
     ],
     targets: [
