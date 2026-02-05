@@ -28,9 +28,14 @@ extension HTTPRequest {
             return nil
         }
         request.setMethod(HTTPMethod.GET)
+
+        let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
+        let userAgent = "nRF Device Manager/\(appVersion)"
+
         request.setHeaders([
             "Accept": "application/json",
-            "Memfault-Project-Key": key.authKey
+            "Memfault-Project-Key": key.authKey,
+            "User-Agent": userAgent
         ])
         return request
     }
