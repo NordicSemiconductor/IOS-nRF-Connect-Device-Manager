@@ -30,7 +30,8 @@ extension HTTPRequest {
         request.setMethod(HTTPMethod.GET)
         request.setHeaders([
             "Accept": "application/json",
-            "Memfault-Project-Key": key.authKey
+            "Memfault-Project-Key": key.authKey,
+            "User-Agent": otaLibraryUserAgent()
         ])
         return request
     }
