@@ -129,7 +129,7 @@ extension DeviceInfoManager {
                 throw DeviceInfoManagerError.incompleteDeviceInfo
             }
             
-            return DeviceInfoToken(deviceSerialNumber: serial, hardwareVersion: hardwareVersion, currentVersion: firmwareVersion, softwareType: softwareType)
+            return try DeviceInfoToken(deviceSerialNumber: serial, hardwareVersion: hardwareVersion, currentVersion: firmwareVersion, softwareType: softwareType)
         }
     }
     

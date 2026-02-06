@@ -39,7 +39,7 @@ public class MemfaultManager: McuManager {
             if let error = response?.getError() {
                 throw error
             }
-            guard let token = response?.deviceToken() else {
+            guard let token = try response?.deviceToken() else {
                 throw OTAManagerError.unableToParseResponse
             }
             return token
@@ -109,10 +109,10 @@ public final class MemfaultDeviceInfoResponse: McuMgrResponse {
         }
     }
     
-    public func deviceToken() -> DeviceInfoToken? {
+    public func deviceToken() throws(DeviceInfoTokenError) -> DeviceInfoToken? {
         guard let serial, let hardware, let software, let version else { return nil }
-        return DeviceInfoToken(deviceSerialNumber: serial, hardwareVersion: hardware,
-                               currentVersion: version, softwareType: software)
+        return try DeviceInfoToken(deviceSerialNumber: serial, hardwareVersion: hardware,
+                                   currentVersion: version, softwareType: software)
     }
 }
 
