@@ -10,6 +10,7 @@
 import Foundation
 import iOSOtaLibrary
 import iOS_BLE_Library_Mock
+import iOS_Common_Libraries
 
 // MARK: - DeviceInfoManager
 
@@ -29,6 +30,14 @@ final class DeviceInfoManager {
     
     init(_ peripheralUUID: UUID) {
         self.peripheralUUID = peripheralUUID
+    }
+    
+    // MARK: logError
+    
+    private func logError(_ errorMessage: String) {
+        guard #available(iOS 14.0, macCatalyst 14.0, *) else { return }
+        let log = NordicLog(Self.self, subsystem: "com.nordicsemi.nrfconnect.devicemanager")
+        log.error(errorMessage)
     }
 }
 
@@ -60,7 +69,7 @@ extension DeviceInfoManager {
                     return
                 }
                 callback(.failure(otaError))
-                print("Error: \(error.localizedDescription)")
+                logError(error.localizedDescription)
             }
         }
     }
@@ -125,11 +134,10 @@ extension DeviceInfoManager {
                 serial = try await readSerialNumberFromMDS(peripheral)
             }
             
-            guard let serial, let firmwareVersion, let hardwareVersion, let softwareType else {
-                throw DeviceInfoManagerError.incompleteDeviceInfo
-            }
-            
             return try DeviceInfoToken(deviceSerialNumber: serial, hardwareVersion: hardwareVersion, currentVersion: firmwareVersion, softwareType: softwareType)
+        } catch let tokenError as DeviceInfoTokenError {
+            logError(tokenError.localizedDescription)
+            throw DeviceInfoManagerError.incompleteDeviceInfo
         }
     }
     
@@ -175,8 +183,8 @@ extension DeviceInfoManager {
                     callback(.failure(.incompleteDeviceInfo))
                     return
                 }
+                logError(error.localizedDescription)
                 callback(.failure(managerError))
-                print("Error: \(error.localizedDescription)")
             }
         }
     }

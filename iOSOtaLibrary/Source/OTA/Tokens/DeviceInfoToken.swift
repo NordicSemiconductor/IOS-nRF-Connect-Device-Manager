@@ -21,9 +21,31 @@ public struct DeviceInfoToken {
     
     // MARK: init
     
-    public init(deviceSerialNumber: String, hardwareVersion: String, currentVersion: String, softwareType: String) throws(DeviceInfoTokenError) {
-        guard !deviceSerialNumber.isEmpty, !hardwareVersion.isEmpty, !currentVersion.isEmpty, !softwareType.isEmpty else {
-            throw .emptyFieldFound
+    public init(deviceSerialNumber: String?, hardwareVersion: String?, currentVersion: String?, softwareType: String?) throws(DeviceInfoTokenError) {
+        guard let deviceSerialNumber else {
+            throw .initNilParameterFound("deviceSerialNumber")
+        }
+        guard let hardwareVersion else {
+            throw .initNilParameterFound("hardwareVersion")
+        }
+        guard let currentVersion else {
+            throw .initNilParameterFound("currentVersion")
+        }
+        guard let softwareType else {
+            throw .initNilParameterFound("softwareType")
+        }
+        
+        guard !deviceSerialNumber.isEmpty else {
+            throw .initEmptyParameterFound("deviceSerialNumber")
+        }
+        guard !hardwareVersion.isEmpty else {
+            throw .initEmptyParameterFound("hardwareVersion")
+        }
+        guard !currentVersion.isEmpty else {
+            throw .initEmptyParameterFound("currentVersion")
+        }
+        guard !softwareType.isEmpty else {
+            throw .initEmptyParameterFound("softwareType")
         }
         
         self.deviceSerialNumber = deviceSerialNumber
@@ -36,12 +58,15 @@ public struct DeviceInfoToken {
 // MARK: - DeviceInfoTokenError
 
 public enum DeviceInfoTokenError: LocalizedError {
-    case emptyFieldFound
+    case initNilParameterFound(_ named: String)
+    case initEmptyParameterFound(_ named: String)
     
     public var errorDescription: String? {
         switch self {
-        case .emptyFieldFound:
-            return "DeviceInfoToken fields cannot be empty strings."
+        case .initNilParameterFound(let parameterName):
+            return "DeviceInfoToken's init() was passed a nil \(parameterName) parameter."
+        case .initEmptyParameterFound(let parameterName):
+            return "DeviceInfoToken's init() was passed an empty \(parameterName) String."
         }
     }
     
