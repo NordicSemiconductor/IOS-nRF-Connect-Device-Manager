@@ -16,17 +16,22 @@ extension HTTPRequest {
     static func post(_ chunk: ObservabilityChunk, with chunkAuth: ObservabilityAuth) -> HTTPRequest {
         var httpRequest = HTTPRequest(url: chunkAuth.url)
         httpRequest.setMethod(HTTPMethod.POST)
-
-        let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
-        let userAgent = "nRF Device Manager/\(appVersion)"
-
         httpRequest.setHeaders([
             "Content-Type": "application/octet-stream",
             chunkAuth.authKey: chunkAuth.authValue,
-            "User-Agent": userAgent
+            "User-Agent": otaLibraryUserAgent()
         ])
         httpRequest.setBody(chunk.data)
         return httpRequest
+    }
+}
+
+extension HTTPRequest {
+    
+    static func otaLibraryUserAgent() -> String {
+        let appVersion = Constant.appVersion(forBundleWithClass: OTAManager.self)
+            .replacingOccurrences(of: " ", with: "")
+        return "iOSOtaLibraryClient/\(appVersion)"
     }
 }
 
