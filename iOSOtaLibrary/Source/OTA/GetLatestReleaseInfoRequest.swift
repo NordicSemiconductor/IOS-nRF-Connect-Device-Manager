@@ -18,10 +18,10 @@ extension HTTPRequest {
      */
     static func getLatestReleaseInfo(token: DeviceInfoToken, key: ProjectKey) -> HTTPRequest? {
         let parameters: [String: String] = [
-            "hardware_version": token.hardwareVersion,
-            "software_type": token.softwareType,
-            "current_version": token.currentVersion,
-            "device_serial": token.deviceSerialNumber
+            "hardware_version": token.hardwareVersion.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? token.hardwareVersion,
+            "software_type": token.softwareType.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? token.softwareType,
+            "current_version": token.currentVersion.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? token.currentVersion,
+            "device_serial": token.deviceSerialNumber.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? token.deviceSerialNumber
         ]
         // https://api.memfault.com/api/v0/releases/latest
         guard var request = HTTPRequest(scheme: .https, host: "api.memfault.com", path: "/api/v0/releases/latest", parameters: parameters) else {
