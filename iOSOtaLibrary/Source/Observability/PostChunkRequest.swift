@@ -27,11 +27,21 @@ extension HTTPRequest {
 }
 
 extension HTTPRequest {
-    
+
     static func otaLibraryUserAgent() -> String {
-        let appVersion = Constant.appVersion(forBundleWithClass: OTAManager.self)
-            .replacingOccurrences(of: " ", with: "")
-        return "iOSOtaLibraryClient/\(appVersion)"
+        let bundle = Bundle(for: OTAManager.self)
+        let appName = bundle.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "Device Manager"
+        let appVersion = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
+        let buildNumber = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersion
+        let darwinVersion = "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
+
+        // Get CFNetwork version from the system
+        let cfNetworkVersion = Bundle(identifier: "com.apple.CFNetwork")?
+            .object(forInfoDictionaryKey: kCFBundleVersionKey as String) as? String ?? "Unknown"
+
+        return "\(appName) \(appVersion)/\(buildNumber) CFNetwork/\(cfNetworkVersion) Darwin/\(darwinVersion)"
     }
 }
 
