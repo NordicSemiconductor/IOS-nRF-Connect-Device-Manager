@@ -68,7 +68,7 @@
 		AA5710122E829E0D001544D0 /* OTAStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTAStatus.swift; sourceTree = "<group>"; };
 		AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoKit.framework; path = System/Library/Frameworks/CryptoKit.framework; sourceTree = SDKROOT; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
-		BD5A285420CB44AF0061F0EE /* Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BD5A285420CB44AF0061F0EE /* nRF Connect Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "nRF Connect Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A285720CB44AF0061F0EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerViewController.swift; sourceTree = "<group>"; };
 		BD5A285C20CB44AF0061F0EE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -191,7 +191,7 @@
 		BD5A285520CB44AF0061F0EE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BD5A285420CB44AF0061F0EE /* Device Manager.app */,
+				BD5A285420CB44AF0061F0EE /* nRF Connect Device Manager.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -230,7 +230,7 @@
 			);
 			name = "nRF Connect Device Manager";
 			productName = Example;
-			productReference = BD5A285420CB44AF0061F0EE /* Device Manager.app */;
+			productReference = BD5A285420CB44AF0061F0EE /* nRF Connect Device Manager.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -504,7 +504,7 @@
 				);
 				MARKETING_VERSION = 1.14;
 				PRODUCT_BUNDLE_IDENTIFIER = com.nordicsemi.nrfconnect.devicemanager;
-				PRODUCT_NAME = "Device Manager";
+				PRODUCT_NAME = "nRF Connect Device Manager";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -527,7 +527,7 @@
 				);
 				MARKETING_VERSION = 1.14;
 				PRODUCT_BUNDLE_IDENTIFIER = com.nordicsemi.nrfconnect.devicemanager;
-				PRODUCT_NAME = "Device Manager";
+				PRODUCT_NAME = "nRF Connect Device Manager";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
