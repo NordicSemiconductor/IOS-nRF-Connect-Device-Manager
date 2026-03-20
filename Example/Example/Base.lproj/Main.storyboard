@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="lQf-1q-WvX">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="lQf-1q-WvX">
     <device id="retina5_9" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -12,12 +12,12 @@
         <!--Intro View Controller-->
         <scene sceneID="j9J-Fj-mhx">
             <objects>
-                <viewController storyboardIdentifier="intro" id="VKE-cy-G9d" customClass="IntroViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="intro" id="VKE-cy-G9d" customClass="IntroViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Gtv-jk-dtO">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AKf-PC-JHL" customClass="NordicButton" customModule="Device_Manager" customModuleProvider="target">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AKf-PC-JHL" customClass="NordicButton" customModule="nRF_Connect_Device_Manager" customModuleProvider="target">
                                 <rect key="frame" x="57.666666666666657" y="697.33333333333337" width="260" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="260" id="KMk-gC-3lS"/>
@@ -166,7 +166,7 @@
         <!--Root View Controller-->
         <scene sceneID="fl8-sU-CFG">
             <objects>
-                <navigationController id="lQf-1q-WvX" customClass="RootViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="rootVC" id="lQf-1q-WvX" customClass="RootViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" barStyle="black" translucent="NO" id="8Rs-aj-YFZ">
                         <rect key="frame" x="0.0" y="100" width="375" height="54"/>
@@ -188,14 +188,14 @@
         <!--Device Manager-->
         <scene sceneID="fwp-u6-2m3">
             <objects>
-                <tableViewController id="brr-jW-Ynb" customClass="ScannerViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="brr-jW-Ynb" customClass="ScannerViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="50" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="ryb-XZ-8kR">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="658"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
                         <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleAspectFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="deviceItem" id="fwW-dh-uj8" userLabel="Device Item" customClass="ScannerTableViewCell" customModule="Device_Manager" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleAspectFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="deviceItem" id="fwW-dh-uj8" userLabel="Device Item" customClass="ScannerTableViewCell" customModule="nRF_Connect_Device_Manager" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="55.333332061767578" width="375" height="50"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" tableViewCell="fwW-dh-uj8" id="6bp-sO-eho">
@@ -369,7 +369,7 @@
         <!--Device-->
         <scene sceneID="iYa-Ku-3q1">
             <objects>
-                <tableViewController title="Device" id="JPt-7E-9lH" customClass="DeviceController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Device" id="JPt-7E-9lH" customClass="DeviceController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="e6F-6W-hpD">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="658"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -676,7 +676,7 @@
         <!--Base View Controller-->
         <scene sceneID="kvH-Bp-M1y">
             <objects>
-                <tabBarController id="1dQ-jk-NPB" customClass="BaseViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <tabBarController id="1dQ-jk-NPB" customClass="BaseViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="TcB-Y8-CRY">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -697,7 +697,7 @@
         <!--Image-->
         <scene sceneID="URt-ni-pll">
             <objects>
-                <tableViewController title="Image" id="SO7-PQ-cvq" customClass="ImageController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Image" id="SO7-PQ-cvq" customClass="ImageController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="jkl-Te-ecj">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="658"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1054,7 +1054,7 @@
         <!--Files-->
         <scene sceneID="rQ6-65-8EL">
             <objects>
-                <tableViewController title="Files" id="LfJ-Od-S9L" customClass="FilesController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Files" id="LfJ-Od-S9L" customClass="FilesController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="zUC-67-YRk">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="658"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1333,7 +1333,7 @@
         <!--Diagnostics-->
         <scene sceneID="5iX-Tj-0q4">
             <objects>
-                <tableViewController title="Diagnostics" id="HbD-Bf-mkl" customClass="DiagnosticsController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Diagnostics" id="HbD-Bf-mkl" customClass="DiagnosticsController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="Xnv-fZ-89I">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="658"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1698,7 +1698,7 @@
         <!--Filter-->
         <scene sceneID="Vyr-7A-LFt">
             <objects>
-                <viewController title="Filter" id="Gmt-mw-TXu" customClass="ScannerFilterViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Filter" id="Gmt-mw-TXu" customClass="ScannerFilterViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="01s-A2-QUR">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="106"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1759,7 +1759,7 @@
         <!--Firmware Upgrade-->
         <scene sceneID="Hmk-EH-IcV">
             <objects>
-                <viewController title="Firmware Upgrade" id="iEC-sa-48q" customClass="FirmwareUpgradeViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Firmware Upgrade" id="iEC-sa-48q" customClass="FirmwareUpgradeViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="r1I-lh-Yqh">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="485"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2107,7 +2107,7 @@
         <!--Firmware Upload-->
         <scene sceneID="5mV-eT-TXk">
             <objects>
-                <viewController title="Firmware Upload" id="xg9-8C-9qN" customClass="FirmwareUploadViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Firmware Upload" id="xg9-8C-9qN" customClass="FirmwareUploadViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Ngt-CN-ZoO">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="367"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2401,7 +2401,7 @@
         <!--Reset View Controller-->
         <scene sceneID="xe9-Vo-LsE">
             <objects>
-                <viewController id="AQx-Yv-Ia3" customClass="ResetViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="AQx-Yv-Ia3" customClass="ResetViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="f8x-hR-7lO">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="250"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2517,7 +2517,7 @@
         <!--Images View Controller-->
         <scene sceneID="eHc-wP-aT5">
             <objects>
-                <viewController id="kcO-Bb-r8z" customClass="ImagesViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="kcO-Bb-r8z" customClass="ImagesViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="z5n-w9-bRA">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="193"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2626,8 +2626,8 @@
         <!--Upload-->
         <scene sceneID="OqD-0B-QPm">
             <objects>
-                <viewController title="Upload" id="ZG1-GB-bgc" customClass="FileUploadViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="yVO-JE-3UU">
+                <viewController title="Upload" id="ZG1-GB-bgc" customClass="FileUploadViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" ambiguous="YES" id="yVO-JE-3UU">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="271"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -2835,7 +2835,7 @@
         <!--Download-->
         <scene sceneID="r5o-Rc-5HP">
             <objects>
-                <viewController title="Download" id="J7J-Lw-L5u" customClass="FileDownloadViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Download" id="J7J-Lw-L5u" customClass="FileDownloadViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="E1t-48-JdD">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="273"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2957,7 +2957,7 @@
         <!--Settings View Controller-->
         <scene sceneID="oY3-cZ-d9D">
             <objects>
-                <viewController id="ybJ-Ok-uX5" customClass="SettingsViewController" customModule="Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="ybJ-Ok-uX5" customClass="SettingsViewController" customModule="nRF_Connect_Device_Manager" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="nqE-jI-OzR">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="216"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

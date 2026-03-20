@@ -31,6 +31,7 @@
 		AA12B3A62E7993F000378F1E /* iOS-BLE-Library-Mock in Frameworks */ = {isa = PBXBuildFile; productRef = AA12B3A52E7993F000378F1E /* iOS-BLE-Library-Mock */; };
 		AA5710112E829DD4001544D0 /* ObservabilityStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5710102E829DD4001544D0 /* ObservabilityStatus.swift */; };
 		AA5710132E829E0D001544D0 /* OTAStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5710122E829E0D001544D0 /* OTAStatus.swift */; };
+		AA7145062F6D9FF800AF4BE7 /* AppMainSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7145052F6D9FF800AF4BE7 /* AppMainSceneDelegate.swift */; };
 		AA7799F82E785BA800CAA1C3 /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AA7799F72E785BA800CAA1C3 /* iOSMcuManagerLibrary */; };
 		AA8404C42E7832ED00BD6B4A /* CryptoKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */; };
 		AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0352E670D38006E0ADD /* iOSOtaLibrary */; };
@@ -66,6 +67,7 @@
 		AA12B39F2E79885600378F1E /* DeviceInfoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfoManager.swift; sourceTree = "<group>"; };
 		AA5710102E829DD4001544D0 /* ObservabilityStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservabilityStatus.swift; sourceTree = "<group>"; };
 		AA5710122E829E0D001544D0 /* OTAStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTAStatus.swift; sourceTree = "<group>"; };
+		AA7145052F6D9FF800AF4BE7 /* AppMainSceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMainSceneDelegate.swift; sourceTree = "<group>"; };
 		AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoKit.framework; path = System/Library/Frameworks/CryptoKit.framework; sourceTree = SDKROOT; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* nRF Connect Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "nRF Connect Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -204,6 +206,7 @@
 				524636882108DCF1008B3D5B /* View Controllers */,
 				524DCFD7210B421E000E110D /* Util */,
 				BD5A285720CB44AF0061F0EE /* AppDelegate.swift */,
+				AA7145052F6D9FF800AF4BE7 /* AppMainSceneDelegate.swift */,
 				BD5A285B20CB44AF0061F0EE /* Main.storyboard */,
 				BD5A286020CB44B00061F0EE /* LaunchScreen.storyboard */,
 				BD5A285E20CB44B00061F0EE /* Assets.xcassets */,
@@ -327,6 +330,7 @@
 				5246368E2108DF23008B3D5B /* DiscoveredPeripheral.swift in Sources */,
 				5264C1D6210E26C20044FBBA /* FirmwareUpgradeViewController.swift in Sources */,
 				BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */,
+				AA7145062F6D9FF800AF4BE7 /* AppMainSceneDelegate.swift in Sources */,
 				524DCFD9210B4241000E110D /* UIColor.swift in Sources */,
 				AA5710132E829E0D001544D0 /* OTAStatus.swift in Sources */,
 				5264C1DC210F63850044FBBA /* ImagesViewController.swift in Sources */,
