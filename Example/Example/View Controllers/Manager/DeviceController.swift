@@ -144,7 +144,7 @@ class DeviceController: UITableViewController, UITextFieldDelegate {
 
 // MARK: - DeviceStatusdelegate
 
-extension DeviceController: DeviceStatusDelegate {
+extension DeviceController: DeviceStatusManager.Delegate {
     
     func connectionStateDidChange(_ state: PeripheralState) {
         connectionStatus.text = state.description

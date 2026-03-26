@@ -104,7 +104,7 @@ final class FilesController: UITableViewController {
 
 // MARK: - DeviceStatusDelegate
 
-extension FilesController: DeviceStatusDelegate {
+extension FilesController: DeviceStatusManager.Delegate {
     
     func connectionStateDidChange(_ state: PeripheralState) {
         connectionStatus.text = state.description

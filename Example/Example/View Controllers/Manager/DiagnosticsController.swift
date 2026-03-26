@@ -180,7 +180,7 @@ private extension DiagnosticsController {
 
 // MARK: - DeviceStatusDelegate
 
-extension DiagnosticsController: DeviceStatusDelegate {
+extension DiagnosticsController: DeviceStatusManager.Delegate {
     
     func connectionStateDidChange(_ state: PeripheralState) {
         connectionStatus.text = state.description

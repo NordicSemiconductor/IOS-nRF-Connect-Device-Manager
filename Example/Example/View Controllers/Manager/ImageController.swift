@@ -120,7 +120,7 @@ final class ImageController: UITableViewController {
 
 // MARK: - DeviceStatusDelegate
 
-extension ImageController: DeviceStatusDelegate {
+extension ImageController: DeviceStatusManager.Delegate {
     
     func connectionStateDidChange(_ state: PeripheralState) {
         connectionStatus.text = state.description
