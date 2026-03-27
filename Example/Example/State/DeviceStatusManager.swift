@@ -23,7 +23,8 @@ final class DeviceStatusManager {
     
     // MARK: Properties
     
-    private(set) var mcuMgrParams: (bufferCount: Int, bufferSize: Int)?
+    private(set) var bufferCount: UInt64?
+    private(set) var bufferSize: UInt64?
     private(set) var appInfoOutput: String?
     private(set) var bootloader: BootloaderInfoResponse.Bootloader?
     private(set) var bootloaderMode: BootloaderInfoResponse.Mode?
@@ -47,12 +48,15 @@ extension DeviceStatusManager {
     // MARK: requestStatus
     
     func requestStatus() async {
-        async let mcuMgrParams = defaultManager.params()
-        async let appInfo = defaultManager.applicationInfo(format: [.kernelName, .kernelVersion])
+        async let mcuMgrParametersResponse = defaultManager.params()
+        async let appInfoResponse = defaultManager.applicationInfo(format: [.kernelName, .kernelVersion])
         async let bootloaderInfo = defaultManager.bootloaderInfo()
         
-        self.mcuMgrParams = try? await mcuMgrParams
-        self.appInfoOutput = try? await appInfo
+        if let mcuMgrParams = try? await mcuMgrParametersResponse {
+            self.bufferSize = mcuMgrParams.bufferSize
+            self.bufferCount = mcuMgrParams.bufferCount
+        }
+        self.appInfoOutput = (try? await appInfoResponse)?.response
         self.bootloader = try? await bootloaderInfo.bootloader
         self.bootloaderMode = try? await bootloaderInfo.mode
         self.bootloaderSlot = try? await bootloaderInfo.slot

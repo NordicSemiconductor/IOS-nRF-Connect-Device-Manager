@@ -1,5 +1,5 @@
 //
-//  DefaultManager+Task.swift
+//  DefaultManager+Async.swift
 //  iOSMcuManagerLibrary
 //
 //  Created by Dinesh Harjani on 26/3/26.
@@ -9,23 +9,22 @@
 import Foundation
 import iOSMcuManagerLibrary
 
-// MARK: - DefaultManager+Task
+// MARK: - DefaultManager+Async
 
 public extension DefaultManager {
     
     // MARK: async params()
     
-    public func params() async throws -> (bufferCount: Int, bufferSize: Int) {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<(bufferCount: Int, bufferSize: Int), Error>) in
+    public func params() async throws -> McuMgrParametersResponse {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<McuMgrParametersResponse, Error>) in
             params { response, error in
                 if let error {
                     continuation.resume(throwing: error)
                     return
                 }
                 
-                if let count = response?.bufferCount,
-                   let size = response?.bufferSize {
-                    continuation.resume(returning: (Int(count), Int(size)))
+                if let response {
+                    continuation.resume(returning: response)
                 } else {
                     continuation.resume(throwing: McuMgrResponseParseError.invalidPayload)
                 }
@@ -35,15 +34,15 @@ public extension DefaultManager {
     
     // MARK: async applicationInfo(format:)
     
-    public func applicationInfo(format: Set<ApplicationInfoFormat>) async throws -> String {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Error>) in
+    public func applicationInfo(format: Set<ApplicationInfoFormat>) async throws -> AppInfoResponse {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<AppInfoResponse, Error>) in
             applicationInfo(format: format) { response, error in
                 if let error {
                     continuation.resume(throwing: error)
                     return
                 }
                 
-                if let response = response?.response {
+                if let response {
                     continuation.resume(returning: response)
                 } else {
                     continuation.resume(throwing: McuMgrResponseParseError.invalidPayload)
