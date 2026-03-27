@@ -9,20 +9,6 @@ import CoreBluetooth
 import iOSMcuManagerLibrary
 import iOSOtaLibrary
 
-// MARK: - DeviceStatusDelegate
-
-protocol DeviceStatusDelegate: AnyObject {
-    
-    func connectionStateDidChange(_ state: PeripheralState)
-    func bootloaderNameReceived(_ name: String)
-    func bootloaderModeReceived(_ mode: BootloaderInfoResponse.Mode)
-    func bootloaderSlotReceived(_ slot: UInt64)
-    func appInfoReceived(_ output: String)
-    func mcuMgrParamsReceived(buffers: Int, size: Int)
-    func otaStatusChanged(_ status: OTAStatus)
-    func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int)
-}
-
 // MARK: - DeviceStatusRow
 
 enum DeviceStatusRow: Int, CustomStringConvertible {
@@ -63,7 +49,7 @@ final class BaseViewController: UITabBarController {
     
     // MARK: Properties
     
-    weak var deviceStatusDelegate: DeviceStatusDelegate? {
+    weak var deviceStatusDelegate: DeviceStatusManager.Delegate? {
         didSet {
             if let peripheralState {
                 deviceStatusDelegate?.connectionStateDidChange(peripheralState)
@@ -81,7 +67,7 @@ final class BaseViewController: UITabBarController {
                 deviceStatusDelegate?.appInfoReceived(appInfoOutput)
             }
             if let mcuMgrParams {
-                deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.buffers, size: mcuMgrParams.size)
+                deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.bufferCount, size: mcuMgrParams.bufferSize)
             }
             if let otaStatus {
                 deviceStatusDelegate?.otaStatusChanged(otaStatus)
@@ -108,8 +94,7 @@ final class BaseViewController: UITabBarController {
     
     // MARK: Private Properties
     
-    private var otaManager: OTAManager?
-    private var deviceInfoManager: DeviceInfoManager?
+    private var deviceStatusManager: DeviceStatusManager?
     
     private var observabilityTask: Task<Void, Never>?
     private var observabilityIdentifier: UUID?
@@ -158,10 +143,10 @@ final class BaseViewController: UITabBarController {
         }
     }
     
-    private var mcuMgrParams: (buffers: Int, size: Int)? {
+    private var mcuMgrParams: (bufferCount: Int, bufferSize: Int)? {
         didSet {
             guard let mcuMgrParams else { return }
-            deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.buffers, size: mcuMgrParams.size)
+            deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.bufferCount, size: mcuMgrParams.bufferSize)
         }
     }
     
@@ -204,6 +189,8 @@ final class BaseViewController: UITabBarController {
         disconnect()
     }
     
+    // MARK: disconnect()
+    
     func disconnect() {
         if let observabilityIdentifier {
             observabilityManager?.disconnect(from: observabilityIdentifier)
@@ -225,41 +212,28 @@ extension BaseViewController {
             return
         }
         
-        let defaultManager = DefaultManager(transport: transport)
-        defaultManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
-        defaultManager.params { [weak self] response, error in
-            if let count = response?.bufferCount,
-               let size = response?.bufferSize {
-                self?.mcuMgrParams = (Int(count), Int(size))
-            }
+        if deviceStatusManager == nil {
+            deviceStatusManager = DeviceStatusManager(
+                transport, logDelegate: UIApplication.shared.delegate as? McuMgrLogDelegate
+            )
+        }
+        guard let deviceStatusManager else { return }
+        
+        Task { @MainActor in
+            await deviceStatusManager.requestStatus()
+            mcuMgrParams = deviceStatusManager.mcuMgrParams
+            appInfoOutput = deviceStatusManager.appInfoOutput
+            bootloader = deviceStatusManager.bootloader
+            bootloaderMode = deviceStatusManager.bootloaderMode
+            bootloaderSlot = deviceStatusManager.bootloaderSlot
             
-            self?.requestApplicationInfo(defaultManager)
-        }
-    }
-    
-    private func requestApplicationInfo(_ defaultManager: DefaultManager) {
-        defaultManager.applicationInfo(format: [.kernelName, .kernelVersion]) { [weak self] response, error in
-            self?.appInfoOutput = response?.response
-            self?.requestBootloaderInfo(defaultManager)
-        }
-    }
-    
-    private func requestBootloaderInfo(_ defaultManager: DefaultManager) {
-        defaultManager.bootloaderInfo(query: .name) { [weak self] response, error in
-            self?.bootloader = response?.bootloader
-            guard response?.bootloader == .mcuboot else {
-                self?.requestOTAReleaseInfo()
+            guard let peripheral = peripheral?.basePeripheral else {
+                onDeviceStatusFinished()
                 return
             }
-            
-            defaultManager.bootloaderInfo(query: .mode) { [weak self] response, error in
-                self?.bootloaderMode = response?.mode
-                
-                defaultManager.bootloaderInfo(query: .slot) { [weak self] response, error in
-                    self?.bootloaderSlot = response?.activeSlot
-                    self?.requestOTAReleaseInfo()
-                }
-            }
+            await deviceStatusManager.requestOTAStatus(for: peripheral.identifier)
+            otaStatus = deviceStatusManager.otaStatus
+            onDeviceStatusFinished()
         }
     }
     
@@ -270,64 +244,6 @@ extension BaseViewController {
         statusInfoCallback()
         deviceInfoRequested = true
         self.statusInfoCallback = nil
-    }
-}
- 
-// MARK: - OTA
-
-private extension BaseViewController {
-    
-    func requestOTAReleaseInfo() {
-        guard let deviceInfoManager else { return }
-        Task { @MainActor in
-            do {
-                let tokens = try await requestTokensViaMemfaultManager()
-                otaStatus = .supported(tokens.0, tokens.1)
-                onDeviceStatusFinished()
-            } catch {
-                // Disregard error. Try again through Device Information.
-                var deviceInfo: DeviceInfoToken!
-                do {
-                    deviceInfo = try await deviceInfoManager.getDeviceInfoToken()
-                    let projectKey = try await deviceInfoManager.getProjectKey()
-                    otaStatus = .supported(deviceInfo, projectKey)
-                    onDeviceStatusFinished()
-                } catch let managerError as DeviceInfoManagerError {
-                    if deviceInfo != nil {
-                        otaStatus = .missingProjectKey(deviceInfo, managerError)
-                    } else {
-                        otaStatus = .unsupported(managerError)
-                    }
-                    onDeviceStatusFinished()
-                } catch let error {
-                    otaStatus = .unsupported(error)
-                    onDeviceStatusFinished()
-                }
-            }
-        }
-    }
-    
-    // MARK: requestTokensViaMemfaultManager
-    
-    func requestTokensViaMemfaultManager() async throws -> (DeviceInfoToken, ProjectKey) {
-        guard let otaManager else {
-            throw ObservabilityError.mdsServiceNotFound
-        }
-        otaManager.logDelegate = UIApplication.shared.delegate as? McuMgrLogDelegate
-        let deviceInfo = try await otaManager.getDeviceInfoToken(via: transport)
-        let projectKey = try await otaManager.getProjectKey(via: transport)
-        return (deviceInfo, projectKey)
-    }
-    
-    // MARK: requestTokensViaDeviceInformation
-    
-    func requestTokensViaDeviceInformation() async throws -> (DeviceInfoToken, ProjectKey) {
-        guard let deviceInfoManager else {
-            throw DeviceInfoManagerError.peripheralNotFound
-        }
-        let deviceInfo = try await deviceInfoManager.getDeviceInfoToken()
-        let projectKey = try await deviceInfoManager.getProjectKey()
-        return (deviceInfo, projectKey)
     }
 }
  
@@ -494,7 +410,6 @@ extension BaseViewController {
     
     func onDFUStart() {
         stopObservabilityManagerAndTask()
-        otaManager = nil
     }
 }
 
@@ -506,16 +421,12 @@ extension BaseViewController: PeripheralDelegate {
         peripheralState = state
         switch state {
         case .connected:
-            otaManager = OTAManager()
-            deviceInfoManager = DeviceInfoManager(peripheral.identifier)
             observabilityManager = ObservabilityManager()
             observabilityIdentifier = peripheral.identifier
             launchObservabilityTask()
         case .disconnecting, .disconnected:
             // Set to false, because a DFU update might change things if that's what happened.
             deviceInfoRequested = false
-            otaManager = nil
-            deviceInfoManager = nil
             stopObservabilityManagerAndTask()
         default:
             // Nothing to do here.
