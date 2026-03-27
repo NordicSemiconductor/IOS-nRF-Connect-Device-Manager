@@ -186,24 +186,20 @@ extension DiagnosticsController: DeviceStatusManager.Delegate {
         connectionStatus.text = state.description
     }
     
-    func bootloaderNameReceived(_ name: String) {
-        bootloaderName.text = name
-    }
-    
-    func bootloaderModeReceived(_ mode: BootloaderInfoResponse.Mode) {
-        bootloaderMode.text = mode.description
-    }
-    
-    func bootloaderSlotReceived(_ slot: UInt64) {
-        bootloaderSlot.text = "\(slot)"
-    }
-    
-    func appInfoReceived(_ output: String) {
-        kernel.text = output
-    }
-    
-    func mcuMgrParamsReceived(buffers: Int, size: Int) {
-        mcuMgrParams.text = "\(buffers) x \(size) bytes"
+    func statusInfoDidChange(_ info: DeviceStatusInfo) {
+        if let buffers = info.bufferCount, let size = info.bufferSize {
+            mcuMgrParams.text = "\(buffers) x \(size) bytes"
+        }
+        if let appInfo = info.appInfoOutput {
+            kernel.text = appInfo
+        }
+        bootloaderName.text = (info.bootloader ?? .unknown).description
+        if let mode = info.bootloaderMode {
+            bootloaderMode.text = mode.description
+        }
+        if let slot = info.bootloaderSlot {
+            bootloaderSlot.text = "\(slot)"
+        }
     }
     
     func otaStatusChanged(_ status: OTAStatus) {

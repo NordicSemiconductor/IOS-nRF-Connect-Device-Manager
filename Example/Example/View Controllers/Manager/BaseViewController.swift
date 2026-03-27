@@ -54,20 +54,8 @@ final class BaseViewController: UITabBarController {
             if let peripheralState {
                 deviceStatusDelegate?.connectionStateDidChange(peripheralState)
             }
-            if let bootloader {
-                deviceStatusDelegate?.bootloaderNameReceived(bootloader.description)
-            }
-            if let bootloaderMode {
-                deviceStatusDelegate?.bootloaderModeReceived(bootloaderMode)
-            }
-            if let bootloaderSlot {
-                deviceStatusDelegate?.bootloaderSlotReceived(bootloaderSlot)
-            }
-            if let appInfoOutput {
-                deviceStatusDelegate?.appInfoReceived(appInfoOutput)
-            }
-            if let mcuMgrParams {
-                deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.bufferCount, size: mcuMgrParams.bufferSize)
+            if let statusInfo {
+                deviceStatusDelegate?.statusInfoDidChange(statusInfo)
             }
             if let otaStatus {
                 deviceStatusDelegate?.otaStatusChanged(otaStatus)
@@ -114,39 +102,10 @@ final class BaseViewController: UITabBarController {
         }
     }
     
-    private var bootloader: BootloaderInfoResponse.Bootloader? {
+    private var statusInfo: DeviceStatusInfo? {
         didSet {
-            guard let bootloader else { return }
-            deviceStatusDelegate?.bootloaderNameReceived(bootloader.description)
-        }
-    }
-    
-    private var bootloaderMode: BootloaderInfoResponse.Mode? {
-        didSet {
-            if let bootloaderMode {
-                deviceStatusDelegate?.bootloaderModeReceived(bootloaderMode)
-            }
-        }
-    }
-    
-    private var bootloaderSlot: UInt64? {
-        didSet {
-            guard let bootloaderSlot else { return }
-            deviceStatusDelegate?.bootloaderSlotReceived(bootloaderSlot)
-        }
-    }
-    
-    private var appInfoOutput: String? {
-        didSet {
-            guard let appInfoOutput else { return }
-            deviceStatusDelegate?.appInfoReceived(appInfoOutput)
-        }
-    }
-    
-    private var mcuMgrParams: (bufferCount: Int, bufferSize: Int)? {
-        didSet {
-            guard let mcuMgrParams else { return }
-            deviceStatusDelegate?.mcuMgrParamsReceived(buffers: mcuMgrParams.bufferCount, size: mcuMgrParams.bufferSize)
+            guard let statusInfo else { return }
+            deviceStatusDelegate?.statusInfoDidChange(statusInfo)
         }
     }
     
@@ -220,23 +179,13 @@ extension BaseViewController {
         guard let deviceStatusManager else { return }
         
         Task { @MainActor in
-            await deviceStatusManager.requestStatus()
-            
-            if let bufferSize = deviceStatusManager.bufferSize,
-                let bufferCount = deviceStatusManager.bufferCount {
-                mcuMgrParams = (Int(bufferSize), Int(bufferCount))
-            }
-            appInfoOutput = deviceStatusManager.appInfoOutput
-            bootloader = deviceStatusManager.bootloader
-            bootloaderMode = deviceStatusManager.bootloaderMode
-            bootloaderSlot = deviceStatusManager.bootloaderSlot
+            statusInfo = await deviceStatusManager.requestStatusInfo()
             
             guard let peripheral = peripheral?.basePeripheral else {
                 onDeviceStatusFinished()
                 return
             }
-            await deviceStatusManager.requestOTAStatus(for: peripheral.identifier)
-            otaStatus = deviceStatusManager.otaStatus
+            otaStatus = await deviceStatusManager.requestOTAStatus(for: peripheral.identifier)
             onDeviceStatusFinished()
         }
     }
