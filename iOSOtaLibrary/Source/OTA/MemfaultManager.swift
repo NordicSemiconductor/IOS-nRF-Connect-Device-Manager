@@ -75,6 +75,7 @@ public class MemfaultManager: McuManager {
             let callback: McuMgrCallback<R> = { response, error in
                 if let error {
                     continuation.resume(throwing: error)
+                    return
                 }
                 continuation.resume(returning: response)
             }
