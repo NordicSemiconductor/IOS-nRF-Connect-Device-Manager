@@ -221,7 +221,11 @@ extension BaseViewController {
         
         Task { @MainActor in
             await deviceStatusManager.requestStatus()
-            mcuMgrParams = deviceStatusManager.mcuMgrParams
+            
+            if let bufferSize = deviceStatusManager.bufferSize,
+                let bufferCount = deviceStatusManager.bufferCount {
+                mcuMgrParams = (Int(bufferSize), Int(bufferCount))
+            }
             appInfoOutput = deviceStatusManager.appInfoOutput
             bootloader = deviceStatusManager.bootloader
             bootloaderMode = deviceStatusManager.bootloaderMode
