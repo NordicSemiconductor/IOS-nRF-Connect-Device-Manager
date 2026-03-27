@@ -11,11 +11,11 @@ import iOSMcuManagerLibrary
 
 // MARK: - DefaultManager+Task
 
-extension DefaultManager {
+public extension DefaultManager {
     
     // MARK: async params()
     
-    func params() async throws -> (bufferCount: Int, bufferSize: Int) {
+    public func params() async throws -> (bufferCount: Int, bufferSize: Int) {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<(bufferCount: Int, bufferSize: Int), Error>) in
             params { response, error in
                 if let error {
@@ -35,7 +35,7 @@ extension DefaultManager {
     
     // MARK: async applicationInfo(format:)
     
-    func applicationInfo(format: Set<ApplicationInfoFormat>) async throws -> String {
+    public func applicationInfo(format: Set<ApplicationInfoFormat>) async throws -> String {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Error>) in
             applicationInfo(format: format) { response, error in
                 if let error {
@@ -54,7 +54,7 @@ extension DefaultManager {
     
     // MARK: bootloaderInfo()
     
-    func bootloaderInfo() async throws -> (bootloader: BootloaderInfoResponse.Bootloader?, mode: BootloaderInfoResponse.Mode?, slot: UInt64?) {
+    public func bootloaderInfo() async throws -> (bootloader: BootloaderInfoResponse.Bootloader?, mode: BootloaderInfoResponse.Mode?, slot: UInt64?) {
         let bootloader = try await bootloaderQuery(.name).bootloader
         guard bootloader == .mcuboot else { return (bootloader: bootloader, mode: nil, slot: nil) }
         
@@ -65,7 +65,7 @@ extension DefaultManager {
     
     // MARK: bootloaderQuery(:)
     
-    func bootloaderQuery(_ query: BootloaderInfoQuery) async throws -> BootloaderInfoResponse {
+    public func bootloaderQuery(_ query: BootloaderInfoQuery) async throws -> BootloaderInfoResponse {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<BootloaderInfoResponse, Error>) in
             bootloaderInfo(query: query) { response, error in
                 if let error {
