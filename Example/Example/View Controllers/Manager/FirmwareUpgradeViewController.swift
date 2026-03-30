@@ -417,7 +417,7 @@ extension FirmwareUpgradeViewController: FirmwareUpgradeDelegate {
         initialBytes = 0
         uploadImageSize = nil
         
-        baseController?.onDFUStart()
+        baseController?.stopObservability()
     }
     
     func upgradeStateDidChange(from previousState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
