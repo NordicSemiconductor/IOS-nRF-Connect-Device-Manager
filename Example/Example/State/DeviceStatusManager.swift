@@ -21,16 +21,6 @@ final class DeviceStatusManager {
     private weak var logDelegate: (any McuMgrLogDelegate)?
     private let defaultManager: DefaultManager
     
-    // MARK: Properties
-    
-    private(set) var bufferCount: UInt64?
-    private(set) var bufferSize: UInt64?
-    private(set) var appInfoOutput: String?
-    private(set) var bootloader: BootloaderInfoResponse.Bootloader?
-    private(set) var bootloaderMode: BootloaderInfoResponse.Mode?
-    private(set) var bootloaderSlot: UInt64?
-    private(set) var otaStatus: OTAStatus?
-    
     // MARK: init
     
     init(_ transport: McuMgrTransport, logDelegate: (any McuMgrLogDelegate)?) {
@@ -45,45 +35,47 @@ final class DeviceStatusManager {
 
 extension DeviceStatusManager {
     
-    // MARK: requestStatus
+    // MARK: requestStatusInfo
     
-    func requestStatus() async {
+    func requestStatusInfo() async -> DeviceStatusInfo {
         async let mcuMgrParametersResponse = defaultManager.params()
         async let appInfoResponse = defaultManager.applicationInfo(format: [.kernelName, .kernelVersion])
         async let bootloaderInfo = defaultManager.bootloaderInfo()
         
+        var info = DeviceStatusInfo()
         if let mcuMgrParams = try? await mcuMgrParametersResponse {
-            self.bufferSize = mcuMgrParams.bufferSize
-            self.bufferCount = mcuMgrParams.bufferCount
+            info.bufferSize = mcuMgrParams.bufferSize
+            info.bufferCount = mcuMgrParams.bufferCount
         }
-        self.appInfoOutput = (try? await appInfoResponse)?.response
-        self.bootloader = try? await bootloaderInfo.bootloader
-        self.bootloaderMode = try? await bootloaderInfo.mode
-        self.bootloaderSlot = try? await bootloaderInfo.slot
+        info.appInfoOutput = (try? await appInfoResponse)?.response
+        info.bootloader = try? await bootloaderInfo.bootloader
+        info.bootloaderMode = try? await bootloaderInfo.mode
+        info.bootloaderSlot = try? await bootloaderInfo.slot
+        return info
     }
     
     // MARK: requestOTAStatus
     
-    func requestOTAStatus(for peripheralUUID: UUID) async {
+    func requestOTAStatus(for peripheralUUID: UUID) async -> OTAStatus {
         let deviceInfoManager = DeviceInfoManager(peripheralUUID)
         do {
             let tokens = try await requestTokensViaMemfaultManager()
-            otaStatus = .supported(tokens.0, tokens.1)
+            return .supported(tokens.0, tokens.1)
         } catch {
             // Disregard error. Try again through Device Information.
             var deviceInfo: DeviceInfoToken!
             do {
                 deviceInfo = try await deviceInfoManager.getDeviceInfoToken()
                 let projectKey = try await deviceInfoManager.getProjectKey()
-                otaStatus = .supported(deviceInfo, projectKey)
+                return .supported(deviceInfo, projectKey)
             } catch let managerError as DeviceInfoManagerError {
                 if deviceInfo != nil {
-                    otaStatus = .missingProjectKey(deviceInfo, managerError)
+                    return .missingProjectKey(deviceInfo, managerError)
                 } else {
-                    otaStatus = .unsupported(managerError)
+                    return .unsupported(managerError)
                 }
             } catch let error {
-                otaStatus = .unsupported(error)
+                return .unsupported(error)
             }
         }
     }
@@ -107,18 +99,26 @@ fileprivate extension DeviceStatusManager {
     }
 }
 
+// MARK: - DeviceStatusInfo
+
+struct DeviceStatusInfo {
+    
+    var bufferCount: UInt64?
+    var bufferSize: UInt64?
+    var appInfoOutput: String?
+    var bootloader: BootloaderInfoResponse.Bootloader?
+    var bootloaderMode: BootloaderInfoResponse.Mode?
+    var bootloaderSlot: UInt64?
+}
+
 // MARK: - Delegate
 
 extension DeviceStatusManager {
     
     protocol Delegate: AnyObject {
         
+        func statusInfoDidChange(_ info: DeviceStatusInfo)
         func connectionStateDidChange(_ state: PeripheralState)
-        func bootloaderNameReceived(_ name: String)
-        func bootloaderModeReceived(_ mode: BootloaderInfoResponse.Mode)
-        func bootloaderSlotReceived(_ slot: UInt64)
-        func appInfoReceived(_ output: String)
-        func mcuMgrParamsReceived(buffers: Int, size: Int)
         func otaStatusChanged(_ status: OTAStatus)
         func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int)
     }
