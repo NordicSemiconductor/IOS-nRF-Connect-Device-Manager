@@ -35,6 +35,7 @@
 		AA7799F82E785BA800CAA1C3 /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AA7799F72E785BA800CAA1C3 /* iOSMcuManagerLibrary */; };
 		AA8404C42E7832ED00BD6B4A /* CryptoKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */; };
 		AA8C1BA62F7543FC00234E5F /* DeviceStatusManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8C1BA52F7543FC00234E5F /* DeviceStatusManager.swift */; };
+		AA8C1BAD2F7A8E2C00234E5F /* ObservabilityStatusManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8C1BAC2F7A8E2C00234E5F /* ObservabilityStatusManager.swift */; };
 		AAC0F0362E670D38006E0ADD /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AAC0F0352E670D38006E0ADD /* iOSOtaLibrary */; };
 		BD5A285820CB44AF0061F0EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285720CB44AF0061F0EE /* AppDelegate.swift */; };
 		BD5A285A20CB44AF0061F0EE /* ScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A285920CB44AF0061F0EE /* ScannerViewController.swift */; };
@@ -71,6 +72,7 @@
 		AA7145052F6D9FF800AF4BE7 /* AppMainSceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMainSceneDelegate.swift; sourceTree = "<group>"; };
 		AA8404C32E7832ED00BD6B4A /* CryptoKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoKit.framework; path = System/Library/Frameworks/CryptoKit.framework; sourceTree = SDKROOT; };
 		AA8C1BA52F7543FC00234E5F /* DeviceStatusManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceStatusManager.swift; sourceTree = "<group>"; };
+		AA8C1BAC2F7A8E2C00234E5F /* ObservabilityStatusManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservabilityStatusManager.swift; sourceTree = "<group>"; };
 		BD54DE5320CEE16F0023F980 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 		BD5A285420CB44AF0061F0EE /* nRF Connect Device Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "nRF Connect Device Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD5A285720CB44AF0061F0EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -187,6 +189,7 @@
 			isa = PBXGroup;
 			children = (
 				AA8C1BA52F7543FC00234E5F /* DeviceStatusManager.swift */,
+				AA8C1BAC2F7A8E2C00234E5F /* ObservabilityStatusManager.swift */,
 			);
 			path = State;
 			sourceTree = "<group>";
@@ -357,6 +360,7 @@
 				523C05B32423DA3C0007E563 /* RootViewController.swift in Sources */,
 				5266273724ACA7F4008F528C /* IntroViewController.swift in Sources */,
 				524DCFD0210B0EB6000E110D /* BaseViewController.swift in Sources */,
+				AA8C1BAD2F7A8E2C00234E5F /* ObservabilityStatusManager.swift in Sources */,
 				521576312126CC8F00C21B0C /* FileUploadViewController.swift in Sources */,
 				5274C2622796CEC40043D7CA /* SettingsViewController.swift in Sources */,
 				AA8C1BA62F7543FC00234E5F /* DeviceStatusManager.swift in Sources */,

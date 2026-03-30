@@ -130,7 +130,7 @@ extension FilesController: DeviceStatusManager.Delegate {
         otaStatus.text = status.description
     }
     
-    func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int) {
-        observabilityStatus.text = status.description
+    func observabilityStatusChanged(_ statusInfo: ObservabilityStatusInfo) {
+        observabilityStatus.text = statusInfo.status.description
     }
 }

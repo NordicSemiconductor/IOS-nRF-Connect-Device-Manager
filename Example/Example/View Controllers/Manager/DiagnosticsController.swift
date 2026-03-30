@@ -132,23 +132,6 @@ private extension DiagnosticsController {
         }
     }
     
-    func updatePendingAndUploadedLabels(pendingBytes: Int, pendingCount: Int, uploadedBytes: Int, uploadedCount: Int) {
-        let pendingBytesString: String
-        let uploadedBytesString: String
-        if #available(iOS 16.0, macCatalyst 16.0, macOS 13.0, *) {
-            let pendingMeasurement = Measurement<UnitInformationStorage>(value: Double(pendingBytes), unit: .bytes)
-            pendingBytesString = pendingMeasurement.formatted(.byteCount(style: .file))
-            let uploadedMeasurement = Measurement<UnitInformationStorage>(value: Double(uploadedBytes), unit: .bytes)
-            uploadedBytesString = uploadedMeasurement.formatted(.byteCount(style: .file))
-        } else {
-            pendingBytesString = "\(pendingBytes) bytes"
-            uploadedBytesString = "\(uploadedBytes) bytes"
-        }
-        
-        observabilitySectionStatusPendingLabel.text = "Pending: \(pendingCount) chunk(s), \(pendingBytesString)"
-        observabilitySectionStatusUploadedLabel.text = "Uploaded: \(uploadedCount) chunk(s), \(uploadedBytesString)"
-    }
-    
     func moduleStatsString(_ module: String, stats: McuMgrStatsResponse?, error: (any Error)?) -> String {
         var resultString = "\(module)"
         if let stats {
@@ -206,9 +189,9 @@ extension DiagnosticsController: DeviceStatusManager.Delegate {
         otaStatus.text = status.description
     }
     
-    func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int) {
-        observabilityStatus.text = status.description
-        switch status {
+    func observabilityStatusChanged(_ statusInfo: ObservabilityStatusInfo) {
+        observabilityStatus.text = statusInfo.status.description
+        switch statusInfo.status {
         case .receivedEvent(let event):
             switch event {
             case .connected:
@@ -255,7 +238,8 @@ extension DiagnosticsController: DeviceStatusManager.Delegate {
                 }
                 
                 showObservabilityActivityIndicator(true)
-                updatePendingAndUploadedLabels(pendingBytes: pendingBytes, pendingCount: pendingCount, uploadedBytes: uploadedBytes, uploadedCount: uploadedCount)
+                observabilitySectionStatusPendingLabel.text = statusInfo.pendingBytesString()
+                observabilitySectionStatusUploadedLabel.text = statusInfo.uploadedBytesString()
             }
         case .connectionClosed:
             showObservabilityActivityIndicator(false)

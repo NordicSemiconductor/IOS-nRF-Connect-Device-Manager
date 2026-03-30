@@ -60,8 +60,8 @@ final class BaseViewController: UITabBarController {
             if let otaStatus {
                 deviceStatusDelegate?.otaStatusChanged(otaStatus)
             }
-            if let observabilityStatus {
-                deviceStatusDelegate?.observabilityStatusChanged(observabilityStatus, pendingCount: observabilityPendingChunks, pendingBytes: observabilityPendingBytes, uploadedCount: observabilityUploadedChunks, uploadedBytes: observabilityUploadedBytes)
+            if let observabilityStatusInfo {
+                deviceStatusDelegate?.observabilityStatusChanged(observabilityStatusInfo)
             }
         }
     }
@@ -87,10 +87,6 @@ final class BaseViewController: UITabBarController {
     private var observabilityTask: Task<Void, Never>?
     private var observabilityIdentifier: UUID?
     private var observabilityManager: ObservabilityManager?
-    private var observabilityPendingChunks: Int = 0
-    private var observabilityPendingBytes: Int = 0
-    private var observabilityUploadedBytes: Int = 0
-    private var observabilityUploadedChunks: Int = 0
     
     private var deviceInfoRequested: Bool = false
     private var statusInfoCallback: (() -> ())?
@@ -116,12 +112,7 @@ final class BaseViewController: UITabBarController {
         }
     }
     
-    private var observabilityStatus: ObservabilityStatus? {
-        didSet {
-            guard let observabilityStatus else { return }
-            deviceStatusDelegate?.observabilityStatusChanged(observabilityStatus, pendingCount: observabilityPendingChunks, pendingBytes: observabilityPendingBytes, uploadedCount: observabilityUploadedChunks, uploadedBytes: observabilityUploadedBytes)
-        }
-    }
+    private var observabilityStatusInfo: ObservabilityStatusInfo?
     
     // MARK: viewDidLoad()
     
@@ -210,7 +201,7 @@ extension BaseViewController {
             return
         }
         
-        switch observabilityStatus {
+        switch observabilityStatusInfo?.status {
         case .receivedEvent(let event):
             switch event {
             case .online(false):
@@ -235,24 +226,26 @@ extension BaseViewController {
             do {
                 for try await event in observabilityStream {
                     processObservabilityEvent(event.event)
-                    observabilityStatus = .receivedEvent(event.event)
                 }
                 print("STOPPED Listening to \(observabilityIdentifier.uuidString) Connection Events.")
-                observabilityStatus = .connectionClosed
+                observabilityStatusInfo?.updatedStatus(.connectionClosed)
+                if let observabilityStatusInfo {
+                    deviceStatusDelegate?.observabilityStatusChanged(observabilityStatusInfo)
+                }
             } catch let obsError as ObservabilityError {
                 print("CAUGHT ObservabilityManagerError \(obsError.localizedDescription)")
                 switch obsError {
                 case .mdsServiceNotFound:
-                    observabilityStatus = .unsupported(obsError)
+                    observabilityStatusInfo?.updatedStatus(.unsupported(obsError))
                 case .pairingError:
-                    observabilityStatus = .pairingError
+                    observabilityStatusInfo?.updatedStatus(.pairingError)
                 default:
-                    observabilityStatus = .errorEvent(obsError)
+                    observabilityStatusInfo?.updatedStatus(.errorEvent(obsError))
                 }
                 stopObservabilityManagerAndTask()
             } catch let error {
                 print("CAUGHT Error \(error.localizedDescription) Listening to \(observabilityIdentifier.uuidString) Connection Events.")
-                observabilityStatus = .errorEvent(error)
+                observabilityStatusInfo?.updatedStatus(.errorEvent(error))
                 stopObservabilityManagerAndTask()
             }
         }
@@ -264,28 +257,24 @@ extension BaseViewController {
         switch observabilityEvent {
         case .connected:
             // Reset since on Observability Connection we'll get a report of pending chunks.
-            observabilityPendingBytes = 0
-            observabilityPendingChunks = 0
+            observabilityStatusInfo = ObservabilityStatusInfo(status: .receivedEvent(.connected))
         case .updatedChunk(let chunk):
-            switch chunk.status {
-            case .pendingUpload:
-                observabilityPendingBytes += chunk.data.count
-                observabilityPendingChunks += 1
-            case .success:
-                observabilityPendingBytes -= chunk.data.count
-                observabilityPendingChunks -= 1
-                
-                observabilityUploadedBytes += chunk.data.count
-                observabilityUploadedChunks += 1
-            default:
-                break
-            }
+            observabilityStatusInfo?.processChunk(chunk)
+            fallthrough // updateStatus as well
         default:
-            break
+            observabilityStatusInfo?.updatedStatus(.receivedEvent(observabilityEvent))
         }
+        
+        guard let observabilityStatusInfo else { return }
+        deviceStatusDelegate?.observabilityStatusChanged(observabilityStatusInfo)
     }
     
     private func stopObservabilityManagerAndTask() {
+        defer {
+            if let observabilityStatusInfo {
+                deviceStatusDelegate?.observabilityStatusChanged(observabilityStatusInfo)
+            }
+        }
         guard let observabilityIdentifier else { return }
         print(#function)
         observabilityManager?.disconnect(from: observabilityIdentifier)
