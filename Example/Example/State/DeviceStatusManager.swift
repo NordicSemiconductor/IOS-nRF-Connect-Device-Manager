@@ -120,6 +120,6 @@ extension DeviceStatusManager {
         func statusInfoDidChange(_ info: DeviceStatusInfo)
         func connectionStateDidChange(_ state: PeripheralState)
         func otaStatusChanged(_ status: OTAStatus)
-        func observabilityStatusChanged(_ status: ObservabilityStatus, pendingCount: Int, pendingBytes: Int, uploadedCount: Int, uploadedBytes: Int)
+        func observabilityStatusChanged(_ statusInfo: ObservabilityStatusInfo)
     }
 }
