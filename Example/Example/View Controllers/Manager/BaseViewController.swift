@@ -83,10 +83,7 @@ final class BaseViewController: UITabBarController {
     // MARK: Private Properties
     
     private var deviceStatusManager: DeviceStatusManager?
-    
-    private var observabilityTask: Task<Void, Never>?
-    private var observabilityIdentifier: UUID?
-    private var observabilityManager: ObservabilityManager?
+    private var observabilityStatusManager: ObservabilityStatusManager?
     
     private var deviceInfoRequested: Bool = false
     private var statusInfoCallback: (() -> ())?
@@ -142,11 +139,7 @@ final class BaseViewController: UITabBarController {
     // MARK: disconnect()
     
     func disconnect() {
-        if let observabilityIdentifier {
-            observabilityManager?.disconnect(from: observabilityIdentifier)
-            observabilityTask?.cancel()
-            observabilityTask = nil
-        }
+        stopObservability()
         transport?.close()
     }
 }
@@ -196,7 +189,7 @@ extension BaseViewController {
 extension BaseViewController {
         
     func observabilityButtonTapped() {
-        guard let observabilityIdentifier else {
+        guard let observabilityStatusManager else {
             onDeviceStatusReady {} // Full Reconnection
             return
         }
@@ -206,9 +199,9 @@ extension BaseViewController {
             switch event {
             case .online(false):
                 do {
-                    try observabilityManager?.continuePendingUploads(for: observabilityIdentifier)
+                    try observabilityStatusManager.resumePendingUploads()
                 } catch {
-                    print("RETRY Error: \(error.localizedDescription)")
+                    print("\(#function): RETRY Error \(error.localizedDescription)")
                 }
             default:
                 disconnect()
@@ -216,73 +209,6 @@ extension BaseViewController {
         default:
             disconnect()
         }
-    }
-    
-    private func launchObservabilityTask() {
-        observabilityTask = Task { @MainActor [unowned self] in
-            let manager: ObservabilityManager! = observabilityManager
-            let observabilityIdentifier: UUID! = observabilityIdentifier
-            let observabilityStream = manager.connectToDevice(observabilityIdentifier)
-            do {
-                for try await event in observabilityStream {
-                    processObservabilityEvent(event.event)
-                }
-                print("STOPPED Listening to \(observabilityIdentifier.uuidString) Connection Events.")
-                observabilityStatusInfo?.updatedStatus(.connectionClosed)
-                if let observabilityStatusInfo {
-                    deviceStatusDelegate?.observabilityStatusChanged(observabilityStatusInfo)
-                }
-            } catch let obsError as ObservabilityError {
-                print("CAUGHT ObservabilityManagerError \(obsError.localizedDescription)")
-                switch obsError {
-                case .mdsServiceNotFound:
-                    observabilityStatusInfo?.updatedStatus(.unsupported(obsError))
-                case .pairingError:
-                    observabilityStatusInfo?.updatedStatus(.pairingError)
-                default:
-                    observabilityStatusInfo?.updatedStatus(.errorEvent(obsError))
-                }
-                stopObservabilityManagerAndTask()
-            } catch let error {
-                print("CAUGHT Error \(error.localizedDescription) Listening to \(observabilityIdentifier.uuidString) Connection Events.")
-                observabilityStatusInfo?.updatedStatus(.errorEvent(error))
-                stopObservabilityManagerAndTask()
-            }
-        }
-    }
-    
-    // MARK: processObservabilityEvent
-    
-    private func processObservabilityEvent(_ observabilityEvent: ObservabilityDeviceEvent) {
-        switch observabilityEvent {
-        case .connected:
-            // Reset since on Observability Connection we'll get a report of pending chunks.
-            observabilityStatusInfo = ObservabilityStatusInfo(status: .receivedEvent(.connected))
-        case .updatedChunk(let chunk):
-            observabilityStatusInfo?.processChunk(chunk)
-            fallthrough // updateStatus as well
-        default:
-            observabilityStatusInfo?.updatedStatus(.receivedEvent(observabilityEvent))
-        }
-        
-        guard let observabilityStatusInfo else { return }
-        deviceStatusDelegate?.observabilityStatusChanged(observabilityStatusInfo)
-    }
-    
-    private func stopObservabilityManagerAndTask() {
-        defer {
-            if let observabilityStatusInfo {
-                deviceStatusDelegate?.observabilityStatusChanged(observabilityStatusInfo)
-            }
-        }
-        guard let observabilityIdentifier else { return }
-        print(#function)
-        observabilityManager?.disconnect(from: observabilityIdentifier)
-        observabilityManager = nil
-        
-        observabilityTask?.cancel()
-        observabilityTask = nil
-        self.observabilityIdentifier = nil
     }
 }
 
@@ -346,12 +272,30 @@ extension BaseViewController {
     }
 }
 
-// MARK: - onDFUStart
+// MARK: - Observability
 
 extension BaseViewController {
     
-    func onDFUStart() {
-        stopObservabilityManagerAndTask()
+    func startObservability(for peripheral: CBPeripheral) {
+        let peripheralUUID = peripheral.identifier
+        Task { @MainActor in
+            observabilityStatusManager = ObservabilityStatusManager(peripheralIdentifier: peripheralUUID)
+            guard let stream = observabilityStatusManager?.startObservabilityTask() else { return }
+            print("\(#function): STARTED Listening to \(peripheralUUID) Observability Events.")
+            for await statusInfo in stream {
+                observabilityStatusInfo = statusInfo
+                deviceStatusDelegate?.observabilityStatusChanged(statusInfo)
+            }
+            print("\(#function): STOPPED Listening to \(peripheralUUID) Observability Events.")
+            guard var observabilityStatusInfo else { return }
+            observabilityStatusInfo.updatedStatus(.connectionClosed)
+            deviceStatusDelegate?.observabilityStatusChanged(observabilityStatusInfo)
+        }
+    }
+    
+    func stopObservability() {
+        observabilityStatusManager?.stopObservabilityManagerAndTask()
+        observabilityStatusManager = nil
     }
 }
 
@@ -363,13 +307,11 @@ extension BaseViewController: PeripheralDelegate {
         peripheralState = state
         switch state {
         case .connected:
-            observabilityManager = ObservabilityManager()
-            observabilityIdentifier = peripheral.identifier
-            launchObservabilityTask()
+            startObservability(for: peripheral)
         case .disconnecting, .disconnected:
             // Set to false, because a DFU update might change things if that's what happened.
             deviceInfoRequested = false
-            stopObservabilityManagerAndTask()
+            stopObservability()
         default:
             // Nothing to do here.
             break

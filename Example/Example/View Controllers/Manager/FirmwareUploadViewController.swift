@@ -297,7 +297,7 @@ extension FirmwareUploadViewController: ImageUploadDelegate {
         uploadImageSize = nil
         uploadTimestamp = nil
         
-        baseViewController?.onDFUStart()
+        baseViewController?.stopObservability()
     }
     
     func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
