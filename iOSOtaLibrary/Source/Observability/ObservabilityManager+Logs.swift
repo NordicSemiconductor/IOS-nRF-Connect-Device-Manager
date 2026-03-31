@@ -14,7 +14,7 @@ import iOS_Common_Libraries
 extension ObservabilityManager {
     
     func log(_ string: String) {
-        guard #available(iOS 14.0, *) else {
+        guard #available(iOS 14.0, macCatalyst 14.0, macOS 11.0, *) else {
             print(string)
             return
         }
@@ -23,7 +23,7 @@ extension ObservabilityManager {
     }
     
     func logError(_ string: String) {
-        guard #available(iOS 14.0, *) else {
+        guard #available(iOS 14.0, macCatalyst 14.0, macOS 11.0, *) else {
             print("Error: \(string)")
             return
         }
