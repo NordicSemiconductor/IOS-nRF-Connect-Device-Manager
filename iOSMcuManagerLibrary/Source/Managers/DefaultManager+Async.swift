@@ -11,6 +11,7 @@ import iOSMcuManagerLibrary
 
 // MARK: - DefaultManager+Async
 
+@available(iOS 13.0, macCatalyst 13.0, macOS 10.15, *)
 public extension DefaultManager {
     
     // MARK: async params()
