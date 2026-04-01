@@ -29,8 +29,8 @@ let package = Package(
             .exact("0.4.4")
         ),
         .package(
-            url: "https://github.com/NordicPlayground/IOS-Common-Libraries",
-            .exact("0.2.0")
+            url: "https://github.com/nordicsemi/IOS-Common-Libraries",
+            .upToNextMajor(from: "0.2.2")
         )
     ],
     targets: [
