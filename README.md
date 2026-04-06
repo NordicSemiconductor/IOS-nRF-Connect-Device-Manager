@@ -1,20 +1,20 @@
 > [!NOTE]  
-> This repository is originally a fork of the [McuManager iOS Library](https://github.com/JuulLabs-OSS/mcumgr-ios), which is no longer being supported by its original maintainer. As of 2021, we have taken ownership of the library, so all new features and bug fixes will be added here. Please, migrate your projects to point to this Git repsository in order to get future updates. See [migration guide](https://github.com/NordicSemiconductor/Android-nRF-Connect-Device-Manager#migration-from-the-original-repo).
+> This repository is originally a fork of the [McuManager iOS Library](https://github.com/JuulLabs-OSS/mcumgr-ios), which is no longer being supported by its original maintainer. As of 2021, we have taken ownership of the library, so all new features and bug fixes will be added here. Please, migrate your projects to point to this Git repsository in order to get future updates. See [migration guide](https://github.com/nordicsemi/Android-nRF-Connect-Device-Manager#migration-from-the-original-repo).
 
 # nRF Connect Device Manager
 
 ![Swift](https://img.shields.io/badge/Swift-5.10-f05237.svg)
 ![Platforms](https://img.shields.io/badge/Platforms-iOS%20|%20iPadOS%20|%20macOS-333333.svg)
-[![License](https://img.shields.io/github/license/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/nordicsemi/IOS-nRF-Connect-Device-Manager)](https://github.com/nordicsemi/IOS-nRF-Connect-Device-Manager/blob/main/LICENSE)
 [![Swift Package Manager](https://img.shields.io/badge/SwiftPM-Compatible-brightgreen)](https://swift.org/package-manager/)
-[![Release](https://img.shields.io/github/release/NordicSemiconductor/IOS-nRF-Connect-Device-Manager.svg)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/releases)
+[![Release](https://img.shields.io/github/release/nordicsemi/IOS-nRF-Connect-Device-Manager.svg)](https://github.com/nordicsemi/IOS-nRF-Connect-Device-Manager/releases)
 [![CocoaPods](https://img.shields.io/badge/CocoaPods-Compatible-brightgreen)](https://cocoapods.org/)
 [![Cocoapods](https://img.shields.io/cocoapods/v/iOSMcuManagerLibrary.svg)](https://cocoapods.org/pods/iOSMcuManagerLibrary)
-[![GitHub stars](https://img.shields.io/github/stars/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/members)
-[![GitHub contributors](https://img.shields.io/github/contributors/NordicSemiconductor/IOS-nRF-Connect-Device-Manager)](https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager/graphs/contributors)
+[![GitHub stars](https://img.shields.io/github/stars/nordicsemi/IOS-nRF-Connect-Device-Manager)](https://github.com/nordicsemi/IOS-nRF-Connect-Device-Manager/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/nordicsemi/IOS-nRF-Connect-Device-Manager)](https://github.com/nordicsemi/IOS-nRF-Connect-Device-Manager/members)
+[![GitHub contributors](https://img.shields.io/github/contributors/nordicsemi/IOS-nRF-Connect-Device-Manager)](https://github.com/nordicsemi/IOS-nRF-Connect-Device-Manager/graphs/contributors)
 
-nRF Connect Device Manager library is compatible with [McuManager (or McuMgr for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview) and [SUIT (shorthand for Software Update for the Internet of Things)](). McuManager is a management subsystem supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt. McuManager relies on its own [MCUboot](https://docs.mcuboot.com/) bootloader for secure bootstrapping after a firmware update and, uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), for communication over Bluetooth LE. The SMP Transport definition for Bluetooth Low Energy, which this library implements, [can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
+nRF Connect Device Manager library is compatible with [McuManager (or McuMgr for short)](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/mcumgr.html#overview) and [SUIT (shorthand for Software Update for the Internet of Things)](https://docs.nordicsemi.com/bundle/ncs-2.9.2/page/nrf/libraries/dfu/suit_dfu.html). McuManager is a management subsystem supported by [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html), [Zephyr](https://docs.zephyrproject.org/3.2.0/introduction/index.html) and Apache Mynewt. McuManager relies on its own [MCUboot](https://docs.mcuboot.com/) bootloader for secure bootstrapping after a firmware update and, uses the [Simple Management Protocol, or SMP](https://docs.zephyrproject.org/3.2.0/services/device_mgmt/smp_protocol.html), for communication over Bluetooth LE. The SMP Transport definition for Bluetooth Low Energy, which this library implements, [can be found here](https://docs.zephyrproject.org/latest/services/device_mgmt/smp_transport.html).
 
 SUIT and McuManager are related, but not interchangeable. SUIT relies on its own bootloader, but communicates over the SMP Service. Additionally, SUIT supports some functionalities from McuManager, but is not guaranteed to do so. It's best to always check if a McuManager feature is supported by sending the request, rather than assuming it is.
 
@@ -23,7 +23,7 @@ The library provides a transport agnostic implementation of the McuManager proto
 > Minimum required iOS version is 13.0, originally released in Fall of 2019.
 
 > [!Warning]  
-> This library, the default & main API for Device Firmware Update by Nordic Semiconductor, **should not be confused with the previous protocol, NordicDFU**, serviced by the [Old DFU Library](https://github.com/NordicSemiconductor/IOS-DFU-Library).
+> This library, the default & main API for Device Firmware Update by Nordic Semiconductor, **should not be confused with the previous protocol, NordicDFU**, serviced by the [Old DFU Library](https://github.com/nordicsemi/IOS-DFU-Library).
 
 ## Structure
 
@@ -33,7 +33,7 @@ The naming of the iOSMcuManagerLibrary Package reflects its original goal, which
 
   - `iOSMcuManagerLibrary` (Cocoapods / SPM Library): SMP Protocol / McuManager / SUIT / DFU.
   
-  - `iOSOtaLibrary` (**SPM Library Only**): Observability (previously [iOS-Memfault-Library](https://github.com/NordicSemiconductor/IOS-Memfault-Library)) API as well as OTA capabilities. For OTA, iOSOtaLibrary will fetch the DFU package Over-the-Air as its name implies, but DFU is up to the user. Of course, it is fully compatible with piping in OTA-obtained DFU package into iOSMcuManagerLibrary for seamless OTA DFU. The project's Example app (nRF Connect Device Manager) shows these capabilities.
+  - `iOSOtaLibrary` (**SPM Library Only**): Observability (previously [iOS-Memfault-Library](https://github.com/nordicsemi/IOS-Memfault-Library)) API as well as OTA capabilities. For OTA, iOSOtaLibrary will fetch the DFU package Over-the-Air as its name implies, but DFU is up to the user. Of course, it is fully compatible with piping in OTA-obtained DFU package into iOSMcuManagerLibrary for seamless OTA DFU. The project's Example app (nRF Connect Device Manager) shows these capabilities.
 
 > [!Note]
 > You may keep using only the iOSMcuManagerLibrary from the iOSMcuManagerLibrary Package. That is to say, the addition of 'OTA' capabilities does not make one library dependent on the other. They're both intended to be independent if desired, but they can also be used in conjunction, as the Example app (nRF Connect Device Manager) clearly shows.
@@ -52,7 +52,7 @@ The naming of the iOSMcuManagerLibrary Package reflects its original goal, which
 
 ### SPM or Swift Package Manager (Recommended)
 
-In Xcode, open your root Project file. Then, switch to the *Package Dependencies* Tab, and hit the *+* button underneath your list of added Packages. A new modal window will pop-up. On the upper-right corner of this new window, there's a search box. Paste the URL for this GitHub project `https://github.com/NordicSemiconductor/IOS-nRF-Connect-Device-Manager` and the *Add Package* button should enable.
+In Xcode, open your root Project file. Then, switch to the *Package Dependencies* Tab, and hit the *+* button underneath your list of added Packages. A new modal window will pop-up. On the upper-right corner of this new window, there's a search box. Paste the URL for this GitHub project `https://github.com/nordicsemi/IOS-nRF-Connect-Device-Manager` and the *Add Package* button should enable.
 
 ![](xcode-add-package.png)
 
