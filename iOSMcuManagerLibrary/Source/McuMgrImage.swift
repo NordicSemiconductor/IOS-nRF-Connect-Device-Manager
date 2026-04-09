@@ -11,6 +11,21 @@ import Foundation
 public class McuMgrImage {
     
     public static let IMG_HASH_LEN = 32
+
+    /// Override the magic numbers used during image parsing.
+    /// Call this before initiating the first Device OTA if your firmware
+    /// uses non-standard magic values.
+    public static func setMagicNumbers(
+        tlvInfoMagic: UInt16 = McuMgrImageTlv.IMG_TLV_UNPROTECTED_INFO_MAGIC,
+        tlvProtectedInfoMagic: UInt16 = McuMgrImageTlv.IMG_TLV_PROTECTED_INFO_MAGIC,
+        headerMagicV1: UInt32 = McuMgrImageHeader.IMG_HEADER_MAGIC_V1,
+        headerMagic: UInt32 = McuMgrImageHeader.IMG_HEADER_MAGIC
+    ) {
+        McuMgrImageTlv.IMG_TLV_UNPROTECTED_INFO_MAGIC = tlvInfoMagic
+        McuMgrImageTlv.IMG_TLV_PROTECTED_INFO_MAGIC = tlvProtectedInfoMagic
+        McuMgrImageHeader.IMG_HEADER_MAGIC_V1 = headerMagicV1
+        McuMgrImageHeader.IMG_HEADER_MAGIC = headerMagic
+    }
     
     public let header: McuMgrImageHeader
     public let tlv: McuMgrImageTlv
@@ -41,8 +56,8 @@ public class McuMgrImageHeader {
     
     public static let IMG_HEADER_LEN = 24
     
-    public static let IMG_HEADER_MAGIC: UInt32 = 0x96f3b83d
-    public static let IMG_HEADER_MAGIC_V1: UInt32 = 0x96f3b83c
+    public static var IMG_HEADER_MAGIC: UInt32 = 0x96f3b83d
+    public static var IMG_HEADER_MAGIC_V1: UInt32 = 0x96f3b83c
     
     public static let MAGIC_OFFSET = 0
     public static let LOAD_ADDR_OFFSET = 4
@@ -118,8 +133,8 @@ public struct McuMgrImageTlv {
     public static let IMG_TLV_ENC_EC256: UInt8 = 0x32
     public static let IMG_TLV_DEPENDENCY = 0x40
     
-    public static let IMG_TLV_UNPROTECTED_INFO_MAGIC: UInt16 = 0x6907
-    public static let IMG_TLV_PROTECTED_INFO_MAGIC: UInt16 = 0x6908
+    public static var IMG_TLV_UNPROTECTED_INFO_MAGIC: UInt16 = 0x6907
+    public static var IMG_TLV_PROTECTED_INFO_MAGIC: UInt16 = 0x6908
     
     public var tlvInfo: McuMgrImageTlvInfo?
     public var trailerTlvEntries: [McuMgrImageTlvTrailerEntry]
