@@ -9,28 +9,39 @@ import Foundation
 // MARK: - McuMgrImage
 
 public class McuMgrImage {
-    
-    public static let IMG_HASH_LEN = 32
 
-    /// Override the magic numbers used during image parsing.
-    /// Call this before initiating the first Device OTA if your firmware
-    /// uses non-standard magic values.
-    public static func setMagicNumbers(
-        tlvInfoMagic: UInt16 = McuMgrImageTlv.IMG_TLV_UNPROTECTED_INFO_MAGIC,
-        tlvProtectedInfoMagic: UInt16 = McuMgrImageTlv.IMG_TLV_PROTECTED_INFO_MAGIC,
-        headerMagicV1: UInt32 = McuMgrImageHeader.IMG_HEADER_MAGIC_V1,
-        headerMagic: UInt32 = McuMgrImageHeader.IMG_HEADER_MAGIC
-    ) {
-        McuMgrImageTlv.IMG_TLV_UNPROTECTED_INFO_MAGIC = tlvInfoMagic
-        McuMgrImageTlv.IMG_TLV_PROTECTED_INFO_MAGIC = tlvProtectedInfoMagic
-        McuMgrImageHeader.IMG_HEADER_MAGIC_V1 = headerMagicV1
-        McuMgrImageHeader.IMG_HEADER_MAGIC = headerMagic
+    // MARK: overrideBootloaderVerification()
+    
+    /// Use to customise hashes used to verify valid ``McuMgrImage``(s) before sending.
+    ///
+    /// When receiving a new Image, the Bootloder will check for valid metadata in order to ascertain the validity of its contents. Some of thse are known as Type-Length Value Records or TLVs, which encode the length of said metadata. Others are known as 'magic numbers' to verify the image has been properly signed. This is all verified by [MCUboot](https://docs.nordicsemi.com/bundle/ncs-latest/page/mcuboot/index-ncs.html) on the target device after receiving the new images as part of a DFU Update. However, in order to prevent such late-stage errors during the DFU process, iOSMcuMgrLibrary will check for these when parsing valid Image Data. This way, if the target firmware is going to throw an error that we can detect before starting DFU, we do so.
+    ///
+    /// This behaviour is handled by ``McuMgrImage/init(data:)`` with the default values accepted by software built by [nRF Connect SDK](https://docs.nordicsemi.com/bundle/ncs-latest/page/nrf/index.html). However, if you built your firmware with different hashes, you can use this API so we enforce the proper values.
+    ///
+    /// - Source: [MCUboot Design](https://docs.nordicsemi.com/bundle/ncs-3.0.2/page/mcuboot/design.html)
+    public static func overrideBootloaderVerification(tlvInfoMagic: UInt16? = nil, tlvProtectedInfoMagic: UInt16? = nil, headerMagicV1: UInt32? = nil, headerMagic: UInt32? = nil) {
+        if let tlvInfoMagic {
+            McuMgrImageTlv.IMG_TLV_UNPROTECTED_INFO_MAGIC = tlvInfoMagic
+        }
+        if let tlvProtectedInfoMagic {
+            McuMgrImageTlv.IMG_TLV_PROTECTED_INFO_MAGIC = tlvProtectedInfoMagic
+        }
+        if let headerMagicV1 {
+            McuMgrImageHeader.IMG_HEADER_MAGIC_V1 = headerMagicV1
+        }
+        if let headerMagic {
+            McuMgrImageHeader.IMG_HEADER_MAGIC = headerMagic
+        }
     }
+    
+    // MARK: Public Properties
     
     public let header: McuMgrImageHeader
     public let tlv: McuMgrImageTlv
     public let data: Data
     public let hash: Data
+    
+    // MARK: init
     
     public init(data: Data) throws {
         self.data = data
@@ -53,8 +64,6 @@ public class McuMgrImage {
 // MARK: - McuMgrImageHeader
 
 public class McuMgrImageHeader {
-    
-    public static let IMG_HEADER_LEN = 24
     
     public static var IMG_HEADER_MAGIC: UInt32 = 0x96f3b83d
     public static var IMG_HEADER_MAGIC_V1: UInt32 = 0x96f3b83c
