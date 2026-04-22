@@ -143,16 +143,16 @@ extension McuMgrManifest {
             }
             
             let loadAddressString: String? = try? values.decode(String.self, forKey: .loadAddress)
-            let loadAddressInt: Int
+            let loadAddressInt: Int?
             if let loadAddressString {
-                loadAddressInt = Int(loadAddressString) ?? .zero
+                loadAddressInt = Int(loadAddressString)
             } else {
-                loadAddressInt = (try? values.decode(Int.self, forKey: .loadAddress)) ?? .zero
+                loadAddressInt = try? values.decode(Int.self, forKey: .loadAddress)
             }
             
-            // Load Address is an MCUBoot Manifest "requirement".
-            // For SUIT it's not set, but we keep it at zero for backwards compatibility.
-            loadAddress = bootloader == .mcuboot ? loadAddressInt : .zero
+            // Note: Load Address presence is an MCUBoot Manifest "requirement".
+            // For SUIT it's not set, but set it at zero for backwards compatibility.
+            loadAddress = loadAddressInt ?? .zero
             
             if let partitionString = try? values.decode(String.self, forKey: ._partition) {
                 _partition = Int(partitionString)
