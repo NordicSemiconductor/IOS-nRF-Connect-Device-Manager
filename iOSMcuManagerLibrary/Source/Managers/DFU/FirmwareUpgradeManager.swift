@@ -1141,10 +1141,10 @@ internal extension FirmwareUpgradeManager {
 extension FirmwareUpgradeManager: ImageUploadDelegate {
     
     public func uploadProgressDidChange(bytesSent: Int, imageSize: Int, timestamp: Date) {
-        if bytesSent == imageSize {
+        if bytesSent == imageSize, var images {
             // An Image was sent. Mark as uploaded.
-            if let image = self.images.first(where: { !$0.uploaded && $0.data.count == imageSize }) {
-                self.mark(image, as: \.uploaded)
+            if let image = images.first(where: { !$0.uploaded && $0.data.count == imageSize }) {
+                mark(image, as: \.uploaded)
             }
         }
         
