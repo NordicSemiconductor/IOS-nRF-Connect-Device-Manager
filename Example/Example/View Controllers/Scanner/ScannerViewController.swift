@@ -86,10 +86,10 @@ final class ScannerViewController: UITableViewController, CBCentralManagerDelega
         }
     }
     
-    // MARK: Segue control
+    // MARK: Segue
     
     private enum Segue: String {
-        case showFilter, connect
+        case showFilter
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -102,9 +102,6 @@ final class ScannerViewController: UITableViewController, CBCentralManagerDelega
             filterController.filterByNameEnabled = filterByName
             filterController.filterByRssiEnabled = filterByRssi
             filterController.delegate = self
-        case .connect:
-            let controller = segue.destination as! BaseViewController
-            controller.peripheral = (sender as! DiscoveredPeripheral)
         }
     }
     
@@ -167,12 +164,14 @@ final class ScannerViewController: UITableViewController, CBCentralManagerDelega
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
         centralManager.stopScan()
         activityIndicator.stopAnimating()
         
-        performSegue(withIdentifier: Segue.connect.rawValue,
-                     sender: filteredPeripherals[indexPath.row])
+        let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+        guard let baseViewController = storyboard.instantiateViewController(identifier: "baseVC") as? BaseViewController else { return }
+        
+        baseViewController.peripheral = filteredPeripherals[indexPath.row]
+        navigationController?.pushViewController(baseViewController, animated: true)
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
