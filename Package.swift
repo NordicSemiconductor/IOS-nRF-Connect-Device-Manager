@@ -18,7 +18,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/valpackett/SwiftCBOR.git",
-            .exact("0.5.0")
+            .exact("0.6.0")
         ),
         .package(
             url: "https://github.com/weichsel/ZIPFoundation.git",
