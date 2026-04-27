@@ -53,6 +53,14 @@ public struct DeviceInfoToken {
         self.currentVersion = currentVersion
         self.softwareType = softwareType
     }
+    
+    // MARK: percentEncodedString(_:)
+    
+    public func percentEncodedString(_ keyPath: KeyPath<Self, String>) -> String {
+        let unencodedValue = self[keyPath: keyPath]
+        return unencodedValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+            ?? unencodedValue
+    }
 }
 
 // MARK: - DeviceInfoTokenError
