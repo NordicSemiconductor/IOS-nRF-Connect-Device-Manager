@@ -198,7 +198,7 @@ internal extension ObservabilityManager {
 
 // MARK: - Private
 
-extension ObservabilityManager {
+fileprivate extension ObservabilityManager {
     
     // MARK: received
     
@@ -224,12 +224,7 @@ extension ObservabilityManager {
                     self?.log("finished!")
                     self?.networkBusy = false
                 case .failure(let error):
-                    guard let self else { return }
-                    let updatedChunk = state.update(uploadingChunk, from: identifier, to: .uploadError)
-                    deviceContinuations[identifier]?.yield((identifier, .updatedChunk(updatedChunk)))
-                    networkBusy = false
-                    deviceContinuations[identifier]?.yield((identifier, .online(false)))
-                    enqueueRetryPendingUploads(for: identifier, with: auth)
+                    self?.handleError(error, for: uploadingChunk, from: identifier, with: auth)
                 }
             } receiveValue: { [weak self] resultData in
                 guard let self else { return }
@@ -244,5 +239,21 @@ extension ObservabilityManager {
                 upload(nextUpload, with: auth, from: identifier)
             }
             .store(in: &deviceCancellables[identifier]!)
+    }
+    
+    // MARK: handleError(_:for:from:)
+    
+    func handleError(_ error: some Error, for uploadingChunk: ObservabilityChunk, from identifier: UUID, with auth: ObservabilityAuth) {
+        
+        let updatedChunk = state.update(uploadingChunk, from: identifier, to: .uploadError)
+        deviceContinuations[identifier]?.yield((identifier, .updatedChunk(updatedChunk)))
+        networkBusy = false
+        if let urlError = error as? URLError,
+           let statusCode = urlError.errorUserInfo["httpStatusCode"] as? Int {
+            deviceContinuations[identifier]?.yield((identifier, .unauthorized))
+        } else {
+            deviceContinuations[identifier]?.yield((identifier, .online(false)))
+            enqueueRetryPendingUploads(for: identifier, with: auth)
+        }
     }
 }

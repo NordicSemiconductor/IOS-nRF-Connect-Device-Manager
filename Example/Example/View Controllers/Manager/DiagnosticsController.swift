@@ -210,6 +210,11 @@ extension DiagnosticsController: DeviceStatusManager.Delegate {
             case .authenticated:
                 observabilitySectionStatusLabel.text = "Status: Authenticated"
                 observabilitySectionStatusLabel.textColor = .systemYellow
+            case .unauthorized:
+                observabilitySectionStatusLabel.text = "Status: Unauthorized"
+                observabilitySectionStatusLabel.textColor = .systemYellow
+                observabilityButton.setTitle("Disconnect", for: .normal)
+                showObservabilityActivityIndicator(false)
             case .online(let isTrue):
                 if isTrue {
                     observabilitySectionStatusLabel.text = "Status: Online"
