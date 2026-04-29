@@ -183,8 +183,15 @@ final class FirmwareUpgradeViewController: UIViewController, McuMgrViewControlle
     }
     
     private func setProjectKey(for deviceInfo: DeviceInfoToken) {
-        let alertController = UIAlertController(title: "Missing Project Key", message: "nRF Cloud Project Key is required to continue.", preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Missing Project Key", message: "\nnRF Cloud Project Key is required to continue.", preferredStyle: .alert)
         alertController.addTextField()
+        
+        // Link rom Memfault documentation: https://docs.memfault.com/docs/mcu/quickstart-nrf5x-ncs
+        if let memfaultKeyURL = URL(string: "https://mflt.io/project-key") {
+            alertController.addAction(UIAlertAction(title: "Open Project Settings", style: .default, handler: { _ in
+                UIApplication.shared.open(memfaultKeyURL, options: [:], completionHandler: nil)
+            }))
+        }
         alertController.addAction(UIAlertAction(title: "Continue", style: .default) { [unowned self] action in
             guard let textField = alertController.textFields?.first,
                   let keyString = textField.text else { return }
