@@ -249,7 +249,7 @@ fileprivate extension ObservabilityManager {
         deviceContinuations[identifier]?.yield((identifier, .updatedChunk(updatedChunk)))
         networkBusy = false
         if let urlError = error as? URLError,
-           let statusCode = urlError.errorUserInfo["httpStatusCode"] as? Int {
+           let statusCode = urlError.errorUserInfo["httpStatusCode"] as? Int, statusCode == 403 {
             deviceContinuations[identifier]?.yield((identifier, .unauthorized))
         } else {
             deviceContinuations[identifier]?.yield((identifier, .online(false)))
