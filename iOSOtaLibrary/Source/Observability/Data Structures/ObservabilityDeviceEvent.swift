@@ -18,6 +18,7 @@ public enum ObservabilityDeviceEvent: CustomStringConvertible {
     case connected, disconnected
     
     case notifications(_ enabled: Bool), online(_ isTrue: Bool)
+    case unauthorized
     case authenticated(_ auth: ObservabilityAuth)
     case updatedChunk(_ chunk: ObservabilityChunk)
     
@@ -35,6 +36,8 @@ public enum ObservabilityDeviceEvent: CustomStringConvertible {
             return ".online(\(isTrue ? "true" : "false"))"
         case .authenticated(_):
             return ".authenticated(_)"
+        case .unauthorized:
+            return ".unauthorized"
         case .updatedChunk(let chunk):
             return ".updatedChunk(\(chunk.sequenceNumber), \(String(describing: chunk.status))"
         }
