@@ -247,41 +247,54 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
     
     public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {
-        operationQueue.addOperation { [unowned self] in
+        operationQueue.addOperation { [weak self] in
             for i in 0..<McuMgrBleTransportConstant.MAX_RETRIES {
-                switch self._send(data: data, timeoutInSeconds: timeout) {
+                switch self?._send(data: data, timeoutInSeconds: timeout) {
                 case .failure(McuMgrTransportError.waitAndRetry):
                     let waitInterval = min(timeout, McuMgrBleTransportConstant.WAIT_AND_RETRY_INTERVAL)
                     sleep(UInt32(waitInterval))
+                    guard self != nil else {
+                        // Wake-up from sleep retry after the Transport has been de-allocated.
+                        // This happens if the user cancels an operation whilst we sleep and then
+                        // we wake up here.
+                        return
+                    }
                     if let header = try? McuMgrHeader(data: data) {
-                        self.log(msg: "Retry \(i + 1) for seq: \(header.sequenceNumber)", atLevel: .info)
+                        self?.log(msg: "Retry \(i + 1) for seq: \(header.sequenceNumber)", atLevel: .info)
                     } else {
-                        self.log(msg: "Retry \(i + 1) (Unknown Header Type)", atLevel: .info)
+                        self?.log(msg: "Retry \(i + 1) (Unknown Header Type)", atLevel: .info)
                     }
                     continue // retry
                 case .failure(McuMgrTransportError.peripheralNotReadyForWriteWithoutResponse):
                     if let header = try? McuMgrHeader(data: data) {
-                        self.log(msg: "(Retry \(i + 1)) Peripheral not ready for write without response. Attempting to wait or send seq: \(header.sequenceNumber)", atLevel: .debug)
+                        self?.log(msg: "(Retry \(i + 1)) Peripheral not ready for write without response. Attempting to wait or send seq: \(header.sequenceNumber)", atLevel: .debug)
                     }
                     continue // try to send again or wait for a response
                 case .failure(let error):
-                    self.log(msg: error.localizedDescription, atLevel: .error)
+                    // Don't call back if self has been deallocated.
+                    guard let self else { return }
+                    log(msg: error.localizedDescription, atLevel: .error)
                     DispatchQueue.main.async {
                         callback(nil, error)
                     }
                     return
                 case .success(let responseData):
+                    // Don't call back if self has been deallocated.
+                    guard let self else { return }
                     do {
                         let response: T = try McuMgrResponse.buildResponse(scheme: .ble, data: responseData)
                         DispatchQueue.main.async {
                             callback(response, nil)
                         }
                     } catch {
-                        self.log(msg: error.localizedDescription, atLevel: .error)
+                        log(msg: error.localizedDescription, atLevel: .error)
                         DispatchQueue.main.async {
                             callback(nil, error)
                         }
                     }
+                    return
+                case .none:
+                    // De-allocated self. Perhaps user cancelled.
                     return
                 }
             }
