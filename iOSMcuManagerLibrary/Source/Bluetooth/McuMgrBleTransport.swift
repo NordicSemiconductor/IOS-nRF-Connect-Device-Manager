@@ -247,7 +247,7 @@ extension McuMgrBleTransport: McuMgrTransport {
     }
     
     public func send<T: McuMgrResponse>(data: Data, timeout: Int, callback: @escaping McuMgrCallback<T>) {
-        operationQueue.addOperation {
+        operationQueue.addOperation { [unowned self] in
             for i in 0..<McuMgrBleTransportConstant.MAX_RETRIES {
                 switch self._send(data: data, timeoutInSeconds: timeout) {
                 case .failure(McuMgrTransportError.waitAndRetry):
@@ -258,6 +258,7 @@ extension McuMgrBleTransport: McuMgrTransport {
                     } else {
                         self.log(msg: "Retry \(i + 1) (Unknown Header Type)", atLevel: .info)
                     }
+                    continue // retry
                 case .failure(McuMgrTransportError.peripheralNotReadyForWriteWithoutResponse):
                     if let header = try? McuMgrHeader(data: data) {
                         self.log(msg: "(Retry \(i + 1)) Peripheral not ready for write without response. Attempting to wait or send seq: \(header.sequenceNumber)", atLevel: .debug)
