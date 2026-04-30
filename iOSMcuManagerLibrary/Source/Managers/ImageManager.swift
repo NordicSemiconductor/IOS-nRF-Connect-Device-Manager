@@ -22,6 +22,8 @@ public class ImageManager: McuManager {
         public let hash: Data
         public let data: Data
         
+        // MARK: init(_:hash:data:)
+        
         /**
          Convenience initialiser.
          
@@ -30,6 +32,8 @@ public class ImageManager: McuManager {
         public init(_ manifest: McuMgrManifest.File, hash: Data, data: Data) {
             self.init(name: manifest.file, image: manifest.image, slot: manifest.slot, content: manifest.content, hash: hash, data: data)
         }
+        
+        // MARK: init(name:image:slot:content:hash:data:)
         
         /**
          Default Initialiser.
@@ -50,6 +54,8 @@ public class ImageManager: McuManager {
             self.hash = hash
             self.data = data
         }
+        
+        // MARK: init(_:)
         
         internal init(_ image: FirmwareUpgradeImage) {
             self.name = image.content.description
@@ -91,11 +97,15 @@ public class ImageManager: McuManager {
         }
     }
     
+    // MARK: TAG
+    
     public override class var TAG: McuMgrLogCategory { .image }
     
-    private static let PIPELINED_WRITES_TIMEOUT_SECONDS = 10
+    // MARK: Constants
     
-    // MARK: - IDs
+    private static let ERASE_TIMEOUT_SECONDS = 75
+    
+    // MARK: IDs
 
     enum ImageID: UInt8 {
         case state = 0
@@ -125,6 +135,8 @@ public class ImageManager: McuManager {
     public func list(callback: @escaping McuMgrCallback<McuMgrImageStateResponse>) {
         send(op: .read, commandId: ImageID.state, payload: nil, callback: callback)
     }
+    
+    // MARK: upload(data:image:offset:alignment:callback:)
     
     /// Sends the next packet of data from given offset.
     /// To send a complete image, use upload(data:image:delegate) method instead.
@@ -164,6 +176,8 @@ public class ImageManager: McuManager {
              callback: callback)
     }
     
+    // MARK: test(hash:callback:)
+    
     /// Test the image with the provided hash.
     ///
     /// A successful test will put the image in a pending state. A pending image
@@ -176,6 +190,8 @@ public class ImageManager: McuManager {
                                       "confirm": CBOR.boolean(false)]
         send(op: .write, commandId: ImageID.state, payload: payload, callback: callback)
     }
+    
+    // MARK: confirm(hash:callback:)
     
     /// Confirm the image with the provided hash.
     ///
@@ -192,6 +208,8 @@ public class ImageManager: McuManager {
         }
         send(op: .write, commandId: ImageID.state, payload: payload, callback: callback)
     }
+    
+    // MARK: upload(images:using:delegate:)
     
     /// Begins the image upload to a peripheral.
     ///
@@ -275,7 +293,7 @@ public class ImageManager: McuManager {
             let convertedSlotParameter = 2 * image + slot
             payload = ["slot": CBOR.unsignedInt(UInt64(convertedSlotParameter))]
         }
-        send(op: .write, commandId: ImageID.erase, payload: payload, callback: callback)
+        send(op: .write, commandId: ImageID.erase, payload: payload, timeout: Self.ERASE_TIMEOUT_SECONDS, callback: callback)
     }
     
     /// Request core dump on the device. The data will be stored in the dump
