@@ -27,8 +27,9 @@ public struct McuMgrManifest: Codable {
     static let LoadAddressRegEx: NSRegularExpression! =
         try? NSRegularExpression(pattern: #"\"load_address\":0x[0-9a-z]+,"#, options: [.caseInsensitive])
     
-    // MARK: Init
+    // MARK: init
     
+    nonisolated
     public init(from url: URL) throws {
         guard let data = try? Data(contentsOf: url),
               let stringData = String(data: data, encoding: .utf8) else {
