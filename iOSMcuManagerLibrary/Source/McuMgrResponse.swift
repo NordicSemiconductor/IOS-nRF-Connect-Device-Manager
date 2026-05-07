@@ -1114,6 +1114,7 @@ public class McuMgrSlotInfoResponse: McuMgrResponse {
         public var slot: UInt64?
         public var size: UInt64?
         public var uploadImageID: UInt64?
+        public var rc: McuMgrReturnCode?
         
         public required init(cbor: CBOR?) throws {
             try super.init(cbor: cbor)
@@ -1125,6 +1126,11 @@ public class McuMgrSlotInfoResponse: McuMgrResponse {
             }
             if case let CBOR.unsignedInt(uploadImageID)? = cbor?["upload_image_id"] {
                 self.uploadImageID = uploadImageID
+            }
+            if case let CBOR.unsignedInt(rc)? = cbor?["rc"] {
+                self.rc = McuMgrReturnCode(rawValue: rc) ?? .ok
+            } else if case let CBOR.negativeInt(rc)? = cbor?["rc"] {
+                self.rc = McuMgrReturnCode(rawValue: rc) ?? .ok
             }
         }
     }
